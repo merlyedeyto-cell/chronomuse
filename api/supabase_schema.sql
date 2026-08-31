@@ -115,3 +115,11 @@ INSERT INTO chronomuse_users (id, username, email, password, created_at, updated
 
 -- Sequence reset to handle manual inserts of IDs
 SELECT setval(pg_get_serial_sequence('chronomuse_users', 'id'), COALESCE(MAX(id), 1) + 1, false) FROM chronomuse_users;
+
+-- Disable Row Level Security (RLS) on all tables for direct API writes
+ALTER TABLE chronomuse_users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE chronomuse_memories DISABLE ROW LEVEL SECURITY;
+ALTER TABLE chronomuse_memory_tags DISABLE ROW LEVEL SECURITY;
+ALTER TABLE chronomuse_pinned_dates DISABLE ROW LEVEL SECURITY;
+ALTER TABLE chronomuse_pinned_memories DISABLE ROW LEVEL SECURITY;
+
