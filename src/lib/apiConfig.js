@@ -48,7 +48,7 @@ export const API_ENDPOINTS = {
 	updateMemory: `${API_BASE_URL}/update_memory`,
 	getMemoriesForMonth: `${API_BASE_URL}/get_memories_for_month`,
 	getMemoriesByDate: `${API_BASE_URL}/get_memories_by_date`,
-	getMoodData: `${API_BASE_URL}/get_mood_data.php`,
+	getMoodData: `${API_BASE_URL}/get_mood_data`,
 	updateProfile: `${API_BASE_URL}/update_profile.php`,
 	pinMemory: `${API_BASE_URL}/pin_memory.php`,
 	unpinMemory: `${API_BASE_URL}/unpin_memory.php`
