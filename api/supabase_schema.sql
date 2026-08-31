@@ -123,3 +123,10 @@ ALTER TABLE chronomuse_memory_tags DISABLE ROW LEVEL SECURITY;
 ALTER TABLE chronomuse_pinned_dates DISABLE ROW LEVEL SECURITY;
 ALTER TABLE chronomuse_pinned_memories DISABLE ROW LEVEL SECURITY;
 
+-- Allow public select/read access to the "memories" storage bucket
+CREATE POLICY "Public Read Access" ON storage.objects FOR SELECT USING (bucket_id = 'memories');
+
+-- Allow public insert/upload access to the "memories" storage bucket
+CREATE POLICY "Public Upload Access" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'memories');
+
+
