@@ -49,7 +49,7 @@ export const API_ENDPOINTS = {
 	getMemoriesForMonth: `${API_BASE_URL}/get_memories_for_month`,
 	getMemoriesByDate: `${API_BASE_URL}/get_memories_by_date`,
 	getMoodData: `${API_BASE_URL}/get_mood_data`,
-	updateProfile: `${API_BASE_URL}/update_profile.php`,
+	updateProfile: `${API_BASE_URL}/update_profile`,
 	pinMemory: `${API_BASE_URL}/pin_memory.php`,
 	unpinMemory: `${API_BASE_URL}/unpin_memory.php`
 };
