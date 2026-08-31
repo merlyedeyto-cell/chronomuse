@@ -87,7 +87,7 @@
 					<div bind:this={contactCard} class="reveal-card reveal-right bg-white/70 backdrop-blur-md border-2 border-pink-300 rounded-2xl shadow-lg p-7 text-center hover:-translate-y-1 hover:shadow-xl transition-all duration-200">
 						<h2 class="text-2xl font-bold text-pink-500 mb-3">Contact</h2>
 						<p class="text-pink-700 text-sm leading-relaxed">
-							CHRONOMUSE is a personally developed system by Merlye Deyto and Lex Pobadora.
+							CHRONOMUSE is a personally developed system by Merlye Deyto.
 						</p>
 						<p class="text-pink-700 text-sm leading-relaxed mt-3.5">
 							For inquiries, feedback, or system-related concerns, you may contact the developer through the following channels:
