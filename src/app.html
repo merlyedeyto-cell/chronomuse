@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script src="https://cdn.tailwindcss.com"></script>
+		<title>Chronomuse</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+		<script>
+			tailwind.config = {
+				theme: {
+					extend: {
+						fontFamily: {
+							sans: ['Geist', 'sans-serif']
+						},
+						colors: {
+							pink: {
+								'4fae': '#ff4fae',
+								'1663': '#b11663',
+								'69b4': '#ff69b4',
+								'1493': '#ff1493',
+								'd1ea': '#ffd1ea',
+								'e1f0': '#ffe1f0'
+							}
+						}
+					}
+				}
+			}
+		</script>
+		<style>
+			body {
+				margin: 0;
+			}
+			.auth-page {
+				min-height: calc(100vh - 90px);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 20px;
+			}
+			.auth-container {
+				max-width: 340px;
+				margin: 0 auto;
+				padding: 28px;
+				background: rgba(255, 255, 255, 0.4);
+				border-radius: 18px;
+				box-shadow: 0 10px 24px rgba(255, 20, 147, 0.18), inset 0 1px 0 rgba(255,255,255,0.6);
+				transition: transform 0.25s ease, box-shadow 0.25s ease;
+				backdrop-filter: blur(12px);
+				border: 1px solid rgba(255, 255, 255, 0.6);
+				text-align: center;
+			}
+			
+			.auth-container:hover {
+				transform: translateY(-3px);
+				box-shadow: 0 10px 24px rgba(255, 20, 147, 0.18);
+			}
+			
+			.auth-header {
+				text-align: center;
+				margin-bottom: 64px;
+			}
+			.auth-header h1 {
+				margin: 0 0 8px;
+				color: #ff4fae;
+				transition: transform 0.2s ease, color 0.2s ease;
+				animation: brand-float-login 4s ease-in-out infinite;
+			}
+			.auth-header p {
+				margin: 0;
+				color: #ff4fae;
+				transition: transform 0.2s ease, color 0.2s ease;
+				animation: brand-float-login 4s ease-in-out infinite;
+				font-size: 13px;
+			}
+			.auth-header:hover h1,
+			.auth-header:hover p {
+				transform: translateY(-2px);
+			}
+			.auth-header:hover h1 {
+				color: #b11663;
+			}
+			
+			.auth-form input {
+				width: 85%;
+				padding: 9px 12px;
+				margin: 0 auto 18px;
+				border: 1px solid #ddd;
+				border-radius: 12px;
+				font-size: 14px;
+				transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
+				text-align: center;
+				background: rgba(255, 225, 240, 0.9);
+				color: #b11663;
+			}
+			
+			.auth-form input:hover {
+				border-color: #ff69b4;
+				box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.15);
+				transform: scale(1.02);
+			}
+			
+			.auth-form button {
+				width: 85%;
+				padding: 12px;
+				background: rgba(255, 105, 180, 0.85);
+				color: white;
+				border: 1px solid rgba(255, 105, 180, 0.7);
+				border-radius: 12px;
+				font-size: 16px;
+				cursor: pointer;
+				transition: background 0.3s, transform 0.2s ease;
+				backdrop-filter: blur(6px);
+				margin: 0 auto;
+			}
+			
+			.auth-form button:hover {
+				background: linear-gradient(135deg, rgba(255, 105, 180, 0.9), rgba(255, 20, 147, 0.85));
+				transform: scale(1.03);
+			}
+			.auth-credits {
+				text-align: center;
+				font-size: 12px;
+				color: #b11663;
+				margin: -52px 0 6px;
+			}
+			
+			.auth-links {
+				text-align: center;
+				margin-top: 20px;
+				font-size: 12px;
+			}
+			
+			.auth-links a {
+				color: #b11663;
+				text-decoration: none;
+				transition: color 0.2s ease, transform 0.2s ease;
+			}
+			.auth-links a:hover {
+				color: #8f0f50;
+				text-decoration: underline;
+				transform: translateY(-1px);
+			}
+
+			@keyframes brand-float-login {
+				0%, 100% { transform: translateY(0); }
+				50% { transform: translateY(-3px); }
+			}
+			
+			.error {
+				color: #dc3545;
+				text-align: center;
+				margin-bottom: 20px;
+			}
+			
+			.success {
+				color: #28a745;
+				text-align: center;
+				margin-bottom: 20px;
+			}
+			.about-btn {
+				padding: 8px 16px;
+				border-radius: 999px;
+				border: 1px solid rgba(255, 105, 180, 0.6);
+				background: rgba(255, 105, 180, 0.25);
+				color: #ff4fae;
+				font-weight: 600;
+				cursor: pointer;
+				transition: background 0.2s ease, transform 0.2s ease;
+				backdrop-filter: blur(6px);
+			}
+			.about-btn.is-active {
+				background: linear-gradient(135deg, rgba(255, 105, 180, 0.6), rgba(255, 20, 147, 0.6));
+				color: #ffd1ea;
+				border-color: rgba(255, 79, 174, 0.8);
+				box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 16px rgba(255, 20, 147, 0.25);
+			}
+			.about-btn:hover {
+				background: linear-gradient(135deg, rgba(255, 105, 180, 0.55), rgba(255, 20, 147, 0.55));
+				transform: translateY(-1px);
+				color: #ffd1ea;
+			}
+			.about-section,
+			.contact-section {
+				max-width: 720px;
+				padding: 24px 28px;
+				background: rgba(255, 255, 255, 0.4);
+				border: 2px solid rgba(255, 105, 180, 0.6);
+				border-radius: 12px;
+				box-shadow: 0 10px 24px rgba(255, 20, 147, 0.18), inset 0 1px 0 rgba(255,255,255,0.6);
+				backdrop-filter: blur(12px);
+				text-align: center;
+			}
+			.about-section {
+				margin: 120px auto 24px;
+			}
+			.contact-section {
+				margin: 120px auto 80px;
+			}
+			.reveal-card {
+				opacity: 0;
+				transform: scale(0.96) translateY(16px);
+				transition: transform 0.45s ease, opacity 0.45s ease;
+				will-change: transform, opacity;
+			}
+			.reveal-card.is-visible {
+				opacity: 1;
+				transform: scale(1) translateY(0);
+			}
+			.auth-container.reveal-card:hover {
+				transform: translateY(-3px) scale(1.01);
+				box-shadow: 0 10px 24px rgba(255, 20, 147, 0.18);
+			}
+			.about-section.reveal-card:hover,
+			.contact-section.reveal-card:hover {
+				transform: translateY(-3px) scale(1.01);
+				box-shadow: 0 10px 24px rgba(255, 20, 147, 0.18);
+			}
+			.about-section h2 {
+				margin: 0 0 8px;
+				color: #ff4fae;
+			}
+			.about-section p {
+				margin: 0;
+				color: #b11663;
+				font-size: 13px;
+				line-height: 1.6;
+			}
+			.about-section p + p {
+				margin-top: 12px;
+			}
+			.contact-section h2 {
+				margin: 0 0 8px;
+				color: #ff4fae;
+			}
+			.contact-section p {
+				margin: 0;
+				color: #b11663;
+				font-size: 13px;
+				line-height: 1.6;
+			}
+			.contact-section p:nth-of-type(2) {
+				margin-bottom: 10px;
+			}
+			.contact-section a {
+				color: #b11663;
+				text-decoration: none;
+				text-shadow: 0 0 6px rgba(255, 20, 147, 0.35);
+			}
+			.contact-section a:hover {
+				color: #8f0f50;
+				text-decoration: underline;
+				text-shadow: 0 0 10px rgba(255, 20, 147, 0.6);
+			}
+		</style>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
