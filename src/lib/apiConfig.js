@@ -23,8 +23,8 @@ if (typeof window !== 'undefined') {
 
 // API endpoints
 export const API_ENDPOINTS = {
-	login: `${API_BASE_URL}/login.php`,
-	register: `${API_BASE_URL}/register.php`,
+	login: `${API_BASE_URL}/login`,
+	register: `${API_BASE_URL}/register`,
 	getMessages: `${API_BASE_URL}/get_messages.php`,
 	sendMessage: `${API_BASE_URL}/send_message.php`,
 	deleteMessage: `${API_BASE_URL}/delete_message.php`,
