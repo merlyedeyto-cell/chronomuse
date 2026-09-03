@@ -33,23 +33,6 @@
 		const storedUser = localStorage.getItem('chronomuse_user');
 		if (storedUser) {
 			user = JSON.parse(storedUser);
-
-			// Instant 0ms cache load from localStorage to eliminate lag & flickering
-			const cachedFriends = localStorage.getItem('chronomuse_friends_list');
-			if (cachedFriends) {
-				try {
-					friends = JSON.parse(cachedFriends);
-				} catch (e) {}
-			}
-			const cachedRequests = localStorage.getItem('chronomuse_pending_requests');
-			if (cachedRequests) {
-				try {
-					const parsed = JSON.parse(cachedRequests);
-					pendingRequests = parsed.pendingRequests || [];
-					sentRequests = parsed.sentRequests || [];
-				} catch (e) {}
-			}
-
 			loadAllData();
 		} else {
 			goto('/');
@@ -64,9 +47,7 @@
 
 	function fetchFriends() {
 		if (!user || !user.id) return;
-		if (friends.length === 0) {
-			isFetchingFriends = true;
-		}
+		isFetchingFriends = true;
 
 		fetch(API_ENDPOINTS.getFriendsList, {
 			method: 'POST',
@@ -76,9 +57,8 @@
 		.then(res => res.json())
 		.then(data => {
 			isFetchingFriends = false;
-			if (data.data && data.data.friends) {
-				friends = data.data.friends;
-				localStorage.setItem('chronomuse_friends_list', JSON.stringify(friends));
+			if (data.data) {
+				friends = data.data.friends || [];
 			}
 		})
 		.catch(err => {
@@ -89,9 +69,7 @@
 
 	function fetchPendingRequests() {
 		if (!user || !user.id) return;
-		if (pendingRequests.length === 0 && sentRequests.length === 0) {
-			isFetchingRequests = true;
-		}
+		isFetchingRequests = true;
 
 		fetch(API_ENDPOINTS.getFriendRequests, {
 			method: 'POST',
@@ -104,7 +82,6 @@
 			if (data.data) {
 				pendingRequests = data.data.requests || [];
 				sentRequests = data.data.sent_requests || [];
-				localStorage.setItem('chronomuse_pending_requests', JSON.stringify({ pendingRequests, sentRequests }));
 			}
 		})
 		.catch(err => {
@@ -422,7 +399,7 @@
 						</div>
 					</div>
 
-					{#if isFetchingFriends && friends.length === 0}
+					{#if isFetchingFriends}
 						<div class="text-center py-8">
 							<div class="animate-spin h-6 w-6 text-pink-500 mx-auto mb-2 border-3 border-pink-200 border-t-pink-500 rounded-full"></div>
 							<p class="text-xs text-pink-400">Loading friends list...</p>
