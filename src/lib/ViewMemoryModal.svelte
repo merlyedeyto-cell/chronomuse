@@ -1,5 +1,6 @@
 <script>
 	import { createEventDispatcher, onMount } from 'svelte';
+	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 
 	const dispatch = createEventDispatcher();
 
@@ -19,6 +20,14 @@
 	let isSaving = $state(false);
 	let photoVideoInput;
 	let musicInput;
+	
+	// Friends & Sharing State
+	let friends = $state([]);
+	let showShareModal = $state(false);
+	let memoryToShare = $state(null);
+	let selectedShareFriendIds = $state([]);
+	let isSharing = $state(false);
+	let shareSuccessMsg = $state('');
 	
 	// Full-screen image viewer
 	let showFullScreenImage = $state(false);
@@ -67,7 +76,77 @@
 	onMount(() => {
 		// Prevent body scroll when modal is open
 		document.body.style.overflow = 'hidden';
+		fetchFriends();
 	});
+
+	function fetchFriends() {
+		const currentUser = localStorage.getItem('chronomuse_user');
+		const user = currentUser ? JSON.parse(currentUser) : null;
+		if (user && user.id) {
+			fetch(API_ENDPOINTS.getFriendsList, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: user.id })
+			})
+			.then(res => res.json())
+			.then(data => {
+				if (data.data && data.data.friends) {
+					friends = data.data.friends;
+				}
+			})
+			.catch(err => console.error('Error fetching friends for sharing:', err));
+		}
+	}
+
+	function openShareModal(memory) {
+		memoryToShare = memory;
+		selectedShareFriendIds = [];
+		shareSuccessMsg = '';
+		showShareModal = true;
+	}
+
+	function toggleShareFriend(friendId) {
+		if (selectedShareFriendIds.includes(friendId)) {
+			selectedShareFriendIds = selectedShareFriendIds.filter(id => id !== friendId);
+		} else {
+			selectedShareFriendIds = [...selectedShareFriendIds, friendId];
+		}
+	}
+
+	async function handleShareMemorySubmit() {
+		if (!memoryToShare || selectedShareFriendIds.length === 0 || isSharing) return;
+		isSharing = true;
+		const currentUser = localStorage.getItem('chronomuse_user');
+		const user = currentUser ? JSON.parse(currentUser) : null;
+
+		try {
+			const res = await fetch(API_ENDPOINTS.shareMemory, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					memory_id: memoryToShare.id,
+					sender_id: user.id,
+					recipient_ids: selectedShareFriendIds
+				})
+			});
+			const data = await res.json();
+			if (data.success) {
+				shareSuccessMsg = 'Memory shared successfully!';
+				setTimeout(() => {
+					showShareModal = false;
+					memoryToShare = null;
+					selectedShareFriendIds = [];
+					shareSuccessMsg = '';
+				}, 1500);
+			} else {
+				alert(data.error || 'Failed to share memory');
+			}
+		} catch (err) {
+			console.error('Error sharing memory:', err);
+		} finally {
+			isSharing = false;
+		}
+	}
 
 	function handleEditedPhotoVideoChange(event) {
 		const file = event.target.files[0];
@@ -245,20 +324,22 @@
 
 <!-- Backdrop Overlay -->
 <div
-	class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
+	class="fixed inset-0 bg-black/40 backdrop-blur-md z-40 transition-opacity duration-300"
 	class:opacity-0={isClosing}
 	onclick={handleClose}
 ></div>
 
-<!-- Modal Content -->
+<!-- Modal Content Container -->
 <div
 	class="fixed inset-0 z-50 flex items-center justify-center p-4"
+	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 >
 	<div
 		class="bg-white border-2 border-pink-300 rounded-2xl shadow-2xl p-6 relative transition-all duration-300 max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
 		class:opacity-0={isClosing}
 		class:scale-95={isClosing}
 		class:transform={isClosing}
+		onclick={(e) => e.stopPropagation()}
 	>
 		<!-- Close Button -->
 		<button
@@ -468,42 +549,79 @@
 						</div>
 					{:else}
 						<!-- View Mode -->
-						<div class="space-y-2">
-							<!-- Header with tags -->
-							<div class="flex items-start justify-between">
-								<div class="flex items-center space-x-2 flex-wrap gap-2">
+						<div class="space-y-2.5">
+							<!-- Row 1: Shared By on Left & Read Only / Actions on Right (Katapat) -->
+							<div class="flex flex-wrap items-center justify-between gap-2">
+								<div class="flex-grow min-w-0 max-w-full">
+									{#if memory.is_shared}
+										<span class="text-xs px-2.5 py-1 rounded-full bg-gradient-to-r from-pink-500 to-pink-600 text-white font-medium shadow-sm inline-flex items-center space-x-1.5 max-w-full min-w-0">
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5 text-pink-100 flex-shrink-0">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a5.97 5.97 0 00-.942 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+											</svg>
+											<span class="truncate">Shared by @{memory.shared_by}</span>
+										</span>
+									{/if}
+								</div>
+
+								<!-- Right: Read Only / Actions -->
+								<div class="flex items-center space-x-1 flex-shrink-0">
+									{#if !memory.is_shared}
+										<!-- Share with Friend Button -->
+										<button
+											onclick={() => openShareModal(memory)}
+											class="p-1.5 text-pink-500 hover:text-pink-700 hover:bg-pink-100 rounded-lg transition-all duration-200 flex items-center space-x-1"
+											title="Share with Friend"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zm0-12a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
+											</svg>
+											<span class="text-xs font-semibold">Share</span>
+										</button>
+
+										<button
+											onclick={() => handleEditMemory(memory)}
+											class="p-1.5 text-pink-400 hover:text-pink-600 hover:bg-pink-100 rounded-lg transition-all duration-200"
+											title="Edit"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+											</svg>
+										</button>
+										<button
+											onclick={() => handleDeleteMemory(memory.id)}
+											class="p-1.5 text-pink-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+											title="Delete"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 12.55a1.125 1.125 0 01-1.126 1.095H9.726a1.125 1.125 0 01-1.126-1.095L8.259 9M8.875 5.625V4.5c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.125m-4.5 0V4.5m0 0h4.5m-4.5 0a2.25 2.25 0 00-2.25 2.25v1.5a2.25 2.25 0 002.25 2.25h1.5a2.25 2.25 0 002.25-2.25v-1.5a2.25 2.25 0 00-2.25-2.25h-1.5z" />
+											</svg>
+										</button>
+									{:else}
+										<span class="text-xs px-2.5 py-1 rounded-full bg-pink-100/90 text-pink-600 font-medium flex items-center space-x-1 border border-pink-200 shadow-sm flex-shrink-0 whitespace-nowrap">
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5 text-pink-500 flex-shrink-0">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H5.25a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+											</svg>
+											<span>Read Only</span>
+										</span>
+									{/if}
+								</div>
+							</div>
+
+							<!-- Row 2: Tags (Mood & Category) below Shared By -->
+							{#if memory.mood_tag || memory.memory_tag}
+								<div class="flex items-center flex-wrap gap-1.5">
 									{#if memory.mood_tag}
-										<span class="text-xs px-2 py-1 rounded-full border {getMoodColor(memory.mood_tag)} font-medium">
+										<span class="text-xs px-2.5 py-1 rounded-full border {getMoodColor(memory.mood_tag)} font-medium whitespace-nowrap">
 											{memory.mood_tag}
 										</span>
 									{/if}
 									{#if memory.memory_tag}
-										<span class="text-xs px-2 py-1 rounded-full bg-pink-200 text-pink-700 border border-pink-300 font-medium">
+										<span class="text-xs px-2.5 py-1 rounded-full bg-pink-200 text-pink-700 border border-pink-300 font-medium whitespace-nowrap">
 											{memory.memory_tag}
 										</span>
 									{/if}
 								</div>
-								<div class="flex items-center space-x-1">
-									<button
-										onclick={() => handleEditMemory(memory)}
-										class="p-1.5 text-pink-400 hover:text-pink-600 hover:bg-pink-100 rounded transition-all duration-200"
-										title="Edit"
-									>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-										</svg>
-									</button>
-									<button
-										onclick={() => handleDeleteMemory(memory.id)}
-										class="p-1.5 text-pink-400 hover:text-red-600 hover:bg-red-50 rounded transition-all duration-200"
-										title="Delete"
-									>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 12.55a1.125 1.125 0 01-1.126 1.095H9.726a1.125 1.125 0 01-1.126-1.095L8.259 9M8.875 5.625V4.5c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.125m-4.5 0V4.5m0 0h4.5m-4.5 0a2.25 2.25 0 00-2.25 2.25v1.5a2.25 2.25 0 002.25 2.25h1.5a2.25 2.25 0 002.25-2.25v-1.5a2.25 2.25 0 00-2.25-2.25h-1.5z" />
-										</svg>
-									</button>
-								</div>
-							</div>
+							{/if}
 
 							<!-- Description -->
 							{#if memory.description}
@@ -642,6 +760,68 @@
 		<!-- Image Container -->
 		<div class="w-full h-screen flex items-center justify-center p-4">
 			<img src={fullScreenImageUrl} alt="Full size" class="max-w-full max-h-full object-contain" />
+		</div>
+	</div>
+{/if}
+
+<!-- Share Memory Modal -->
+{#if showShareModal}
+	<div class="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4">
+		<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-2xl p-6 max-w-sm w-full relative animate-modal-content">
+			<button
+				onclick={() => showShareModal = false}
+				class="absolute top-3 right-3 text-pink-400 hover:text-pink-600 p-1 rounded-lg"
+			>
+				✕
+			</button>
+			<div class="text-center mb-4">
+				<div class="w-12 h-12 mx-auto mb-2 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 text-xl shadow-inner">
+					🤝
+				</div>
+				<h3 class="text-lg font-bold text-pink-600">Share Memory</h3>
+				<p class="text-xs text-pink-400">Select friends to tag/share this memory with so both of you can see it on this date!</p>
+			</div>
+
+			{#if shareSuccessMsg}
+				<div class="mb-4 p-2.5 bg-green-100 border border-green-300 text-green-700 rounded-xl text-xs text-center font-medium">
+					{shareSuccessMsg}
+				</div>
+			{/if}
+
+			{#if friends.length === 0}
+				<p class="text-xs text-pink-400 text-center py-4">No friends found. Add friends first from the sidebar!</p>
+			{:else}
+				<div class="space-y-2 max-h-48 overflow-y-auto mb-5 p-1">
+					{#each friends as friend (friend.friend_id)}
+						<button
+							type="button"
+							onclick={() => toggleShareFriend(friend.friend_id)}
+							class="w-full p-2.5 rounded-xl border-2 transition-all flex items-center justify-between text-left"
+							class:border-pink-500={selectedShareFriendIds.includes(friend.friend_id)}
+							class:bg-pink-50={selectedShareFriendIds.includes(friend.friend_id)}
+							class:border-pink-200={!selectedShareFriendIds.includes(friend.friend_id)}
+							class:bg-white={!selectedShareFriendIds.includes(friend.friend_id)}
+						>
+							<div class="flex items-center space-x-2.5">
+								<div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 text-white font-bold text-xs flex items-center justify-center">
+									{friend.username.charAt(0).toUpperCase()}
+								</div>
+								<span class="text-xs font-semibold text-pink-700">@{friend.username}</span>
+							</div>
+							{#if selectedShareFriendIds.includes(friend.friend_id)}
+								<span class="text-pink-600 font-bold text-sm">✓</span>
+							{/if}
+						</button>
+					{/each}
+				</div>
+				<button
+					onclick={handleShareMemorySubmit}
+					disabled={selectedShareFriendIds.length === 0 || isSharing}
+					class="w-full py-2.5 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl font-semibold text-sm hover:from-pink-500 hover:to-pink-700 transition-all disabled:opacity-50 shadow-md"
+				>
+					{#if isSharing}Sharing...{:else}Share Memory{/if}
+				</button>
+			{/if}
 		</div>
 	</div>
 {/if}

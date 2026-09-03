@@ -13,6 +13,7 @@
 
 	let friendUsername = $state('');
 	let pendingRequests = $state([]);
+	let sentRequests = $state([]);
 	let isResponding = $state(false);
 
 	$effect(() => {
@@ -73,10 +74,12 @@
 				errorMessage = data.error;
 			} else {
 				successMessage = data.message || 'Friend request sent successfully!';
+				fetchPendingRequests();
 				dispatch('addFriend', data);
 				setTimeout(() => {
-					handleClose();
-				}, 1500);
+					successMessage = '';
+					friendUsername = '';
+				}, 2000);
 			}
 		})
 		.catch(error => {
@@ -101,10 +104,40 @@
 		.then(data => {
 			if (data.data) {
 				pendingRequests = data.data.requests || [];
+				sentRequests = data.data.sent_requests || [];
 			}
 		})
 		.catch(error => {
 			console.error('Error fetching pending requests:', error);
+		});
+	}
+
+	function handleCancelSentRequest(requestId) {
+		isResponding = true;
+		const user = getCurrentUser();
+
+		fetch(API_ENDPOINTS.cancelFriendRequest, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				user_id: user.id,
+				request_id: requestId
+			})
+		})
+		.then(response => response.json())
+		.then(data => {
+			isResponding = false;
+			if (data.error) {
+				errorMessage = data.error;
+			} else {
+				sentRequests = sentRequests.filter(r => r.id !== requestId);
+			}
+		})
+		.catch(error => {
+			isResponding = false;
+			console.error('Cancel request error:', error);
 		});
 	}
 
@@ -230,10 +263,10 @@
 				</button>
 			</form>
 
-			<!-- Pending Requests Section -->
+			<!-- Pending Incoming Requests Section -->
 			{#if pendingRequests.length > 0}
 				<div class="mt-6 pt-6 border-t-2 border-pink-200">
-					<h3 class="text-lg font-bold text-pink-500 mb-4 text-center">Friend Requests</h3>
+					<h3 class="text-lg font-bold text-pink-500 mb-4 text-center">Friend Requests Received</h3>
 					<div class="space-y-3 max-h-48 overflow-y-auto">
 						{#each pendingRequests as request (request.id)}
 							<div class="p-3 bg-pink-50 border-2 border-pink-200 rounded-xl flex items-center justify-between">
@@ -268,6 +301,35 @@
 										</svg>
 									</button>
 								</div>
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/if}
+
+			<!-- Sent Pending Requests Section (Cancel Add) -->
+			{#if sentRequests.length > 0}
+				<div class="mt-6 pt-6 border-t-2 border-pink-200">
+					<h3 class="text-lg font-bold text-pink-500 mb-4 text-center">Sent Requests (Pending)</h3>
+					<div class="space-y-3 max-h-48 overflow-y-auto">
+						{#each sentRequests as request (request.id)}
+							<div class="p-3 bg-pink-50 border-2 border-pink-200 rounded-xl flex items-center justify-between">
+								<div class="flex items-center space-x-3">
+									<div class="w-10 h-10 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center text-white font-bold">
+										{request.username.charAt(0).toUpperCase()}
+									</div>
+									<div>
+										<p class="text-sm font-semibold text-pink-700">{request.username}</p>
+										<p class="text-xs text-pink-400">Pending approval...</p>
+									</div>
+								</div>
+								<button
+									onclick={() => handleCancelSentRequest(request.id)}
+									disabled={isResponding}
+									class="px-3 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
+								>
+									Cancel Add
+								</button>
 							</div>
 						{/each}
 					</div>

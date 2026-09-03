@@ -53,7 +53,7 @@ export async function POST({ request }) {
 				.upload(filePath, musicFile);
 
 			if (uploadError) {
-				return json({ error: 'Music upload failed: ' + uploadError.message + '. Please ensure a public storage bucket named "memories" exists in your Supabase project.' }, { status: 500 });
+				return json({ error: 'Music upload failed: ' + uploadError.message + '. Please ensure your "memories" bucket allows audio files (audio/*) and the file is under the size limit.' }, { status: 500 });
 			}
 
 			const { data: urlData } = supabase.storage.from('memories').getPublicUrl(filePath);

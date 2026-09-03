@@ -25,6 +25,30 @@
 								'd1ea': '#ffd1ea',
 								'e1f0': '#ffe1f0'
 							}
+						},
+						keyframes: {
+							fadeIn: {
+								'0%': { opacity: '0' },
+								'100%': { opacity: '1' }
+							},
+							slideDown: {
+								'0%': { opacity: '0', transform: 'translateY(-12px)' },
+								'100%': { opacity: '1', transform: 'translateY(0)' }
+							},
+							fadeInUp: {
+								'0%': { opacity: '0', transform: 'translateY(12px)' },
+								'100%': { opacity: '1', transform: 'translateY(0)' }
+							},
+							popIn: {
+								'0%': { opacity: '0', transform: 'scale(0.98)' },
+								'100%': { opacity: '1', transform: 'scale(1)' }
+							}
+						},
+						animation: {
+							'fade-in': 'fadeIn 0.25s ease-out forwards',
+							'slide-down': 'slideDown 0.3s ease-out forwards',
+							'fade-in-up': 'fadeInUp 0.3s ease-out forwards',
+							'pop-in': 'popIn 0.25s ease-out forwards'
 						}
 					}
 				}

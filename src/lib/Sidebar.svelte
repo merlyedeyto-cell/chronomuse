@@ -1,5 +1,6 @@
 <script>
 	import { createEventDispatcher, onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import AddFriendModal from './AddFriendModal.svelte';
@@ -7,7 +8,7 @@
 	import ProfileModal from './ProfileModal.svelte';
 
 	const dispatch = createEventDispatcher();
-	let { isOpen = false } = $props();
+	let { isOpen = $bindable(false) } = $props();
 	let showAddFriendModal = $state(false);
 	let showFriendsListModal = $state(false);
 	let showProfileModal = $state(false);
@@ -18,31 +19,48 @@
 		isOpen = !isOpen;
 	}
 
+	function closeSidebar() {
+		if (typeof window !== 'undefined' && window.innerWidth < 768) {
+			isOpen = false;
+		}
+	}
+
 	function handleHome() {
+		closeSidebar();
+		goto('/dashboard');
 		dispatch('home');
 	}
 
 	function handleAddFriend() {
+		closeSidebar();
 		showAddFriendModal = true;
 	}
 
-	function handleFriendsList() {
-		showFriendsListModal = true;
+	function handleFriends() {
+		closeSidebar();
+		goto('/friends');
 	}
 
 	function handleProfile() {
+		closeSidebar();
 		showProfileModal = true;
 	}
 
 	function handleChat() {
-		window.location.href = '/chat';
+		closeSidebar();
+		goto('/chat');
 	}
 
 	function handleMoodGraph() {
+		closeSidebar();
+		goto('/mood-graph');
 		dispatch('moodGraph');
 	}
 
 	function handleLogout() {
+		closeSidebar();
+		localStorage.removeItem('chronomuse_user');
+		goto('/');
 		dispatch('logout');
 	}
 
@@ -80,8 +98,6 @@
 	}
 
 	function fetchPendingRequests() {
-		// Commented out to disable unused friend API calls
-		/*
 		const currentUser = localStorage.getItem('chronomuse_user');
 		const user = currentUser ? JSON.parse(currentUser) : null;
 
@@ -122,22 +138,31 @@
 		.catch(error => {
 			console.error('Error fetching chat list:', error);
 		});
-		*/
 	}
 
 	onMount(() => {
-		// Commented out to disable unused friend request polling
-		// fetchPendingRequests();
-		// const interval = setInterval(fetchPendingRequests, 10000);
-		// return () => clearInterval(interval);
+		fetchPendingRequests();
+		const interval = setInterval(fetchPendingRequests, 10000);
+		return () => clearInterval(interval);
 	});
 </script>
 
+<!-- Mobile Backdrop Overlay (Clicking outside closes mobile sidebar) -->
+{#if isOpen}
+	<button
+		type="button"
+		onclick={closeSidebar}
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 transition-opacity duration-300 md:hidden cursor-default border-none outline-none"
+		aria-label="Close sidebar overlay"
+	></button>
+{/if}
+
 <!-- Sidebar -->
 <aside
-	class="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white border-r-2 border-pink-300 shadow-lg transition-all duration-300 z-30 overflow-y-auto scrollbar-hide animate-fade-in-left"
+	class="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white border-r-2 border-pink-300 shadow-lg transition-all duration-300 z-40 overflow-y-auto scrollbar-hide md:w-64"
 	class:w-64={isOpen}
-	class:w-0={!isOpen}
+	class:max-md:w-0={!isOpen}
+	class:max-md:border-none={!isOpen}
 >
 	<div class="p-4">
 		<div class="space-y-2">
@@ -175,7 +200,7 @@
 				<span>Mood Graph</span>
 			</button>
 
-			<!-- Chat Button
+			<!-- Chat Button -->
 			<button
 				onclick={handleChat}
 				class="w-full py-2 px-4 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 relative animate-slide-in-right"
@@ -195,39 +220,32 @@
 						{unreadChatsCount}
 					</span>
 				{/if}
-			</button> -->
+			</button>
 
 			<!-- Divider -->
 			<div class="pt-2 mt-2 border-t border-pink-200"></div>
 
-			<!-- Add Friend Button
+			<!-- Friends Button (Navigates to /friends section) -->
 			<button
-				onclick={handleAddFriend}
-				class="w-full py-2 px-4 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200 transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 relative animate-slide-in-right"
+				onclick={handleFriends}
+				class="w-full py-2 px-4 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 relative animate-slide-in-right"
 				style="animation-delay: 0.25s"
+				class:bg-pink-500={isActive('/friends')}
+				class:text-white={isActive('/friends')}
+				class:bg-pink-100={!isActive('/friends')}
+				class:text-pink-600={!isActive('/friends')}
+				class:hover:bg-pink-200={!isActive('/friends')}
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 19.125a1.125 1.125 0 011.125-1.125h15.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H4.875a1.125 1.125 0 01-1.125-1.125v-2.25z" />
+					<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
 				</svg>
-				<span>Add Friend</span>
+				<span>Friends</span>
 				{#if pendingRequestsCount > 0}
 					<span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
 						{pendingRequestsCount}
 					</span>
 				{/if}
-			</button> -->
-
-			<!-- Friends List Button
-			<button
-				onclick={handleFriendsList}
-				class="w-full py-2 px-4 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200 transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 animate-slide-in-right"
-				style="animation-delay: 0.3s"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-				</svg>
-				<span>Friends List</span>
-			</button> -->
+			</button>
 
 			<!-- Profile Button -->
 			<button
@@ -241,8 +259,8 @@
 				<span>Profile</span>
 			</button>
 
-			<!-- Logout Button (Mobile Only - at bottom of list) -->
-			<div class="md:hidden pt-4 mt-4 border-t border-pink-200 animate-fade-in-up" style="animation-delay: 0.4s">
+			<!-- Logout Button (Available on all devices) -->
+			<div class="pt-4 mt-4 border-t border-pink-200 animate-fade-in-up" style="animation-delay: 0.4s">
 				<button
 					onclick={handleLogout}
 					class="w-full py-2 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-lg hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md flex items-center justify-center space-x-2"
@@ -257,20 +275,20 @@
 	</div>
 </aside>
 
-<!-- Toggle Button - Desktop Only (outside Sidebar on the right edge) -->
+<!-- Toggle Button - Desktop Only (Inset from edge for comfortable clicking) -->
 <button
 	onclick={toggleSidebar}
-	class="hidden md:block fixed top-20 z-50 p-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-all duration-200 shadow-md"
-	class:left-64={isOpen}
-	class:left-0={!isOpen}
+	class="hidden md:block fixed top-20 z-50 p-2.5 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-300 shadow-lg border border-pink-300"
+	class:left-[16.5rem]={isOpen}
+	class:left-3={!isOpen}
 	title={isOpen ? 'Close Sidebar' : 'Open Sidebar'}
 >
 	{#if isOpen}
-		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
 			<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
 		</svg>
 	{:else}
-		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
 			<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
 		</svg>
 	{/if}

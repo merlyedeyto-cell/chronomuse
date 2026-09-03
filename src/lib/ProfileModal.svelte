@@ -122,7 +122,7 @@
 <!-- Backdrop Overlay -->
 {#if isOpen}
 	<div
-		class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 flex items-center justify-center p-4 animate-modal-backdrop"
+		class="fixed inset-0 bg-black/40 backdrop-blur-md z-40 transition-opacity duration-300 flex items-center justify-center p-4 animate-modal-backdrop"
 		class:opacity-0={isClosing}
 		onclick={handleClose}
 	>

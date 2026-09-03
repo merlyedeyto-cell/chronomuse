@@ -3,6 +3,8 @@
 
 	const dispatch = createEventDispatcher();
 
+	import { API_ENDPOINTS } from '$lib/apiConfig.js';
+
 	let { selectedDate = '', resetForm = $bindable(false) } = $props();
 
 	let memoryDescription = $state('');
@@ -15,16 +17,18 @@
 	let isClosing = $state(false);
 	let isOpening = $state(true);
 	let showEmojiPicker = $state(false);
+	let friends = $state([]);
+	let selectedFriendIds = $state([]);
 	let photoVideoInput;
 	let musicInput;
 
 	// Check if selected date is in the future
 	function isFutureDate() {
 		if (!selectedDate) return false;
-		const selectedDateObj = new Date(selectedDate);
+		const [year, month, day] = selectedDate.split('-');
+		const selectedDateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
-		selectedDateObj.setHours(0, 0, 0, 0);
 		return selectedDateObj > today;
 	}
 
@@ -137,10 +141,10 @@
 
 		// Check if date is in the future
 		if (selectedDate) {
-			const selectedDateObj = new Date(selectedDate);
+			const [year, month, day] = selectedDate.split('-');
+			const selectedDateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 			const today = new Date();
 			today.setHours(0, 0, 0, 0);
-			selectedDateObj.setHours(0, 0, 0, 0);
 
 			if (selectedDateObj > today) {
 				const event = new CustomEvent('showToast', {
@@ -161,7 +165,8 @@
 			memoryTag,
 			moodTag,
 			photoVideo,
-			music
+			music,
+			taggedFriendIds: selectedFriendIds
 		});
 		
 		// Note: Don't reset form here - wait for parent to confirm save
@@ -173,6 +178,7 @@
 		moodTag = '';
 		photoVideo = null;
 		music = null;
+		selectedFriendIds = [];
 		if (photoVideoPreview) {
 			URL.revokeObjectURL(photoVideoPreview);
 			photoVideoPreview = null;
@@ -203,11 +209,37 @@
 		showEmojiPicker = false;
 	}
 
+	function toggleFriendTag(friendId) {
+		if (selectedFriendIds.includes(friendId)) {
+			selectedFriendIds = selectedFriendIds.filter(id => id !== friendId);
+		} else {
+			selectedFriendIds = [...selectedFriendIds, friendId];
+		}
+	}
+
 	onMount(() => {
 		// Trigger opening animation
 		setTimeout(() => {
 			isOpening = false;
 		}, 50);
+
+		// Load friends list for tagging
+		const currentUser = localStorage.getItem('chronomuse_user');
+		const user = currentUser ? JSON.parse(currentUser) : null;
+		if (user && user.id) {
+			fetch(API_ENDPOINTS.getFriendsList, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: user.id })
+			})
+			.then(res => res.json())
+			.then(data => {
+				if (data.data && data.data.friends) {
+					friends = data.data.friends;
+				}
+			})
+			.catch(err => console.error('Error loading friends for tagging:', err));
+		}
 	});
 
 	function formatDate(dateString) {
@@ -220,15 +252,15 @@
 </script>
 
 <div
-	class="bg-white border-2 border-pink-300 rounded-2xl shadow-lg p-6 relative transition-all duration-300 hover:-translate-y-2 hover:shadow-xl animate-modal-content"
+	class="bg-white border-2 border-pink-300 rounded-2xl shadow-lg p-4 sm:p-5 relative transition-all duration-300 hover:shadow-xl animate-modal-content"
 	class:opacity-0={isOpening || isClosing}
 	class:scale-95={isOpening || isClosing}
 	class:transform={isOpening || isClosing}
 >
 	<!-- Close Button -->
 	<button
-		on:click={handleClose}
-		class="absolute top-3 right-3 p-2 text-pink-400 hover:text-pink-600 hover:bg-pink-100 rounded-lg transition-all duration-200"
+		onclick={handleClose}
+		class="absolute top-3 right-3 p-1.5 text-pink-400 hover:text-pink-600 hover:bg-pink-100 rounded-lg transition-all duration-200"
 		title="Close"
 	>
 		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
@@ -237,86 +269,89 @@
 	</button>
 
 	<!-- Header -->
-	<div class="text-center mb-6">
-		<h2 class="text-xl font-bold text-pink-500">Add New Memory</h2>
-		<p class="text-sm text-pink-400 mt-1">Capture your special moments</p>
+	<div class="text-center mb-3">
+		<h2 class="text-lg font-bold text-pink-500">Add New Memory</h2>
+		<p class="text-xs text-pink-400">Capture your special moments</p>
 	</div>
 
 	<!-- Selected Date Mini Card -->
-	<div class="mb-4 p-4 bg-gradient-to-r from-pink-400 to-pink-600 rounded-xl shadow-md text-white">
-		<div class="flex items-center space-x-3">
-			<div class="p-2 bg-white/20 rounded-lg">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+	<div class="mb-3 p-2.5 bg-gradient-to-r from-pink-400 to-pink-600 rounded-xl shadow-md text-white">
+		<div class="flex items-center space-x-2.5">
+			<div class="p-1.5 bg-white/20 rounded-lg">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
 				</svg>
 			</div>
 			<div>
-				<p class="text-xs text-pink-100 uppercase tracking-wide">Selected Date</p>
-				<p class="text-sm font-semibold">{formatDate(selectedDate)}</p>
+				<p class="text-[10px] text-pink-100 uppercase tracking-wide">Selected Date</p>
+				<p class="text-xs font-semibold">{formatDate(selectedDate)}</p>
 			</div>
 		</div>
 	</div>
 
 	<!-- Form -->
-	<div class="space-y-4">
-		<!-- Upload Photo -->
-		<div>
-			<label class="block text-xs font-medium text-pink-600 mb-1">Photo</label>
-			<label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-pink-300 rounded-lg bg-pink-50 cursor-pointer hover:bg-pink-100 hover:border-pink-400 transition-all duration-200 overflow-hidden">
-				{#if photoVideoPreview}
-					{#if photoVideo?.type.startsWith('image/')}
-						<img src={photoVideoPreview} alt="Preview" class="w-full h-full object-contain" />
-					{/if}
-				{:else}
-					<div class="flex flex-col items-center justify-center pt-2 pb-3">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-pink-400 mb-1">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-						</svg>
-						<p class="text-xs text-pink-400">Click to upload photo</p>
-					</div>
-				{/if}
-				<input
-					type="file"
-					accept="image/*"
-					on:change={handlePhotoVideoChange}
-					bind:this={photoVideoInput}
-					class="hidden"
-				/>
-			</label>
-		</div>
-
-		<!-- Upload Music -->
-		<div>
-			<label class="block text-xs font-medium text-pink-600 mb-1">Music (Optional)</label>
-			<label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-pink-300 rounded-lg bg-pink-50 cursor-pointer hover:bg-pink-100 hover:border-pink-400 transition-all duration-200">
-				<div class="flex flex-col items-center justify-center pt-2 pb-3">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-pink-400 mb-1">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
-					</svg>
-					{#if music}
-						<p class="text-xs text-pink-600 font-medium">{music.name}</p>
+	<div class="space-y-2.5">
+		<!-- Upload Photo & Upload Music Side-by-Side -->
+		<div class="grid grid-cols-2 gap-2">
+			<!-- Upload Photo -->
+			<div>
+				<label class="block text-xs font-medium text-pink-600 mb-1">Photo</label>
+				<label class="flex flex-col items-center justify-center w-full h-14 border-2 border-dashed border-pink-300 rounded-lg bg-pink-50 cursor-pointer hover:bg-pink-100 transition-all duration-200 overflow-hidden">
+					{#if photoVideoPreview}
+						{#if photoVideo?.type.startsWith('image/')}
+							<img src={photoVideoPreview} alt="Preview" class="w-full h-full object-contain" />
+						{/if}
 					{:else}
-						<p class="text-xs text-pink-400">Click to upload music</p>
+						<div class="flex items-center space-x-1.5 py-1">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-pink-400">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+							</svg>
+							<span class="text-xs text-pink-500 font-medium">Upload photo</span>
+						</div>
 					{/if}
-				</div>
-				<input
-					type="file"
-					accept="audio/*"
-					on:change={handleMusicChange}
-					bind:this={musicInput}
-					class="hidden"
-				/>
-			</label>
+					<input
+						type="file"
+						accept="image/*"
+						onchange={handlePhotoVideoChange}
+						bind:this={photoVideoInput}
+						class="hidden"
+					/>
+				</label>
+			</div>
+
+			<!-- Upload Music -->
+			<div>
+				<label class="block text-xs font-medium text-pink-600 mb-1">Music (Optional)</label>
+				<label class="flex flex-col items-center justify-center w-full h-14 border-2 border-dashed border-pink-300 rounded-lg bg-pink-50 cursor-pointer hover:bg-pink-100 transition-all duration-200 overflow-hidden">
+					<div class="flex items-center space-x-1.5 py-1 px-2">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-pink-400 flex-shrink-0">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
+						</svg>
+						{#if music}
+							<span class="text-xs text-pink-600 font-medium truncate">{music.name}</span>
+						{:else}
+							<span class="text-xs text-pink-500 font-medium">Upload music</span>
+						{/if}
+					</div>
+					<input
+						type="file"
+						accept="audio/*"
+						onchange={handleMusicChange}
+						bind:this={musicInput}
+						class="hidden"
+					/>
+				</label>
+			</div>
 		</div>
 
 		<!-- Memory Tag and Mood Tag Row -->
-		<div class="grid grid-cols-2 gap-3">
+		<div class="grid grid-cols-2 gap-2">
 			<!-- Memory Tag Dropdown -->
 			<div>
 				<label class="block text-xs font-medium text-pink-600 mb-1">Memory Tag</label>
 				<select
 					bind:value={memoryTag}
-					class="w-full px-3 py-2 bg-pink-50 border-2 border-pink-200 rounded-lg text-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-sm"
+					class="w-full px-2.5 py-1.5 bg-pink-50 border-2 border-pink-200 rounded-lg text-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-xs"
 				>
 					<option value="">Select a tag</option>
 					{#each memoryTags as tag}
@@ -330,7 +365,7 @@
 				<label class="block text-xs font-medium text-pink-600 mb-1">Mood Tag</label>
 				<select
 					bind:value={moodTag}
-					class="w-full px-3 py-2 bg-pink-50 border-2 border-pink-200 rounded-lg text-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-sm"
+					class="w-full px-2.5 py-1.5 bg-pink-50 border-2 border-pink-200 rounded-lg text-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-xs"
 				>
 					<option value="">How are you feeling?</option>
 					{#each moodTags as mood}
@@ -347,28 +382,28 @@
 				<textarea
 					bind:value={memoryDescription}
 					placeholder="Write about this memory..."
-					rows="4"
-					class="w-full px-3 py-2 pr-10 bg-pink-50 border-2 border-pink-200 rounded-lg text-pink-700 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-sm resize-none"
+					rows="2"
+					class="w-full px-3 py-1.5 pr-9 bg-pink-50 border-2 border-pink-200 rounded-lg text-pink-700 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-xs resize-none"
 				></textarea>
 				<!-- Emoji Button -->
 				<button
-					on:click={() => showEmojiPicker = !showEmojiPicker}
+					onclick={() => showEmojiPicker = !showEmojiPicker}
 					type="button"
-					class="absolute bottom-3 right-0 w-8 h-6 border-2 border-pink-400 hover:border-pink-600 rounded-full bg-transparent flex items-end justify-end pb-0 pr-0 transition-all duration-200 hover:scale-110"
+					class="absolute bottom-2 right-2 text-pink-500 hover:text-pink-700 transition-transform hover:scale-110"
 					title="Add emoji"
 				>
-					<span class="text-lg leading-none translate-x-1 translate-y-1">😊</span>
+					<span class="text-base leading-none">😊</span>
 				</button>
 
 				<!-- Emoji Picker Popup -->
 				{#if showEmojiPicker}
-					<div class="absolute bottom-full right-0 mb-2 p-3 bg-white border-2 border-pink-300 rounded-xl shadow-lg z-10 max-w-[200px]">
+					<div class="absolute bottom-full right-0 mb-2 p-2 bg-white border-2 border-pink-300 rounded-xl shadow-lg z-10 max-w-[180px]">
 						<div class="grid grid-cols-6 gap-1">
 							{#each emojis as emoji}
 								<button
 									type="button"
-									on:click={() => insertEmoji(emoji)}
-									class="p-1 hover:bg-pink-100 rounded transition-colors duration-200 text-lg"
+									onclick={() => insertEmoji(emoji)}
+									class="p-1 hover:bg-pink-100 rounded transition-colors duration-200 text-base"
 								>
 									{emoji}
 								</button>
@@ -379,45 +414,43 @@
 			</div>
 		</div>
 
-		<!-- Save Memory Button -->
-		{#if isFutureDate()}
-			<div class="p-3 bg-yellow-50 border-2 border-yellow-300 rounded-xl">
-				<p class="text-xs text-yellow-700 font-medium flex items-center space-x-2">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-					</svg>
-					<span>Cannot create memories for future dates. Please select today or a past date.</span>
-				</p>
-			</div>
-		{:else}
+		<!-- Action Buttons Row -->
+		<div class="flex space-x-2 pt-1">
 			<button
-				on:click={handleSaveMemory}
-				disabled={isSaving || !selectedDate || isDescriptionEmpty()}
-				class="w-full py-3 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+				onclick={handleClearInputs}
+				type="button"
+				class="w-1/3 py-2 px-3 bg-white border-2 border-pink-300 text-pink-600 rounded-xl hover:bg-pink-50 transition-all duration-200 text-xs font-semibold"
 			>
-				{#if isSaving}
-					<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-						<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-					</svg>
-					<span>Saving...</span>
-				{:else}
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
-					</svg>
-					<span>Save Memory</span>
-				{/if}
+				Clear
 			</button>
-		{/if}
 
-		<!-- Clear Inputs Button -->
-		<button
-			on:click={handleClearInputs}
-			type="button"
-			class="w-full py-3 px-4 bg-white border-2 border-pink-300 text-pink-600 rounded-xl hover:bg-pink-50 transition-all duration-200 text-sm font-semibold"
-		>
-			Clear Inputs
-		</button>
+			{#if isFutureDate()}
+				<div class="w-2/3 p-2 bg-yellow-50 border border-yellow-300 rounded-xl">
+					<p class="text-[11px] text-yellow-700 font-medium leading-tight">
+						Select today or a past date.
+					</p>
+				</div>
+			{:else}
+				<button
+					onclick={handleSaveMemory}
+					disabled={isSaving || !selectedDate || isDescriptionEmpty()}
+					class="w-2/3 py-2.5 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-xs font-semibold shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-1.5"
+				>
+					{#if isSaving}
+						<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+						</svg>
+						<span>Saving...</span>
+					{:else}
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+						</svg>
+						<span>Save Memory</span>
+					{/if}
+				</button>
+			{/if}
+		</div>
 	</div>
 </div>
 

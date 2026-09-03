@@ -101,7 +101,7 @@
 	}
 
 	function handleChat(event) {
-		console.log('Chat:', event.detail);
+		goto('/chat');
 	}
 
 	async function loadMemoriesForMonth(month, year) {
@@ -165,6 +165,8 @@
 		}
 	}
 
+	let addMemoryContainerRef = $state(null);
+
 	function handleDateSelected(event) {
 		const date = event.detail;
 		if (date) {
@@ -174,8 +176,14 @@
 			const day = String(date.getDate()).padStart(2, '0');
 			selectedDate = `${year}-${month}-${day}`;
 		}
+		document.body.style.overflow = '';
 		showAddMemory = true;
 		showViewMemory = false;
+		setTimeout(() => {
+			if (addMemoryContainerRef) {
+				addMemoryContainerRef.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+		}, 150);
 	}
 
 	function handleDateWithMemoriesSelected(event) {
@@ -224,6 +232,23 @@
 			const data = await response.json();
 			
 			if (data.success) {
+				// Share memory with tagged friends if selected
+				if (memoryData.taggedFriendIds && memoryData.taggedFriendIds.length > 0 && data.data?.id) {
+					try {
+						await fetch(API_ENDPOINTS.shareMemory, {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({
+								memory_id: data.data.id,
+								sender_id: user.id,
+								recipient_ids: memoryData.taggedFriendIds
+							})
+						});
+					} catch (shareErr) {
+						console.error('Error sharing memory:', shareErr);
+					}
+				}
+
 				alert('Memory saved successfully!');
 				resetAddMemoryForm = true; // Trigger form reset
 				showAddMemory = false;
@@ -240,6 +265,7 @@
 
 	function handleCloseAddMemory() {
 		showAddMemory = false;
+		document.body.style.overflow = '';
 	}
 
 	function handleSidebarLogout() {
@@ -248,18 +274,33 @@
 	}
 
 	function toggleAddMemory() {
+		document.body.style.overflow = '';
 		showAddMemory = !showAddMemory;
 		showViewMemory = false;
+		if (showAddMemory) {
+			setTimeout(() => {
+				if (addMemoryContainerRef) {
+					addMemoryContainerRef.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				}
+			}, 150);
+		}
 	}
 
 	function handleCloseViewMemory() {
 		showViewMemory = false;
 		showViewMemoryModalWrapper = false;
+		document.body.style.overflow = '';
 	}
 
 	function handleAddMemoryFromView() {
+		document.body.style.overflow = '';
 		showViewMemory = false;
 		showAddMemory = true;
+		setTimeout(() => {
+			if (addMemoryContainerRef) {
+				addMemoryContainerRef.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+		}, 150);
 	}
 
 	function handleMoodGraph(event) {
@@ -546,8 +587,8 @@
 						/>
 					</div>
 
-					<!-- Right Column - Add/View Memory -->
-					<div class="animate-fade-in-up" style="animation-delay: 0.3s">
+					<!-- Right Column - Add Memory Form / Info Card (Sa Gilid) -->
+					<div bind:this={addMemoryContainerRef} class="animate-fade-in-up" style="animation-delay: 0.3s">
 						{#if showAddMemory}
 							<AddMemoryCard
 								{selectedDate}
@@ -558,13 +599,16 @@
 							/>
 						{:else}
 							<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-lg p-6 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-								<h3 class="text-lg font-bold text-pink-500 mb-2">Add a Memory</h3>
-								<p class="text-sm text-pink-400 mb-4">Select a date from the calendar to add a memory</p>
+								<h3 class="text-lg font-bold text-pink-500 mb-2">Create & Capture Memories</h3>
+								<p class="text-sm text-pink-400 mb-4">Click any date on the calendar to view or add new memories!</p>
 								<button
 									onclick={toggleAddMemory}
-									class="w-full py-3 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md"
+									class="w-full py-3 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md flex items-center justify-center space-x-2"
 								>
-									Open Add Memory Form
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+									</svg>
+									<span>Open Add Memory Form</span>
 								</button>
 							</div>
 						{/if}

@@ -48,6 +48,10 @@
 		'July', 'August', 'September', 'October', 'November', 'December'
 	];
 
+	const currentRealYear = new Date().getFullYear();
+	const maxYear = Math.max(2030, currentRealYear + 5);
+	const years = Array.from({ length: maxYear - 1900 + 1 }, (_, i) => 1900 + i);
+
 	const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 	function getDaysInMonth(month, year) {
@@ -201,8 +205,38 @@
 			</svg>
 		</button>
 
-		<div class="text-center">
-			<h2 class="text-lg font-bold text-pink-500">{monthNames[currentMonth]} {currentYear}</h2>
+		<div class="text-center flex items-center justify-center space-x-2">
+			<!-- Month Dropdown -->
+			<div class="relative inline-flex items-center">
+				<select
+					bind:value={currentMonth}
+					onchange={() => dispatch('monthChanged', { month: currentMonth, year: currentYear })}
+					class="appearance-none pl-3 pr-7 py-1.5 bg-pink-100/80 hover:bg-pink-200/90 text-pink-600 font-extrabold text-sm sm:text-base rounded-xl border-2 border-pink-300/80 shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-400"
+				>
+					{#each monthNames as month, i}
+						<option value={i} class="bg-white text-pink-700 font-semibold py-1">{month}</option>
+					{/each}
+				</select>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-pink-500 absolute right-2.5 pointer-events-none">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+				</svg>
+			</div>
+
+			<!-- Year Dropdown -->
+			<div class="relative inline-flex items-center">
+				<select
+					bind:value={currentYear}
+					onchange={() => dispatch('monthChanged', { month: currentMonth, year: currentYear })}
+					class="appearance-none pl-3 pr-7 py-1.5 bg-pink-100/80 hover:bg-pink-200/90 text-pink-600 font-extrabold text-sm sm:text-base rounded-xl border-2 border-pink-300/80 shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-400"
+				>
+					{#each years as year}
+						<option value={year} class="bg-white text-pink-700 font-semibold py-1">{year}</option>
+					{/each}
+				</select>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-pink-500 absolute right-2.5 pointer-events-none">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+				</svg>
+			</div>
 		</div>
 
 		<button

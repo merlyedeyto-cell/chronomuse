@@ -49,7 +49,7 @@
 </script>
 
 <TopBar on:navigate={handleNavigate}>
-	<div class="bg-gradient-to-br from-pink-50 via-pink-100 to-pink-200">
+	<div class="bg-gradient-to-br from-pink-50 via-pink-100 to-pink-200 overflow-x-hidden">
 		<!-- Login Section - Full Viewport Height -->
 		<div id="login-section" class="min-h-screen flex items-center justify-center py-12 px-4">
 			<LoginCard on:login={handleLogin} />
