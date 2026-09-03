@@ -498,23 +498,6 @@
 					{/if}
 				</div>
 
-				<!-- Quick Reactions Bar -->
-				<div class="px-2 sm:px-3 py-1 bg-pink-100/50 border-t border-pink-200 flex items-center justify-between text-xs overflow-x-auto">
-					<span class="text-pink-400 font-medium text-[10px] sm:text-[11px] flex-shrink-0 mr-1">Reactions:</span>
-					<div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
-						{#each quickReactions as rx}
-							<button
-								type="button"
-								onclick={() => sendMessage(rx)}
-								class="p-1 hover:bg-white/80 rounded-lg transition-transform hover:scale-125 text-sm"
-								title={`Send ${rx}`}
-							>
-								{rx}
-							</button>
-						{/each}
-					</div>
-				</div>
-
 				<!-- Emoji Picker Dropup -->
 				{#if showEmojiPicker}
 					<div class="absolute bottom-16 right-4 sm:right-14 p-3 bg-white border-2 border-pink-300 rounded-2xl shadow-xl z-30 max-w-[240px] animate-fade-in-up">
