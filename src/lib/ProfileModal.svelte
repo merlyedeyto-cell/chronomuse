@@ -128,7 +128,7 @@
 	>
 		<!-- Modal Content -->
 		<div
-			class="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 border-2 border-pink-300 transition-all duration-300 max-w-md w-full relative max-h-[90vh] overflow-y-auto animate-modal-content"
+			class="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-5 sm:p-6 border-2 border-pink-300 transition-all duration-300 max-w-sm sm:max-w-md w-full relative max-h-[90vh] overflow-y-auto animate-modal-content"
 			class:opacity-0={isClosing}
 			class:scale-95={isClosing}
 			onclick={(e) => e.stopPropagation()}
@@ -136,76 +136,76 @@
 			<!-- Close Button -->
 			<button
 				onclick={handleClose}
-				class="absolute top-4 right-4 p-2 text-pink-400 hover:text-pink-600 hover:bg-pink-100 rounded-lg transition-all duration-200"
+				class="absolute top-3.5 right-3.5 p-1.5 text-pink-400 hover:text-pink-600 hover:bg-pink-100 rounded-lg transition-all duration-200"
 				aria-label="Close modal"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 				</svg>
 			</button>
 
 			<!-- Header -->
-			<div class="text-center mb-6">
-				<div class="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+			<div class="text-center mb-5">
+				<div class="w-14 h-14 mx-auto mb-2.5 rounded-full bg-gradient-to-tr from-pink-400 to-pink-600 flex items-center justify-center text-white text-xl font-bold shadow-md">
 					{username?.charAt(0).toUpperCase() || 'U'}
 				</div>
-				<h2 class="text-2xl font-bold text-pink-500">My Profile</h2>
-				<p class="text-sm text-pink-400 mt-1">Manage your account settings</p>
+				<h2 class="text-base sm:text-lg font-bold text-pink-600">My Profile</h2>
+				<p class="text-[11px] sm:text-xs text-pink-400 mt-0.5">Manage your account settings</p>
 			</div>
 
 			<!-- Profile Info -->
-			<div class="space-y-4 mb-6">
+			<div class="space-y-3 mb-5">
 				<!-- Username -->
 				<div>
-					<label class="block text-xs font-medium text-pink-600 mb-1">Username</label>
+					<label class="block text-xs font-semibold text-pink-600 mb-1">Username</label>
 					{#if isEditing}
 						<input
 							type="text"
 							bind:value={username}
-							class="w-full px-4 py-2.5 bg-pink-50 border-2 border-pink-300 rounded-xl text-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200 text-sm"
+							class="w-full px-3 py-2 bg-pink-50 border-2 border-pink-300 rounded-lg text-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200 text-xs sm:text-sm font-medium"
 						/>
 					{:else}
-						<p class="text-sm text-pink-700 font-medium px-4 py-2.5 bg-pink-50 border-2 border-pink-200 rounded-xl">{username}</p>
+						<p class="text-xs sm:text-sm text-pink-700 font-semibold px-3 py-2 bg-pink-50 border-2 border-pink-200 rounded-lg">{username}</p>
 					{/if}
 				</div>
 
 				<!-- Email -->
 				<div>
-					<label class="block text-xs font-medium text-pink-600 mb-1">Email</label>
+					<label class="block text-xs font-semibold text-pink-600 mb-1">Email</label>
 					{#if isEditing}
 						<input
 							type="email"
 							bind:value={email}
-							class="w-full px-4 py-2.5 bg-pink-50 border-2 border-pink-300 rounded-xl text-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200 text-sm"
+							class="w-full px-3 py-2 bg-pink-50 border-2 border-pink-300 rounded-lg text-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200 text-xs sm:text-sm font-medium"
 						/>
 					{:else}
-						<p class="text-sm text-pink-700 font-medium px-4 py-2.5 bg-pink-50 border-2 border-pink-200 rounded-xl">{email}</p>
+						<p class="text-xs sm:text-sm text-pink-700 font-semibold px-3 py-2 bg-pink-50 border-2 border-pink-200 rounded-lg">{email}</p>
 					{/if}
 				</div>
 
 				<!-- Change Password (only when editing) -->
 				{#if isEditing}
-					<div class="pt-4 border-t-2 border-pink-200">
-						<h3 class="text-sm font-bold text-pink-500 mb-3">Change Password (Optional)</h3>
+					<div class="pt-3 border-t border-pink-200">
+						<h3 class="text-xs font-bold text-pink-600 mb-2.5">Change Password (Optional)</h3>
 						
-						<div class="space-y-3">
+						<div class="space-y-2.5">
 							<div>
-								<label class="block text-xs font-medium text-pink-600 mb-1">New Password</label>
+								<label class="block text-[11px] font-semibold text-pink-600 mb-1">New Password</label>
 								<input
 									type="password"
 									bind:value={newPassword}
 									placeholder="Enter new password"
-									class="w-full px-4 py-2.5 bg-pink-50 border-2 border-pink-300 rounded-xl text-pink-700 placeholder-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200 text-sm"
+									class="w-full px-3 py-2 bg-pink-50 border-2 border-pink-300 rounded-lg text-pink-700 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200 text-xs sm:text-sm font-medium"
 								/>
 							</div>
 
 							<div>
-								<label class="block text-xs font-medium text-pink-600 mb-1">Confirm New Password</label>
+								<label class="block text-[11px] font-semibold text-pink-600 mb-1">Confirm New Password</label>
 								<input
 									type="password"
 									bind:value={confirmPassword}
 									placeholder="Confirm new password"
-									class="w-full px-4 py-2.5 bg-pink-50 border-2 border-pink-300 rounded-xl text-pink-700 placeholder-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200 text-sm"
+									class="w-full px-3 py-2 bg-pink-50 border-2 border-pink-300 rounded-lg text-pink-700 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200 text-xs sm:text-sm font-medium"
 								/>
 							</div>
 						</div>
@@ -214,12 +214,12 @@
 			</div>
 
 			<!-- Action Buttons -->
-			<div class="space-y-3">
+			<div class="space-y-2.5">
 				{#if isEditing}
 					<button
 						onclick={handleSave}
 						disabled={isSaving}
-						class="w-full py-3 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+						class="w-full py-2 px-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg font-bold hover:from-pink-600 hover:to-pink-700 active:scale-95 transition-all duration-200 shadow-sm text-xs sm:text-sm disabled:opacity-50 flex items-center justify-center space-x-1.5"
 					>
 						{#if isSaving}
 							<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

@@ -572,12 +572,12 @@
 				</form>
 			{:else}
 				<div class="h-full flex flex-col items-center justify-center p-6 text-center text-pink-400">
-					<div class="w-20 h-20 rounded-full bg-pink-100 flex items-center justify-center mb-4 shadow-inner">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-pink-400">
+					<div class="w-14 h-14 rounded-full bg-pink-100 flex items-center justify-center mb-3 shadow-inner">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 text-pink-400">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
 						</svg>
 					</div>
-					<h3 class="text-xl font-bold text-pink-500 mb-1">Select a friend to start chatting</h3>
+					<h3 class="text-base sm:text-lg font-bold text-pink-500 mb-0.5">Select a friend to start chatting</h3>
 					<p class="text-xs text-pink-400 max-w-xs">Pick any friend from your list on the left to start sending messages, photos, and reactions.</p>
 				</div>
 			{/if}
@@ -587,24 +587,30 @@
 
 <!-- Clear Chat Confirmation Modal -->
 {#if showClearModal}
-	<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-		<div class="bg-white rounded-2xl p-6 max-w-sm w-full border-2 border-pink-300 shadow-2xl text-center">
-			<h3 class="text-lg font-bold text-pink-600 mb-2">Clear Conversation?</h3>
-			<p class="text-xs text-pink-500 mb-5">
+	<div
+		class="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4"
+		onclick={(e) => { if (e.target === e.currentTarget) showClearModal = false; }}
+	>
+		<div
+			class="bg-white rounded-2xl p-5 max-w-sm w-full border-2 border-pink-300 shadow-xl text-center"
+			onclick={(e) => e.stopPropagation()}
+		>
+			<h3 class="text-sm sm:text-base font-bold text-pink-600 mb-1.5">Clear Conversation?</h3>
+			<p class="text-xs text-pink-500 mb-4">
 				Are you sure you want to clear all chat messages with <span class="font-semibold">@{activeFriend?.username}</span>? This action cannot be undone.
 			</p>
-			<div class="flex space-x-3">
+			<div class="flex space-x-2">
 				<button
 					onclick={() => showClearModal = false}
 					disabled={isClearing}
-					class="flex-1 py-2 bg-pink-100 text-pink-600 rounded-xl font-semibold text-sm hover:bg-pink-200 transition-colors"
+					class="flex-1 py-1.5 bg-pink-100 text-pink-600 rounded-lg font-bold text-xs hover:bg-pink-200 transition-colors"
 				>
 					Cancel
 				</button>
 				<button
-					onclick={clearConversation}
+					onclick={handleClearChat}
 					disabled={isClearing}
-					class="flex-1 py-2 bg-red-500 text-white rounded-xl font-semibold text-sm hover:bg-red-600 transition-colors"
+					class="flex-1 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg font-bold text-xs hover:from-red-600 hover:to-red-700 transition-all flex items-center justify-center space-x-1"
 				>
 					{#if isClearing}Clearing...{:else}Clear Chat{/if}
 				</button>
