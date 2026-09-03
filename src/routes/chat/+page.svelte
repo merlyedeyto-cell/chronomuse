@@ -163,6 +163,20 @@
 		showEmojiPicker = false;
 		isSending = true;
 
+		// Instant optimistic message insertion for 0ms latency & zero-lag feel
+		const tempId = `temp-${Date.now()}`;
+		const tempMsg = {
+			id: tempId,
+			sender_id: user.id,
+			receiver_id: activeFriend.friend_id,
+			message: textToSend,
+			created_at: new Date().toISOString()
+		};
+
+		messages = [...messages, tempMsg];
+		await tick();
+		scrollToBottom();
+
 		try {
 			const res = await fetch(API_ENDPOINTS.sendMessage, {
 				method: 'POST',
@@ -175,7 +189,7 @@
 			});
 			const data = await res.json();
 			if (data.success && data.data) {
-				messages = [...messages, data.data];
+				messages = messages.map(m => m.id === tempId ? data.data : m);
 				await tick();
 				scrollToBottom();
 				fetchChatList();
@@ -456,9 +470,9 @@
 						</div>
 					{:else}
 						{#each messages as msg (msg.id)}
-							<div class="flex flex-col" class:items-end={msg.sender_id === user.id} class:items-start={msg.sender_id !== user.id}>
+							<div class="flex flex-col animate-slide-up transition-all duration-300" class:items-end={msg.sender_id === user.id} class:items-start={msg.sender_id !== user.id}>
 								<div
-									class="max-w-[78%] px-4 py-2.5 rounded-2xl text-sm shadow-sm transition-all"
+									class="max-w-[78%] px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm shadow-sm transition-all transform hover:scale-[1.01]"
 									class:bg-gradient-to-r={msg.sender_id === user.id}
 									class:from-pink-500={msg.sender_id === user.id}
 									class:to-pink-600={msg.sender_id === user.id}
@@ -545,7 +559,7 @@
 							type="text"
 							bind:value={newMessageText}
 							placeholder="Type a message..."
-							class="w-full pl-3 pr-9 py-2 sm:py-2.5 bg-pink-50 border-2 border-pink-200 rounded-xl text-pink-700 text-xs sm:text-sm placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400"
+							class="w-full pl-3 pr-9 py-2 sm:py-2.5 bg-pink-50/50 border-2 border-pink-200/60 rounded-xl text-pink-700 text-xs sm:text-sm placeholder-pink-400/50 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all font-medium"
 						/>
 						<!-- Emoji Picker Toggle Button -->
 						<button
