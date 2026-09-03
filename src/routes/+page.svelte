@@ -50,8 +50,8 @@
 
 <TopBar on:navigate={handleNavigate}>
 	<div class="bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 overflow-x-hidden">
-		<!-- Login Section - Full Viewport Height -->
-		<div id="login-section" class="min-h-screen flex items-center justify-center py-12 px-4">
+		<!-- Login Section - Perfectly Centered in Viewport -->
+		<div id="login-section" class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-6 px-4">
 			<LoginCard on:login={handleLogin} />
 		</div>
 

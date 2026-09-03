@@ -9,7 +9,7 @@
 	let password = $state('');
 	let showPassword = $state(false);
 	let isClicked = $state(false);
-	let isVisible = $state(false);
+	let isVisible = $state(true);
 	let isLoading = $state(false);
 	let errorMessage = $state('');
 
@@ -60,10 +60,8 @@
 </script>
 
 <div
-	class="max-w-md w-full transition-all duration-500"
+	class="max-w-md w-full transition-all duration-300"
 	class:scale-105={isClicked}
-	class:opacity-0={!isVisible}
-	class:translate-y-8={!isVisible}
 >
 	<div class="bg-white/85 backdrop-blur-md rounded-2xl shadow-xl p-5 sm:p-6 border-2 border-pink-300 transition-all duration-300 hover:shadow-2xl">
 		<!-- Header -->
