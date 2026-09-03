@@ -20,9 +20,7 @@
 	}
 
 	function closeSidebar() {
-		if (typeof window !== 'undefined' && window.innerWidth < 768) {
-			isOpen = false;
-		}
+		isOpen = false;
 	}
 
 	function handleHome() {
@@ -147,22 +145,24 @@
 	});
 </script>
 
-<!-- Mobile Backdrop Overlay (Clicking outside closes mobile sidebar) -->
+<!-- Backdrop Overlay (Clicking outside closes sidebar) -->
 {#if isOpen}
 	<button
 		type="button"
 		onclick={closeSidebar}
-		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 transition-opacity duration-300 md:hidden cursor-default border-none outline-none"
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 transition-opacity duration-300 cursor-default border-none outline-none"
 		aria-label="Close sidebar overlay"
 	></button>
 {/if}
 
 <!-- Sidebar -->
 <aside
-	class="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white border-r-2 border-pink-300 shadow-lg transition-all duration-300 z-40 overflow-y-auto scrollbar-hide md:w-64"
+	class="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white shadow-lg transition-all duration-300 z-40 overflow-y-auto scrollbar-hide"
 	class:w-64={isOpen}
-	class:max-md:w-0={!isOpen}
-	class:max-md:border-none={!isOpen}
+	class:border-r-2={isOpen}
+	class:border-pink-300={isOpen}
+	class:w-0={!isOpen}
+	class:border-none={!isOpen}
 >
 	<div class="p-4">
 		<div class="space-y-2">

@@ -269,7 +269,7 @@
 					<!-- Hamburger Menu Button - Mobile Only -->
 					<button
 						onclick={toggleSidebar}
-						class="md:hidden p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors flex-shrink-0"
+						class="p-1.5 sm:p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors flex-shrink-0 active:scale-95"
 						aria-label="Toggle menu"
 						title="Toggle menu"
 					>
