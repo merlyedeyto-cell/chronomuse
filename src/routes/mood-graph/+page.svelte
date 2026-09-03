@@ -243,11 +243,10 @@
 		<!-- Top Navigation -->
 		<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
 			<div class="container mx-auto px-4 py-3 flex items-center justify-between">
-				<div class="flex items-center space-x-3">
-					<!-- Hamburger Menu Button - Mobile Only -->
+				<div class="flex items-center space-x-2.5">
 					<button
 						onclick={toggleSidebar}
-						class="md:hidden p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors"
+						class="md:hidden p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors flex-shrink-0"
 						aria-label="Toggle menu"
 						title="Toggle menu"
 					>
@@ -261,16 +260,16 @@
 							</svg>
 						{/if}
 					</button>
-					<img src="/logo.png" alt="ChronoMuse" class="w-10 h-10 rounded-md object-contain" />
-					<span class="text-lg font-bold text-pink-500">ChronoMuse</span>
+					<img src="/logo.png" alt="ChronoMuse" class="w-9 h-9 sm:w-10 sm:h-10 rounded-md object-contain flex-shrink-0" />
+					<span class="text-base sm:text-lg font-bold text-pink-500 truncate">ChronoMuse</span>
 				</div>
 
-				<div class="flex items-center space-x-4">
+				<div class="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 ml-2">
 					<span class="text-pink-700 text-sm hidden md:inline">Welcome, <strong>{user?.username}</strong></span>
-					<span class="text-pink-700 text-sm md:hidden"><strong>{user?.username}</strong></span>
+					<span class="text-pink-700 text-xs sm:text-sm md:hidden truncate max-w-[110px]"><strong>{user?.username}</strong></span>
 					<button
 						onclick={handleLogout}
-						class="px-4 py-2 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-lg hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md hidden md:block"
+						class="px-4 py-2 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-lg hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md hidden md:block active:scale-95"
 					>
 						Logout
 					</button>
@@ -289,71 +288,71 @@
 		<!-- Main Content -->
 		<main class="flex-grow px-4 py-8 md:ml-0 overflow-hidden">
 			<div class="container mx-auto max-w-6xl">
-				<!-- Header -->
-				<div class="mb-6 animate-fade-in-up" style="animation-delay: 0.1s">
-					<h1 class="text-2xl font-bold text-pink-500 mb-2">Mood Graph</h1>
-					<p class="text-sm text-pink-400">Track your emotional journey over time</p>
-				</div>
+				<!-- Header Banner -->
+				<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-3.5 sm:p-4 mb-4 sm:mb-5 animate-fade-in-up">
+					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+						<div>
+							<div class="flex items-center space-x-2 mb-0.5">
+								<button
+									onclick={() => goto('/dashboard')}
+									class="p-1 sm:p-1.5 text-pink-500 hover:text-pink-700 hover:bg-pink-100 rounded-lg transition-all duration-200"
+									title="Back to Dashboard"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+									</svg>
+								</button>
+								<h1 class="text-base sm:text-lg font-extrabold text-pink-600">Mood Graph</h1>
+							</div>
+							<p class="text-[11px] sm:text-xs text-pink-400 ml-7 sm:ml-8">Track your emotional journey and mood trends over time</p>
+						</div>
 
-				<!-- Period Selector -->
-				<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-lg p-4 mb-6 animate-fade-in-up transition-all duration-300 hover:-translate-y-2 hover:shadow-xl" style="animation-delay: 0.2s">
-					<div class="flex items-center justify-between flex-wrap gap-4">
-						<div class="flex items-center space-x-2">
+						<!-- Period Selector -->
+						<div class="flex items-center space-x-1 bg-pink-100/80 p-1 rounded-xl border border-pink-200 self-start sm:self-auto flex-wrap gap-1">
 							<button
 								onclick={() => changePeriod('all')}
-								class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-95 shadow-sm"
-								class:bg-gradient-to-r={selectedPeriod === 'all'}
-								class:from-pink-500={selectedPeriod === 'all'}
-								class:to-pink-600={selectedPeriod === 'all'}
+								class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 active:scale-95 text-center"
+								class:bg-pink-500={selectedPeriod === 'all'}
 								class:text-white={selectedPeriod === 'all'}
-								class:bg-white={selectedPeriod !== 'all'}
+								class:shadow-sm={selectedPeriod === 'all'}
 								class:text-pink-600={selectedPeriod !== 'all'}
-								class:hover:bg-pink-100={selectedPeriod !== 'all'}
+								class:hover:bg-pink-200={selectedPeriod !== 'all'}
 							>
 								All Time
 							</button>
 							<button
 								onclick={() => changePeriod('week')}
-								class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-95 shadow-sm"
-								class:bg-gradient-to-r={selectedPeriod === 'week'}
-								class:from-pink-500={selectedPeriod === 'week'}
-								class:to-pink-600={selectedPeriod === 'week'}
+								class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 active:scale-95 text-center"
+								class:bg-pink-500={selectedPeriod === 'week'}
 								class:text-white={selectedPeriod === 'week'}
-								class:bg-white={selectedPeriod !== 'week'}
+								class:shadow-sm={selectedPeriod === 'week'}
 								class:text-pink-600={selectedPeriod !== 'week'}
-								class:hover:bg-pink-100={selectedPeriod !== 'week'}
+								class:hover:bg-pink-200={selectedPeriod !== 'week'}
 							>
-								Week
+								This Week
 							</button>
 							<button
 								onclick={() => changePeriod('month')}
-								class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-95 shadow-sm"
-								class:bg-gradient-to-r={selectedPeriod === 'month'}
-								class:from-pink-500={selectedPeriod === 'month'}
-								class:to-pink-600={selectedPeriod === 'month'}
+								class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 active:scale-95 text-center"
+								class:bg-pink-500={selectedPeriod === 'month'}
 								class:text-white={selectedPeriod === 'month'}
-								class:bg-white={selectedPeriod !== 'month'}
+								class:shadow-sm={selectedPeriod === 'month'}
 								class:text-pink-600={selectedPeriod !== 'month'}
-								class:hover:bg-pink-100={selectedPeriod !== 'month'}
+								class:hover:bg-pink-200={selectedPeriod !== 'month'}
 							>
-								Month
+								This Month
 							</button>
 							<button
 								onclick={() => changePeriod('year')}
-								class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-95 shadow-sm"
-								class:bg-gradient-to-r={selectedPeriod === 'year'}
-								class:from-pink-500={selectedPeriod === 'year'}
-								class:to-pink-600={selectedPeriod === 'year'}
+								class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 active:scale-95 text-center"
+								class:bg-pink-500={selectedPeriod === 'year'}
 								class:text-white={selectedPeriod === 'year'}
-								class:bg-white={selectedPeriod !== 'year'}
+								class:shadow-sm={selectedPeriod === 'year'}
 								class:text-pink-600={selectedPeriod !== 'year'}
-								class:hover:bg-pink-100={selectedPeriod !== 'year'}
+								class:hover:bg-pink-200={selectedPeriod !== 'year'}
 							>
-								Year
+								This Year
 							</button>
-						</div>
-						<div class="text-sm text-pink-600 font-medium">
-							Total Memories: {totalMemories}
 						</div>
 					</div>
 				</div>

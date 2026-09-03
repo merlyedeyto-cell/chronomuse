@@ -269,11 +269,10 @@
 	<!-- Top Navigation -->
 	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
 		<div class="container mx-auto px-4 py-3 flex items-center justify-between">
-			<div class="flex items-center space-x-3">
-				<!-- Hamburger Menu Button - Mobile Only -->
+			<div class="flex items-center space-x-2.5">
 				<button
 					onclick={() => sidebarOpen = !sidebarOpen}
-					class="md:hidden p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors"
+					class="md:hidden p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors flex-shrink-0"
 					aria-label="Toggle menu"
 					title="Toggle menu"
 				>
@@ -287,16 +286,16 @@
 						</svg>
 					{/if}
 				</button>
-				<img src="/logo.png" alt="ChronoMuse" class="w-10 h-10 rounded-md object-contain" />
-				<span class="text-lg font-bold text-pink-500">ChronoMuse</span>
+				<img src="/logo.png" alt="ChronoMuse" class="w-9 h-9 sm:w-10 sm:h-10 rounded-md object-contain flex-shrink-0" />
+				<span class="text-base sm:text-lg font-bold text-pink-500 truncate">ChronoMuse</span>
 			</div>
 
-			<div class="flex items-center space-x-4">
+			<div class="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 ml-2">
 				<span class="text-pink-700 text-sm hidden md:inline">Welcome, <strong>{user?.username}</strong></span>
-				<span class="text-pink-700 text-sm md:hidden"><strong>{user?.username}</strong></span>
+				<span class="text-pink-700 text-xs sm:text-sm md:hidden truncate max-w-[110px]"><strong>{user?.username}</strong></span>
 				<button
 					onclick={handleLogout}
-					class="px-4 py-2 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-lg hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md hidden md:block"
+					class="px-4 py-2 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-lg hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md hidden md:block active:scale-95"
 				>
 					Logout
 				</button>
