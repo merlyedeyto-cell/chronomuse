@@ -275,25 +275,6 @@
 	</div>
 </aside>
 
-<!-- Toggle Button - Desktop Only (Inset from edge for comfortable clicking) -->
-<button
-	onclick={toggleSidebar}
-	class="hidden md:block fixed top-20 z-50 p-2.5 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all duration-300 shadow-lg border border-pink-300"
-	class:left-[16.5rem]={isOpen}
-	class:left-3={!isOpen}
-	title={isOpen ? 'Close Sidebar' : 'Open Sidebar'}
->
-	{#if isOpen}
-		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-			<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-		</svg>
-	{:else}
-		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-			<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-		</svg>
-	{/if}
-</button>
-
 <!-- Add Friend Modal -->
 <AddFriendModal open={showAddFriendModal} on:close={handleModalClose} on:addFriend={handleAddFriendSubmit} on:friendRequestResponded={handleFriendRequestResponded} />
 
