@@ -555,11 +555,7 @@
 		<!-- Sidebar -->
 		<Sidebar
 			bind:isOpen={sidebarOpen}
-			on:addFriend={handleAddFriend}
-			on:friendsList={handleFriendsList}
-			on:chat={handleChat}
-			on:moodGraph={handleMoodGraph}
-			on:logout={handleSidebarLogout}
+			on:logout={handleLogout}
 		/>
 
 		<!-- Main Content -->

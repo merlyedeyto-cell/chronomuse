@@ -280,9 +280,7 @@
 		<!-- Sidebar -->
 		<Sidebar
 			bind:isOpen={sidebarOpen}
-			on:logout={handleSidebarLogout}
-			on:home={handleHome}
-			on:moodGraph={handleMoodGraph}
+			on:logout={handleLogout}
 		/>
 
 		<!-- Main Content -->
