@@ -83,7 +83,8 @@
 	<div class="bg-white/85 backdrop-blur-md rounded-2xl shadow-xl p-5 sm:p-6 border-2 border-pink-300 transition-all duration-300 hover:shadow-2xl">
 		<!-- Header -->
 		<div class="text-center mb-5">
-			<h1 class="text-xl sm:text-2xl font-extrabold text-pink-500 mb-1 tracking-wider uppercase">CHRONOMUSE</h1>
+			<img src="/logo.png" alt="ChronoMuse" class="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-2 rounded-xl object-contain shadow-sm border border-pink-200 hover:scale-105 transition-transform duration-300" />
+			<h1 class="text-xl sm:text-2xl font-extrabold text-pink-500 mb-0.5 tracking-wider uppercase">CHRONOMUSE</h1>
 			<p class="text-pink-600 text-xs sm:text-sm font-medium">Create your account</p>
 		</div>
 
