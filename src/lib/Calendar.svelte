@@ -250,17 +250,6 @@
 		</button>
 	</div>
 
-		<button
-			onclick={nextMonth}
-			class="p-2.5 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200 transition-all duration-200"
-			title="Next month"
-		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-			</svg>
-		</button>
-	</div>
-
 	<!-- Day Names -->
 	<div class="grid grid-cols-7 gap-1.5 mb-3">
 		{#each dayNames as day}
