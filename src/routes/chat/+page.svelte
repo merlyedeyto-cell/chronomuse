@@ -28,11 +28,6 @@
 	const emojis = ['😀', '😁', '😂', '🥰', '😍', '🤩', '😊', '😎', '🥳', '🎉', '❤️', '🔥', '✨', '🌟', '💫', '🎈', '🎊', '📸', '🎵', '🎶', '💕', '💖', '💗', '🌸', '🌈', '☀️', '🌙', '⭐'];
 	const quickReactions = ['❤️', '😂', '🥰', '✨', '👍', '🌸'];
 
-	function handleLogout() {
-		localStorage.removeItem('chronomuse_user');
-		goto('/');
-	}
-
 	onMount(() => {
 		const storedUser = localStorage.getItem('chronomuse_user');
 		if (storedUser) {
@@ -54,20 +49,17 @@
 			} catch (e) {}
 		}
 
-		// Read URL params safely using window.location.search for 0ms instant chat loading
-		if (typeof window !== 'undefined') {
-			const searchParams = new URLSearchParams(window.location.search);
-			const friendIdParam = searchParams.get('friend_id');
-			const usernameParam = searchParams.get('username');
+		// Read URL params immediately for 0ms instant chat loading
+		const friendIdParam = $page.url.searchParams.get('friend_id');
+		const usernameParam = $page.url.searchParams.get('username');
 
-			if (friendIdParam || usernameParam) {
-				activeFriend = {
-					friend_id: friendIdParam ? Number(friendIdParam) : null,
-					username: usernameParam || 'Friend'
-				};
-				if (friendIdParam) {
-					fetchMessages(Number(friendIdParam), true);
-				}
+		if (friendIdParam || usernameParam) {
+			activeFriend = {
+				friend_id: friendIdParam ? Number(friendIdParam) : null,
+				username: usernameParam || 'Friend'
+			};
+			if (friendIdParam) {
+				fetchMessages(Number(friendIdParam), true);
 			}
 		}
 
@@ -493,18 +485,16 @@
 						{#each messages as msg (msg.id)}
 							<div class="flex flex-col animate-slide-up transition-all duration-300" class:items-end={msg.sender_id === user.id} class:items-start={msg.sender_id !== user.id}>
 								<div
-									class="max-w-[78%] px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm shadow-sm transition-all transform hover:scale-[1.01] backdrop-blur-sm"
+									class="max-w-[78%] px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm shadow-sm transition-all transform hover:scale-[1.01]"
 									class:bg-gradient-to-r={msg.sender_id === user.id}
-									class:from-pink-500/85={msg.sender_id === user.id}
-									class:to-pink-600/85={msg.sender_id === user.id}
+									class:from-pink-500={msg.sender_id === user.id}
+									class:to-pink-600={msg.sender_id === user.id}
 									class:text-white={msg.sender_id === user.id}
-									class:border={msg.sender_id === user.id}
-									class:border-pink-300/50={msg.sender_id === user.id}
 									class:rounded-br-none={msg.sender_id === user.id}
-									class:bg-white/80={msg.sender_id !== user.id}
+									class:bg-white={msg.sender_id !== user.id}
 									class:text-pink-800={msg.sender_id !== user.id}
 									class:border-2={msg.sender_id !== user.id}
-									class:border-pink-200/80={msg.sender_id !== user.id}
+									class:border-pink-200={msg.sender_id !== user.id}
 									class:rounded-bl-none={msg.sender_id !== user.id}
 								>
 									{#if isImageUrl(msg.message)}

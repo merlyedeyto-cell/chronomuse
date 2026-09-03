@@ -29,11 +29,6 @@
 	let isFetchingRequests = $state(false);
 	let isResponding = $state(false);
 
-	function handleLogout() {
-		localStorage.removeItem('chronomuse_user');
-		goto('/');
-	}
-
 	onMount(() => {
 		const storedUser = localStorage.getItem('chronomuse_user');
 		if (storedUser) {
