@@ -666,9 +666,11 @@
 										.custom-audio-player audio {
 											width: 100%;
 											height: 36px;
+											border-radius: 9999px;
 										}
 										.custom-audio-player audio::-webkit-media-controls-panel {
 											background-color: #fce7f3;
+											border-radius: 9999px;
 										}
 										.custom-audio-player audio::-webkit-media-controls-play-button {
 											background-color: #ec4899;
@@ -678,16 +680,7 @@
 										.custom-audio-player audio::-webkit-media-controls-time-remaining-display {
 											color: #be185d;
 											font-size: 10px;
-										}
-										.custom-audio-player audio::-webkit-media-controls-timeline {
-											background: #fbcfe8;
-											height: 5px;
-											border-radius: 3px;
-										}
-										.custom-audio-player audio::-moz-range-track {
-											background: #fbcfe8;
-											height: 5px;
-											border-radius: 3px;
+											font-weight: 600;
 										}
 									</style>
 								</div>
