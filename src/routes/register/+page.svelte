@@ -23,7 +23,7 @@
 </script>
 
 <TopBar showNav={false} showFooter={false}>
-	<div class="bg-gradient-to-br from-pink-50 via-pink-100 to-pink-200 h-screen overflow-hidden">
+	<div class="bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 h-screen overflow-hidden">
 		<div class="h-full flex items-center justify-center px-4">
 			<RegisterCard on:register={handleRegister} on:showToast={showRegisterToast} />
 		</div>

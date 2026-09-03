@@ -265,7 +265,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-pink-50 via-pink-100 to-pink-200 flex flex-col font-sans animate-fade-in">
+<div class="min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 flex flex-col font-sans animate-fade-in">
 	<!-- Top Navigation -->
 	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
 		<div class="container mx-auto px-4 py-3 flex items-center justify-between">

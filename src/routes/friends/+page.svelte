@@ -254,14 +254,14 @@
 </svelte:head>
 
 {#if isLoading}
-	<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-pink-100 to-pink-200">
+	<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300">
 		<div class="text-center">
 			<div class="animate-spin rounded-full h-16 w-16 border-b-2 border-pink-500 mx-auto"></div>
-			<p class="mt-4 text-pink-700">Loading...</p>
+			<p class="mt-4 text-pink-700 font-semibold">Loading...</p>
 		</div>
 	</div>
 {:else}
-	<div class="flex flex-col min-h-screen bg-gradient-to-br from-pink-50 via-pink-100 to-pink-200 animate-fade-in font-sans">
+	<div class="flex flex-col min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 animate-fade-in font-sans">
 		<!-- Top Navigation (Same as Dashboard & Mood Graph) -->
 		<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
 			<div class="container mx-auto px-4 py-3 flex items-center justify-between">
