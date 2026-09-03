@@ -106,22 +106,22 @@
 	}
 </script>
 
-<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-lg p-4 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 transition-all duration-300 hover:shadow-lg">
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-4">
-		<h3 class="text-sm font-bold text-pink-500 uppercase tracking-wide">Pinned Memories</h3>
-		<span class="text-xs text-pink-400">{pinnedMemories.length} pinned</span>
+		<h3 class="text-xs sm:text-sm font-bold text-pink-500 uppercase tracking-wide">Pinned Memories</h3>
+		<span class="text-[11px] text-pink-400">{pinnedMemories.length} pinned</span>
 	</div>
 
 	<!-- Pinned Memories List -->
 	{#if isLoading}
 		<div class="text-center py-8">
-			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500 mx-auto"></div>
+			<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-pink-500 mx-auto"></div>
 			<p class="text-xs text-pink-400 mt-2">Loading...</p>
 		</div>
 	{:else if pinnedMemories.length === 0}
 		<div class="text-center py-8">
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 text-pink-200 mx-auto mb-2">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-pink-200 mx-auto mb-2">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
 			</svg>
 			<p class="text-xs text-pink-400">No pinned memories yet</p>
@@ -129,11 +129,11 @@
 	{:else}
 		<div class="space-y-2 max-h-[300px] overflow-y-auto scrollbar-hide">
 			{#each pinnedMemories as pinned (pinned.pinned_id)}
-				<div class="flex items-center space-x-3 p-3 bg-pink-50 border border-pink-200 rounded-lg hover:border-pink-300 hover:bg-pink-100 transition-all duration-200 cursor-pointer" onclick={() => viewMemory(pinned)}>
+				<div class="flex items-center space-x-2.5 p-2.5 bg-pink-50 border border-pink-200 rounded-xl hover:border-pink-300 hover:bg-pink-100/80 transition-all duration-200 cursor-pointer" onclick={() => viewMemory(pinned)}>
 					<!-- Date Badge -->
-					<div class="flex flex-col items-center justify-center w-12 h-12 bg-gradient-to-r from-pink-400 to-pink-600 rounded-lg text-white shadow-md">
-						<span class="text-xs font-semibold">{getDayName(pinned.date)}</span>
-						<span class="text-sm font-bold">{pinned.date.split('-')[2]}</span>
+					<div class="flex flex-col items-center justify-center w-9 h-9 bg-gradient-to-r from-pink-400 to-pink-600 rounded-lg text-white shadow-sm flex-shrink-0">
+						<span class="text-[9px] font-semibold uppercase">{getDayName(pinned.date)}</span>
+						<span class="text-xs font-bold">{pinned.date.split('-')[2]}</span>
 					</div>
 
 					<!-- Date Info -->

@@ -192,32 +192,32 @@
 	}
 </script>
 
-<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-lg p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5 transition-all duration-300 hover:shadow-lg">
 	<!-- Header -->
-	<div class="flex items-center justify-between mb-6">
+	<div class="flex items-center justify-between mb-4">
 		<button
 			onclick={prevMonth}
-			class="p-2.5 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200 transition-all duration-200"
+			class="p-1.5 sm:p-2 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200 transition-all duration-200 active:scale-95"
 			title="Previous month"
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
 			</svg>
 		</button>
 
-		<div class="text-center flex items-center justify-center space-x-2">
+		<div class="text-center flex items-center justify-center space-x-1.5">
 			<!-- Month Dropdown -->
 			<div class="relative inline-flex items-center">
 				<select
 					bind:value={currentMonth}
 					onchange={() => dispatch('monthChanged', { month: currentMonth, year: currentYear })}
-					class="appearance-none pl-3 pr-7 py-1.5 bg-pink-100/80 hover:bg-pink-200/90 text-pink-600 font-extrabold text-sm sm:text-base rounded-xl border-2 border-pink-300/80 shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-400"
+					class="appearance-none pl-2.5 pr-6 py-1 bg-pink-100/80 hover:bg-pink-200/90 text-pink-600 font-bold text-xs sm:text-sm rounded-lg border border-pink-300/80 shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-400"
 				>
 					{#each monthNames as month, i}
 						<option value={i} class="bg-white text-pink-700 font-semibold py-1">{month}</option>
 					{/each}
 				</select>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-pink-500 absolute right-2.5 pointer-events-none">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-pink-500 absolute right-2 pointer-events-none">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 				</svg>
 			</div>
@@ -227,17 +227,28 @@
 				<select
 					bind:value={currentYear}
 					onchange={() => dispatch('monthChanged', { month: currentMonth, year: currentYear })}
-					class="appearance-none pl-3 pr-7 py-1.5 bg-pink-100/80 hover:bg-pink-200/90 text-pink-600 font-extrabold text-sm sm:text-base rounded-xl border-2 border-pink-300/80 shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-400"
+					class="appearance-none pl-2.5 pr-6 py-1 bg-pink-100/80 hover:bg-pink-200/90 text-pink-600 font-bold text-xs sm:text-sm rounded-lg border border-pink-300/80 shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-400"
 				>
 					{#each years as year}
 						<option value={year} class="bg-white text-pink-700 font-semibold py-1">{year}</option>
 					{/each}
 				</select>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-pink-500 absolute right-2.5 pointer-events-none">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-pink-500 absolute right-2 pointer-events-none">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 				</svg>
 			</div>
 		</div>
+
+		<button
+			onclick={nextMonth}
+			class="p-1.5 sm:p-2 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200 transition-all duration-200 active:scale-95"
+			title="Next month"
+		>
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+			</svg>
+		</button>
+	</div>
 
 		<button
 			onclick={nextMonth}
