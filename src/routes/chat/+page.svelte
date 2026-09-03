@@ -237,16 +237,29 @@
 		if (!activeFriend || isClearing) return;
 		isClearing = true;
 		try {
-			// Delete messages in local state and db
-			const { error } = await supabase
-				.from('chronomuse_messages')
-				.delete()
-				.or(`and(sender_id.eq.${user.id},receiver_id.eq.${activeFriend.friend_id}),and(sender_id.eq.${activeFriend.friend_id},receiver_id.eq.${user.id})`);
+			// Call API endpoint to delete conversation in backend DB
+			await fetch(API_ENDPOINTS.deleteConversation, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					user_id: user.id,
+					friend_id: activeFriend.friend_id
+				})
+			});
 
-			if (!error) {
-				messages = [];
-				fetchChatList();
+			// Also delete from Supabase
+			try {
+				await supabase
+					.from('chronomuse_messages')
+					.delete()
+					.or(`and(sender_id.eq.${user.id},receiver_id.eq.${activeFriend.friend_id}),and(sender_id.eq.${activeFriend.friend_id},receiver_id.eq.${user.id})`);
+			} catch (sErr) {
+				console.warn('Supabase delete fallback:', sErr);
 			}
+
+			// Clear messages locally at 0ms
+			messages = [];
+			fetchChatList();
 		} catch (err) {
 			console.error('Error clearing conversation:', err);
 		} finally {
@@ -605,7 +618,7 @@
 					Cancel
 				</button>
 				<button
-					onclick={handleClearChat}
+					onclick={clearConversation}
 					disabled={isClearing}
 					class="flex-1 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg font-bold text-xs hover:from-red-600 hover:to-red-700 transition-all flex items-center justify-center space-x-1"
 				>
