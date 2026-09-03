@@ -41,17 +41,13 @@
 		const storedUser = localStorage.getItem('chronomuse_user');
 		if (storedUser) {
 			user = JSON.parse(storedUser);
+			const now = new Date();
+			loadMemoriesForMonth(now.getMonth(), now.getFullYear());
+			loadPinnedDates();
 		} else {
 			goto('/');
 		}
 		isLoading = false;
-
-		// Load memories for current month on mount
-		const now = new Date();
-		loadMemoriesForMonth(now.getMonth(), now.getFullYear());
-
-		// Load pinned dates
-		loadPinnedDates();
 
 		// Listen for pinned dates changes (client-side only)
 		if (browser) {
@@ -70,6 +66,7 @@
 	}
 
 	async function loadPinnedDates() {
+		if (!user || !user.id) return;
 		try {
 			const response = await fetch(`${API_ENDPOINTS.getPinnedMemories}?user_id=${user.id}`);
 			const data = await response.json();
@@ -93,7 +90,6 @@
 
 	function handleHome(event) {
 		console.log('Home:', event.detail);
-		// Already on home/dashboard page, do nothing or refresh
 	}
 
 	function handleFriendsList(event) {
@@ -105,6 +101,7 @@
 	}
 
 	async function loadMemoriesForMonth(month, year) {
+		if (!user || !user.id) return;
 		try {
 			const response = await fetch(`${API_ENDPOINTS.getMemoriesForMonth}?year=${year}&month=${month + 1}&user_id=${user.id}`);
 			const data = await response.json();
