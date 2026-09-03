@@ -49,17 +49,20 @@
 			} catch (e) {}
 		}
 
-		// Read URL params immediately for 0ms instant chat loading
-		const friendIdParam = $page.url.searchParams.get('friend_id');
-		const usernameParam = $page.url.searchParams.get('username');
+		// Read URL params safely using window.location.search for 0ms instant chat loading
+		if (typeof window !== 'undefined') {
+			const searchParams = new URLSearchParams(window.location.search);
+			const friendIdParam = searchParams.get('friend_id');
+			const usernameParam = searchParams.get('username');
 
-		if (friendIdParam || usernameParam) {
-			activeFriend = {
-				friend_id: friendIdParam ? Number(friendIdParam) : null,
-				username: usernameParam || 'Friend'
-			};
-			if (friendIdParam) {
-				fetchMessages(Number(friendIdParam), true);
+			if (friendIdParam || usernameParam) {
+				activeFriend = {
+					friend_id: friendIdParam ? Number(friendIdParam) : null,
+					username: usernameParam || 'Friend'
+				};
+				if (friendIdParam) {
+					fetchMessages(Number(friendIdParam), true);
+				}
 			}
 		}
 
