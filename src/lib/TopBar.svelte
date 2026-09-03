@@ -1,7 +1,12 @@
 <script>
+	import { createEventDispatcher } from 'svelte';
 	let { showNav = true, showFooter = true } = $props();
 
+	const dispatch = createEventDispatcher();
+
 	function scrollToSection(id) {
+		const sectionName = id.replace('-section', '');
+		dispatch('navigate', sectionName);
 		const section = document.getElementById(id);
 		if (section) {
 			section.scrollIntoView({ behavior: 'smooth' });

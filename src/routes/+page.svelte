@@ -3,8 +3,9 @@
 	import TopBar from '$lib/TopBar.svelte';
 	import { onMount, tick } from 'svelte';
 
-	let isAboutHovering = false;
-	let isContactHovering = false;
+	let isLoginHighlight = $state(false);
+	let isAboutHighlight = $state(false);
+	let isContactHighlight = $state(false);
 	let aboutCard;
 	let contactCard;
 
@@ -14,14 +15,18 @@
 
 	function handleNavigate(event) {
 		const section = event.detail;
-		if (section === 'about') {
-			isAboutHovering = true;
+		if (section === 'login' || section === 'home') {
+			isLoginHighlight = true;
+			document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
+			setTimeout(() => { isLoginHighlight = false; }, 800);
+		} else if (section === 'about') {
+			isAboutHighlight = true;
 			document.getElementById('about-section')?.scrollIntoView({ behavior: 'smooth' });
-			setTimeout(() => { isAboutHovering = false; }, 300);
+			setTimeout(() => { isAboutHighlight = false; }, 800);
 		} else if (section === 'contact') {
-			isContactHovering = true;
+			isContactHighlight = true;
 			document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' });
-			setTimeout(() => { isContactHovering = false; }, 300);
+			setTimeout(() => { isContactHighlight = false; }, 800);
 		}
 	}
 
@@ -50,20 +55,28 @@
 
 <TopBar on:navigate={handleNavigate}>
 	<div class="bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 overflow-x-hidden">
-		<!-- Login Section - Perfectly Centered in Viewport -->
-		<div id="login-section" class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-6 px-4">
-			<LoginCard on:login={handleLogin} />
-		</div>
+		<!-- Login / Home Section - Dedicated Full Viewport Section -->
+		<section id="login-section" class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-12 px-4 transition-all duration-500" class:scale-105={isLoginHighlight}>
+			<div class="transition-all duration-500" class:ring-4={isLoginHighlight} class:ring-pink-400={isLoginHighlight} class:rounded-2xl={isLoginHighlight}>
+				<LoginCard on:login={handleLogin} />
+			</div>
+		</section>
 
-		<!-- About Section -->
+		<!-- About Section - Dedicated Full Viewport Section -->
 		<section
 			id="about-section"
-			class="py-10 transition-all duration-300"
-			class:scale-105={isAboutHovering}
+			class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-12 px-4 transition-all duration-500"
 		>
 			<div class="container mx-auto px-4">
 				<div class="max-w-sm sm:max-w-md md:max-w-lg mx-auto">
-					<div bind:this={aboutCard} class="reveal-card reveal-left bg-white/90 backdrop-blur-md border-2 border-pink-300 rounded-2xl shadow-md p-5 sm:p-6 text-center hover:shadow-lg transition-all duration-200">
+					<div
+						bind:this={aboutCard}
+						class="reveal-card reveal-left bg-white/90 backdrop-blur-md border-2 border-pink-300 rounded-2xl shadow-md p-5 sm:p-6 text-center hover:scale-105 hover:shadow-2xl transition-all duration-300"
+						class:scale-105={isAboutHighlight}
+						class:ring-4={isAboutHighlight}
+						class:ring-pink-400={isAboutHighlight}
+						class:shadow-2xl={isAboutHighlight}
+					>
 						<h2 class="text-base sm:text-lg font-bold text-pink-600 mb-2.5">About CHRONOMUSE</h2>
 						<p class="text-pink-700 text-xs sm:text-sm leading-relaxed font-medium">
 							CHRONOMUSE is a personal memory system designed to help you remember and reflect on your daily life. It allows you to save memories, reactions, and meaningful moments in a beautiful and organized calendar.
@@ -76,15 +89,21 @@
 			</div>
 		</section>
 
-		<!-- Contact Section -->
+		<!-- Contact Section - Dedicated Full Viewport Section -->
 		<section
 			id="contact-section"
-			class="py-10 transition-all duration-300"
-			class:scale-105={isContactHovering}
+			class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-12 px-4 transition-all duration-500"
 		>
 			<div class="container mx-auto px-4">
 				<div class="max-w-sm sm:max-w-md md:max-w-lg mx-auto">
-					<div bind:this={contactCard} class="reveal-card reveal-right bg-white/90 backdrop-blur-md border-2 border-pink-300 rounded-2xl shadow-md p-5 sm:p-6 text-center hover:shadow-lg transition-all duration-200">
+					<div
+						bind:this={contactCard}
+						class="reveal-card reveal-right bg-white/90 backdrop-blur-md border-2 border-pink-300 rounded-2xl shadow-md p-5 sm:p-6 text-center hover:scale-105 hover:shadow-2xl transition-all duration-300"
+						class:scale-105={isContactHighlight}
+						class:ring-4={isContactHighlight}
+						class:ring-pink-400={isContactHighlight}
+						class:shadow-2xl={isContactHighlight}
+					>
 						<h2 class="text-base sm:text-lg font-bold text-pink-600 mb-2.5">Contact</h2>
 						<p class="text-pink-700 text-xs sm:text-sm leading-relaxed font-medium">
 							CHRONOMUSE is a personally developed system by Merlye Deyto.
