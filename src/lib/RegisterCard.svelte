@@ -194,10 +194,10 @@
 		</form>
 
 		<!-- Login Link -->
-		<div class="mt-6 text-center">
-			<p class="text-pink-700 text-sm">
+		<div class="mt-4 text-center">
+			<p class="text-pink-700 text-xs font-medium">
 				Already have an account?
-				<a href="/" class="text-pink-500 hover:text-pink-700 font-medium transition-colors duration-200">
+				<a href="/" class="text-pink-600 hover:text-pink-800 font-bold transition-colors duration-200 underline">
 					Sign In
 				</a>
 			</p>
@@ -205,8 +205,8 @@
 	</div>
 
 	<!-- Credit Line -->
-	<div class="mt-5 text-center">
-		<p class="text-xs text-pink-600 bg-white/60 backdrop-blur-sm py-3 px-4 rounded-lg border border-pink-200">
+	<div class="mt-3.5 text-center">
+		<p class="text-[11px] font-semibold text-pink-700 bg-white/80 backdrop-blur-md py-2 px-3 rounded-xl border border-pink-300 shadow-sm">
 			© 2026 CHRONOMUSE. All rights reserved. Developed by Merlye Deyto
 		</p>
 	</div>
