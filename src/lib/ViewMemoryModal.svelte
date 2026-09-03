@@ -335,7 +335,7 @@
 	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 >
 	<div
-		class="bg-white border-2 border-pink-300 rounded-2xl shadow-2xl p-6 relative transition-all duration-300 max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
+		class="bg-white border-2 border-pink-300 rounded-2xl shadow-xl p-4 sm:p-5 relative transition-all duration-300 max-w-sm sm:max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col"
 		class:opacity-0={isClosing}
 		class:scale-95={isClosing}
 		class:transform={isClosing}
@@ -344,31 +344,31 @@
 		<!-- Close Button -->
 		<button
 			onclick={handleClose}
-			class="absolute top-3 right-3 p-2 text-pink-400 hover:text-pink-600 hover:bg-pink-100 rounded-lg transition-all duration-200"
+			class="absolute top-3.5 right-3.5 p-1.5 text-pink-400 hover:text-pink-600 hover:bg-pink-100 rounded-lg transition-all duration-200"
 			title="Close"
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 			</svg>
 		</button>
 
 	<!-- Header -->
-	<div class="text-center mb-6">
-		<h2 class="text-xl font-bold text-pink-500">View Memories</h2>
-		<p class="text-sm text-pink-400 mt-1">Your special moments on this date</p>
+	<div class="text-center mb-4">
+		<h2 class="text-base sm:text-lg font-bold text-pink-600">View Memories</h2>
+		<p class="text-[11px] sm:text-xs text-pink-400 mt-0.5">Your special moments on this date</p>
 	</div>
 
 	<!-- Selected Date Card -->
-	<div class="mb-4 p-4 bg-gradient-to-r from-pink-400 to-pink-600 rounded-xl shadow-md text-white">
-		<div class="flex items-center space-x-3">
-			<div class="p-2 bg-white/20 rounded-lg">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+	<div class="mb-3 p-3 bg-gradient-to-r from-pink-400 to-pink-600 rounded-xl shadow-sm text-white">
+		<div class="flex items-center space-x-2.5">
+			<div class="p-1.5 bg-white/20 rounded-lg">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
 				</svg>
 			</div>
 			<div>
-				<p class="text-xs text-pink-100 uppercase tracking-wide">Selected Date</p>
-				<p class="text-sm font-semibold">{formatDate(selectedDate)}</p>
+				<p class="text-[10px] text-pink-100 uppercase tracking-wide font-medium">Selected Date</p>
+				<p class="text-xs sm:text-sm font-bold">{formatDate(selectedDate)}</p>
 			</div>
 		</div>
 	</div>
@@ -609,14 +609,14 @@
 
 							<!-- Row 2: Tags (Mood & Category) below Shared By -->
 							{#if memory.mood_tag || memory.memory_tag}
-								<div class="flex items-center flex-wrap gap-1.5">
+								<div class="flex items-center flex-wrap gap-1">
 									{#if memory.mood_tag}
-										<span class="text-xs px-2.5 py-1 rounded-full border {getMoodColor(memory.mood_tag)} font-medium whitespace-nowrap">
+										<span class="text-[10px] px-2 py-0.5 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap">
 											{memory.mood_tag}
 										</span>
 									{/if}
 									{#if memory.memory_tag}
-										<span class="text-xs px-2.5 py-1 rounded-full bg-pink-200 text-pink-700 border border-pink-300 font-medium whitespace-nowrap">
+										<span class="text-[10px] px-2 py-0.5 rounded-full bg-pink-200 text-pink-700 border border-pink-300 font-bold whitespace-nowrap">
 											{memory.memory_tag}
 										</span>
 									{/if}
@@ -625,39 +625,39 @@
 
 							<!-- Description -->
 							{#if memory.description}
-								<p class="text-sm text-pink-700 whitespace-pre-wrap">{memory.description}</p>
+								<p class="text-xs sm:text-sm font-medium text-pink-700 leading-relaxed whitespace-pre-wrap">{memory.description}</p>
 							{/if}
 
 							<!-- Media -->
 							{#if memory.photo_video}
 								{#if !memory.photo_video_type || memory.photo_video_type.startsWith('image/')}
 									<div class="relative rounded-lg overflow-hidden border-2 border-pink-200 cursor-pointer hover:border-pink-400 transition-all duration-200" onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video))}>
-										<img src={getMediaUrl(memory.photo_video)} alt="Memory" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300" />
+										<img src={getMediaUrl(memory.photo_video)} alt="Memory" class="w-full h-44 object-cover hover:scale-105 transition-transform duration-300" />
 										<div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center pointer-events-none">
-											<span class="text-white text-sm font-medium opacity-0 hover:opacity-100 bg-black bg-opacity-50 px-3 py-1 rounded-full">Click to enlarge</span>
+											<span class="text-white text-xs font-medium opacity-0 hover:opacity-100 bg-black bg-opacity-50 px-2.5 py-1 rounded-full">Click to enlarge</span>
 										</div>
 									</div>
 								{:else if memory.photo_video_type && memory.photo_video_type.startsWith('video/')}
 									<div class="relative rounded-lg overflow-hidden border-2 border-pink-200">
-										<video src={getMediaUrl(memory.photo_video)} class="w-full h-48 object-cover" controls aria-label="Memory video"></video>
+										<video src={getMediaUrl(memory.photo_video)} class="w-full h-44 object-cover" controls aria-label="Memory video"></video>
 									</div>
 								{:else}
 									<!-- Fallback: try to display as image -->
 									<div class="relative rounded-lg overflow-hidden border-2 border-pink-200 cursor-pointer hover:border-pink-400 transition-all duration-200" onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video))}>
-										<img src={getMediaUrl(memory.photo_video)} alt="Memory" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300" />
+										<img src={getMediaUrl(memory.photo_video)} alt="Memory" class="w-full h-44 object-cover hover:scale-105 transition-transform duration-300" />
 									</div>
 								{/if}
 							{/if}
 
 							{#if memory.music}
-								<div class="rounded-lg overflow-hidden border-2 border-pink-200 bg-gradient-to-r from-pink-50 to-pink-100 p-3">
-									<div class="flex items-center space-x-2 mb-2">
-										<div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center">
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-white">
+								<div class="rounded-lg overflow-hidden border border-pink-200 bg-gradient-to-r from-pink-50 to-pink-100 p-2.5">
+									<div class="flex items-center space-x-1.5 mb-1.5">
+										<div class="w-6 h-6 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center">
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5 text-white">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
 											</svg>
 										</div>
-										<span class="text-xs font-medium text-pink-600">Memory Music</span>
+										<span class="text-[11px] font-semibold text-pink-600">Memory Music</span>
 									</div>
 									<div class="custom-audio-player">
 										<audio src={getMusicUrl(memory.music)} controls preload="metadata" class="w-full" crossorigin="anonymous"></audio>
@@ -665,44 +665,28 @@
 									<style>
 										.custom-audio-player audio {
 											width: 100%;
-											height: 40px;
+											height: 36px;
 										}
 										.custom-audio-player audio::-webkit-media-controls-panel {
-											background: linear-gradient(to right, #fce7f3, #fbcfe8);
-										}
-										.custom-audio-player audio::-webkit-media-controls-play-button,
-										.custom-audio-player audio::-webkit-media-controls-current-time-display,
-										.custom-audio-player audio::-webkit-media-controls-time-remaining-display {
-											color: #ec4899;
+											background-color: #fce7f3;
 										}
 										.custom-audio-player audio::-webkit-media-controls-play-button {
-											filter: hue-rotate(300deg);
-										}
-										.custom-audio-player audio::-webkit-slider-thumb {
-											-webkit-appearance: none;
-											appearance: none;
-											width: 16px;
-											height: 16px;
+											background-color: #ec4899;
 											border-radius: 50%;
-											background: #ec4899;
-											cursor: pointer;
 										}
-										.custom-audio-player audio::-moz-range-thumb {
-											width: 16px;
-											height: 16px;
-											border-radius: 50%;
-											background: #ec4899;
-											cursor: pointer;
-											border: none;
+										.custom-audio-player audio::-webkit-media-controls-current-time-display,
+										.custom-audio-player audio::-webkit-media-controls-time-remaining-display {
+											color: #be185d;
+											font-size: 10px;
 										}
-										.custom-audio-player audio::-webkit-slider-runnable-track {
+										.custom-audio-player audio::-webkit-media-controls-timeline {
 											background: #fbcfe8;
-											height: 6px;
+											height: 5px;
 											border-radius: 3px;
 										}
 										.custom-audio-player audio::-moz-range-track {
 											background: #fbcfe8;
-											height: 6px;
+											height: 5px;
 											border-radius: 3px;
 										}
 									</style>
@@ -710,12 +694,12 @@
 							{/if}
 
 							<!-- Timestamp -->
-							<div class="flex items-center justify-between pt-2 border-t border-pink-200">
-								<span class="text-xs text-pink-400">
+							<div class="flex items-center justify-between pt-1.5 border-t border-pink-200">
+								<span class="text-[10px] text-pink-400">
 									Created: {formatTime(memory.created_at)}
 								</span>
 								{#if memory.updated_at && memory.updated_at !== memory.created_at}
-									<span class="text-xs text-pink-300">
+									<span class="text-[10px] text-pink-300">
 										Updated: {formatTime(memory.updated_at)}
 									</span>
 								{/if}
@@ -729,12 +713,12 @@
 	</div>
 
 	<!-- Add Memory Button - Fixed at Bottom -->
-	<div class="mt-4 pt-4 border-t border-pink-200 flex-shrink-0">
+	<div class="mt-3 pt-3 border-t border-pink-200 flex-shrink-0">
 		<button
 			onclick={() => dispatch('addMemory')}
-			class="w-full py-3 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md flex items-center justify-center space-x-2"
+			class="w-full py-2 px-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg hover:from-pink-600 hover:to-pink-700 active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold shadow-sm flex items-center justify-center space-x-1.5"
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
 			</svg>
 			<span>Add Another Memory</span>

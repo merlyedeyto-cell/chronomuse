@@ -270,21 +270,21 @@
 
 	<!-- Header -->
 	<div class="text-center mb-3">
-		<h2 class="text-lg font-bold text-pink-500">Add New Memory</h2>
-		<p class="text-xs text-pink-400">Capture your special moments</p>
+		<h2 class="text-base sm:text-lg font-bold text-pink-600">Add New Memory</h2>
+		<p class="text-[11px] sm:text-xs text-pink-400 mt-0.5">Capture your special moments</p>
 	</div>
 
 	<!-- Selected Date Mini Card -->
-	<div class="mb-3 p-2.5 bg-gradient-to-r from-pink-400 to-pink-600 rounded-xl shadow-md text-white">
+	<div class="mb-3 p-2.5 bg-gradient-to-r from-pink-400 to-pink-600 rounded-xl shadow-sm text-white">
 		<div class="flex items-center space-x-2.5">
 			<div class="p-1.5 bg-white/20 rounded-lg">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
 				</svg>
 			</div>
 			<div>
-				<p class="text-[10px] text-pink-100 uppercase tracking-wide">Selected Date</p>
-				<p class="text-xs font-semibold">{formatDate(selectedDate)}</p>
+				<p class="text-[10px] text-pink-100 uppercase tracking-wide font-medium">Selected Date</p>
+				<p class="text-xs sm:text-sm font-bold">{formatDate(selectedDate)}</p>
 			</div>
 		</div>
 	</div>
