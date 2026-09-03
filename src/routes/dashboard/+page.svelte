@@ -590,14 +590,14 @@
 								on:showToast={showMemoryToast}
 							/>
 						{:else}
-							<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-lg p-6 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-								<h3 class="text-lg font-bold text-pink-500 mb-2">Create & Capture Memories</h3>
-								<p class="text-sm text-pink-400 mb-4">Click any date on the calendar to view or add new memories!</p>
+							<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5 text-center transition-all duration-300 hover:shadow-lg">
+								<h3 class="text-base sm:text-lg font-bold text-pink-600 mb-1.5">Create & Capture Memories</h3>
+								<p class="text-[11px] sm:text-xs text-pink-400 mb-3.5 leading-relaxed font-medium">Click any date on the calendar to view or add new memories!</p>
 								<button
 									onclick={toggleAddMemory}
-									class="w-full py-3 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md flex items-center justify-center space-x-2"
+									class="w-full py-2 px-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg hover:from-pink-600 hover:to-pink-700 active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold shadow-sm flex items-center justify-center space-x-1.5"
 								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
 									</svg>
 									<span>Open Add Memory Form</span>
