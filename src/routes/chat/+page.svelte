@@ -13,6 +13,7 @@
 	let messages = $state([]);
 	let newMessageText = $state('');
 	let isLoading = $state(true);
+	let isLoadingChatList = $state(true);
 	let isFetchingMessages = $state(false);
 	let isSending = $state(false);
 	let isUploadingImage = $state(false);
@@ -34,6 +35,18 @@
 		} else {
 			goto('/');
 			return;
+		}
+
+		// Load cached friends list immediately for 0ms instant rendering
+		const cachedChatList = localStorage.getItem('chronomuse_chat_list');
+		if (cachedChatList) {
+			try {
+				const parsed = JSON.parse(cachedChatList);
+				if (Array.isArray(parsed) && parsed.length > 0) {
+					friends = parsed;
+					isLoadingChatList = false;
+				}
+			} catch (e) {}
 		}
 
 		// Read URL params immediately for 0ms instant chat loading
@@ -88,11 +101,13 @@
 			const data = await res.json();
 			if (data.data && data.data.friends) {
 				friends = data.data.friends;
+				localStorage.setItem('chronomuse_chat_list', JSON.stringify(data.data.friends));
 			}
 		} catch (err) {
 			console.error('Error fetching chat list:', err);
 		} finally {
 			isLoading = false;
+			isLoadingChatList = false;
 		}
 	}
 
@@ -330,12 +345,12 @@
 
 			<!-- Friends List -->
 			<div class="flex-grow overflow-y-auto divide-y divide-pink-100">
-				{#if isLoading}
+				{#if isLoadingChatList && friends.length === 0}
 					<div class="p-8 text-center text-pink-400 text-sm flex flex-col items-center">
 						<div class="animate-spin w-7 h-7 border-4 border-pink-300 border-t-pink-500 rounded-full mb-2"></div>
 						<span>Loading conversations...</span>
 					</div>
-				{:else if filteredFriends().length === 0}
+				{:else if !isLoadingChatList && filteredFriends().length === 0}
 					<div class="p-8 text-center text-pink-400 text-xs">
 						<p class="font-semibold text-sm mb-1">No friends found</p>
 						<p class="text-pink-300">Add friends from the sidebar menu to start chatting!</p>
