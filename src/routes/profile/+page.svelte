@@ -59,7 +59,15 @@
 		goto('/');
 	}
 
+	let loadedProfileId = null;
+	let fetchAbortController = null;
+
 	async function loadProfile(targetId = null) {
+		if (fetchAbortController) {
+			fetchAbortController.abort();
+		}
+		fetchAbortController = new AbortController();
+
 		isLoading = true;
 		try {
 			const stored = localStorage.getItem('chronomuse_user');
@@ -71,15 +79,17 @@
 
 			// Determine which profile to load
 			const urlParamId = $page.url.searchParams.get('id') || $page.url.searchParams.get('user_id');
-			targetUserId = targetId || urlParamId || currentUser.id;
+			const effectiveTargetId = targetId || urlParamId || currentUser.id;
+			targetUserId = effectiveTargetId;
 
 			const res = await fetch(API_ENDPOINTS.getProfile, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					user_id: currentUser.id,
-					target_user_id: targetUserId
-				})
+					target_user_id: effectiveTargetId
+				}),
+				signal: fetchAbortController.signal
 			});
 
 			const data = await res.json();
@@ -93,6 +103,7 @@
 				showNotification(data.error || 'Failed to load profile', 'error');
 			}
 		} catch (err) {
+			if (err.name === 'AbortError') return;
 			console.error('Error loading profile:', err);
 			showNotification('Failed to load profile data', 'error');
 		} finally {
@@ -229,9 +240,10 @@
 	}
 
 	function viewUserProfile(user) {
-		const targetId = user.friend_id || user.id;
+		const targetId = user?.friend_id || user?.id;
+		if (!targetId) return;
+		activeTab = 'friends';
 		goto(`/profile?id=${targetId}`);
-		loadProfile(targetId);
 	}
 
 	function promptRemoveFriend(friend) {
@@ -258,6 +270,10 @@
 				showNotification(`Unfriended @${unfriendTarget.username}`);
 				// Optimistically update friends list
 				profileData.is_friend = false;
+				if (profileData.friends) {
+					profileData.friends = profileData.friends.filter(f => String(f.friend_id || f.id) !== String(targetId));
+					profileData.total_friends = profileData.friends.length;
+				}
 				showUnfriendModal = false;
 				unfriendTarget = null;
 			} else {
@@ -358,13 +374,10 @@
 		const stored = typeof window !== 'undefined' ? localStorage.getItem('chronomuse_user') : null;
 		const myId = stored ? JSON.parse(stored)?.id : null;
 		const activeId = id || myId;
-		if (activeId && String(activeId) !== String(targetUserId)) {
+		if (activeId && String(activeId) !== String(loadedProfileId)) {
+			loadedProfileId = String(activeId);
 			loadProfile(activeId);
 		}
-	});
-
-	onMount(() => {
-		loadProfile();
 	});
 </script>
 
