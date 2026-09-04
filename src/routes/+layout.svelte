@@ -106,7 +106,7 @@
 		const targetUserId = activeUser.id;
 
 		checkNotificationsCount();
-		notifPollInterval = setInterval(checkNotificationsCount, 5000);
+		notifPollInterval = setInterval(checkNotificationsCount, 3000);
 
 		// Listen strictly for this specific logged-in user's inbox
 		globalMsgChannel = supabase.channel(`chronomuse_user_inbox_${targetUserId}`);
@@ -129,13 +129,36 @@
 					}
 				}
 			})
-			.on('broadcast', { event: 'notification' }, () => {
+			.on('broadcast', { event: 'friend_request' }, (payload) => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) return;
+				playNotificationSound(targetUserId);
+				checkNotificationsCount();
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_friend_change', { detail: payload }));
+					window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload }));
+				}
+			})
+			.on('broadcast', { event: 'friend_change' }, (payload) => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) return;
+				checkNotificationsCount();
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_friend_change', { detail: payload }));
+					window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload }));
+				}
+			})
+			.on('broadcast', { event: 'notification' }, (payload) => {
 				const current = getActiveLoggedInUser();
 				if (!current || Number(current.id) !== Number(targetUserId)) {
 					syncUserStateAndListeners();
 					return;
 				}
 				playNotificationSound(targetUserId);
+				checkNotificationsCount();
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload }));
+				}
 			})
 			.on('postgres_changes', {
 				event: 'INSERT',
@@ -159,30 +182,77 @@
 				}
 			})
 			.on('postgres_changes', {
-				event: 'INSERT',
+				event: '*',
 				schema: 'public',
 				table: 'chronomuse_friend_requests',
 				filter: `receiver_id=eq.${targetUserId}`
-			}, () => {
+			}, (payload) => {
 				const current = getActiveLoggedInUser();
-				if (!current || Number(current.id) !== Number(targetUserId)) {
-					syncUserStateAndListeners();
-					return;
+				if (!current || Number(current.id) !== Number(targetUserId)) return;
+				if (payload.eventType === 'INSERT') {
+					playNotificationSound(targetUserId);
 				}
-				playNotificationSound(targetUserId);
+				checkNotificationsCount();
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_friend_change', { detail: payload }));
+					window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload }));
+				}
 			})
 			.on('postgres_changes', {
-				event: 'INSERT',
+				event: '*',
+				schema: 'public',
+				table: 'chronomuse_friend_requests',
+				filter: `sender_id=eq.${targetUserId}`
+			}, (payload) => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) return;
+				checkNotificationsCount();
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_friend_change', { detail: payload }));
+					window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload }));
+				}
+			})
+			.on('postgres_changes', {
+				event: '*',
+				schema: 'public',
+				table: 'chronomuse_friends',
+				filter: `user_id=eq.${targetUserId}`
+			}, (payload) => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) return;
+				checkNotificationsCount();
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_friend_change', { detail: payload }));
+				}
+			})
+			.on('postgres_changes', {
+				event: '*',
 				schema: 'public',
 				table: 'chronomuse_shared_memories',
 				filter: `recipient_id=eq.${targetUserId}`
-			}, () => {
+			}, (payload) => {
 				const current = getActiveLoggedInUser();
-				if (!current || Number(current.id) !== Number(targetUserId)) {
-					syncUserStateAndListeners();
-					return;
+				if (!current || Number(current.id) !== Number(targetUserId)) return;
+				if (payload.eventType === 'INSERT') {
+					playNotificationSound(targetUserId);
 				}
-				playNotificationSound(targetUserId);
+				checkNotificationsCount();
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload }));
+				}
+			})
+			.on('postgres_changes', {
+				event: '*',
+				schema: 'public',
+				table: 'chronomuse_shared_memories',
+				filter: `sender_id=eq.${targetUserId}`
+			}, (payload) => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) return;
+				checkNotificationsCount();
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload }));
+				}
 			})
 			.subscribe();
 	}

@@ -126,6 +126,20 @@
 
 	onMount(() => {
 		fetchNotifications();
+
+		const handleRealtimeNotifs = () => {
+			if (isOpen && userId) {
+				fetchNotifications();
+			}
+		};
+
+		window.addEventListener('chronomuse_notification_change', handleRealtimeNotifs);
+		window.addEventListener('chronomuse_friend_change', handleRealtimeNotifs);
+
+		return () => {
+			window.removeEventListener('chronomuse_notification_change', handleRealtimeNotifs);
+			window.removeEventListener('chronomuse_friend_change', handleRealtimeNotifs);
+		};
 	});
 
 	$effect(() => {

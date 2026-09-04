@@ -57,9 +57,20 @@ export async function POST({ request }) {
 					})
 					.eq('id', existingRequest.id);
 
-				if (updateError) {
-					return json({ error: updateError.message }, { status: 500 });
-				}
+				// Broadcast friend request event to recipient inbox
+				try {
+					const channel = supabase.channel(`chronomuse_user_inbox_${targetUser.id}`);
+					channel.subscribe((status) => {
+						if (status === 'SUBSCRIBED') {
+							channel.send({
+								type: 'broadcast',
+								event: 'friend_request',
+								payload: { sender_id: user_id, receiver_id: targetUser.id }
+							});
+						}
+					});
+				} catch (e) {}
+
 				return json({ success: true, request_id: existingRequest.id, message: `Friend request sent to ${targetUser.username}!` });
 			}
 		}
@@ -80,6 +91,20 @@ export async function POST({ request }) {
 		if (insertError) {
 			return json({ error: insertError.message }, { status: 500 });
 		}
+
+		// Broadcast friend request event to recipient inbox
+		try {
+			const channel = supabase.channel(`chronomuse_user_inbox_${targetUser.id}`);
+			channel.subscribe((status) => {
+				if (status === 'SUBSCRIBED') {
+					channel.send({
+						type: 'broadcast',
+						event: 'friend_request',
+						payload: { sender_id: user_id, receiver_id: targetUser.id }
+					});
+				}
+			});
+		} catch (e) {}
 
 		return json({ success: true, request_id: newReq?.id || null, message: `Friend request sent to ${targetUser.username}!` });
 	} catch (err) {

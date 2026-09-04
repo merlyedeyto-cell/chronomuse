@@ -166,8 +166,20 @@
 
 	onMount(() => {
 		fetchPendingRequests();
-		const interval = setInterval(fetchPendingRequests, 10000);
-		return () => clearInterval(interval);
+		const interval = setInterval(fetchPendingRequests, 5000);
+
+		const handleRealtimeChange = () => {
+			fetchPendingRequests();
+		};
+
+		window.addEventListener('chronomuse_friend_change', handleRealtimeChange);
+		window.addEventListener('chronomuse_notification_change', handleRealtimeChange);
+
+		return () => {
+			clearInterval(interval);
+			window.removeEventListener('chronomuse_friend_change', handleRealtimeChange);
+			window.removeEventListener('chronomuse_notification_change', handleRealtimeChange);
+		};
 	});
 </script>
 

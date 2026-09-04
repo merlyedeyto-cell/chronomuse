@@ -409,6 +409,19 @@
 			loadProfile(activeId);
 		}
 	});
+
+	onMount(() => {
+		const handleRealtimeProfile = () => {
+			if (loadedProfileId) {
+				loadProfile(loadedProfileId);
+			}
+		};
+
+		window.addEventListener('chronomuse_friend_change', handleRealtimeProfile);
+		return () => {
+			window.removeEventListener('chronomuse_friend_change', handleRealtimeProfile);
+		};
+	});
 </script>
 
 <svelte:head>

@@ -43,6 +43,18 @@
 			goto('/');
 		}
 		isLoading = false;
+
+		const handleRealtimeUpdate = () => {
+			if (user && user.id) {
+				fetchFriends();
+				fetchPendingRequests();
+			}
+		};
+
+		window.addEventListener('chronomuse_friend_change', handleRealtimeUpdate);
+		return () => {
+			window.removeEventListener('chronomuse_friend_change', handleRealtimeUpdate);
+		};
 	});
 
 	function loadAllData() {
