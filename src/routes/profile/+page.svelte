@@ -1,9 +1,10 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
+	import { broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
 	import Sidebar from '$lib/Sidebar.svelte';
 
 	let currentUser = $state(null);
@@ -256,6 +257,9 @@
 		const targetId = unfriendTarget.friend_id || unfriendTarget.id;
 		isUnfriending = true;
 
+		// 0ms Optimistic broadcast & local state update
+		broadcastFriendEvent(currentUser.id, targetId, 'unfriend');
+
 		try {
 			const res = await fetch(API_ENDPOINTS.removeFriend, {
 				method: 'POST',
@@ -284,6 +288,7 @@
 				}
 				showUnfriendModal = false;
 				unfriendTarget = null;
+				broadcastFriendEvent(currentUser.id, targetId, 'unfriend');
 			} else {
 				showNotification(data.error || 'Failed to remove friend', 'error');
 			}
@@ -301,6 +306,8 @@
 		// 0ms Optimistic UI feedback
 		profileData.has_pending_request = true;
 		profileData.pending_request_sender_id = currentUser.id;
+
+		broadcastFriendEvent(currentUser.id, profileData.user.id, 'friend_request');
 
 		try {
 			const res = await fetch(API_ENDPOINTS.addFriend, {
@@ -320,6 +327,7 @@
 			} else {
 				showNotification(data.message || `Friend request sent to @${profileData.user.username}!`);
 				profileData.pending_request_id = data.request_id || null;
+				broadcastFriendEvent(currentUser.id, profileData.user.id, 'friend_request');
 			}
 		} catch (err) {
 			profileData.has_pending_request = false;
@@ -343,6 +351,8 @@
 		profileData.pending_request_id = null;
 		profileData.pending_request_sender_id = null;
 
+		broadcastFriendEvent(currentUser.id, profileData.user.id, 'cancel_request');
+
 		try {
 			const res = await fetch(API_ENDPOINTS.cancelFriendRequest, {
 				method: 'POST',
@@ -356,6 +366,7 @@
 			const data = await res.json();
 			if (data.success) {
 				showNotification('Friend request cancelled');
+				broadcastFriendEvent(currentUser.id, profileData.user.id, 'cancel_request');
 			} else {
 				// Revert on error
 				profileData.has_pending_request = prevPending;
@@ -410,6 +421,8 @@
 		}
 	});
 
+	let profilePollInterval = null;
+
 	onMount(() => {
 		const handleRealtimeProfile = () => {
 			if (loadedProfileId) {
@@ -418,8 +431,19 @@
 		};
 
 		window.addEventListener('chronomuse_friend_change', handleRealtimeProfile);
+		window.addEventListener('chronomuse_notification_change', handleRealtimeProfile);
+
+		// Periodic background polling to sync profile if other user accepts/unfriends
+		profilePollInterval = setInterval(() => {
+			if (loadedProfileId) {
+				loadProfile(loadedProfileId);
+			}
+		}, 2500);
+
 		return () => {
 			window.removeEventListener('chronomuse_friend_change', handleRealtimeProfile);
+			window.removeEventListener('chronomuse_notification_change', handleRealtimeProfile);
+			if (profilePollInterval) clearInterval(profilePollInterval);
 		};
 	});
 </script>

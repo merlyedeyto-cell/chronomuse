@@ -7,6 +7,7 @@
 
 	let user = $state(null);
 	let globalMsgChannel = null;
+	let globalEventsChannel = null;
 	let subscribedUserId = null;
 	let lastSeenMessageId = 0;
 	let lastTotalNotifs = null;
@@ -34,6 +35,12 @@
 				supabase.removeChannel(globalMsgChannel);
 			} catch (e) {}
 			globalMsgChannel = null;
+		}
+		if (globalEventsChannel) {
+			try {
+				supabase.removeChannel(globalEventsChannel);
+			} catch (e) {}
+			globalEventsChannel = null;
 		}
 		try {
 			supabase.removeAllChannels();
@@ -93,7 +100,7 @@
 		}
 
 		// Case 2: Already subscribed to this exact active user
-		if (subscribedUserId === activeUser.id && globalMsgChannel) {
+		if (subscribedUserId === activeUser.id && globalMsgChannel && globalEventsChannel) {
 			user = activeUser;
 			return;
 		}
@@ -106,7 +113,30 @@
 		const targetUserId = activeUser.id;
 
 		checkNotificationsCount();
-		notifPollInterval = setInterval(checkNotificationsCount, 3000);
+		notifPollInterval = setInterval(checkNotificationsCount, 2500);
+
+		// Global Realtime Events channel for fast cross-client sync
+		globalEventsChannel = supabase.channel('chronomuse_global_events');
+		globalEventsChannel
+			.on('broadcast', { event: 'global_friend_event' }, (payload) => {
+				const current = getActiveLoggedInUser();
+				if (!current?.id) return;
+				const sId = payload?.payload?.sender_id;
+				const tId = payload?.payload?.target_id;
+				const myId = Number(current.id);
+
+				if (Number(sId) === myId || Number(tId) === myId) {
+					if (payload?.payload?.eventType === 'friend_request' && Number(tId) === myId) {
+						playNotificationSound(myId);
+					}
+					checkNotificationsCount();
+					if (typeof window !== 'undefined') {
+						window.dispatchEvent(new CustomEvent('chronomuse_friend_change', { detail: payload?.payload }));
+						window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload?.payload }));
+					}
+				}
+			})
+			.subscribe();
 
 		// Listen strictly for this specific logged-in user's inbox
 		globalMsgChannel = supabase.channel(`chronomuse_user_inbox_${targetUserId}`);
@@ -217,6 +247,19 @@
 				schema: 'public',
 				table: 'chronomuse_friends',
 				filter: `user_id=eq.${targetUserId}`
+			}, (payload) => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) return;
+				checkNotificationsCount();
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_friend_change', { detail: payload }));
+				}
+			})
+			.on('postgres_changes', {
+				event: '*',
+				schema: 'public',
+				table: 'chronomuse_friends',
+				filter: `friend_id=eq.${targetUserId}`
 			}, (payload) => {
 				const current = getActiveLoggedInUser();
 				if (!current || Number(current.id) !== Number(targetUserId)) return;

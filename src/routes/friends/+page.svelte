@@ -1,14 +1,16 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
+	import { broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
 	import Sidebar from '$lib/Sidebar.svelte';
 
 	let user = $state(null);
 	let isLoading = $state(true);
 	let activeTab = $state('friends'); // 'friends', 'add', 'pending'
+	let autoSyncInterval = null;
 
 	// Friends List State
 	let friends = $state([]);
@@ -52,8 +54,20 @@
 		};
 
 		window.addEventListener('chronomuse_friend_change', handleRealtimeUpdate);
+		window.addEventListener('chronomuse_notification_change', handleRealtimeUpdate);
+
+		// Fast periodic polling to ensure zero delay across different tabs/browsers
+		autoSyncInterval = setInterval(() => {
+			if (user && user.id) {
+				fetchFriends();
+				fetchPendingRequests();
+			}
+		}, 2500);
+
 		return () => {
 			window.removeEventListener('chronomuse_friend_change', handleRealtimeUpdate);
+			window.removeEventListener('chronomuse_notification_change', handleRealtimeUpdate);
+			if (autoSyncInterval) clearInterval(autoSyncInterval);
 		};
 	});
 
@@ -169,6 +183,9 @@
 		const previousRel = targetUser.relationship;
 		targetUser.relationship = 'request_sent';
 
+		// Instant client-side broadcast
+		broadcastFriendEvent(user.id, targetUser.id, 'friend_request');
+
 		try {
 			const res = await fetch(API_ENDPOINTS.addFriend, {
 				method: 'POST',
@@ -186,6 +203,7 @@
 				addFriendSuccess = data.message || `Friend request sent to @${targetUser.username}!`;
 				targetUser.request_id = data.request_id || null;
 				fetchPendingRequests();
+				broadcastFriendEvent(user.id, targetUser.id, 'friend_request');
 				setTimeout(() => {
 					addFriendSuccess = '';
 				}, 3000);
@@ -208,6 +226,8 @@
 		targetUser.relationship = 'none';
 		targetUser.request_id = null;
 
+		broadcastFriendEvent(user.id, targetUser.id, 'cancel_request');
+
 		try {
 			const res = await fetch(API_ENDPOINTS.cancelFriendRequest, {
 				method: 'POST',
@@ -221,6 +241,7 @@
 			const data = await res.json();
 			if (data.success) {
 				fetchPendingRequests();
+				broadcastFriendEvent(user.id, targetUser.id, 'cancel_request');
 			} else {
 				targetUser.relationship = previousRel;
 				targetUser.request_id = previousReqId;
@@ -240,16 +261,17 @@
 		isResponding = true;
 
 		// 0ms Optimistic UI removal and addition
-		const reqItem = pendingRequests.find(r => r.id === requestId);
+		const reqItem = pendingRequests.find(r => r.id === requestId || r.request_id === requestId);
+		const targetSenderId = reqItem?.sender_id || reqItem?.id;
 		const prevPending = [...pendingRequests];
 		const prevFriends = [...friends];
 
-		pendingRequests = pendingRequests.filter(r => r.id !== requestId);
+		pendingRequests = pendingRequests.filter(r => r.id !== requestId && r.request_id !== requestId);
 		if (action === 'accept' && reqItem) {
 			friends = [
 				{
-					id: reqItem.sender_id || reqItem.id,
-					friend_id: reqItem.sender_id || reqItem.id,
+					id: targetSenderId,
+					friend_id: targetSenderId,
 					username: reqItem.username || reqItem.sender_username,
 					email: reqItem.email || reqItem.sender_email,
 					avatar_url: reqItem.avatar_url || reqItem.sender_avatar_url,
@@ -258,6 +280,8 @@
 				...friends
 			];
 		}
+
+		broadcastFriendEvent(user.id, targetSenderId, action === 'accept' ? 'accept_request' : 'decline_request');
 
 		fetch(API_ENDPOINTS.respondToFriendRequest, {
 			method: 'POST',
@@ -274,6 +298,7 @@
 			if (data.success) {
 				fetchPendingRequests();
 				fetchFriends();
+				broadcastFriendEvent(user.id, targetSenderId, action === 'accept' ? 'accept_request' : 'decline_request');
 			} else {
 				pendingRequests = prevPending;
 				friends = prevFriends;
@@ -291,8 +316,12 @@
 	function handleCancelSentRequest(requestId) {
 		if (!user || !user.id) return;
 		// 0ms instant optimistic removal
+		const reqItem = sentRequests.find(r => r.id === requestId || r.request_id === requestId);
+		const targetReceiverId = reqItem?.receiver_id || reqItem?.id;
 		const backupSent = [...sentRequests];
-		sentRequests = sentRequests.filter(r => r.id !== requestId);
+		sentRequests = sentRequests.filter(r => r.id !== requestId && r.request_id !== requestId);
+
+		broadcastFriendEvent(user.id, targetReceiverId, 'cancel_request');
 
 		fetch(API_ENDPOINTS.cancelFriendRequest, {
 			method: 'POST',
@@ -304,7 +333,9 @@
 		})
 		.then(res => res.json())
 		.then(data => {
-			if (!data.success) {
+			if (data.success) {
+				broadcastFriendEvent(user.id, targetReceiverId, 'cancel_request');
+			} else {
 				sentRequests = backupSent;
 				alert('Error: ' + (data.error || 'Failed to cancel request'));
 			}
@@ -329,6 +360,8 @@
 		// Optimistic UI update
 		friends = friends.filter(f => (f.friend_id || f.id) !== targetFriendId);
 
+		broadcastFriendEvent(user.id, targetFriendId, 'unfriend');
+
 		fetch(API_ENDPOINTS.removeFriend, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -345,6 +378,7 @@
 			friendToRemove = null;
 			if (data.success) {
 				fetchFriends();
+				broadcastFriendEvent(user.id, targetFriendId, 'unfriend');
 			} else {
 				friends = prevFriends;
 				alert('Error: ' + (data.error || 'Failed to remove friend'));

@@ -57,7 +57,7 @@ export async function POST({ request }) {
 					})
 					.eq('id', existingRequest.id);
 
-				// Broadcast friend request event to recipient inbox
+				// Broadcast friend request event to recipient inbox & global channel
 				try {
 					const channel = supabase.channel(`chronomuse_user_inbox_${targetUser.id}`);
 					channel.subscribe((status) => {
@@ -66,6 +66,16 @@ export async function POST({ request }) {
 								type: 'broadcast',
 								event: 'friend_request',
 								payload: { sender_id: user_id, receiver_id: targetUser.id }
+							});
+						}
+					});
+					const globalChannel = supabase.channel('chronomuse_global_events');
+					globalChannel.subscribe((status) => {
+						if (status === 'SUBSCRIBED') {
+							globalChannel.send({
+								type: 'broadcast',
+								event: 'global_friend_event',
+								payload: { sender_id: user_id, target_id: targetUser.id, eventType: 'friend_request' }
 							});
 						}
 					});
@@ -92,7 +102,7 @@ export async function POST({ request }) {
 			return json({ error: insertError.message }, { status: 500 });
 		}
 
-		// Broadcast friend request event to recipient inbox
+		// Broadcast friend request event to recipient inbox & global channel
 		try {
 			const channel = supabase.channel(`chronomuse_user_inbox_${targetUser.id}`);
 			channel.subscribe((status) => {
@@ -101,6 +111,16 @@ export async function POST({ request }) {
 						type: 'broadcast',
 						event: 'friend_request',
 						payload: { sender_id: user_id, receiver_id: targetUser.id }
+					});
+				}
+			});
+			const globalChannel = supabase.channel('chronomuse_global_events');
+			globalChannel.subscribe((status) => {
+				if (status === 'SUBSCRIBED') {
+					globalChannel.send({
+						type: 'broadcast',
+						event: 'global_friend_event',
+						payload: { sender_id: user_id, target_id: targetUser.id, eventType: 'friend_request' }
 					});
 				}
 			});
