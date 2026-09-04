@@ -3,12 +3,69 @@
 
 	const dispatch = createEventDispatcher();
 
-	let { memoriesData = {}, pinnedDates = [] } = $props();
+	let { memoriesData = {}, pinnedDates = [], selectedDateStr = '' } = $props();
 
 	let currentDate = $state(new Date());
 	let selectedDate = $state(null);
 	let currentMonth = $state(currentDate.getMonth());
 	let currentYear = $state(currentDate.getFullYear());
+	let highlightedDateStr = $state('');
+	let highlightTimeout;
+
+	$effect(() => {
+		if (selectedDateStr) {
+			const parts = selectedDateStr.split('-');
+			if (parts.length === 3) {
+				const y = parseInt(parts[0], 10);
+				const m = parseInt(parts[1], 10) - 1;
+				const d = parseInt(parts[2], 10);
+				if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+					currentYear = y;
+					currentMonth = m;
+					selectedDate = new Date(y, m, d);
+					highlightedDateStr = selectedDateStr;
+
+					// Automatically fade out the special highlight after 3.5 seconds
+					if (highlightTimeout) clearTimeout(highlightTimeout);
+					highlightTimeout = setTimeout(() => {
+						highlightedDateStr = '';
+					}, 3500);
+				}
+			}
+		}
+	});
+
+	function isTargetHighlighted(day) {
+		if (!highlightedDateStr) return false;
+		const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+		return highlightedDateStr === dateStr;
+	}
+
+	function getDayMemories(day) {
+		const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+		return memoriesData[dateStr] || [];
+	}
+
+	function hasMemories(day) {
+		return getDayMemories(day).length > 0;
+	}
+
+	function hasSharedMemories(day) {
+		const mems = getDayMemories(day);
+		return mems.some(m => 
+			m.is_shared || 
+			(m.description || '').includes('(Shared by @') || 
+			(m.memory_tag || '').includes('Shared memory from @')
+		);
+	}
+
+	function getMemoryDotColor(day) {
+		if (!hasMemories(day)) return '';
+		if (hasSharedMemories(day)) {
+			return 'bg-emerald-500'; // Green dot for shared memories
+		}
+		return 'bg-gradient-to-r from-pink-400 to-pink-600'; // Pink dot for personal memories
+	}
 
 	// Hover state for pin tooltip
 	let hoveredDate = $state(null);
@@ -185,11 +242,6 @@
 			}
 		}, 200); // 200ms delay
 	}
-
-	function hasMemories(day) {
-		const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-		return memoriesData[dateStr] && memoriesData[dateStr].length > 0;
-	}
 </script>
 
 <div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5 transition-all duration-300 hover:shadow-lg">
@@ -265,24 +317,31 @@
 			{#if day}
 				<div class="relative">
 					<button
-						onclick={() => selectDate(day)}
+						onclick={() => { closeTooltip(); highlightedDateStr = ''; selectDate(day); }}
 						onmouseenter={() => handleMouseEnter(day)}
 						onmouseleave={handleMouseLeave}
 						ontouchstart={(e) => { e.preventDefault(); e.stopPropagation(); startLongPress(day); }}
 						ontouchend={(e) => { e.stopPropagation(); cancelLongPress(); }}
 						ontouchcancel={(e) => { e.stopPropagation(); cancelLongPress(); }}
-						class="relative p-2.5 text-sm rounded-lg transition-all duration-200 flex flex-col items-center justify-center min-h-[45px] w-full"
+						class="relative p-2.5 text-sm rounded-xl transition-all duration-200 flex flex-col items-center justify-center min-h-[45px] w-full cursor-pointer"
 						class:bg-pink-500={isToday(day)}
 						class:text-white={isToday(day)}
 						class:bg-pink-100={!isToday(day) && !isSelected(day)}
-						class:text-pink-600={!isToday(day) && !isSelected(day)}
+						class:text-pink-600={!isToday(day)}
 						class:bg-pink-200={isSelected(day) && !isToday(day)}
 						class:hover:bg-pink-200={!isToday(day)}
 						class:hover:scale-105={!isToday(day)}
+						class:ring-2={isTargetHighlighted(day)}
+						class:ring-emerald-500={isTargetHighlighted(day) && hasSharedMemories(day)}
+						class:ring-pink-500={isTargetHighlighted(day) && !hasSharedMemories(day)}
+						class:ring-offset-2={isTargetHighlighted(day)}
+						class:scale-105={isTargetHighlighted(day)}
+						class:shadow-md={isTargetHighlighted(day)}
+						class:animate-subtle-glow={isTargetHighlighted(day)}
 					>
-						<span class="font-medium">{day}</span>
+						<span class="font-medium" class:font-bold={isToday(day) || isSelected(day) || isTargetHighlighted(day)}>{day}</span>
 						{#if hasMemories(day)}
-							<span class="absolute bottom-1 w-2 h-2 rounded-full bg-gradient-to-r from-pink-400 to-pink-600"></span>
+							<span class="absolute bottom-1 w-2 h-2 rounded-full {getMemoryDotColor(day)}"></span>
 						{/if}
 						{#if isDatePinned(day)}
 							<span class="absolute top-0.5 right-0.5 w-3 h-3 text-pink-500">
@@ -353,7 +412,7 @@
 
 	<!-- Legend -->
 	<div class="mt-4 pt-4 border-t border-pink-200">
-		<div class="flex items-center justify-center space-x-4 text-xs">
+		<div class="flex items-center justify-center flex-wrap gap-x-4 gap-y-2 text-xs">
 			<div class="flex items-center space-x-1">
 				<div class="w-3 h-3 bg-pink-500 rounded"></div>
 				<span class="text-pink-600">Today</span>
@@ -363,8 +422,12 @@
 				<span class="text-pink-600">Selected</span>
 			</div>
 			<div class="flex items-center space-x-1">
-				<div class="w-2 h-2 bg-pink-500 rounded-full"></div>
-				<span class="text-pink-600">Has Memories</span>
+				<div class="w-2 h-2 bg-gradient-to-r from-pink-400 to-pink-600 rounded-full"></div>
+				<span class="text-pink-600">My Memory</span>
+			</div>
+			<div class="flex items-center space-x-1">
+				<div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+				<span class="text-emerald-700 font-semibold">Shared Memory</span>
 			</div>
 		</div>
 	</div>
@@ -378,3 +441,18 @@
 		</div>
 	{/if}
 </div>
+
+<style>
+	@keyframes subtle-glow {
+		0%, 100% {
+			transform: scale(1.04);
+		}
+		50% {
+			transform: scale(1.08);
+		}
+	}
+
+	.animate-subtle-glow {
+		animation: subtle-glow 1.4s ease-in-out 2;
+	}
+</style>

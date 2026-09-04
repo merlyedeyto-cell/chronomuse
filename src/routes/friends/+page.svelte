@@ -158,8 +158,10 @@
 	}
 
 	function handleCancelSentRequest(requestId) {
-		if (!user || !user.id || isResponding) return;
-		isResponding = true;
+		if (!user || !user.id) return;
+		// 0ms instant optimistic removal
+		const backupSent = [...sentRequests];
+		sentRequests = sentRequests.filter(r => r.id !== requestId);
 
 		fetch(API_ENDPOINTS.cancelFriendRequest, {
 			method: 'POST',
@@ -171,15 +173,13 @@
 		})
 		.then(res => res.json())
 		.then(data => {
-			isResponding = false;
-			if (data.success) {
-				fetchPendingRequests();
-			} else {
+			if (!data.success) {
+				sentRequests = backupSent;
 				alert('Error: ' + (data.error || 'Failed to cancel request'));
 			}
 		})
 		.catch(err => {
-			isResponding = false;
+			sentRequests = backupSent;
 			console.error('Error cancelling request:', err);
 		});
 	}
@@ -225,7 +225,8 @@
 	}
 
 	function handleLogout() {
-		localStorage.removeItem('chronomuse_user');
+		localStorage.clear();
+		sessionStorage.clear();
 		goto('/');
 	}
 
@@ -247,6 +248,7 @@
 	}
 
 	let totalPendingCount = $derived(pendingRequests.length + sentRequests.length);
+	let hasNotifications = $derived(pendingRequests.length > 0);
 </script>
 
 <svelte:head>
@@ -266,10 +268,10 @@
 		<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
 			<div class="container mx-auto px-4 py-3 flex items-center justify-between">
 				<div class="flex items-center space-x-3 min-w-0">
-					<!-- Hamburger Menu Button - Mobile Only -->
+					<!-- Hamburger Menu Button - Mobile Only with Notification Dot -->
 					<button
 						onclick={toggleSidebar}
-						class="p-1.5 sm:p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors flex-shrink-0 active:scale-95"
+						class="p-1.5 sm:p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors flex-shrink-0 active:scale-95 relative"
 						aria-label="Toggle menu"
 						title="Toggle menu"
 					>
@@ -281,6 +283,9 @@
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
 							</svg>
+						{/if}
+						{#if hasNotifications}
+							<span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white animate-pulse"></span>
 						{/if}
 					</button>
 					<img src="/logo.png" alt="ChronoMuse" class="w-9 h-9 sm:w-10 sm:h-10 rounded-md object-contain flex-shrink-0" />
@@ -406,7 +411,7 @@
 						</div>
 					{:else if filteredFriends().length > 0}
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-							{#each filteredFriends() as friend (friend.friendship_id)}
+							{#each filteredFriends() as friend (friend.friend_id || friend.friendship_id || friend.id)}
 								<div
 									class="p-3 bg-pink-50/80 border-2 border-pink-200 rounded-xl flex items-center justify-between hover:border-pink-300 transition-all duration-200 shadow-sm"
 								>

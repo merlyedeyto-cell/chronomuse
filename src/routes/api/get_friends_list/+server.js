@@ -12,7 +12,7 @@ export async function POST({ request }) {
 		// Get all friend relationships for this user
 		const { data: friendships, error: friendError } = await supabase
 			.from('chronomuse_friends')
-			.select('friend_id, created_at')
+			.select('id, friend_id, created_at')
 			.eq('user_id', user_id);
 
 		if (friendError) {
@@ -38,10 +38,12 @@ export async function POST({ request }) {
 		const friends = friendUsers.map(u => {
 			const rel = friendships.find(f => f.friend_id === u.id);
 			return {
+				friendship_id: rel ? rel.id : u.id,
 				friend_id: u.id,
 				username: u.username,
 				email: u.email,
 				last_activity: u.last_activity,
+				created_at: rel ? rel.created_at : null,
 				friends_since: rel ? rel.created_at : null
 			};
 		});

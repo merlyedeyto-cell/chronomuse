@@ -1,0 +1,842 @@
+<script>
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { API_ENDPOINTS } from '$lib/apiConfig.js';
+	import Sidebar from '$lib/Sidebar.svelte';
+
+	let user = $state(null);
+	let isLoading = $state(true);
+	let sidebarOpen = $state(false);
+	let activeTab = $state('requests'); // Default to 'requests' if pending items exist, else 'memories'
+
+	let notifications = $state({
+		shared_memories: [],
+		incoming_requests: [],
+		total_notifications_count: 0
+	});
+
+	// Memory viewing modal state
+	let selectedMemoryToView = $state(null);
+	let showViewMemoryModal = $state(false);
+
+	let isResponding = $state(false);
+
+	let pendingSharedMemories = $derived(notifications.shared_memories.filter(m => m.status !== 'accepted'));
+	let acceptedSharedMemories = $derived(notifications.shared_memories.filter(m => m.status === 'accepted'));
+	let pendingFriendRequests = $derived(notifications.incoming_requests || []);
+
+	let totalRequestsCount = $derived(pendingSharedMemories.length + pendingFriendRequests.length);
+	let totalMemoriesCount = $derived(acceptedSharedMemories.length);
+
+	onMount(() => {
+		const storedUser = localStorage.getItem('chronomuse_user');
+		if (storedUser) {
+			user = JSON.parse(storedUser);
+			fetchNotifications().then(() => {
+				if (totalRequestsCount > 0) {
+					activeTab = 'requests';
+				} else {
+					activeTab = 'memories';
+				}
+			});
+		} else {
+			goto('/');
+		}
+		isLoading = false;
+	});
+
+	async function fetchNotifications() {
+		if (!user || !user.id) return;
+		try {
+			const res = await fetch(API_ENDPOINTS.getNotifications, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: user.id })
+			});
+			const data = await res.json();
+			if (data.success && data.data) {
+				notifications = data.data;
+			}
+		} catch (err) {
+			console.error('Error fetching notifications:', err);
+		}
+	}
+
+	function toggleSidebar() {
+		sidebarOpen = !sidebarOpen;
+	}
+
+	function handleLogout() {
+		localStorage.clear();
+		sessionStorage.clear();
+		goto('/');
+	}
+
+	function formatDate(dateStr) {
+		if (!dateStr) return '';
+		const d = new Date(dateStr);
+		return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+	}
+
+	function formatFullDate(dateStr) {
+		if (!dateStr) return '';
+		const parts = dateStr.split('-');
+		if (parts.length === 3) {
+			const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+			return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+		}
+		const d = new Date(dateStr);
+		return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+	}
+
+	function formatTime(timestamp) {
+		if (!timestamp) return '';
+		const date = new Date(timestamp);
+		return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+	}
+
+	function getCleanDesc(desc) {
+		if (!desc) return '';
+		return desc.replace(/\s*\(Shared by @[a-zA-Z0-9_]+\)\s*$/gi, '').trim();
+	}
+
+	function formatTimeAgo(dateStr) {
+		if (!dateStr) return '';
+		const d = new Date(dateStr);
+		const diff = Date.now() - d.getTime();
+		const mins = Math.floor(diff / 60000);
+		if (mins < 1) return 'Just now';
+		if (mins < 60) return `${mins}m ago`;
+		const hours = Math.floor(mins / 60);
+		if (hours < 24) return `${hours}h ago`;
+		const days = Math.floor(hours / 24);
+		return `${days}d ago`;
+	}
+
+	let showFullScreenImage = $state(false);
+	let fullScreenImageUrl = $state('');
+
+	function openFullScreenImage(url) {
+		fullScreenImageUrl = url;
+		showFullScreenImage = true;
+	}
+
+	function closeFullScreenImage() {
+		showFullScreenImage = false;
+		fullScreenImageUrl = '';
+	}
+
+	function getMediaUrl(url) {
+		if (!url) return '';
+		if (url.startsWith('http://') || url.startsWith('https://')) return url;
+		if (url.startsWith('/uploads/')) return url;
+		if (url.startsWith('http://localhost/chronomuse/')) return url.replace('http://localhost/chronomuse/', '/');
+		if (url.startsWith('/chronomuse/')) return url.replace('/chronomuse/', '/');
+		return url;
+	}
+
+	function getMusicUrl(url) {
+		if (!url) return '';
+		if (url.startsWith('http://') || url.startsWith('https://')) return url;
+		if (url.startsWith('/uploads/')) return url;
+		if (url.startsWith('uploads/')) return '/' + url;
+		return url;
+	}
+
+	function getMoodColor(mood) {
+		const colors = {
+			'Happy': 'bg-yellow-100 text-yellow-700 border-yellow-300',
+			'Sad': 'bg-blue-100 text-blue-700 border-blue-300',
+			'Excited': 'bg-orange-100 text-orange-700 border-orange-300',
+			'Angry': 'bg-red-100 text-red-700 border-red-300',
+			'Calm': 'bg-green-100 text-green-700 border-green-300',
+			'Anxious': 'bg-purple-100 text-purple-700 border-purple-300',
+			'Grateful': 'bg-pink-100 text-pink-700 border-pink-300',
+			'Lonely': 'bg-gray-100 text-gray-700 border-gray-300',
+			'Love': 'bg-rose-100 text-rose-700 border-rose-300',
+			'Neutral': 'bg-slate-100 text-slate-700 border-slate-300'
+		};
+		return colors[mood] || 'bg-pink-100 text-pink-700 border-pink-300';
+	}
+
+	function handleCardClick(item, e) {
+		openMemoryDetails(item, e);
+	}
+
+	function openMemoryDetails(item, e) {
+		if (e) e.stopPropagation();
+		selectedMemoryToView = item;
+		showViewMemoryModal = true;
+	}
+
+	function goToCalendarDate(date, e) {
+		if (e) e.stopPropagation();
+		if (!date) return;
+		goto(`/dashboard?date=${date}`);
+	}
+
+	function handleOpenChat(senderId, senderUsername) {
+		goto(`/chat?friend_id=${senderId}&username=${encodeURIComponent(senderUsername)}`);
+	}
+
+	async function handleRespondRequest(requestId, action) {
+		if (!user || !user.id || isResponding) return;
+		isResponding = true;
+
+		// Optimistic removal
+		const backupReqs = [...notifications.incoming_requests];
+		notifications.incoming_requests = notifications.incoming_requests.filter(r => r.request_id !== requestId);
+		notifications.total_notifications_count = Math.max(0, notifications.total_notifications_count - 1);
+
+		try {
+			const res = await fetch(API_ENDPOINTS.respondToFriendRequest, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					request_id: requestId,
+					action,
+					user_id: user.id
+				})
+			});
+			const data = await res.json();
+			if (!data.success) {
+				notifications.incoming_requests = backupReqs;
+				alert('Error: ' + (data.error || 'Failed to respond'));
+			}
+		} catch (err) {
+			notifications.incoming_requests = backupReqs;
+			console.error('Error responding to request:', err);
+		} finally {
+			isResponding = false;
+		}
+	}
+
+	async function handleRespondSharedMemory(item, action, e) {
+		if (e) e.stopPropagation();
+		if (!user || !user.id || isResponding) return;
+		isResponding = true;
+
+		const backupMemories = [...notifications.shared_memories];
+
+		if (action === 'accept') {
+			// Update status in place to 'accepted' so it moves to All & Memories
+			notifications.shared_memories = notifications.shared_memories.map(m => 
+				m.share_id === item.share_id ? { ...m, status: 'accepted' } : m
+			);
+			showViewMemoryModal = false;
+		} else {
+			// Decline removes it
+			notifications.shared_memories = notifications.shared_memories.filter(m => m.share_id !== item.share_id);
+			notifications.total_notifications_count = Math.max(0, notifications.total_notifications_count - 1);
+			showViewMemoryModal = false;
+		}
+
+		try {
+			const res = await fetch(API_ENDPOINTS.respondToSharedMemory, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					share_id: item.share_id,
+					memory_id: item.memory?.id,
+					user_id: user.id,
+					action
+				})
+			});
+			const data = await res.json();
+			if (!data.success) {
+				notifications.shared_memories = backupMemories;
+				alert('Error: ' + (data.error || 'Failed to process request'));
+			}
+		} catch (err) {
+			notifications.shared_memories = backupMemories;
+			console.error('Error responding to shared memory:', err);
+		} finally {
+			isResponding = false;
+		}
+	}
+
+	let hasNotifications = $derived(totalRequestsCount > 0);
+</script>
+
+<svelte:head>
+	<title>Notifications & Requests - ChronoMuse</title>
+</svelte:head>
+
+{#if isLoading}
+	<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300">
+		<div class="text-center">
+			<div class="animate-spin rounded-full h-16 w-16 border-b-2 border-pink-500 mx-auto"></div>
+			<p class="mt-4 text-pink-700 font-semibold">Loading notifications...</p>
+		</div>
+	</div>
+{:else}
+	<div class="flex flex-col min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 animate-fade-in font-sans">
+		<!-- Top Navigation -->
+		<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
+			<div class="container mx-auto px-4 py-3 flex items-center justify-between">
+				<div class="flex items-center space-x-3 min-w-0">
+					<!-- Hamburger Menu Button -->
+					<button
+						onclick={toggleSidebar}
+						class="p-1.5 sm:p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors flex-shrink-0 active:scale-95 relative"
+						aria-label="Toggle menu"
+						title="Toggle menu"
+					>
+						{#if sidebarOpen}
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+							</svg>
+						{:else}
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+							</svg>
+						{/if}
+						{#if hasNotifications}
+							<span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white animate-pulse"></span>
+						{/if}
+					</button>
+					<img src="/logo.png" alt="ChronoMuse" class="w-9 h-9 sm:w-10 sm:h-10 rounded-md object-contain flex-shrink-0" />
+					<span class="text-base sm:text-lg font-bold text-pink-500 truncate">ChronoMuse</span>
+				</div>
+
+				<div class="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 ml-2">
+					<span class="text-pink-700 text-sm hidden md:inline">Welcome, <strong>{user?.username}</strong></span>
+					<span class="text-pink-700 text-xs sm:text-sm md:hidden truncate max-w-[110px]"><strong>{user?.username}</strong></span>
+					<button
+						onclick={handleLogout}
+						class="px-4 py-2 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-lg hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md hidden md:block active:scale-95"
+					>
+						Logout
+					</button>
+				</div>
+			</div>
+		</nav>
+
+		<!-- Sidebar Component -->
+		<Sidebar bind:isOpen={sidebarOpen} on:logout={handleLogout} />
+
+		<!-- Main Content -->
+		<main class="flex-grow container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-4xl">
+			<!-- Header Banner -->
+			<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 mb-5 animate-fade-in-up">
+				<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+					<div>
+						<div class="flex items-center space-x-2 mb-0.5">
+							<button
+								onclick={() => goto('/dashboard')}
+								class="p-1 sm:p-1.5 text-pink-500 hover:text-pink-700 hover:bg-pink-100 rounded-lg transition-all duration-200"
+								title="Back to Dashboard"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+								</svg>
+							</button>
+							<h1 class="text-base sm:text-lg font-extrabold text-pink-600 flex items-center space-x-2">
+								<span>Notifications & Requests</span>
+								{#if totalRequestsCount > 0}
+									<span class="text-xs bg-pink-500 text-white px-2 py-0.5 rounded-full font-bold">
+										{totalRequestsCount}
+									</span>
+								{/if}
+							</h1>
+						</div>
+						<p class="text-xs text-pink-400 ml-7 sm:ml-8">Accept memory requests to add them to your calendar, or manage notifications</p>
+					</div>
+
+					<!-- Navigation Tabs -->
+					<div class="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-1 sm:space-x-1 bg-pink-100/80 p-1 rounded-xl border border-pink-200">
+						<button
+							onclick={() => activeTab = 'memories'}
+							class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center"
+							class:bg-pink-500={activeTab === 'memories'}
+							class:text-white={activeTab === 'memories'}
+							class:shadow-sm={activeTab === 'memories'}
+							class:text-pink-600={activeTab !== 'memories'}
+							class:hover:bg-pink-200={activeTab !== 'memories'}
+						>
+							<span>Shared Memories ({totalMemoriesCount})</span>
+						</button>
+
+						<button
+							onclick={() => activeTab = 'requests'}
+							class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center relative"
+							class:bg-pink-500={activeTab === 'requests'}
+							class:text-white={activeTab === 'requests'}
+							class:shadow-sm={activeTab === 'requests'}
+							class:text-pink-600={activeTab !== 'requests'}
+							class:hover:bg-pink-200={activeTab !== 'requests'}
+						>
+							<span>Memories Pending ({totalRequestsCount})</span>
+							{#if totalRequestsCount > 0}
+								<span class="w-2 h-2 rounded-full bg-red-500 animate-ping absolute -top-0.5 -right-0.5"></span>
+							{/if}
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Tab 1: Requests Tab (Pending Shared Memories & Friend Requests) -->
+			{#if activeTab === 'requests'}
+				{#if totalRequestsCount === 0}
+					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-10 text-center animate-fade-in">
+						<div class="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3 text-pink-400">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+						</div>
+						<h2 class="text-base font-bold text-pink-700">No Pending Requests</h2>
+						<p class="text-xs text-pink-400 mt-1 max-w-sm mx-auto">
+							You have no pending memory requests or friend requests right now.
+						</p>
+					</div>
+				{:else}
+					<div class="space-y-4 animate-fade-in">
+						<!-- Pending Shared Memories Requests -->
+						{#if pendingSharedMemories.length > 0}
+							<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5">
+								<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide flex items-center space-x-1.5">
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+									</svg>
+									<span>Memory Share Requests ({pendingSharedMemories.length})</span>
+								</h2>
+
+								<div class="space-y-3">
+									{#each pendingSharedMemories as item (item.share_id)}
+										<div
+											role="button"
+											tabindex="0"
+											onclick={(e) => handleCardClick(item, e)}
+											onkeydown={(e) => { if (e.key === 'Enter') handleCardClick(item, e); }}
+											class="p-3.5 sm:p-4 bg-white hover:bg-pink-50/50 border border-pink-200 hover:border-pink-300 rounded-2xl shadow-xs transition-all duration-200 cursor-pointer group hover:shadow-md"
+										>
+											<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+												<div class="flex items-center space-x-3 min-w-0">
+													<div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+														{item.sender_username.charAt(0).toUpperCase()}
+													</div>
+													<div class="min-w-0 flex-grow">
+														<div class="flex items-center gap-1.5 flex-wrap">
+															<span class="text-sm font-bold text-pink-700">@{item.sender_username}</span>
+															<span class="text-[11px] text-pink-500 font-medium">shared a memory</span>
+															{#if item.memory.mood_tag}
+																<span class="text-[10px] px-2 py-0.5 rounded-full font-bold border {getMoodColor(item.memory.mood_tag)}">
+																	{item.memory.mood_tag}
+																</span>
+															{/if}
+														</div>
+
+														<p class="text-xs text-pink-900 font-semibold mt-1 truncate">
+															{item.memory.memory_tag || 'Special Memory'}
+															<span class="text-pink-400 font-normal ml-1">• {formatDate(item.memory.date)}</span>
+														</p>
+
+														<p class="text-[11px] text-pink-400 mt-0.5 flex items-center space-x-1 group-hover:text-pink-600 transition-colors">
+															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-pink-400 group-hover:text-pink-500">
+																<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+																<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+															</svg>
+															<span>Tap to preview details</span>
+														</p>
+													</div>
+												</div>
+
+												<!-- Accept / Decline Buttons -->
+												<div class="flex items-center space-x-2 self-end sm:self-center flex-shrink-0">
+													<button
+														type="button"
+														onclick={(e) => handleRespondSharedMemory(item, 'accept', e)}
+														class="px-3.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+														title="Accept and add memory to my calendar"
+													>
+														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+															<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+														</svg>
+														<span>Accept</span>
+													</button>
+
+													<button
+														type="button"
+														onclick={(e) => handleRespondSharedMemory(item, 'decline', e)}
+														class="px-3 py-1.5 bg-pink-100 hover:bg-red-100 text-pink-600 hover:text-red-600 active:scale-95 rounded-xl text-xs font-bold transition-all cursor-pointer"
+														title="Decline memory share request"
+													>
+														Decline
+													</button>
+												</div>
+											</div>
+										</div>
+									{/each}
+								</div>
+							</div>
+						{/if}
+
+						<!-- Pending Friend Requests -->
+						{#if pendingFriendRequests.length > 0}
+							<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5">
+								<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide flex items-center space-x-1.5">
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 19.125a1.125 1.125 0 011.125-1.125h15.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H4.875a1.125 1.125 0 01-1.125-1.125v-2.25z" />
+									</svg>
+									<span>Friend Requests ({pendingFriendRequests.length})</span>
+								</h2>
+
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+									{#each pendingFriendRequests as req (req.request_id)}
+										<div class="p-3 bg-pink-50/80 border-2 border-pink-200 rounded-xl flex items-center justify-between shadow-xs">
+											<div class="flex items-center space-x-2.5 min-w-0">
+												<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-400 to-pink-600 text-white font-bold text-sm flex items-center justify-center flex-shrink-0 shadow-sm">
+													{req.sender_username.charAt(0).toUpperCase()}
+												</div>
+												<div class="min-w-0">
+													<p class="text-xs sm:text-sm font-bold text-pink-700 truncate">@{req.sender_username}</p>
+													<p class="text-[10px] text-pink-400">{formatTimeAgo(req.created_at)}</p>
+												</div>
+											</div>
+
+											<div class="flex items-center space-x-1.5 flex-shrink-0 ml-2">
+												<button
+													onclick={() => handleRespondRequest(req.request_id, 'accept')}
+													class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-lg transition-all active:scale-95 shadow-xs"
+												>
+													Accept
+												</button>
+												<button
+													onclick={() => handleRespondRequest(req.request_id, 'decline')}
+													class="px-2.5 py-1.5 bg-pink-100 hover:bg-red-100 text-pink-600 hover:text-red-600 text-xs font-bold rounded-lg transition-all active:scale-95"
+												>
+													Decline
+												</button>
+											</div>
+										</div>
+									{/each}
+								</div>
+							</div>
+						{/if}
+					</div>
+				{/if}
+			{:else}
+				<!-- Tab 2: All & Memories Tab (Accepted Shared Memories that user can open on calendar) -->
+				{#if acceptedSharedMemories.length === 0}
+					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-10 text-center animate-fade-in">
+						<div class="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3 text-pink-400">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+						</div>
+						<h2 class="text-base font-bold text-pink-700">No Accepted Memories Yet</h2>
+						<p class="text-xs text-pink-400 mt-1 max-w-sm mx-auto">
+							{#if totalRequestsCount > 0}
+								You have <strong>{totalRequestsCount} pending request(s)</strong> waiting! Go to the <button onclick={() => activeTab = 'requests'} class="text-pink-600 font-bold underline">Memories Pending tab</button> to accept them.
+							{:else}
+								When friends share memories and you accept them, they will appear here and on your calendar.
+							{/if}
+						</p>
+					</div>
+				{:else}
+					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5 animate-fade-in">
+						<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide flex items-center space-x-1.5">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+							<span>Accepted Memories ({acceptedSharedMemories.length})</span>
+						</h2>
+
+						<div class="space-y-3">
+							{#each acceptedSharedMemories as item (item.share_id)}
+								<div
+									role="button"
+									tabindex="0"
+									onclick={(e) => handleCardClick(item, e)}
+									onkeydown={(e) => { if (e.key === 'Enter') handleCardClick(item, e); }}
+									class="p-3.5 sm:p-4 bg-white hover:bg-pink-50/50 border border-pink-200 hover:border-pink-300 rounded-2xl shadow-xs transition-all duration-200 cursor-pointer group hover:shadow-md"
+								>
+									<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+										<div class="flex items-center space-x-3 min-w-0">
+											<div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+												{item.sender_username.charAt(0).toUpperCase()}
+											</div>
+											<div class="min-w-0 flex-grow">
+												<div class="flex items-center gap-1.5 flex-wrap">
+													<span class="text-sm font-bold text-pink-700">@{item.sender_username}</span>
+													<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+														✓ Saved to Calendar
+													</span>
+													{#if item.memory.mood_tag}
+														<span class="text-[10px] px-2 py-0.5 rounded-full font-bold border {getMoodColor(item.memory.mood_tag)}">
+															{item.memory.mood_tag}
+														</span>
+													{/if}
+												</div>
+
+												<p class="text-xs text-pink-900 font-semibold mt-1 truncate">
+													{item.memory.memory_tag || 'Special Memory'}
+													<span class="text-pink-400 font-normal ml-1">• {formatDate(item.memory.date)}</span>
+												</p>
+
+												<p class="text-[11px] text-pink-400 mt-0.5 flex items-center space-x-1 group-hover:text-pink-600 transition-colors">
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-pink-400 group-hover:text-pink-500">
+														<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+														<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+													</svg>
+													<span>Tap to preview details</span>
+												</p>
+											</div>
+										</div>
+
+										<div class="flex items-center space-x-2 self-end sm:self-center flex-shrink-0">
+											<button
+												type="button"
+												onclick={(e) => goToCalendarDate(item.memory.date, e)}
+												class="px-3.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center space-x-1.5 cursor-pointer"
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+												</svg>
+												<span>Open on Calendar</span>
+											</button>
+										</div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
+			{/if}
+		</main>
+
+		<!-- Full Memory Preview Modal (Exact replica of Calendar ViewMemoryModal) -->
+		{#if showViewMemoryModal && selectedMemoryToView}
+			<!-- Backdrop Overlay -->
+			<div
+				class="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in"
+				onclick={(e) => { if (e.target === e.currentTarget) showViewMemoryModal = false; }}
+			>
+				<!-- Modal Container -->
+				<div
+					class="bg-white border-2 border-pink-300 rounded-2xl shadow-xl p-4 sm:p-5 relative max-w-sm sm:max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col animate-pop-in"
+					onclick={(e) => e.stopPropagation()}
+				>
+					<!-- Close Button -->
+					<button
+						onclick={() => showViewMemoryModal = false}
+						class="absolute top-3.5 right-3.5 p-1.5 text-pink-400 hover:text-pink-600 hover:bg-pink-100 rounded-lg transition-all duration-200 cursor-pointer"
+						title="Close"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+
+					<!-- Header -->
+					<div class="text-center mb-4">
+						<h2 class="text-base sm:text-lg font-bold text-pink-600">View Memories</h2>
+						<p class="text-[11px] sm:text-xs text-pink-400 mt-0.5">Your special moments on this date</p>
+					</div>
+
+					<!-- Selected Date Card -->
+					<div class="mb-3 p-3 bg-gradient-to-r from-pink-400 via-rose-400 to-pink-400 rounded-xl shadow-xs text-white flex-shrink-0">
+						<div class="flex items-center space-x-2.5">
+							<div class="p-1.5 bg-white/25 rounded-lg">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-white">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+								</svg>
+							</div>
+							<div>
+								<p class="text-[10px] text-pink-100 uppercase tracking-wide font-medium">Selected Date</p>
+								<p class="text-xs sm:text-sm font-bold">{formatFullDate(selectedMemoryToView.memory.date)}</p>
+							</div>
+						</div>
+					</div>
+
+					<!-- Memory Content - Scrollable List -->
+					<div class="flex-1 overflow-y-auto pr-1 -mr-1 space-y-3">
+						<div class="p-4 bg-pink-50/70 border-2 border-pink-200/80 rounded-xl space-y-3 hover:border-pink-300 transition-all duration-200">
+							<!-- Header row: Shared by badge & mood tag & memory tag -->
+							<div class="flex items-center justify-between gap-2 border-b border-pink-100 pb-2.5">
+								<div class="flex items-center flex-wrap gap-1.5 min-w-0">
+									<span class="text-[11px] px-2.5 py-0.5 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bold shadow-xs inline-flex items-center space-x-1">
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-pink-100 flex-shrink-0">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a5.97 5.97 0 00-.942 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+										</svg>
+										<span>Shared by @{selectedMemoryToView.sender_username}</span>
+									</span>
+
+									{#if selectedMemoryToView.memory.mood_tag}
+										<span class="text-[10px] px-2.5 py-0.5 rounded-full border {getMoodColor(selectedMemoryToView.memory.mood_tag)} font-bold whitespace-nowrap shadow-xs">
+											{selectedMemoryToView.memory.mood_tag}
+										</span>
+									{/if}
+
+									{#if selectedMemoryToView.memory.memory_tag && selectedMemoryToView.memory.memory_tag !== 'Untitled Memory' && selectedMemoryToView.memory.memory_tag !== 'Special Memory' && !selectedMemoryToView.memory.memory_tag.startsWith('Shared memory from')}
+										<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 border border-pink-300 font-bold whitespace-nowrap shadow-xs">
+											{selectedMemoryToView.memory.memory_tag}
+										</span>
+									{/if}
+								</div>
+							</div>
+
+							<!-- Memory Title if provided -->
+							{#if selectedMemoryToView.memory.title && selectedMemoryToView.memory.title !== 'Untitled Memory'}
+								<h3 class="text-sm sm:text-base font-bold text-pink-800">
+									{selectedMemoryToView.memory.title}
+								</h3>
+							{/if}
+
+							<!-- Description Body -->
+							{#if selectedMemoryToView.memory.description}
+								<p class="text-xs sm:text-sm font-medium text-pink-900 leading-relaxed whitespace-pre-wrap">{getCleanDesc(selectedMemoryToView.memory.description)}</p>
+							{/if}
+
+							<!-- Photo / Video Attachment -->
+							{#if selectedMemoryToView.memory.photo_video}
+								{#if selectedMemoryToView.memory.photo_video_type === 'video' || (typeof selectedMemoryToView.memory.photo_video === 'string' && (selectedMemoryToView.memory.photo_video.endsWith('.mp4') || selectedMemoryToView.memory.photo_video.endsWith('.webm')))}
+									<div class="relative rounded-lg overflow-hidden border-2 border-pink-200">
+										<video src={getMediaUrl(selectedMemoryToView.memory.photo_video)} class="w-full h-44 object-cover" controls aria-label="Memory video"></video>
+									</div>
+								{:else}
+									<div
+										class="relative rounded-lg overflow-hidden border-2 border-pink-200 cursor-pointer hover:border-pink-400 transition-all duration-200"
+										onclick={() => openFullScreenImage(getMediaUrl(selectedMemoryToView.memory.photo_video))}
+									>
+										<img src={getMediaUrl(selectedMemoryToView.memory.photo_video)} alt="Memory Attachment" class="w-full h-44 object-cover hover:scale-105 transition-transform duration-300" />
+										<div class="absolute inset-0 bg-black/0 hover:bg-black/10 transition-all duration-200 flex items-center justify-center pointer-events-none">
+											<span class="text-white text-xs font-medium opacity-0 hover:opacity-100 bg-black/50 px-2.5 py-1 rounded-full">Click to enlarge</span>
+										</div>
+									</div>
+								{/if}
+							{/if}
+
+							<!-- Music Audio Player Attachment -->
+							{#if selectedMemoryToView.memory.music}
+								<div class="rounded-lg overflow-hidden border border-pink-200 bg-gradient-to-r from-pink-50 to-pink-100 p-2.5">
+									<div class="flex items-center space-x-1.5 mb-1.5">
+										<div class="w-6 h-6 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center">
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5 text-white">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
+											</svg>
+										</div>
+										<span class="text-[11px] font-semibold text-pink-600">Memory Music</span>
+									</div>
+									<div class="custom-audio-player">
+										<audio src={getMusicUrl(selectedMemoryToView.memory.music)} controls preload="metadata" class="w-full" crossorigin="anonymous"></audio>
+									</div>
+								</div>
+							{/if}
+
+							<!-- Footer Timestamp -->
+							<div class="flex items-center justify-between pt-1.5 border-t border-pink-200">
+								<span class="text-[10px] text-pink-400">
+									Created: {formatTime(selectedMemoryToView.memory.created_at || selectedMemoryToView.shared_at)}
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Bottom Action Buttons Footer -->
+					<div class="mt-3 pt-3 border-t border-pink-200 flex-shrink-0">
+						{#if selectedMemoryToView.status === 'accepted'}
+							<div class="flex items-center space-x-2">
+								<button
+									onclick={(e) => goToCalendarDate(selectedMemoryToView.memory.date, e)}
+									class="flex-1 py-2.5 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold shadow-sm flex items-center justify-center space-x-1.5 cursor-pointer"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+									</svg>
+									<span>Open on Calendar</span>
+								</button>
+
+								<button
+									onclick={() => handleOpenChat(selectedMemoryToView.sender_id, selectedMemoryToView.sender_username)}
+									class="py-2.5 px-3 bg-white border-2 border-pink-300 text-pink-600 hover:bg-pink-50 rounded-xl active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold flex items-center justify-center space-x-1.5 cursor-pointer"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+									</svg>
+									<span>Say Thanks in Chat</span>
+								</button>
+							</div>
+						{:else}
+							<div class="flex items-center space-x-2">
+								<button
+									onclick={(e) => handleRespondSharedMemory(selectedMemoryToView, 'accept', e)}
+									class="flex-1 py-2.5 px-3 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all duration-200 flex items-center justify-center space-x-1.5 cursor-pointer"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+									</svg>
+									<span>Accept Memory</span>
+								</button>
+
+								<button
+									onclick={(e) => handleRespondSharedMemory(selectedMemoryToView, 'decline', e)}
+									class="py-2.5 px-4 bg-pink-100 hover:bg-red-100 text-pink-600 hover:text-red-600 active:scale-95 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer"
+								>
+									Decline
+								</button>
+							</div>
+						{/if}
+					</div>
+				</div>
+			</div>
+		{/if}
+
+		<!-- Full-screen Image Modal Lightbox -->
+		{#if showFullScreenImage}
+			<div 
+				class="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-4 animate-fade-in"
+				onclick={closeFullScreenImage}
+			>
+				<button
+					onclick={closeFullScreenImage}
+					class="absolute top-4 right-4 p-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all cursor-pointer"
+					title="Close Full Screen"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+				<img src={fullScreenImageUrl} alt="Full screen preview" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
+			</div>
+		{/if}
+	</div>
+{/if}
+
+<style>
+	@keyframes fade-in {
+		0% { opacity: 0; }
+		100% { opacity: 1; }
+	}
+	.animate-fade-in {
+		animation: fade-in 0.25s ease-out;
+	}
+
+	@keyframes pop-in {
+		0% { transform: scale(0.95); opacity: 0; }
+		100% { transform: scale(1); opacity: 1; }
+	}
+	.animate-pop-in {
+		animation: pop-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.custom-audio-player audio {
+		width: 100%;
+		height: 36px;
+		border-radius: 9999px;
+	}
+	.custom-audio-player audio::-webkit-media-controls-panel {
+		background-color: #fce7f3;
+		border-radius: 9999px;
+	}
+	.custom-audio-player audio::-webkit-media-controls-play-button {
+		background-color: #ec4899;
+		border-radius: 50%;
+	}
+	.custom-audio-player audio::-webkit-media-controls-current-time-display,
+	.custom-audio-player audio::-webkit-media-controls-time-remaining-display {
+		color: #be185d;
+		font-size: 10px;
+		font-weight: 600;
+	}
+</style>

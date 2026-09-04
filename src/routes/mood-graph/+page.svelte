@@ -58,11 +58,13 @@
 		const data = Object.entries(moodStats).filter(([mood, count]) => count > 0);
 		let cumulativePercent = 0;
 		const segments = [];
+		const radius = 35;
+		const circumference = 2 * Math.PI * radius; // ~219.911
 
 		data.forEach(([mood, count]) => {
 			const percent = totalMemories > 0 ? (count / totalMemories) * 100 : 0;
-			const circumference = 2 * Math.PI * 40; // radius = 40
-			const strokeDasharray = `${(percent / 100) * circumference} ${circumference}`;
+			const segmentLength = (percent / 100) * circumference;
+			const strokeDasharray = `${segmentLength} ${circumference}`;
 			const strokeDashoffset = -((cumulativePercent / 100) * circumference);
 			const color = getMoodFillColor(mood.charAt(0).toUpperCase() + mood.slice(1));
 
@@ -176,12 +178,14 @@
 	}
 
 	function handleLogout() {
-		localStorage.removeItem('chronomuse_user');
+		localStorage.clear();
+		sessionStorage.clear();
 		window.location.href = '/';
 	}
 
 	function handleSidebarLogout() {
-		localStorage.removeItem('chronomuse_user');
+		localStorage.clear();
+		sessionStorage.clear();
 		goto('/');
 	}
 
@@ -229,6 +233,13 @@
 		if (totalMemories === 0) return 0;
 		return Math.round((moodStats[mood.toLowerCase()] / totalMemories) * 100);
 	}
+
+	let recentTenMemories = $derived(
+		[...moodData]
+			.sort((a, b) => new Date(b.date || b.created_at || 0).getTime() - new Date(a.date || a.created_at || 0).getTime())
+			.slice(0, 10)
+	);
+	let hasNotifications = $state(false);
 </script>
 
 {#if isLoading}
@@ -246,7 +257,7 @@
 				<div class="flex items-center space-x-2.5">
 					<button
 						onclick={toggleSidebar}
-						class="p-1.5 sm:p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors flex-shrink-0 active:scale-95"
+						class="p-1.5 sm:p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors flex-shrink-0 active:scale-95 relative"
 						aria-label="Toggle menu"
 						title="Toggle menu"
 					>
@@ -258,6 +269,9 @@
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
 							</svg>
+						{/if}
+						{#if hasNotifications}
+							<span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white animate-pulse"></span>
 						{/if}
 					</button>
 					<img src="/logo.png" alt="ChronoMuse" class="w-9 h-9 sm:w-10 sm:h-10 rounded-md object-contain flex-shrink-0" />
@@ -450,11 +464,11 @@
 												cx="50"
 												cy="50"
 												r="35"
-												fill="transparent"
+												fill="none"
 												stroke={segment.color}
 												stroke-width="14"
-												stroke-dasharray="{segment.dashArray} {segment.dashOffset}"
-												stroke-dashoffset="0"
+												stroke-dasharray={segment.strokeDasharray}
+												stroke-dashoffset={segment.strokeDashoffset}
 												class="transition-all duration-500 cursor-pointer hover:opacity-90"
 												onclick={() => openMoodListModal(segment.mood)}
 											/>
@@ -519,12 +533,12 @@
 					</div>
 				</div>
 
-				<!-- Recent Memories Section -->
+				<!-- 10 Recent Memories Section -->
 				<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5 animate-fade-in-up transition-all duration-300 hover:shadow-lg" style="animation-delay: 0.5s">
-					<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide">Recent Memories</h2>
-					{#if moodData.length > 0}
+					<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide">10 Recent Memories</h2>
+					{#if recentTenMemories.length > 0}
 						<div class="space-y-2 max-h-80 overflow-y-auto pr-1">
-							{#each moodData as memory}
+							{#each recentTenMemories as memory}
 								<button
 									onclick={() => viewMemory(memory)}
 									class="w-full flex items-center space-x-2.5 p-2.5 bg-pink-50/90 border border-pink-200 hover:border-pink-300 rounded-xl transition-all duration-200 text-left cursor-pointer group hover:bg-pink-100/90 shadow-sm"

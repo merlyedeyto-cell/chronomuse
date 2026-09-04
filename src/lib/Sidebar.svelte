@@ -6,14 +6,18 @@
 	import AddFriendModal from './AddFriendModal.svelte';
 	import FriendsListModal from './FriendsListModal.svelte';
 	import ProfileModal from './ProfileModal.svelte';
+	import NotificationsModal from './NotificationsModal.svelte';
 
 	const dispatch = createEventDispatcher();
 	let { isOpen = $bindable(false) } = $props();
 	let showAddFriendModal = $state(false);
 	let showFriendsListModal = $state(false);
 	let showProfileModal = $state(false);
+	let showNotificationsModal = $state(false);
 	let pendingRequestsCount = $state(0);
 	let unreadChatsCount = $state(0);
+	let notificationsCount = $state(0);
+	let currentUserId = $state(null);
 
 	function toggleSidebar() {
 		isOpen = !isOpen;
@@ -39,6 +43,11 @@
 		goto('/friends');
 	}
 
+	function handleNotifications() {
+		closeSidebar();
+		goto('/notifications');
+	}
+
 	function handleProfile() {
 		closeSidebar();
 		showProfileModal = true;
@@ -57,7 +66,8 @@
 
 	function handleLogout() {
 		closeSidebar();
-		localStorage.removeItem('chronomuse_user');
+		localStorage.clear();
+		sessionStorage.clear();
 		goto('/');
 		dispatch('logout');
 	}
@@ -100,6 +110,21 @@
 		const user = currentUser ? JSON.parse(currentUser) : null;
 
 		if (!user || !user.id) return;
+		currentUserId = user.id;
+
+		// Fetch notifications (shared memories & requests)
+		fetch(API_ENDPOINTS.getNotifications, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ user_id: user.id })
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.data) {
+				notificationsCount = data.data.total_notifications_count || 0;
+			}
+		})
+		.catch(err => console.error('Error fetching notifications:', err));
 
 		// Fetch pending friend requests count
 		fetch(API_ENDPOINTS.getFriendRequestsCount, {
@@ -247,6 +272,28 @@
 				{/if}
 			</button>
 
+			<!-- Notifications Button (Shared Memories & Alerts) -->
+			<button
+				onclick={handleNotifications}
+				class="w-full py-2 px-4 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 relative animate-slide-in-right"
+				style="animation-delay: 0.3s"
+				class:bg-pink-500={isActive('/notifications')}
+				class:text-white={isActive('/notifications')}
+				class:bg-pink-100={!isActive('/notifications')}
+				class:text-pink-600={!isActive('/notifications')}
+				class:hover:bg-pink-200={!isActive('/notifications')}
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+				</svg>
+				<span>Notifications</span>
+				{#if notificationsCount > 0}
+					<span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+						{notificationsCount}
+					</span>
+				{/if}
+			</button>
+
 			<!-- Profile Button -->
 			<button
 				onclick={handleProfile}
@@ -274,6 +321,9 @@
 		</div>
 	</div>
 </aside>
+
+<!-- Notifications Modal -->
+<NotificationsModal bind:isOpen={showNotificationsModal} userId={currentUserId} />
 
 <!-- Add Friend Modal -->
 <AddFriendModal open={showAddFriendModal} on:close={handleModalClose} on:addFriend={handleAddFriendSubmit} on:friendRequestResponded={handleFriendRequestResponded} />

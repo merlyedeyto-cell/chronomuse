@@ -35,7 +35,10 @@
 			} else {
 				isClicked = true;
 				dispatch('login', data.data);
-				// Store user in localStorage
+				// Clear any previous session data to prevent cross-account leaks
+				localStorage.clear();
+				sessionStorage.clear();
+				// Store new user in localStorage
 				localStorage.setItem('chronomuse_user', JSON.stringify(data.data.user));
 				// Redirect to dashboard using SvelteKit navigation
 				setTimeout(() => {

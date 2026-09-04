@@ -1,6 +1,7 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import Sidebar from '$lib/Sidebar.svelte';
@@ -37,13 +38,63 @@
 		}, 3000);
 	}
 
+	let hasNotifications = $state(false);
+
+	function checkNotifications() {
+		if (!user || !user.id) return;
+		Promise.all([
+			fetch(API_ENDPOINTS.getNotifications, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: user.id })
+			}).then(r => r.json()),
+			fetch(API_ENDPOINTS.getChatList, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: user.id })
+			}).then(r => r.json())
+		])
+		.then(([notifData, chatData]) => {
+			const notifCount = notifData?.data?.total_notifications_count || 0;
+			const unreadChats = chatData?.data?.friends?.reduce((sum, f) => sum + (f.unread_count || 0), 0) || 0;
+			hasNotifications = notifCount > 0 || unreadChats > 0;
+		})
+		.catch(() => {});
+	}
+
 	onMount(() => {
 		const storedUser = localStorage.getItem('chronomuse_user');
 		if (storedUser) {
 			user = JSON.parse(storedUser);
+			const targetDate = $page.url.searchParams.get('date');
 			const now = new Date();
-			loadMemoriesForMonth(now.getMonth(), now.getFullYear());
+			
+			if (targetDate) {
+				const parts = targetDate.split('-');
+				if (parts.length === 3) {
+					const year = parseInt(parts[0], 10);
+					const month = parseInt(parts[1], 10) - 1;
+					selectedDate = targetDate;
+					loadMemoriesForMonth(month, year).then(() => {
+						memoriesForDate = memoriesData[targetDate] || [];
+						if (memoriesForDate && memoriesForDate.length > 0) {
+							showViewMemory = true;
+							showViewMemoryModalWrapper = true;
+							showAddMemory = false;
+						} else {
+							showAddMemory = true;
+							showViewMemory = false;
+						}
+					});
+				} else {
+					loadMemoriesForMonth(now.getMonth(), now.getFullYear());
+				}
+			} else {
+				loadMemoriesForMonth(now.getMonth(), now.getFullYear());
+			}
+
 			loadPinnedDates();
+			checkNotifications();
 		} else {
 			goto('/');
 		}
@@ -80,7 +131,8 @@
 	}
 
 	function handleLogout() {
-		localStorage.removeItem('chronomuse_user');
+		localStorage.clear();
+		sessionStorage.clear();
 		goto('/');
 	}
 
@@ -521,7 +573,7 @@
 				<div class="flex items-center space-x-2.5">
 					<button
 						onclick={toggleSidebar}
-						class="p-1.5 sm:p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors flex-shrink-0 active:scale-95"
+						class="p-1.5 sm:p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors flex-shrink-0 active:scale-95 relative"
 						aria-label="Toggle menu"
 						title="Toggle menu"
 					>
@@ -533,6 +585,9 @@
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
 							</svg>
+						{/if}
+						{#if hasNotifications}
+							<span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white animate-pulse"></span>
 						{/if}
 					</button>
 					<img src="/logo.png" alt="ChronoMuse" class="w-9 h-9 sm:w-10 sm:h-10 rounded-md object-contain flex-shrink-0" />
@@ -572,6 +627,7 @@
 						<Calendar
 							{memoriesData}
 							{pinnedDates}
+							selectedDateStr={selectedDate}
 							on:dateSelected={handleDateSelected}
 							on:dateWithMemoriesSelected={handleDateWithMemoriesSelected}
 							on:monthChanged={handleMonthChanged}

@@ -35,7 +35,7 @@ export async function POST({ request }) {
 				// Last message
 				const { data: lastMsgArr } = await supabase
 					.from('chronomuse_messages')
-					.select('message, created_at, sender_id')
+					.select('message, created_at, sender_id, is_read')
 					.or(`and(sender_id.eq.${user_id},receiver_id.eq.${friend.id}),and(sender_id.eq.${friend.id},receiver_id.eq.${user_id})`)
 					.order('created_at', { ascending: false })
 					.limit(1);
@@ -57,10 +57,22 @@ export async function POST({ request }) {
 					last_activity: friend.last_activity,
 					last_message: lastMsg ? lastMsg.message : null,
 					last_message_time: lastMsg ? lastMsg.created_at : null,
+					last_sender_id: lastMsg ? lastMsg.sender_id : null,
+					last_is_read: lastMsg ? Boolean(lastMsg.is_read) : false,
 					unread_count: unreadCount || 0
 				};
 			})
 		);
+
+		// Sort friends by most recent message descending (latest conversation at the very top)
+		friendsWithChat.sort((a, b) => {
+			const timeA = a.last_message_time ? new Date(a.last_message_time).getTime() : 0;
+			const timeB = b.last_message_time ? new Date(b.last_message_time).getTime() : 0;
+			if (timeB !== timeA) {
+				return timeB - timeA;
+			}
+			return a.username.localeCompare(b.username);
+		});
 
 		return json({ success: true, data: { friends: friendsWithChat } });
 	} catch (err) {
