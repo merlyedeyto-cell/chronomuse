@@ -61,9 +61,10 @@ export async function POST({ request }) {
 
 			return json({ success: true, message: 'Friend request accepted!' });
 		} else if (action === 'decline') {
+			// Cleanly remove from database so declined requests do not pile up in pending
 			await supabase
 				.from('chronomuse_friend_requests')
-				.update({ status: 'declined' })
+				.delete()
 				.eq('id', request_id);
 
 			try {

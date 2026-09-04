@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
+	import { broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
 	import Sidebar from '$lib/Sidebar.svelte';
 
 	let user = $state(null);
@@ -213,10 +214,16 @@
 		if (!user || !user.id || isResponding) return;
 		isResponding = true;
 
-		// Optimistic removal
+		// Find target sender
+		const reqItem = notifications.incoming_requests.find(r => r.request_id === requestId || r.id === requestId);
+		const targetSenderId = reqItem?.sender_id || reqItem?.id;
+
+		// 0ms Optimistic removal
 		const backupReqs = [...notifications.incoming_requests];
-		notifications.incoming_requests = notifications.incoming_requests.filter(r => r.request_id !== requestId);
+		notifications.incoming_requests = notifications.incoming_requests.filter(r => r.request_id !== requestId && r.id !== requestId);
 		notifications.total_notifications_count = Math.max(0, notifications.total_notifications_count - 1);
+
+		broadcastFriendEvent(user.id, targetSenderId, action === 'accept' ? 'accept_request' : 'decline_request');
 
 		try {
 			const res = await fetch(API_ENDPOINTS.respondToFriendRequest, {
@@ -229,7 +236,10 @@
 				})
 			});
 			const data = await res.json();
-			if (!data.success) {
+			if (data.success) {
+				fetchNotifications();
+				broadcastFriendEvent(user.id, targetSenderId, action === 'accept' ? 'accept_request' : 'decline_request');
+			} else {
 				notifications.incoming_requests = backupReqs;
 				alert('Error: ' + (data.error || 'Failed to respond'));
 			}
