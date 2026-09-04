@@ -563,6 +563,14 @@
 
 						<!-- Statistics Pills / Badges -->
 						<div class="flex items-center justify-center md:justify-start flex-wrap gap-2 pt-2 border-t border-pink-100">
+							<!-- Total Memories Badge -->
+							<div class="px-3 py-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full text-xs font-bold flex items-center space-x-1.5 shadow-xs">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-pink-100">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+								</svg>
+								<span>{profileData.total_memories || 0} {profileData.total_memories === 1 ? 'Memory' : 'Memories'}</span>
+							</div>
+
 							<!-- Total Friends Badge -->
 							<div class="px-3 py-1 bg-pink-100/80 border border-pink-300 rounded-full text-xs font-bold text-pink-700 flex items-center space-x-1.5 shadow-xs">
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-pink-600">

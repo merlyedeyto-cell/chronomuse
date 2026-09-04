@@ -75,13 +75,19 @@ export async function POST({ request }) {
 			});
 		}
 
+		// 3. Fetch Target User's Total Memories Count
+		const { count: memoriesCount } = await supabase
+			.from('chronomuse_memories')
+			.select('id', { count: 'exact', head: true })
+			.eq('user_id', targetId);
+
 		const isSelf = String(user_id) === String(targetId);
 		let isFriend = false;
 		let hasPendingRequest = false;
 		let pendingReq = null;
 		let mutualFriends = [];
 
-		// 3. If viewing another user, compute friendship status and mutual friends
+		// 4. If viewing another user, compute friendship status and mutual friends
 		if (!isSelf && user_id) {
 			// Check if viewer and target are friends
 			isFriend = targetFriendIds.includes(Number(user_id)) || targetFriendIds.includes(String(user_id));
@@ -128,6 +134,7 @@ export async function POST({ request }) {
 				pending_request_id: pendingReq?.id || null,
 				pending_request_sender_id: pendingReq?.sender_id || null,
 				total_friends: targetFriends.length,
+				total_memories: memoriesCount || 0,
 				friends: targetFriends,
 				mutual_friends: mutualFriends,
 				mutual_friends_count: mutualFriends.length
