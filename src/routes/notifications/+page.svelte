@@ -38,6 +38,7 @@
 		const storedUser = localStorage.getItem('chronomuse_user');
 		if (storedUser) {
 			user = JSON.parse(storedUser);
+			isLoading = false;
 			fetchNotifications().then(() => {
 				if (pendingSharedMemories.length > 0) {
 					activeTab = 'pending_memories';
@@ -52,7 +53,6 @@
 		} else {
 			goto('/');
 		}
-		isLoading = false;
 
 		const handleRealtimeNotifs = () => {
 			if (user && user.id) {
@@ -324,7 +324,7 @@
 		}
 	}
 
-	let hasNotifications = $derived(totalRequestsCount > 0);
+	let hasNotifications = $derived(totalPendingMemoriesCount > 0);
 </script>
 
 <svelte:head>
