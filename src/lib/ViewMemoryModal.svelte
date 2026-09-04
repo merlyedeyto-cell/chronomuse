@@ -1,6 +1,7 @@
 <script>
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
+	import { supabase } from '$lib/supabaseClient';
 
 	const dispatch = createEventDispatcher();
 
@@ -26,6 +27,8 @@
 	let showShareModal = $state(false);
 	let memoryToShare = $state(null);
 	let selectedShareFriendIds = $state([]);
+	let alreadySharedRecipientIds = $state([]);
+	let isLoadingSharedRecipients = $state(false);
 	let isSharing = $state(false);
 	let shareSuccessMsg = $state('');
 	
@@ -98,14 +101,40 @@
 		}
 	}
 
-	function openShareModal(memory) {
+	async function openShareModal(memory) {
 		memoryToShare = memory;
 		selectedShareFriendIds = [];
 		shareSuccessMsg = '';
+		alreadySharedRecipientIds = [];
+		isLoadingSharedRecipients = true;
 		showShareModal = true;
+
+		const currentUser = localStorage.getItem('chronomuse_user');
+		const user = currentUser ? JSON.parse(currentUser) : null;
+
+		if (user && user.id && memory && memory.id) {
+			try {
+				const { data: sharedRows } = await supabase
+					.from('chronomuse_shared_memories')
+					.select('recipient_id')
+					.eq('memory_id', memory.id)
+					.eq('sender_id', user.id);
+
+				if (sharedRows && Array.isArray(sharedRows)) {
+					alreadySharedRecipientIds = sharedRows.map(r => r.recipient_id);
+				}
+			} catch (err) {
+				console.error('Error fetching already shared recipients:', err);
+			} finally {
+				isLoadingSharedRecipients = false;
+			}
+		} else {
+			isLoadingSharedRecipients = false;
+		}
 	}
 
 	function toggleShareFriend(friendId) {
+		if (alreadySharedRecipientIds.includes(friendId)) return;
 		if (selectedShareFriendIds.includes(friendId)) {
 			selectedShareFriendIds = selectedShareFriendIds.filter(id => id !== friendId);
 		} else {
@@ -119,6 +148,13 @@
 		const currentUser = localStorage.getItem('chronomuse_user');
 		const user = currentUser ? JSON.parse(currentUser) : null;
 
+		// Filter out any friends that were already shared with
+		const friendsToShare = selectedShareFriendIds.filter(id => !alreadySharedRecipientIds.includes(id));
+		if (friendsToShare.length === 0) {
+			isSharing = false;
+			return;
+		}
+
 		try {
 			const res = await fetch(API_ENDPOINTS.shareMemory, {
 				method: 'POST',
@@ -126,11 +162,12 @@
 				body: JSON.stringify({
 					memory_id: memoryToShare.id,
 					sender_id: user.id,
-					recipient_ids: selectedShareFriendIds
+					recipient_ids: friendsToShare
 				})
 			});
 			const data = await res.json();
 			if (data.success) {
+				alreadySharedRecipientIds = [...alreadySharedRecipientIds, ...friendsToShare];
 				shareSuccessMsg = 'Memory shared successfully!';
 				setTimeout(() => {
 					showShareModal = false;
@@ -794,33 +831,58 @@
 			{#if friends.length === 0}
 				<p class="text-xs text-pink-400 text-center py-4">No friends found. Add friends first from the sidebar!</p>
 			{:else}
-				<div class="space-y-2 max-h-48 overflow-y-auto mb-5 p-1">
+				<div class="space-y-2 max-h-56 overflow-y-auto mb-5 p-1 pr-1.5">
+					{#if isLoadingSharedRecipients}
+						<div class="py-3 text-center">
+							<div class="animate-spin w-5 h-5 border-2 border-pink-300 border-t-pink-500 rounded-full mx-auto mb-1"></div>
+							<span class="text-[11px] text-pink-400">Checking shared status...</span>
+						</div>
+					{/if}
 					{#each friends as friend (friend.friend_id)}
+						{@const isAlreadyShared = alreadySharedRecipientIds.includes(friend.friend_id)}
+						{@const isSelected = selectedShareFriendIds.includes(friend.friend_id)}
 						<button
 							type="button"
-							onclick={() => toggleShareFriend(friend.friend_id)}
-							class="w-full p-2.5 rounded-xl border-2 transition-all flex items-center justify-between text-left"
-							class:border-pink-500={selectedShareFriendIds.includes(friend.friend_id)}
-							class:bg-pink-50={selectedShareFriendIds.includes(friend.friend_id)}
-							class:border-pink-200={!selectedShareFriendIds.includes(friend.friend_id)}
-							class:bg-white={!selectedShareFriendIds.includes(friend.friend_id)}
+							disabled={isAlreadyShared}
+							onclick={() => {
+								if (!isAlreadyShared) toggleShareFriend(friend.friend_id);
+							}}
+							class="w-full p-2.5 rounded-xl border-2 transition-all flex items-center justify-between text-left {isAlreadyShared ? 'bg-pink-50/70 border-pink-200/80 opacity-80 cursor-not-allowed' : isSelected ? 'border-pink-500 bg-pink-50/90 shadow-2xs cursor-pointer' : 'border-pink-200 bg-white hover:bg-pink-50/40 hover:border-pink-300 cursor-pointer'}"
 						>
-							<div class="flex items-center space-x-2.5">
-								<div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 text-white font-bold text-xs flex items-center justify-center">
+							<div class="flex items-center space-x-2.5 min-w-0">
+								<div class="w-8 h-8 rounded-full {isAlreadyShared ? 'bg-gradient-to-r from-pink-300 to-rose-300' : 'bg-gradient-to-r from-pink-400 to-pink-600'} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-2xs">
 									{friend.username.charAt(0).toUpperCase()}
 								</div>
-								<span class="text-xs font-semibold text-pink-700">@{friend.username}</span>
+								<div class="min-w-0">
+									<span class="text-xs font-semibold text-pink-700 block truncate">@{friend.username}</span>
+									{#if isAlreadyShared}
+										<span class="text-[10px] text-pink-500 font-medium block leading-tight">You already shared this memory to this user</span>
+									{/if}
+								</div>
 							</div>
-							{#if selectedShareFriendIds.includes(friend.friend_id)}
-								<span class="text-pink-600 font-bold text-sm">✓</span>
-							{/if}
+							<div class="flex-shrink-0 ml-2">
+								{#if isAlreadyShared}
+									<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-600 border border-pink-200/90 flex items-center gap-1 shadow-2xs">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-pink-500">
+											<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+										</svg>
+										<span>Shared</span>
+									</span>
+								{:else if isSelected}
+									<span class="w-5 h-5 rounded-full bg-pink-500 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+										✓
+									</span>
+								{:else}
+									<span class="w-5 h-5 rounded-full border-2 border-pink-300 bg-white"></span>
+								{/if}
+							</div>
 						</button>
 					{/each}
 				</div>
 				<button
 					onclick={handleShareMemorySubmit}
 					disabled={selectedShareFriendIds.length === 0 || isSharing}
-					class="w-full py-2.5 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl font-semibold text-sm hover:from-pink-500 hover:to-pink-700 transition-all disabled:opacity-50 shadow-md"
+					class="w-full py-2.5 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl font-semibold text-sm hover:from-pink-500 hover:to-pink-700 transition-all disabled:opacity-50 shadow-md cursor-pointer disabled:cursor-not-allowed"
 				>
 					{#if isSharing}Sharing...{:else}Share Memory{/if}
 				</button>
