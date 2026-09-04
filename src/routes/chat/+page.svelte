@@ -1341,10 +1341,10 @@
 	/>
 
 	<!-- Chat Body Container -->
-	<div class="flex-grow flex flex-col md:flex-row overflow-hidden {activeFriend !== null ? 'p-0 w-full h-full max-w-full md:container md:mx-auto md:px-4 md:py-4 md:max-w-6xl md:gap-4 md:h-[calc(100vh-5rem)]' : 'container mx-auto px-2 sm:px-4 py-3 sm:py-4 max-w-6xl gap-3 sm:gap-4 h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5rem)]'}">
+	<div class="flex-grow flex flex-col md:flex-row overflow-hidden {activeFriend !== null ? 'p-0 w-full h-full max-w-full md:container md:mx-auto md:px-4 md:py-4 md:max-w-7xl md:gap-4 md:h-[calc(100vh-5rem)]' : 'container mx-auto px-2 sm:px-4 py-3 sm:py-4 max-w-7xl gap-3 sm:gap-4 h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5rem)]'}">
 		
 		<!-- Left Panel: Friends & Search -->
-		<div class="w-full md:w-80 bg-white/95 backdrop-blur-md border border-pink-200/90 rounded-2xl shadow-sm flex flex-col overflow-hidden animate-fade-in-up" class:hidden={activeFriend !== null} class:md:flex={true} style="animation-delay: 0.05s">
+		<div class="w-full md:w-84 lg:w-96 flex-shrink-0 bg-white/95 backdrop-blur-md border border-pink-200/90 rounded-2xl shadow-sm flex flex-col overflow-hidden animate-fade-in-up" class:hidden={activeFriend !== null} class:md:flex={true} style="animation-delay: 0.05s">
 			<!-- Conversations Header -->
 			<div class="p-3.5 sm:p-4 bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bold text-sm sm:text-base flex items-center justify-between shadow-xs">
 				<div class="flex items-center space-x-2">
@@ -1374,7 +1374,7 @@
 				<div class="grid grid-cols-3 gap-1 p-1 bg-pink-100/70 rounded-xl border border-pink-200/80">
 					<button
 						onclick={() => chatListFilter = 'all'}
-						class="py-1.5 px-1 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center {chatListFilter === 'all' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
+						class="py-1.5 px-1.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center {chatListFilter === 'all' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
 					>
 						<span>Friends</span>
 						<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'all' ? 'bg-white/20 text-white' : 'bg-pink-200 text-pink-700 font-bold'}">
@@ -1384,7 +1384,7 @@
 
 					<button
 						onclick={() => chatListFilter = 'unread'}
-						class="py-1.5 px-1 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative {chatListFilter === 'unread' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
+						class="py-1.5 px-1.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative {chatListFilter === 'unread' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
 					>
 						<span>Unread</span>
 						{#if unreadFriendsCount + unreadRequestsCount > 0}
@@ -1400,7 +1400,7 @@
 
 					<button
 						onclick={() => chatListFilter = 'requests'}
-						class="py-1.5 px-1 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative {chatListFilter === 'requests' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
+						class="py-1.5 px-1.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative {chatListFilter === 'requests' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
 					>
 						<span>Requests</span>
 						{#if requests.length > 0}
@@ -1468,22 +1468,13 @@
 							</div>
 							<div class="flex-grow min-w-0">
 								<div class="flex items-center justify-between">
-									<div class="flex items-center space-x-1.5 min-w-0 truncate">
-										<p class="text-sm truncate transition-colors {isUnread ? 'font-bold text-pink-950' : isSelected ? 'font-bold text-pink-700' : 'font-semibold text-pink-900 group-hover:text-pink-600'}">
+									<div class="flex items-center space-x-1.5 min-w-0 flex-grow pr-1">
+										<p class="text-sm font-semibold truncate transition-colors {isUnread ? 'font-bold text-pink-950' : isSelected ? 'font-bold text-pink-700' : 'text-pink-900 group-hover:text-pink-600'}">
 											@{friend.username}
 										</p>
 										{#if friend.is_request || !friend.is_friend}
 											<span class="inline-flex items-center text-[9px] font-bold text-amber-700 bg-amber-100 border border-amber-300/80 px-1.5 py-0.2 rounded-full flex-shrink-0">
 												Request
-											</span>
-										{:else if isActive}
-											<span class="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 rounded-full flex-shrink-0">
-												<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-												<span>Active</span>
-											</span>
-										{:else if formatLastActive(friend) !== 'Offline'}
-											<span class="inline-flex items-center text-[9px] font-medium text-pink-500/85 bg-pink-50/80 border border-pink-100 px-1.5 py-0.2 rounded-full flex-shrink-0" title={formatLastActive(friend)}>
-												{formatLastActive(friend).replace('Active ', '')}
 											</span>
 										{/if}
 									</div>
