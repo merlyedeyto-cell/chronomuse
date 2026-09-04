@@ -120,6 +120,17 @@
 				fetchMessages(Number(friendIdParam), true);
 				initTypingChannel(Number(friendIdParam));
 			}
+
+			// Ensure base history state is /chat so pressing back on mobile returns to chat list (Friends Chat)
+			if (typeof window !== 'undefined') {
+				const currentSearch = window.location.search;
+				history.replaceState({ chatOpen: false }, '', '/chat');
+				history.pushState({ chatOpen: true, friend_id: Number(friendIdParam) }, '', `/chat${currentSearch}`);
+			}
+		} else {
+			if (typeof window !== 'undefined') {
+				history.replaceState({ chatOpen: false }, '', '/chat');
+			}
 		}
 
 		isLoading = false;
@@ -132,10 +143,6 @@
 				);
 				if (fullFriend) {
 					activeFriend = fullFriend;
-				} else if (friends.length > 0) {
-					// Disallow viewing chat if target is not a friend of this account
-					activeFriend = null;
-					messages = [];
 				}
 			}
 		});
@@ -146,6 +153,23 @@
 				fetchMessages(activeFriend.friend_id, false);
 			}
 		}, 3000);
+
+		// Handle mobile hardware & browser back button to return to chat list
+		const handlePopState = () => {
+			if (activeFriend) {
+				stopMyTyping();
+				activeFriend = null;
+				messages = [];
+				isSelectionMode = false;
+				selectedMessageIds = new Set();
+				replyingTo = null;
+				isOtherUserTyping = false;
+				if (typeof window !== 'undefined') {
+					history.replaceState({ chatOpen: false }, '', '/chat');
+				}
+			}
+		};
+		window.addEventListener('popstate', handlePopState);
 
 		const onWindowMouseMove = (e) => {
 			if (isDragging && swipingMessageId) {
@@ -178,6 +202,7 @@
 			window.removeEventListener('blur', handleBlur);
 			window.removeEventListener('mousemove', onWindowMouseMove);
 			window.removeEventListener('mouseup', onWindowMouseUp);
+			window.removeEventListener('popstate', handlePopState);
 		};
 	});
 
@@ -469,8 +494,28 @@
 		isOtherUserTyping = false;
 		messages = [];
 		hasMoreMessages = true;
+
+		// Push history state so hardware back button on phone returns to chat list (the screen with all chats)
+		if (typeof window !== 'undefined') {
+			const chatUrl = `/chat?friend_id=${friend.friend_id}&username=${encodeURIComponent(friend.username)}`;
+			history.pushState({ chatOpen: true, friend_id: friend.friend_id }, '', chatUrl);
+		}
+
 		initTypingChannel(friend.friend_id);
 		await fetchMessages(friend.friend_id, true);
+	}
+
+	function handleBackToChatList() {
+		stopMyTyping();
+		activeFriend = null;
+		messages = [];
+		isSelectionMode = false;
+		selectedMessageIds = new Set();
+		replyingTo = null;
+		isOtherUserTyping = false;
+		if (typeof window !== 'undefined') {
+			history.replaceState({ chatOpen: false }, '', '/chat');
+		}
 	}
 
 	async function fetchMessages(friendId, isInitialLoad = false) {
@@ -1273,9 +1318,9 @@
 					<div class="p-3 sm:p-3.5 bg-gradient-to-r from-pink-400 to-rose-400 text-white flex items-center justify-between shadow-xs flex-shrink-0 sticky top-0 z-30">
 						<div class="flex items-center space-x-3 min-w-0">
 							<button
-								onclick={() => activeFriend = null}
-								class="md:hidden p-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors flex-shrink-0"
-								title="Back to Friends"
+								onclick={handleBackToChatList}
+								class="md:hidden p-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors flex-shrink-0 active:scale-95"
+								title="Back to Chat List"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
