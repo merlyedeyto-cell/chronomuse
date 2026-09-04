@@ -206,8 +206,8 @@
 	</div>
 
 	<!-- Credit Line -->
-	<div class="mt-3.5 text-center">
-		<p class="text-[11px] font-semibold text-pink-700 bg-white/40 backdrop-blur-md py-2 px-3 rounded-xl border border-pink-300/80 shadow-sm">
+	<div class="mt-3.5 text-center flex items-center justify-center">
+		<p class="text-[9.5px] sm:text-[11px] font-semibold text-pink-700 bg-white/40 backdrop-blur-md py-2 px-2.5 sm:px-3 rounded-xl border border-pink-300/80 shadow-sm whitespace-nowrap tracking-tight sm:tracking-normal">
 			© 2026 CHRONOMUSE. All rights reserved. Developed by Merlye Deyto
 		</p>
 	</div>

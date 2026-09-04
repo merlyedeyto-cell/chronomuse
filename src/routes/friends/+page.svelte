@@ -653,8 +653,8 @@
 
 		<!-- Footer (Same as Dashboard & Mood Graph) -->
 		<footer class="bg-white/85 backdrop-blur-md border-t-2 border-pink-300 animate-fade-in mt-auto" style="animation-delay: 0.4s">
-			<div class="container mx-auto px-4 py-3 text-center">
-				<p class="text-xs text-pink-700">
+			<div class="container mx-auto px-2 sm:px-4 py-2.5 sm:py-3 text-center flex items-center justify-center">
+				<p class="text-[10px] sm:text-xs text-pink-700 whitespace-nowrap font-medium tracking-tight sm:tracking-normal">
 					© 2026 CHRONOMUSE. All rights reserved. Developed by Merlye Deyto
 				</p>
 			</div>
