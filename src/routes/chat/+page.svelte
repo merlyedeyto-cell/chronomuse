@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
+	import { playTypingSound, playMessageSentSound, playIncomingMessageSound } from '$lib/soundEffects.js';
 	import Sidebar from '$lib/Sidebar.svelte';
 
 	let user = $state(null);
@@ -335,6 +336,9 @@
 					if (typingTimeout) clearTimeout(typingTimeout);
 
 					if (isTyping) {
+						if (!isOtherUserTyping) {
+							playTypingSound();
+						}
 						isOtherUserTyping = true;
 						typingTimeout = setTimeout(() => {
 							isOtherUserTyping = false;
@@ -557,9 +561,14 @@
 					const isAtBottom = chatContainer ? (chatContainer.scrollHeight - chatContainer.scrollTop <= chatContainer.clientHeight + 80) : true;
 					messages = [...updatedExisting, ...newIncoming, ...pendingTempMessages];
 
-					if (newIncoming.length > 0 && isAtBottom) {
-						await tick();
-						scrollToBottom(true);
+					if (newIncoming.length > 0) {
+						if (newIncoming.some(sm => sm.sender_id !== user.id)) {
+							playIncomingMessageSound();
+						}
+						if (isAtBottom) {
+							await tick();
+							scrollToBottom(true);
+						}
 					}
 				}
 
@@ -645,6 +654,25 @@
 		showEmojiPicker = false;
 		isSending = true;
 		stopMyTyping();
+		playMessageSentSound();
+
+		// Notify recipient's inbox channel for real-time sound trigger even if they are outside this chat
+		try {
+			const recipientInbox = supabase.channel(`chronomuse_user_inbox_${activeFriend.friend_id}`);
+			recipientInbox.subscribe((status) => {
+				if (status === 'SUBSCRIBED') {
+					recipientInbox.send({
+						type: 'broadcast',
+						event: 'new_message',
+						payload: {
+							sender_id: user.id,
+							receiver_id: activeFriend.friend_id,
+							message: formattedMessage
+						}
+					});
+				}
+			});
+		} catch (e) {}
 
 		// Instant optimistic message insertion with enter animation
 		const tempId = `temp-${Date.now()}`;
