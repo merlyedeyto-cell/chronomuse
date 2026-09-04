@@ -658,13 +658,13 @@
 						</span>
 					</div>
 
-					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2.5 pt-1 overflow-y-auto max-h-[480px]">
+					<div class="grid grid-cols-1 gap-2.5 pt-1 overflow-y-auto max-h-[480px]">
 						{#each profileData.mutual_friends as mutual}
-							<div class="flex items-center justify-between p-3 bg-rose-50/70 hover:bg-rose-100/80 rounded-xl border border-rose-200 transition-all">
+							<div class="flex items-center justify-between p-3.5 bg-rose-50/70 hover:bg-rose-100/80 rounded-xl border border-rose-200 transition-all gap-3">
 								<button
 									type="button"
 									onclick={() => viewUserProfile(mutual)}
-									class="flex items-center space-x-2.5 min-w-0 text-left hover:opacity-85 transition-opacity group cursor-pointer"
+									class="flex items-center space-x-3 min-w-0 flex-grow text-left hover:opacity-85 transition-opacity group cursor-pointer"
 									title="View @{mutual.username}'s Profile"
 								>
 									<div class="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-400 to-rose-500 text-white flex items-center justify-center font-bold text-sm flex-shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
@@ -674,14 +674,14 @@
 											{mutual.username?.charAt(0).toUpperCase()}
 										{/if}
 									</div>
-									<div class="min-w-0">
-										<p class="text-xs font-bold text-rose-950 truncate group-hover:underline">@{mutual.username}</p>
-										<p class="text-[11px] text-rose-600 truncate">{mutual.email}</p>
+									<div class="min-w-0 flex-grow pr-1">
+										<p class="text-sm font-bold text-rose-950 truncate group-hover:underline">@{mutual.username}</p>
+										<p class="text-xs text-rose-600 truncate">{mutual.email}</p>
 									</div>
 								</button>
 								<button
 									onclick={() => viewUserProfile(mutual)}
-									class="px-2.5 py-1 bg-white border border-rose-300 text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-lg transition-all shadow-2xs cursor-pointer flex items-center space-x-1 flex-shrink-0"
+									class="px-3 py-1.5 bg-white border border-rose-300 text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-lg transition-all shadow-2xs cursor-pointer flex items-center space-x-1 flex-shrink-0"
 									title="View Profile"
 								>
 									<span>Profile</span>
@@ -732,13 +732,13 @@
 							</p>
 						</div>
 					{:else}
-						<div class="grid {!profileData.is_self && profileData.mutual_friends?.length > 0 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'} gap-3 overflow-y-auto max-h-[480px]">
+						<div class="grid {!profileData.is_self && profileData.mutual_friends?.length > 0 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'} gap-2.5 overflow-y-auto max-h-[480px]">
 							{#each filteredFriends as friend}
-								<div class="bg-white/90 border border-pink-200 hover:border-pink-300 rounded-2xl p-3 flex items-center justify-between gap-2 shadow-xs hover:shadow-md transition-all">
+								<div class="bg-white/90 border border-pink-200 hover:border-pink-300 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs hover:shadow-md transition-all">
 									<button
 										type="button"
 										onclick={() => viewUserProfile(friend)}
-										class="flex items-center space-x-2.5 min-w-0 text-left hover:opacity-85 transition-opacity group cursor-pointer"
+										class="flex items-center space-x-3 min-w-0 flex-grow text-left hover:opacity-85 transition-opacity group cursor-pointer"
 										title="View @{friend.username}'s Profile"
 									>
 										<div class="relative flex-shrink-0">
@@ -752,19 +752,19 @@
 											<span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white {formatLastActive(friend.last_activity) === 'Active now' ? 'bg-emerald-500' : 'bg-pink-300'}"></span>
 										</div>
 
-										<div class="min-w-0">
-											<p class="text-xs sm:text-sm font-bold text-pink-950 group-hover:text-pink-600 truncate block text-left transition-colors group-hover:underline">
+										<div class="min-w-0 flex-grow pr-1">
+											<p class="text-sm font-bold text-pink-950 group-hover:text-pink-600 truncate block text-left transition-colors group-hover:underline">
 												@{friend.username}
 											</p>
-											<p class="text-[11px] text-pink-500 truncate">{formatLastActive(friend.last_activity)}</p>
+											<p class="text-xs text-pink-500 truncate">{formatLastActive(friend.last_activity)}</p>
 										</div>
 									</button>
 
-									<div class="flex items-center space-x-1 flex-shrink-0">
+									<div class="flex items-center space-x-1.5 flex-shrink-0">
 										<!-- Profile button -->
 										<button
 											onclick={() => viewUserProfile(friend)}
-											class="px-2 py-1 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 rounded-xl text-xs font-semibold transition-all shadow-2xs cursor-pointer"
+											class="px-3 py-1.5 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 rounded-xl text-xs font-semibold transition-all shadow-2xs cursor-pointer"
 											title="View Profile"
 										>
 											Profile
@@ -773,7 +773,7 @@
 										<!-- Chat button -->
 										<button
 											onclick={() => openChatWithUser(friend)}
-											class="p-1.5 text-pink-600 hover:text-pink-800 hover:bg-pink-100 rounded-xl transition-all"
+											class="p-2 text-pink-600 hover:text-pink-800 hover:bg-pink-100 rounded-xl transition-all"
 											title="Chat"
 											aria-label="Chat with friend"
 										>
@@ -786,7 +786,7 @@
 										{#if profileData.is_self}
 											<button
 												onclick={() => promptRemoveFriend(friend)}
-												class="p-1.5 text-pink-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+												class="p-2 text-pink-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
 												title="Unfriend"
 												aria-label="Unfriend"
 											>
