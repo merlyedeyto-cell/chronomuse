@@ -320,6 +320,43 @@
 		return onlineUserIds.has(Number(friendId));
 	}
 
+	function formatLastActive(friend) {
+		if (!friend) return 'Offline';
+		if (isFriendActive(friend.friend_id)) return 'Active now';
+
+		const timestamp = friend.last_activity || friend.last_message_time;
+		if (!timestamp) return 'Offline';
+
+		const now = new Date();
+		const date = new Date(timestamp);
+		const diffMs = now.getTime() - date.getTime();
+
+		if (isNaN(diffMs) || diffMs < 0) return 'Offline';
+
+		const diffSec = Math.floor(diffMs / 1000);
+		const diffMin = Math.floor(diffSec / 60);
+		const diffHr = Math.floor(diffMin / 60);
+		const diffDays = Math.floor(diffHr / 24);
+
+		if (diffMin < 1) {
+			return 'Active just now';
+		} else if (diffMin === 1) {
+			return 'Active 1 min ago';
+		} else if (diffMin < 60) {
+			return `Active ${diffMin} mins ago`;
+		} else if (diffHr === 1) {
+			return 'Active 1 hr ago';
+		} else if (diffHr < 24) {
+			return `Active ${diffHr} hrs ago`;
+		} else if (diffDays === 1) {
+			return 'Active yesterday';
+		} else if (diffDays < 7) {
+			return `Active ${diffDays}d ago`;
+		} else {
+			return `Active ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+		}
+	}
+
 	function loadRemovedMessages() {
 		if (!user) return;
 		try {
@@ -1290,7 +1327,7 @@
 								{#if isActive}
 									<span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white shadow-2xs" title="Active now"></span>
 								{:else}
-									<span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-pink-200 border-2 border-white" title="Offline"></span>
+									<span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-pink-200 border-2 border-white" title={formatLastActive(friend)}></span>
 								{/if}
 							</div>
 							<div class="flex-grow min-w-0">
@@ -1427,9 +1464,9 @@
 											<span>Active now</span>
 										</span>
 									{:else}
-										<span class="flex items-center gap-1 text-pink-100/80">
-											<span class="w-1.5 h-1.5 rounded-full bg-white/50 inline-block"></span>
-											<span>Offline</span>
+										<span class="flex items-center gap-1 text-pink-100/90">
+											<span class="w-1.5 h-1.5 rounded-full bg-white/60 inline-block"></span>
+											<span>{formatLastActive(activeFriend)}</span>
 										</span>
 									{/if}
 								</div>

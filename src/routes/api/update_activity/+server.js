@@ -9,11 +9,11 @@ export async function POST({ request }) {
 			return json({ error: 'User ID is required' }, { status: 400 });
 		}
 
-		// Update user's last_activity in database
+		// Update user's last_activity timestamp in database
 		const { error } = await supabase
 			.from('chronomuse_users')
 			.update({
-				last_activity: is_active ? new Date().toISOString() : null
+				last_activity: new Date().toISOString()
 			})
 			.eq('id', user_id);
 
