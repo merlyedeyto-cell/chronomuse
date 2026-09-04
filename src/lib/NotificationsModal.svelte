@@ -30,9 +30,11 @@
 		dispatch('close');
 	}
 
-	async function fetchNotifications() {
+	async function fetchNotifications(isSilent = false) {
 		if (!userId) return;
-		isLoading = true;
+		if (!isSilent && notifications.shared_memories.length === 0 && notifications.sent_shared_memories.length === 0 && notifications.incoming_requests.length === 0) {
+			isLoading = true;
+		}
 		try {
 			const res = await fetch(API_ENDPOINTS.getNotifications, {
 				method: 'POST',
@@ -42,12 +44,14 @@
 			const data = await res.json();
 			if (data.success && data.data) {
 				notifications = data.data;
-				if (pendingSharedMemories.length > 0) {
-					activeTab = 'pending_memories';
-				} else if (acceptedSharedMemories.length > 0) {
-					activeTab = 'memories';
-				} else if (sentSharedMemories.length > 0) {
-					activeTab = 'sent';
+				if (!isSilent) {
+					if (pendingSharedMemories.length > 0) {
+						activeTab = 'pending_memories';
+					} else if (acceptedSharedMemories.length > 0) {
+						activeTab = 'memories';
+					} else if (sentSharedMemories.length > 0) {
+						activeTab = 'sent';
+					}
 				}
 			}
 		} catch (err) {
@@ -231,7 +235,7 @@
 
 		const handleRealtimeNotifs = () => {
 			if (isOpen && userId) {
-				fetchNotifications();
+				fetchNotifications(true);
 			}
 		};
 
@@ -246,7 +250,8 @@
 
 	$effect(() => {
 		if (isOpen) {
-			fetchNotifications();
+			const hasData = (notifications.shared_memories?.length > 0 || notifications.sent_shared_memories?.length > 0 || notifications.incoming_requests?.length > 0);
+			fetchNotifications(hasData);
 		}
 	});
 </script>

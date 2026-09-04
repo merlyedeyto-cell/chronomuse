@@ -9,38 +9,58 @@ export async function POST({ request }) {
 			return json({ error: 'User ID is required' }, { status: 400 });
 		}
 
-		// 1. Fetch shared memories tagged with this user as recipient (Incoming)
-		const { data: sharedRows } = await supabase
-			.from('chronomuse_shared_memories')
-			.select('id, memory_id, sender_id, recipient_id, created_at')
-			.eq('recipient_id', user_id)
-			.order('created_at', { ascending: false })
-			.limit(50);
+		// Run all primary queries in parallel
+		const [
+			sharedRes,
+			sentRes,
+			currentUserRes,
+			myUserCopiesRes,
+			pendingRequestsRes
+		] = await Promise.all([
+			supabase
+				.from('chronomuse_shared_memories')
+				.select('id, memory_id, sender_id, recipient_id, created_at')
+				.eq('recipient_id', user_id)
+				.order('created_at', { ascending: false })
+				.limit(50),
+			supabase
+				.from('chronomuse_shared_memories')
+				.select('id, memory_id, sender_id, recipient_id, created_at')
+				.eq('sender_id', user_id)
+				.order('created_at', { ascending: false })
+				.limit(50),
+			supabase
+				.from('chronomuse_users')
+				.select('id, username')
+				.eq('id', user_id)
+				.maybeSingle(),
+			supabase
+				.from('chronomuse_memories')
+				.select('date, description, memory_tag, title')
+				.eq('user_id', user_id),
+			supabase
+				.from('chronomuse_friend_requests')
+				.select('id, sender_id, created_at')
+				.eq('receiver_id', user_id)
+				.eq('status', 'pending')
+				.order('created_at', { ascending: false })
+		]);
 
-		// 2. Fetch shared memories created/sent by this user to friends (Outgoing)
-		const { data: sentRows } = await supabase
-			.from('chronomuse_shared_memories')
-			.select('id, memory_id, sender_id, recipient_id, created_at')
-			.eq('sender_id', user_id)
-			.order('created_at', { ascending: false })
-			.limit(50);
+		const sharedRows = sharedRes.data || [];
+		const sentRows = sentRes.data || [];
+		const pendingRequests = pendingRequestsRes.data || [];
+		const currentUsername = currentUserRes.data?.username || '';
+		const userCopies = myUserCopiesRes.data || [];
 
-		// 3. Fetch current user username
-		const { data: currentUserData } = await supabase
-			.from('chronomuse_users')
-			.select('id, username')
-			.eq('id', user_id)
-			.single();
-		const currentUsername = currentUserData?.username || '';
-
-		// Collect all related memory IDs and user IDs
-		const incomingMemoryIds = (sharedRows || []).map(r => r.memory_id);
-		const outgoingMemoryIds = (sentRows || []).map(r => r.memory_id);
+		// Collect all related memory IDs and user IDs across incoming, outgoing, and friend requests
+		const incomingMemoryIds = sharedRows.map(r => r.memory_id);
+		const outgoingMemoryIds = sentRows.map(r => r.memory_id);
 		const allMemoryIds = [...new Set([...incomingMemoryIds, ...outgoingMemoryIds])];
 
-		const incomingSenderIds = (sharedRows || []).map(r => r.sender_id);
-		const outgoingRecipientIds = (sentRows || []).map(r => r.recipient_id);
-		const allRelatedUserIds = [...new Set([...incomingSenderIds, ...outgoingRecipientIds])];
+		const incomingSenderIds = sharedRows.map(r => r.sender_id);
+		const outgoingRecipientIds = sentRows.map(r => r.recipient_id);
+		const reqSenderIds = pendingRequests.map(r => r.sender_id);
+		const allRelatedUserIds = [...new Set([...incomingSenderIds, ...outgoingRecipientIds, ...reqSenderIds])];
 
 		let memoriesMap = {};
 		let usersMap = {};
@@ -49,13 +69,13 @@ export async function POST({ request }) {
 		if (allMemoryIds.length > 0 || allRelatedUserIds.length > 0) {
 			const [memoriesRes, usersRes, recipientCopiesRes] = await Promise.all([
 				allMemoryIds.length > 0
-					? supabase.from('chronomuse_memories').select('*').in('id', allMemoryIds)
+					? supabase.from('chronomuse_memories').select('id, user_id, date, title, description, mood_tag, memory_tag, photo_video, photo_video_type, music, created_at').in('id', allMemoryIds)
 					: Promise.resolve({ data: [] }),
 				allRelatedUserIds.length > 0
 					? supabase.from('chronomuse_users').select('id, username, avatar_url').in('id', allRelatedUserIds)
 					: Promise.resolve({ data: [] }),
 				outgoingRecipientIds.length > 0
-					? supabase.from('chronomuse_memories').select('user_id, date, description, memory_tag').in('user_id', outgoingRecipientIds)
+					? supabase.from('chronomuse_memories').select('user_id, date, description, memory_tag, title').in('user_id', outgoingRecipientIds)
 					: Promise.resolve({ data: [] })
 			]);
 
@@ -72,15 +92,8 @@ export async function POST({ request }) {
 			recipientCopies = recipientCopiesRes.data || [];
 		}
 
-		// Also check user's own copies for incoming shared memories acceptance
-		const { data: myUserCopies } = await supabase
-			.from('chronomuse_memories')
-			.select('date, description, memory_tag, title')
-			.eq('user_id', user_id);
-		const userCopies = myUserCopies || [];
-
 		// Build incoming shared memories
-		const sharedMemories = (sharedRows || []).map(row => {
+		const sharedMemories = sharedRows.map(row => {
 			const memory = memoriesMap[row.memory_id] || null;
 			const senderInfo = usersMap[row.sender_id] || { username: 'Friend', avatar_url: null };
 			const senderName = senderInfo.username || 'Friend';
@@ -111,7 +124,7 @@ export async function POST({ request }) {
 		}).filter(item => item.memory !== null);
 
 		// Build outgoing shared memories (Memories shared by this user with friends)
-		const sentSharedMemories = (sentRows || []).map(row => {
+		const sentSharedMemories = sentRows.map(row => {
 			const memory = memoriesMap[row.memory_id] || null;
 			const recipientInfo = usersMap[row.recipient_id] || { username: 'Friend', avatar_url: null };
 			const recipientName = recipientInfo.username || 'Friend';
@@ -124,7 +137,9 @@ export async function POST({ request }) {
 					rc.date === memory.date &&
 					(
 						(rc.description || '').toLowerCase().includes(targetStr) ||
-						(rc.memory_tag || '').toLowerCase().includes(targetStr)
+						(rc.memory_tag || '').toLowerCase().includes(targetStr) ||
+						(rc.description || '').toLowerCase().includes('(shared by') ||
+						(rc.title && memory.title && rc.title.trim().toLowerCase() === memory.title.trim().toLowerCase())
 					)
 				);
 			}
@@ -140,38 +155,20 @@ export async function POST({ request }) {
 			};
 		}).filter(item => item.memory !== null);
 
-		// 4. Fetch pending friend requests
-		const { data: pendingRequests } = await supabase
-			.from('chronomuse_friend_requests')
-			.select('id, sender_id, created_at')
-			.eq('receiver_id', user_id)
-			.eq('status', 'pending')
-			.order('created_at', { ascending: false });
-
-		let incomingRequests = [];
-		if (pendingRequests && pendingRequests.length > 0) {
-			const senderIds = pendingRequests.map(r => r.sender_id);
-			const { data: senders } = await supabase
-				.from('chronomuse_users')
-				.select('id, username, avatar_url')
-				.in('id', senderIds);
-
-			const sendersMap = (senders || []).reduce((acc, u) => {
-				acc[u.id] = { username: u.username, avatar_url: u.avatar_url || null };
-				return acc;
-			}, {});
-
-			incomingRequests = pendingRequests.map(r => ({
+		// Build incoming friend requests
+		const incomingRequests = pendingRequests.map(r => {
+			const senderInfo = usersMap[r.sender_id] || { username: 'User', avatar_url: null };
+			return {
 				request_id: r.id,
 				sender_id: r.sender_id,
-				sender_username: sendersMap[r.sender_id]?.username || 'User',
-				sender_avatar_url: sendersMap[r.sender_id]?.avatar_url || null,
+				sender_username: senderInfo.username || 'User',
+				sender_avatar_url: senderInfo.avatar_url || null,
 				created_at: r.created_at
-			}));
-		}
+			};
+		});
 
 		const pendingMemoriesCount = sharedMemories.filter(m => m.status === 'pending').length;
-		const totalPendingCount = pendingMemoriesCount + (incomingRequests ? incomingRequests.length : 0);
+		const totalPendingCount = pendingMemoriesCount + incomingRequests.length;
 
 		return json({
 			success: true,

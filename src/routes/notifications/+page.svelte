@@ -58,7 +58,7 @@
 
 		const handleRealtimeNotifs = () => {
 			if (user && user.id) {
-				fetchNotifications();
+				fetchNotifications(true);
 			}
 		};
 
@@ -69,9 +69,9 @@
 		// Fast periodic polling for zero-delay synchronization without refresh
 		autoSyncNotifsInterval = setInterval(() => {
 			if (user && user.id) {
-				fetchNotifications();
+				fetchNotifications(true);
 			}
-		}, 2500);
+		}, 3000);
 
 		return () => {
 			window.removeEventListener('chronomuse_notification_change', handleRealtimeNotifs);
@@ -81,20 +81,44 @@
 		};
 	});
 
-	async function fetchNotifications() {
+	let fetchAbortController = null;
+
+	async function fetchNotifications(isSilent = false) {
 		if (!user || !user.id) return;
+		if (fetchAbortController) {
+			fetchAbortController.abort();
+		}
+		fetchAbortController = new AbortController();
+
+		if (!isSilent && notifications.shared_memories.length === 0 && notifications.sent_shared_memories.length === 0 && notifications.incoming_requests.length === 0) {
+			isLoading = true;
+		}
+
 		try {
 			const res = await fetch(API_ENDPOINTS.getNotifications, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ user_id: user.id })
+				body: JSON.stringify({ user_id: user.id }),
+				signal: fetchAbortController.signal
 			});
 			const data = await res.json();
 			if (data.success && data.data) {
 				notifications = data.data;
+				if (!isSilent) {
+					if (pendingSharedMemories.length > 0) {
+						activeTab = 'pending_memories';
+					} else if (acceptedSharedMemories.length > 0) {
+						activeTab = 'memories';
+					} else if (sentSharedMemories.length > 0) {
+						activeTab = 'sent';
+					}
+				}
 			}
 		} catch (err) {
+			if (err.name === 'AbortError') return;
 			console.error('Error fetching notifications:', err);
+		} finally {
+			isLoading = false;
 		}
 	}
 
