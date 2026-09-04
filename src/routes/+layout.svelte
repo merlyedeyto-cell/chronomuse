@@ -325,6 +325,32 @@
 					window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload }));
 				}
 			})
+			.on('postgres_changes', {
+				event: '*',
+				schema: 'public',
+				table: 'chronomuse_pinned_dates',
+				filter: `user_id=eq.${targetUserId}`
+			}, (payload) => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) return;
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_pinned_change', { detail: payload }));
+					window.dispatchEvent(new CustomEvent('chronomuse_memory_change', { detail: payload }));
+				}
+			})
+			.on('postgres_changes', {
+				event: '*',
+				schema: 'public',
+				table: 'chronomuse_memories',
+				filter: `user_id=eq.${targetUserId}`
+			}, (payload) => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) return;
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_memory_change', { detail: payload }));
+					window.dispatchEvent(new CustomEvent('chronomuse_pinned_change', { detail: payload }));
+				}
+			})
 			.subscribe();
 	}
 

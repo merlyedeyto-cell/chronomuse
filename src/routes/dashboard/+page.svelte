@@ -102,23 +102,35 @@
 		}
 		isLoading = false;
 
-		// Listen for pinned dates changes (client-side only)
+		const handleMemoryChange = () => {
+			checkNotifications();
+			const now = new Date();
+			loadMemoriesForMonth(now.getMonth(), now.getFullYear());
+			loadPinnedDates();
+			if (pinnedMemoryCardRef) pinnedMemoryCardRef.loadPinnedMemories(true);
+			if (selectedDate) loadMemoriesForDate(selectedDate);
+		};
+
+		const handlePinnedChange = () => {
+			loadPinnedDates();
+			if (pinnedMemoryCardRef) pinnedMemoryCardRef.loadPinnedMemories(true);
+		};
+
+		// Listen for pinned dates and memory changes
 		if (browser) {
-			window.addEventListener('pinnedDatesChanged', loadPinnedDates);
+			window.addEventListener('pinnedDatesChanged', handlePinnedChange);
+			window.addEventListener('chronomuse_pinned_change', handlePinnedChange);
 			window.addEventListener('chronomuse_notification_change', checkNotifications);
-			window.addEventListener('chronomuse_memory_change', () => {
-				checkNotifications();
-				const now = new Date();
-				loadMemoriesForMonth(now.getMonth(), now.getFullYear());
-				if (selectedDate) loadMemoriesForDate(selectedDate);
-			});
+			window.addEventListener('chronomuse_memory_change', handleMemoryChange);
 		}
 	});
 
 	onDestroy(() => {
 		if (browser) {
-			window.removeEventListener('pinnedDatesChanged', loadPinnedDates);
+			window.removeEventListener('pinnedDatesChanged', handlePinnedChange);
+			window.removeEventListener('chronomuse_pinned_change', handlePinnedChange);
 			window.removeEventListener('chronomuse_notification_change', checkNotifications);
+			window.removeEventListener('chronomuse_memory_change', handleMemoryChange);
 		}
 	});
 
@@ -440,6 +452,7 @@
 
 	async function deleteMemoryFromDatabase(memoryId) {
 		try {
+			const deletedDate = selectedDate;
 			const response = await fetch(API_ENDPOINTS.deleteMemory, {
 				method: 'POST',
 				headers: {
@@ -454,9 +467,19 @@
 				memoriesForDate = memoriesForDate.filter(m => m.id !== memoryId);
 				// Update memoriesData
 				if (memoriesForDate.length === 0) {
-					delete memoriesData[selectedDate];
+					delete memoriesData[deletedDate];
+					pinnedDates = pinnedDates.filter(p => p.date !== deletedDate);
 				} else {
-					memoriesData[selectedDate] = memoriesForDate;
+					memoriesData[deletedDate] = memoriesForDate;
+				}
+				// Refresh pinned memories card & calendar
+				await loadPinnedDates();
+				if (pinnedMemoryCardRef) {
+					pinnedMemoryCardRef.loadPinnedMemories(true);
+				}
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_memory_change'));
+					window.dispatchEvent(new CustomEvent('chronomuse_pinned_change'));
 				}
 				alert('Memory deleted successfully!');
 			} else {

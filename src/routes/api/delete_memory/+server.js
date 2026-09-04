@@ -9,10 +9,10 @@ export async function POST({ request }) {
 			return json({ error: 'Memory ID is required' }, { status: 400 });
 		}
 
-		// 1. Fetch memory record first to check if there are files in storage
+		// 1. Fetch memory record first to get date, user_id, and files in storage
 		const { data: memory, error: fetchError } = await supabase
 			.from('chronomuse_memories')
-			.select('photo_video, music')
+			.select('id, user_id, date, photo_video, music')
 			.eq('id', memory_id)
 			.maybeSingle();
 
@@ -45,6 +45,62 @@ export async function POST({ request }) {
 
 		if (deleteError) {
 			return json({ error: 'Database delete error: ' + deleteError.message }, { status: 500 });
+		}
+
+		// 3. Clean up associated pinned records & shared memory records
+		if (memory) {
+			// Check if there are any remaining memories for this user on this date
+			const { data: remainingMemories } = await supabase
+				.from('chronomuse_memories')
+				.select('id')
+				.eq('user_id', memory.user_id)
+				.eq('date', memory.date)
+				.limit(1);
+
+			// If no remaining memories on this date, automatically delete the pinned date
+			if (!remainingMemories || remainingMemories.length === 0) {
+				await supabase
+					.from('chronomuse_pinned_dates')
+					.delete()
+					.eq('user_id', memory.user_id)
+					.eq('date', memory.date);
+			}
+
+			// Clean up pinned_memories table if present
+			await supabase
+				.from('chronomuse_pinned_memories')
+				.delete()
+				.eq('memory_id', memory_id);
+
+			// Clean up shared_memories table
+			await supabase
+				.from('chronomuse_shared_memories')
+				.delete()
+				.eq('memory_id', memory_id);
+
+			// 4. Broadcast realtime event to inbox & global channel
+			try {
+				const userChannel = supabase.channel(`chronomuse_user_inbox_${memory.user_id}`);
+				userChannel.subscribe((status) => {
+					if (status === 'SUBSCRIBED') {
+						userChannel.send({
+							type: 'broadcast',
+							event: 'memory_deleted',
+							payload: { memory_id, date: memory.date, user_id: memory.user_id }
+						});
+					}
+				});
+				const globalChannel = supabase.channel('chronomuse_global_events');
+				globalChannel.subscribe((status) => {
+					if (status === 'SUBSCRIBED') {
+						globalChannel.send({
+							type: 'broadcast',
+							event: 'global_memory_event',
+							payload: { memory_id, date: memory.date, user_id: memory.user_id, eventType: 'memory_deleted' }
+						});
+					}
+				});
+			} catch (e) {}
 		}
 
 		return json({

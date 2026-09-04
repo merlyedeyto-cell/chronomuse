@@ -1,5 +1,5 @@
 <script>
-	import { onMount, createEventDispatcher } from 'svelte';
+	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 
 	const dispatch = createEventDispatcher();
@@ -12,21 +12,34 @@
 
 	onMount(() => {
 		loadPinnedMemories();
+
+		const handleRealtimeChange = () => {
+			loadPinnedMemories(true);
+		};
+
+		window.addEventListener('chronomuse_memory_change', handleRealtimeChange);
+		window.addEventListener('chronomuse_pinned_change', handleRealtimeChange);
+		window.addEventListener('pinnedDatesChanged', handleRealtimeChange);
+
+		return () => {
+			window.removeEventListener('chronomuse_memory_change', handleRealtimeChange);
+			window.removeEventListener('chronomuse_pinned_change', handleRealtimeChange);
+			window.removeEventListener('pinnedDatesChanged', handleRealtimeChange);
+		};
 	});
 
-	export function loadPinnedMemories() {
-		isLoading = true;
+	export function loadPinnedMemories(isSilent = false) {
+		if (!isSilent && pinnedMemories.length === 0) {
+			isLoading = true;
+		}
 		fetch(`${API_ENDPOINTS.getPinnedMemories}?user_id=${userId}`)
 			.then(response => response.json())
 			.then(data => {
-				console.log('Pinned memories response:', data);
 				isLoading = false;
 				if (data.success && Array.isArray(data.data)) {
 					pinnedMemories = data.data;
-					console.log('Pinned memories loaded:', pinnedMemories.length);
 				} else {
 					pinnedMemories = [];
-					console.log('No pinned memories found');
 				}
 			})
 			.catch(error => {
