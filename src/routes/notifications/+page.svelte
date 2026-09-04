@@ -36,6 +36,25 @@
 	let totalMemoriesCount = $derived(acceptedSharedMemories.length);
 	let totalSentCount = $derived(sentSharedMemories.length);
 
+	$effect(() => {
+		const storedUser = typeof window !== 'undefined' ? localStorage.getItem('chronomuse_user') : null;
+		if (storedUser) {
+			const parsed = JSON.parse(storedUser);
+			if (!user || Number(user.id) !== Number(parsed.id)) {
+				user = parsed;
+				notifications = {
+					shared_memories: [],
+					sent_shared_memories: [],
+					incoming_requests: [],
+					total_notifications_count: 0
+				};
+				fetchNotifications();
+			}
+		} else if (typeof window !== 'undefined' && !isLoading) {
+			goto('/');
+		}
+	});
+
 	onMount(() => {
 		const storedUser = localStorage.getItem('chronomuse_user');
 		if (storedUser) {
@@ -62,6 +81,27 @@
 			}
 		};
 
+		const handleAuthOrStorage = () => {
+			const currentStored = localStorage.getItem('chronomuse_user');
+			if (currentStored) {
+				const parsed = JSON.parse(currentStored);
+				if (!user || Number(user.id) !== Number(parsed.id)) {
+					user = parsed;
+					notifications = {
+						shared_memories: [],
+						sent_shared_memories: [],
+						incoming_requests: [],
+						total_notifications_count: 0
+					};
+					fetchNotifications();
+				}
+			} else {
+				goto('/');
+			}
+		};
+
+		window.addEventListener('chronomuse_auth_change', handleAuthOrStorage);
+		window.addEventListener('storage', handleAuthOrStorage);
 		window.addEventListener('chronomuse_notification_change', handleRealtimeNotifs);
 		window.addEventListener('chronomuse_friend_change', handleRealtimeNotifs);
 		window.addEventListener('chronomuse_memory_change', handleRealtimeNotifs);
@@ -74,6 +114,8 @@
 		}, 3000);
 
 		return () => {
+			window.removeEventListener('chronomuse_auth_change', handleAuthOrStorage);
+			window.removeEventListener('storage', handleAuthOrStorage);
 			window.removeEventListener('chronomuse_notification_change', handleRealtimeNotifs);
 			window.removeEventListener('chronomuse_friend_change', handleRealtimeNotifs);
 			window.removeEventListener('chronomuse_memory_change', handleRealtimeNotifs);

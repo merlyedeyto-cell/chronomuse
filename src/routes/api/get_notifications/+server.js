@@ -4,12 +4,12 @@ import { supabase } from '$lib/supabaseClient';
 export async function POST({ request }) {
 	try {
 		const { user_id } = await request.json();
-
-		if (!user_id) {
-			return json({ error: 'User ID is required' }, { status: 400 });
+		const targetUserId = Number(user_id);
+		if (!targetUserId) {
+			return json({ error: 'Valid Numeric User ID is required' }, { status: 400 });
 		}
 
-		// Run all primary queries in parallel
+		// Run all primary queries in parallel strictly scoped to targetUserId
 		const [
 			sharedRes,
 			sentRes,
@@ -20,28 +20,28 @@ export async function POST({ request }) {
 			supabase
 				.from('chronomuse_shared_memories')
 				.select('id, memory_id, sender_id, recipient_id, created_at')
-				.eq('recipient_id', user_id)
+				.eq('recipient_id', targetUserId)
 				.order('created_at', { ascending: false })
 				.limit(50),
 			supabase
 				.from('chronomuse_shared_memories')
 				.select('id, memory_id, sender_id, recipient_id, created_at')
-				.eq('sender_id', user_id)
+				.eq('sender_id', targetUserId)
 				.order('created_at', { ascending: false })
 				.limit(50),
 			supabase
 				.from('chronomuse_users')
 				.select('id, username')
-				.eq('id', user_id)
+				.eq('id', targetUserId)
 				.maybeSingle(),
 			supabase
 				.from('chronomuse_memories')
 				.select('date, description, memory_tag, title')
-				.eq('user_id', user_id),
+				.eq('user_id', targetUserId),
 			supabase
 				.from('chronomuse_friend_requests')
 				.select('id, sender_id, created_at')
-				.eq('receiver_id', user_id)
+				.eq('receiver_id', targetUserId)
 				.eq('status', 'pending')
 				.order('created_at', { ascending: false })
 		]);
