@@ -43,6 +43,7 @@ export const API_ENDPOINTS = {
 	respondToFriendRequest: `${API_BASE_URL}/respond_to_friend_request`,
 	respondFriendRequest: `${API_BASE_URL}/respond_to_friend_request`,
 	respondToSharedMemory: `${API_BASE_URL}/respond_to_shared_memory`,
+	cancelSharedMemory: `${API_BASE_URL}/cancel_shared_memory`,
 	cancelFriendRequest: `${API_BASE_URL}/cancel_friend_request`,
 	shareMemory: `${API_BASE_URL}/share_memory`,
 	getPinnedMemories: `${API_BASE_URL}/get_pinned_memories`,

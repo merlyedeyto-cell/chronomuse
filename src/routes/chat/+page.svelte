@@ -69,6 +69,9 @@
 	// Presence & Active state
 	let presenceChannel = null;
 	let onlineUserIds = $state(new Set());
+	let userLastSeenMap = $state({});
+	let currentTime = $state(Date.now());
+	let heartbeatInterval = null;
 
 	const emojis = ['😀', '😁', '😂', '🥰', '😍', '🤩', '😊', '😎', '🥳', '🎉', '❤️', '🔥', '✨', '🌟', '💫', '🎈', '🎊', '📸', '🎵', '🎶', '💕', '💖', '💗', '🌸', '🌈', '☀️', '🌙', '⭐'];
 
@@ -84,6 +87,15 @@
 
 		// Initialize Realtime Global Presence for online/active tracking
 		initPresenceChannel();
+
+		// Heartbeat to update last_activity every 30s while active
+		heartbeatInterval = setInterval(() => {
+			currentTime = Date.now();
+			const isAppVisible = typeof document !== 'undefined' && !document.hidden;
+			if (isAppVisible && user) {
+				updateServerActivity(true);
+			}
+		}, 30000);
 
 		// Listen to visibility & focus to toggle Active/Offline
 		const handleVisibilityChange = () => {
@@ -232,6 +244,7 @@
 	});
 
 	onDestroy(() => {
+		if (heartbeatInterval) clearInterval(heartbeatInterval);
 		if (pollInterval) clearInterval(pollInterval);
 		if (typingTimeout) clearTimeout(typingTimeout);
 		if (myTypingTimeout) clearTimeout(myTypingTimeout);
@@ -267,6 +280,7 @@
 			.on('presence', { event: 'sync' }, () => {
 				const state = presenceChannel.presenceState();
 				const activeIds = new Set();
+				const nowIso = new Date().toISOString();
 				Object.entries(state).forEach(([key, presences]) => {
 					if (Array.isArray(presences)) {
 						const hasActive = presences.some(p => p.is_active !== false);
@@ -275,6 +289,14 @@
 						}
 					}
 				});
+
+				// Record offline timestamp for any user who just disconnected/became inactive
+				onlineUserIds.forEach(prevId => {
+					if (!activeIds.has(prevId)) {
+						userLastSeenMap[prevId] = nowIso;
+					}
+				});
+
 				onlineUserIds = activeIds;
 			})
 			.subscribe(async (status) => {
@@ -321,17 +343,19 @@
 	}
 
 	function formatLastActive(friend) {
+		// Depend on reactive currentTime so display advances every 30s
+		const _ = currentTime;
 		if (!friend) return 'Offline';
 		if (isFriendActive(friend.friend_id)) return 'Active now';
 
-		const timestamp = friend.last_activity || friend.last_message_time;
+		const timestamp = userLastSeenMap[friend.friend_id] || friend.last_activity || friend.last_message_time;
 		if (!timestamp) return 'Offline';
 
-		const now = new Date();
+		const now = Date.now();
 		const date = new Date(timestamp);
-		const diffMs = now.getTime() - date.getTime();
+		const diffMs = now - date.getTime();
 
-		if (isNaN(diffMs) || diffMs < 0) return 'Offline';
+		if (isNaN(diffMs) || diffMs < 0) return 'Active just now';
 
 		const diffSec = Math.floor(diffMs / 1000);
 		const diffMin = Math.floor(diffSec / 60);
@@ -535,6 +559,15 @@
 				friends = data.data.friends;
 				unreadTotal = friends.reduce((total, f) => total + (f.unread_count || 0), 0);
 				localStorage.setItem(`chronomuse_chat_list_${user.id}`, JSON.stringify(data.data.friends));
+
+				if (activeFriend) {
+					const updated = friends.find(f => f.friend_id === activeFriend.friend_id);
+					if (updated) {
+						activeFriend.last_activity = updated.last_activity;
+						activeFriend.last_message_time = updated.last_message_time;
+						activeFriend.last_is_read = updated.last_is_read;
+					}
+				}
 			}
 		} catch (err) {
 			console.error('Error fetching chat list:', err);
@@ -1332,9 +1365,21 @@
 							</div>
 							<div class="flex-grow min-w-0">
 								<div class="flex items-center justify-between">
-									<p class="text-sm truncate transition-colors {isUnread ? 'font-bold text-pink-950' : isSelected ? 'font-bold text-pink-700' : 'font-semibold text-pink-900 group-hover:text-pink-600'}">
-										@{friend.username}
-									</p>
+									<div class="flex items-center space-x-1.5 min-w-0 truncate">
+										<p class="text-sm truncate transition-colors {isUnread ? 'font-bold text-pink-950' : isSelected ? 'font-bold text-pink-700' : 'font-semibold text-pink-900 group-hover:text-pink-600'}">
+											@{friend.username}
+										</p>
+										{#if isActive}
+											<span class="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 rounded-full flex-shrink-0">
+												<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+												<span>Active</span>
+											</span>
+										{:else if formatLastActive(friend) !== 'Offline'}
+											<span class="inline-flex items-center text-[9px] font-medium text-pink-500/85 bg-pink-50/80 border border-pink-100 px-1.5 py-0.2 rounded-full flex-shrink-0" title={formatLastActive(friend)}>
+												{formatLastActive(friend).replace('Active ', '')}
+											</span>
+										{/if}
+									</div>
 									{#if friend.last_message_time}
 										<span class="text-[10px] font-medium ml-1 flex-shrink-0 {isUnread ? 'text-pink-600 font-bold' : 'text-pink-400/80'}">
 											{formatFriendListDate(friend.last_message_time)}

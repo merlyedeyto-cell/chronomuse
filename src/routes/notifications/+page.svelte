@@ -7,26 +7,32 @@
 	let user = $state(null);
 	let isLoading = $state(true);
 	let sidebarOpen = $state(false);
-	let activeTab = $state('requests'); // Default to 'requests' if pending items exist, else 'memories'
+	let activeTab = $state('requests'); // 'requests', 'memories', 'sent'
 
 	let notifications = $state({
 		shared_memories: [],
+		sent_shared_memories: [],
 		incoming_requests: [],
 		total_notifications_count: 0
 	});
 
 	// Memory viewing modal state
-	let selectedMemoryToView = $state(null);
+	let selectedMemoryToView = $state(/** @type {any} */ (null));
 	let showViewMemoryModal = $state(false);
 
 	let isResponding = $state(false);
+	let isCancelling = $state(false);
+	let cancelConfirmItem = $state(/** @type {any} */ (null));
+	let showCancelModal = $state(false);
 
-	let pendingSharedMemories = $derived(notifications.shared_memories.filter(m => m.status !== 'accepted'));
-	let acceptedSharedMemories = $derived(notifications.shared_memories.filter(m => m.status === 'accepted'));
+	let pendingSharedMemories = $derived((notifications.shared_memories || []).filter(m => m.status !== 'accepted'));
+	let acceptedSharedMemories = $derived((notifications.shared_memories || []).filter(m => m.status === 'accepted'));
+	let sentSharedMemories = $derived(notifications.sent_shared_memories || []);
 	let pendingFriendRequests = $derived(notifications.incoming_requests || []);
 
 	let totalRequestsCount = $derived(pendingSharedMemories.length + pendingFriendRequests.length);
 	let totalMemoriesCount = $derived(acceptedSharedMemories.length);
+	let totalSentCount = $derived(sentSharedMemories.length);
 
 	onMount(() => {
 		const storedUser = localStorage.getItem('chronomuse_user');
@@ -35,6 +41,10 @@
 			fetchNotifications().then(() => {
 				if (totalRequestsCount > 0) {
 					activeTab = 'requests';
+				} else if (totalMemoriesCount > 0) {
+					activeTab = 'memories';
+				} else if (totalSentCount > 0) {
+					activeTab = 'sent';
 				} else {
 					activeTab = 'memories';
 				}
@@ -255,6 +265,45 @@
 		}
 	}
 
+	function promptCancelShare(item, e) {
+		if (e) e.stopPropagation();
+		cancelConfirmItem = item;
+		showCancelModal = true;
+	}
+
+	async function confirmCancelShare() {
+		if (!cancelConfirmItem || !user || !user.id || isCancelling) return;
+		const itemToCancel = cancelConfirmItem;
+		isCancelling = true;
+
+		const backupSent = [...(notifications.sent_shared_memories || [])];
+		// Optimistic removal
+		notifications.sent_shared_memories = (notifications.sent_shared_memories || []).filter(m => m.share_id !== itemToCancel.share_id);
+		showCancelModal = false;
+		cancelConfirmItem = null;
+
+		try {
+			const res = await fetch(API_ENDPOINTS.cancelSharedMemory, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					share_id: itemToCancel.share_id,
+					user_id: user.id
+				})
+			});
+			const data = await res.json();
+			if (!data.success) {
+				notifications.sent_shared_memories = backupSent;
+				alert('Error: ' + (data.error || 'Failed to cancel share'));
+			}
+		} catch (err) {
+			notifications.sent_shared_memories = backupSent;
+			console.error('Error cancelling shared memory:', err);
+		} finally {
+			isCancelling = false;
+		}
+	}
+
 	let hasNotifications = $derived(totalRequestsCount > 0);
 </script>
 
@@ -344,10 +393,10 @@
 					</div>
 
 					<!-- Navigation Tabs -->
-					<div class="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-1 sm:space-x-1 bg-pink-100/80 p-1 rounded-xl border border-pink-200">
+					<div class="w-full sm:w-auto grid grid-cols-3 sm:flex items-center gap-1 sm:space-x-1 bg-pink-100/80 p-1 rounded-xl border border-pink-200">
 						<button
 							onclick={() => activeTab = 'memories'}
-							class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center"
+							class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center"
 							class:bg-pink-500={activeTab === 'memories'}
 							class:text-white={activeTab === 'memories'}
 							class:shadow-sm={activeTab === 'memories'}
@@ -359,7 +408,7 @@
 
 						<button
 							onclick={() => activeTab = 'requests'}
-							class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center relative"
+							class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center relative"
 							class:bg-pink-500={activeTab === 'requests'}
 							class:text-white={activeTab === 'requests'}
 							class:shadow-sm={activeTab === 'requests'}
@@ -370,6 +419,18 @@
 							{#if totalRequestsCount > 0}
 								<span class="w-2 h-2 rounded-full bg-red-500 animate-ping absolute -top-0.5 -right-0.5"></span>
 							{/if}
+						</button>
+
+						<button
+							onclick={() => activeTab = 'sent'}
+							class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center"
+							class:bg-pink-500={activeTab === 'sent'}
+							class:text-white={activeTab === 'sent'}
+							class:shadow-sm={activeTab === 'sent'}
+							class:text-pink-600={activeTab !== 'sent'}
+							class:hover:bg-pink-200={activeTab !== 'sent'}
+						>
+							<span>Shared by You ({totalSentCount})</span>
 						</button>
 					</div>
 				</div>
@@ -515,7 +576,7 @@
 						{/if}
 					</div>
 				{/if}
-			{:else}
+			{:else if activeTab === 'memories'}
 				<!-- Tab 2: All & Memories Tab (Accepted Shared Memories that user can open on calendar) -->
 				{#if acceptedSharedMemories.length === 0}
 					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-10 text-center animate-fade-in">
@@ -594,6 +655,104 @@
 													<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
 												</svg>
 												<span>Open on Calendar</span>
+											</button>
+										</div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
+			{:else if activeTab === 'sent'}
+				<!-- Tab 3: Sent / Shared by You Tab -->
+				{#if sentSharedMemories.length === 0}
+					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-10 text-center animate-fade-in">
+						<div class="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3 text-pink-400">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+							</svg>
+						</div>
+						<h2 class="text-base font-bold text-pink-700">No Memories Shared Yet</h2>
+						<p class="text-xs text-pink-400 mt-1 max-w-sm mx-auto">
+							When you share memories with your friends, they will appear here. You can cancel or unshare them anytime if you change your mind!
+						</p>
+					</div>
+				{:else}
+					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5 animate-fade-in">
+						<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3.5">
+							<h2 class="text-xs sm:text-sm font-bold text-pink-600 uppercase tracking-wide flex items-center space-x-1.5">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+								</svg>
+								<span>Your Shared Memories with Friends ({sentSharedMemories.length})</span>
+							</h2>
+							<span class="text-[11px] text-pink-400 font-medium">You can cancel or unshare anytime</span>
+						</div>
+
+						<div class="space-y-3">
+							{#each sentSharedMemories as item (item.share_id)}
+								<div
+									role="button"
+									tabindex="0"
+									onclick={(e) => handleCardClick(item, e)}
+									onkeydown={(e) => { if (e.key === 'Enter') handleCardClick(item, e); }}
+									class="p-3.5 sm:p-4 bg-white hover:bg-pink-50/50 border border-pink-200 hover:border-pink-300 rounded-2xl shadow-xs transition-all duration-200 cursor-pointer group hover:shadow-md"
+								>
+									<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+										<div class="flex items-center space-x-3 min-w-0">
+											<div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+												{item.recipient_username.charAt(0).toUpperCase()}
+											</div>
+											<div class="min-w-0 flex-grow">
+												<div class="flex items-center gap-1.5 flex-wrap">
+													<span class="text-xs text-pink-500 font-medium">Shared with</span>
+													<span class="text-sm font-bold text-pink-700">@{item.recipient_username}</span>
+													{#if item.status === 'accepted'}
+														<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+															✓ Accepted by Friend
+														</span>
+													{:else}
+														<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+															⏳ Pending Approval
+														</span>
+													{/if}
+													{#if item.memory.mood_tag}
+														<span class="text-[10px] px-2 py-0.5 rounded-full font-bold border {getMoodColor(item.memory.mood_tag)}">
+															{item.memory.mood_tag}
+														</span>
+													{/if}
+												</div>
+
+												<p class="text-xs text-pink-900 font-semibold mt-1 truncate">
+													{item.memory.memory_tag || item.memory.title || 'Special Memory'}
+													<span class="text-pink-400 font-normal ml-1">• {formatDate(item.memory.date)}</span>
+												</p>
+
+												<p class="text-[11px] text-pink-400 mt-0.5 flex items-center space-x-1 group-hover:text-pink-600 transition-colors">
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-pink-400 group-hover:text-pink-500">
+														<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+														<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+													</svg>
+													<span>Tap to preview details</span>
+													{#if item.shared_at}
+														<span class="text-pink-300">• {formatTimeAgo(item.shared_at)}</span>
+													{/if}
+												</p>
+											</div>
+										</div>
+
+										<!-- Cancel / Unshare Button -->
+										<div class="flex items-center space-x-2 self-end sm:self-center flex-shrink-0">
+											<button
+												type="button"
+												onclick={(e) => promptCancelShare(item, e)}
+												class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 border border-rose-200 active:scale-95 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer shadow-2xs"
+												title="Cancel and unshare this memory"
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-rose-500">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+												</svg>
+												<span>Cancel Share</span>
 											</button>
 										</div>
 									</div>
@@ -777,6 +936,45 @@
 								</button>
 							</div>
 						{/if}
+					</div>
+				</div>
+			</div>
+		{/if}
+
+		<!-- Cancel Shared Memory Confirmation Modal -->
+		{#if showCancelModal && cancelConfirmItem}
+			<div
+				class="fixed inset-0 bg-black/50 backdrop-blur-xs z-[60] flex items-center justify-center p-4 animate-fade-in"
+				onclick={() => { if (!isCancelling) showCancelModal = false; }}
+			>
+				<div
+					class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-5 sm:p-6 max-w-sm w-full animate-pop-in text-center"
+					onclick={(e) => e.stopPropagation()}
+				>
+					<div class="w-13 h-13 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center mx-auto mb-3.5 shadow-xs">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</div>
+					<h3 class="text-base sm:text-lg font-bold text-pink-700">Cancel Shared Memory?</h3>
+					<p class="text-xs text-pink-600/90 mt-2 leading-relaxed">
+						Are you sure you want to cancel sharing this memory with <strong class="text-pink-700 font-bold">@{cancelConfirmItem.recipient_username}</strong>? This will revoke their access to it from their calendar.
+					</p>
+					<div class="flex items-center justify-center space-x-2.5 mt-6">
+						<button
+							onclick={() => showCancelModal = false}
+							disabled={isCancelling}
+							class="px-4 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold rounded-xl transition-all cursor-pointer disabled:opacity-50"
+						>
+							Keep Shared
+						</button>
+						<button
+							onclick={confirmCancelShare}
+							disabled={isCancelling}
+							class="px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+						>
+							{isCancelling ? 'Cancelling...' : 'Yes, Cancel Share'}
+						</button>
 					</div>
 				</div>
 			</div>

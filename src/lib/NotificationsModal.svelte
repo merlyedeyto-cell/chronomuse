@@ -8,11 +8,13 @@
 
 	let notifications = $state({
 		shared_memories: [],
+		sent_shared_memories: [],
 		incoming_requests: [],
 		total_notifications_count: 0
 	});
 	let isLoading = $state(true);
-	let activeTab = $state('memories'); // 'memories', 'requests'
+	let isCancelling = $state(false);
+	let activeTab = $state('memories'); // 'memories', 'requests', 'sent'
 
 	function closeModal() {
 		isOpen = false;
@@ -36,6 +38,36 @@
 			console.error('Error fetching notifications:', err);
 		} finally {
 			isLoading = false;
+		}
+	}
+
+	async function handleCancelShare(item) {
+		if (!userId || !item || isCancelling) return;
+		if (!confirm(`Are you sure you want to cancel sharing this memory with @${item.recipient_username}?`)) return;
+
+		isCancelling = true;
+		const backupSent = [...(notifications.sent_shared_memories || [])];
+		notifications.sent_shared_memories = (notifications.sent_shared_memories || []).filter(m => m.share_id !== item.share_id);
+
+		try {
+			const res = await fetch(API_ENDPOINTS.cancelSharedMemory, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					share_id: item.share_id,
+					user_id: userId
+				})
+			});
+			const data = await res.json();
+			if (!data.success) {
+				notifications.sent_shared_memories = backupSent;
+				alert('Error: ' + (data.error || 'Failed to cancel share'));
+			}
+		} catch (err) {
+			notifications.sent_shared_memories = backupSent;
+			console.error('Error cancelling shared memory:', err);
+		} finally {
+			isCancelling = false;
 		}
 	}
 
@@ -136,7 +168,7 @@
 					class:text-pink-600={activeTab !== 'memories'}
 					class:hover:bg-pink-100={activeTab !== 'memories'}
 				>
-					Shared Memories ({notifications.shared_memories.length})
+					Shared Memories ({(notifications.shared_memories || []).length})
 				</button>
 				<button
 					onclick={() => activeTab = 'requests'}
@@ -146,7 +178,17 @@
 					class:text-pink-600={activeTab !== 'requests'}
 					class:hover:bg-pink-100={activeTab !== 'requests'}
 				>
-					Memories Pending ({notifications.incoming_requests.length})
+					Memories Pending ({(notifications.incoming_requests || []).length})
+				</button>
+				<button
+					onclick={() => activeTab = 'sent'}
+					class="px-3 py-1.5 rounded-lg transition-all"
+					class:bg-pink-500={activeTab === 'sent'}
+					class:text-white={activeTab === 'sent'}
+					class:text-pink-600={activeTab !== 'sent'}
+					class:hover:bg-pink-100={activeTab !== 'sent'}
+				>
+					Shared by You ({(notifications.sent_shared_memories || []).length})
 				</button>
 			</div>
 
@@ -267,6 +309,82 @@
 								</div>
 							{/each}
 						</div>
+					{/if}
+
+					<!-- Shared by You (Sent) -->
+					{#if activeTab === 'sent'}
+						{#if (notifications.sent_shared_memories || []).length === 0}
+							<div class="py-8 text-center">
+								<p class="text-sm font-bold text-pink-700">No shared memories</p>
+								<p class="text-xs text-pink-400 mt-1">You haven't shared any memories with friends yet.</p>
+							</div>
+						{:else}
+							<div class="space-y-2">
+								<h3 class="text-xs font-bold text-pink-600 uppercase tracking-wide">Memories You Shared With Friends</h3>
+								{#each notifications.sent_shared_memories as item}
+									<div class="p-3.5 bg-gradient-to-br from-pink-50/90 to-rose-50/60 border border-pink-200 rounded-2xl shadow-xs hover:border-pink-300 transition-all">
+										<div class="flex items-start justify-between gap-2 mb-2">
+											<div class="flex items-center space-x-2">
+												<div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-xs flex items-center justify-center">
+													{item.recipient_username.charAt(0).toUpperCase()}
+												</div>
+												<div>
+													<p class="text-xs font-bold text-pink-800">
+														<span class="font-normal text-pink-500">Shared with</span> @{item.recipient_username}
+													</p>
+													<p class="text-[10px] text-pink-400">{formatTimeAgo(item.shared_at)}</p>
+												</div>
+											</div>
+
+											<div class="flex items-center space-x-1.5">
+												{#if item.status === 'accepted'}
+													<span class="text-[9px] px-1.5 py-0.2 rounded-full font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+														✓ Accepted
+													</span>
+												{:else}
+													<span class="text-[9px] px-1.5 py-0.2 rounded-full font-bold bg-amber-50 text-amber-700 border border-amber-200">
+														Pending
+													</span>
+												{/if}
+												{#if item.memory.mood_tag}
+													<span class="text-[9px] px-1.5 py-0.2 rounded-full font-bold border {getMoodColor(item.memory.mood_tag)}">
+														{item.memory.mood_tag}
+													</span>
+												{/if}
+											</div>
+										</div>
+
+										<!-- Memory Details Card -->
+										<div class="p-2.5 bg-white/90 border border-pink-200 rounded-xl space-y-1 text-xs">
+											<div class="flex items-center justify-between">
+												<span class="font-bold text-pink-700 truncate">{item.memory.memory_tag || item.memory.title || 'Special Memory'}</span>
+												<span class="text-[10px] text-pink-400 flex-shrink-0 ml-1">{formatDate(item.memory.date)}</span>
+											</div>
+											{#if item.memory.description}
+												<p class="text-xs text-pink-900/85 line-clamp-2 leading-relaxed">
+													{item.memory.description}
+												</p>
+											{/if}
+										</div>
+
+										<!-- Action Button: Cancel Share -->
+										<div class="mt-2 flex items-center justify-end">
+											<button
+												onclick={() => handleCancelShare(item)}
+												disabled={isCancelling}
+												class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+												title="Cancel and revoke access to this shared memory"
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-rose-500">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+												</svg>
+												<span>Cancel Share</span>
+											</button>
+										</div>
+									</div>
+								{/each}
+							</div>
+						{/if}
 					{/if}
 				{/if}
 			</div>

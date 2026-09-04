@@ -26,6 +26,12 @@ export async function POST({ request }) {
 			return json({ error: error.message }, { status: 500 });
 		}
 
+		// Update sender's last activity timestamp
+		await supabase
+			.from('chronomuse_users')
+			.update({ last_activity: new Date().toISOString() })
+			.eq('id', user_id);
+
 		return json({ success: true, data: newMessage });
 	} catch (err) {
 		return json({ error: err.message }, { status: 500 });
