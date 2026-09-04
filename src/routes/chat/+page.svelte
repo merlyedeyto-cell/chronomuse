@@ -394,6 +394,22 @@
 		broadcastTyping(false);
 	}
 
+	function handleInputFocus() {
+		if (typeof window !== 'undefined') {
+			window.scrollTo(0, 0);
+			document.documentElement.scrollTop = 0;
+			document.body.scrollTop = 0;
+		}
+		tick().then(() => {
+			if (chatContainer) {
+				const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop <= chatContainer.clientHeight + 140;
+				if (isAtBottom) {
+					scrollToBottom(true);
+				}
+			}
+		});
+	}
+
 	function handleInputBlur() {
 		if (newMessageText.trim().length === 0) {
 			stopMyTyping();
@@ -1011,7 +1027,7 @@
 	<title>Chat - ChronoMuse</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-pink-50/80 via-pink-100/50 to-pink-200/40 flex flex-col font-sans animate-fade-in {activeFriend !== null ? 'h-[100dvh] md:min-h-screen overflow-hidden' : ''}">
+<div class="min-h-screen bg-gradient-to-br from-pink-50/80 via-pink-100/50 to-pink-200/40 flex flex-col font-sans animate-fade-in {activeFriend !== null ? 'fixed inset-0 z-40 h-[100dvh] w-full overflow-hidden overscroll-none md:static md:z-auto md:h-auto md:min-h-screen' : ''}">
 	<!-- Top Navigation (Hidden on mobile when chat is open, always visible on desktop) -->
 	<nav class="bg-white/90 backdrop-blur-md border-b border-pink-200 shadow-xs sticky top-0 z-50 animate-slide-down {activeFriend !== null ? 'hidden md:block' : 'block'}">
 		<div class="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -1061,7 +1077,7 @@
 	/>
 
 	<!-- Chat Body Container -->
-	<div class="flex-grow flex flex-col md:flex-row overflow-hidden {activeFriend !== null ? 'p-0 w-full h-[100dvh] max-w-full md:container md:mx-auto md:px-4 md:py-4 md:max-w-6xl md:gap-4 md:h-[calc(100vh-5rem)]' : 'container mx-auto px-2 sm:px-4 py-3 sm:py-4 max-w-6xl gap-3 sm:gap-4 h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5rem)]'}">
+	<div class="flex-grow flex flex-col md:flex-row overflow-hidden {activeFriend !== null ? 'p-0 w-full h-full max-w-full md:container md:mx-auto md:px-4 md:py-4 md:max-w-6xl md:gap-4 md:h-[calc(100vh-5rem)]' : 'container mx-auto px-2 sm:px-4 py-3 sm:py-4 max-w-6xl gap-3 sm:gap-4 h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5rem)]'}">
 		
 		<!-- Left Panel: Friends & Search -->
 		<div class="w-full md:w-80 bg-white/95 backdrop-blur-md border border-pink-200/90 rounded-2xl shadow-sm flex flex-col overflow-hidden animate-fade-in-up" class:hidden={activeFriend !== null} class:md:flex={true} style="animation-delay: 0.05s">
@@ -1215,7 +1231,7 @@
 
 		<!-- Right Panel: Active Chat Stream -->
 		<div
-			class="flex-grow bg-white/95 backdrop-blur-md flex flex-col overflow-hidden relative animate-fade-in-up {activeFriend !== null ? 'h-[100dvh] w-full rounded-none border-0 shadow-none md:h-auto md:rounded-2xl md:border md:border-pink-200/90 md:shadow-sm' : 'border border-pink-200/90 rounded-2xl shadow-sm'}"
+			class="flex-grow bg-white/95 backdrop-blur-md flex flex-col overflow-hidden relative animate-fade-in-up {activeFriend !== null ? 'h-full w-full rounded-none border-0 shadow-none md:h-full md:rounded-2xl md:border md:border-pink-200/90 md:shadow-sm' : 'border border-pink-200/90 rounded-2xl shadow-sm'}"
 			class:hidden={activeFriend === null}
 			class:md:flex={true}
 			style="animation-delay: 0.1s"
@@ -1223,7 +1239,7 @@
 			{#if activeFriend}
 				<!-- Top Header / Selection Header -->
 				{#if isSelectionMode}
-					<div class="p-3 bg-pink-500 text-white flex items-center justify-between shadow-xs animate-fade-in">
+					<div class="p-3 bg-pink-500 text-white flex items-center justify-between shadow-xs animate-fade-in flex-shrink-0 sticky top-0 z-30">
 						<div class="flex items-center space-x-2">
 							<button onclick={exitSelectionMode} class="p-1 rounded-lg hover:bg-white/20 text-white transition-colors" aria-label="Exit selection">
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
@@ -1254,7 +1270,7 @@
 					</div>
 				{:else}
 					<!-- Active Chat Normal Header -->
-					<div class="p-3 sm:p-3.5 bg-gradient-to-r from-pink-400 to-rose-400 text-white flex items-center justify-between shadow-xs">
+					<div class="p-3 sm:p-3.5 bg-gradient-to-r from-pink-400 to-rose-400 text-white flex items-center justify-between shadow-xs flex-shrink-0 sticky top-0 z-30">
 						<div class="flex items-center space-x-3 min-w-0">
 							<button
 								onclick={() => activeFriend = null}
@@ -1576,7 +1592,7 @@
 				{/if}
 
 				<!-- Input Form Section -->
-				<form onsubmit={(e) => { e.preventDefault(); sendMessage(); }} class="p-2 sm:p-3 bg-white border-t border-pink-100 flex items-center space-x-1.5 sm:space-x-2 w-full min-w-0">
+				<form onsubmit={(e) => { e.preventDefault(); sendMessage(); }} class="p-2 sm:p-3 bg-white border-t border-pink-100 flex items-center space-x-1.5 sm:space-x-2 w-full min-w-0 flex-shrink-0 sticky bottom-0 z-20">
 					<!-- Upload Photo Button -->
 					<label class="p-1.5 sm:p-2 text-pink-500 hover:text-pink-600 hover:bg-pink-50 rounded-xl cursor-pointer transition-colors flex-shrink-0" title="Attach Photo">
 						{#if isUploadingImage}
@@ -1603,6 +1619,7 @@
 							bind:this={messageInputRef}
 							bind:value={newMessageText}
 							oninput={handleInputTyping}
+							onfocus={handleInputFocus}
 							onblur={handleInputBlur}
 							placeholder="Type a message... (swipe right to reply, hold to select)"
 							class="w-full pl-3 pr-9 py-2 sm:py-2.5 bg-pink-50/40 border border-pink-200 rounded-xl text-gray-800 text-xs sm:text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-300 focus:bg-white transition-all font-normal"
