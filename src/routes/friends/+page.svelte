@@ -46,21 +46,27 @@
 		}
 		isLoading = false;
 
-		const handleRealtimeUpdate = () => {
+		const handleRealtimeUpdate = (e) => {
 			if (user && user.id) {
-				fetchFriends();
-				fetchPendingRequests();
+				fetchFriends(true);
+				fetchPendingRequests(true);
+				if (friendUsername.trim()) {
+					performUserSearch(friendUsername.trim(), true);
+				}
 			}
 		};
 
 		window.addEventListener('chronomuse_friend_change', handleRealtimeUpdate);
 		window.addEventListener('chronomuse_notification_change', handleRealtimeUpdate);
 
-		// Fast periodic polling to ensure zero delay across different tabs/browsers
+		// Fast periodic polling to ensure zero delay across different tabs/browsers without flashing loading state
 		autoSyncInterval = setInterval(() => {
 			if (user && user.id) {
-				fetchFriends();
-				fetchPendingRequests();
+				fetchFriends(true);
+				fetchPendingRequests(true);
+				if (friendUsername.trim()) {
+					performUserSearch(friendUsername.trim(), true);
+				}
 			}
 		}, 2500);
 
@@ -72,13 +78,44 @@
 	});
 
 	function loadAllData() {
-		fetchFriends();
-		fetchPendingRequests();
+		fetchFriends(false);
+		fetchPendingRequests(false);
 	}
 
-	function fetchFriends() {
+	function syncSearchResultsWithState() {
+		if (!searchResults || searchResults.length === 0) return;
+		const sentIds = new Set((sentRequests || []).map(r => Number(r.receiver_id || r.id)));
+		const friendIds = new Set((friends || []).map(f => Number(f.friend_id || f.id)));
+		const incomingSenderIds = new Set((pendingRequests || []).map(r => Number(r.sender_id || r.id)));
+
+		searchResults = searchResults.map(u => {
+			const uId = Number(u.id);
+			if (u.relationship === 'self') return u;
+
+			if (friendIds.has(uId)) {
+				return { ...u, relationship: 'friends' };
+			}
+			if (sentIds.has(uId)) {
+				const req = sentRequests.find(r => Number(r.receiver_id || r.id) === uId);
+				return { ...u, relationship: 'request_sent', request_id: req?.id || req?.request_id || u.request_id };
+			}
+			if (incomingSenderIds.has(uId)) {
+				const req = pendingRequests.find(r => Number(r.sender_id || r.id) === uId);
+				return { ...u, relationship: 'request_received', request_id: req?.id || req?.request_id || u.request_id };
+			}
+			// If not in friends, sent, or incoming, relationship is 'none'
+			if (u.relationship === 'request_sent' || u.relationship === 'request_received') {
+				return { ...u, relationship: 'none', request_id: null };
+			}
+			return u;
+		});
+	}
+
+	function fetchFriends(isSilent = false) {
 		if (!user || !user.id) return;
-		isFetchingFriends = true;
+		if (!isSilent && friends.length === 0) {
+			isFetchingFriends = true;
+		}
 
 		fetch(API_ENDPOINTS.getFriendsList, {
 			method: 'POST',
@@ -90,6 +127,7 @@
 			isFetchingFriends = false;
 			if (data.data) {
 				friends = data.data.friends || [];
+				syncSearchResultsWithState();
 			}
 		})
 		.catch(err => {
@@ -98,9 +136,11 @@
 		});
 	}
 
-	function fetchPendingRequests() {
+	function fetchPendingRequests(isSilent = false) {
 		if (!user || !user.id) return;
-		isFetchingRequests = true;
+		if (!isSilent && pendingRequests.length === 0 && sentRequests.length === 0) {
+			isFetchingRequests = true;
+		}
 
 		fetch(API_ENDPOINTS.getFriendRequests, {
 			method: 'POST',
@@ -113,6 +153,7 @@
 			if (data.data) {
 				pendingRequests = data.data.requests || [];
 				sentRequests = data.data.sent_requests || [];
+				syncSearchResultsWithState();
 			}
 		})
 		.catch(err => {
@@ -132,16 +173,20 @@
 		}
 		isSearchingUsers = true;
 		searchDebounceTimer = setTimeout(() => {
-			performUserSearch(query);
+			performUserSearch(query, false);
 		}, 300);
 	}
 
-	async function performUserSearch(query) {
+	async function performUserSearch(query, isSilent = false) {
 		if (!user || !user.id || !query) return;
-		isSearchingUsers = true;
+		if (!isSilent && searchResults.length === 0) {
+			isSearchingUsers = true;
+		}
 		hasSearched = true;
-		addFriendError = '';
-		addFriendSuccess = '';
+		if (!isSilent) {
+			addFriendError = '';
+			addFriendSuccess = '';
+		}
 
 		try {
 			const res = await fetch(API_ENDPOINTS.searchUsers, {
@@ -155,12 +200,12 @@
 			const data = await res.json();
 			if (data.success && data.data) {
 				searchResults = data.data.users || [];
-			} else {
+			} else if (!isSilent) {
 				searchResults = [];
 			}
 		} catch (err) {
 			console.error('Search users error:', err);
-			searchResults = [];
+			if (!isSilent) searchResults = [];
 		} finally {
 			isSearchingUsers = false;
 		}
@@ -583,7 +628,7 @@
 						</div>
 					</div>
 
-					{#if isFetchingFriends}
+					{#if isFetchingFriends && friends.length === 0}
 						<div class="text-center py-8">
 							<div class="animate-spin h-6 w-6 text-pink-500 mx-auto mb-2 border-3 border-pink-200 border-t-pink-500 rounded-full"></div>
 							<p class="text-xs text-pink-400">Loading friends list...</p>
