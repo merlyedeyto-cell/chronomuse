@@ -268,11 +268,19 @@
 			const data = await res.json();
 			if (data.success) {
 				showNotification(`Unfriended @${unfriendTarget.username}`);
-				// Optimistically update friends list
-				profileData.is_friend = false;
-				if (profileData.friends) {
-					profileData.friends = profileData.friends.filter(f => String(f.friend_id || f.id) !== String(targetId));
-					profileData.total_friends = profileData.friends.length;
+				// Optimistically update friends list & friendship status
+				if (profileData) {
+					if (String(profileData.user?.id) === String(targetId)) {
+						profileData.is_friend = false;
+					}
+					if (profileData.is_self && profileData.friends) {
+						profileData.friends = profileData.friends.filter(f => String(f.friend_id || f.id) !== String(targetId));
+						profileData.total_friends = profileData.friends.length;
+					}
+					if (profileData.mutual_friends) {
+						profileData.mutual_friends = profileData.mutual_friends.filter(f => String(f.friend_id || f.id) !== String(targetId));
+						profileData.mutual_friends_count = profileData.mutual_friends.length;
+					}
 				}
 				showUnfriendModal = false;
 				unfriendTarget = null;
@@ -558,12 +566,25 @@
 											</svg>
 											<span>Friends</span>
 										</div>
+
+										<!-- Unfriend Button on Friend Profile Header -->
+										<button
+											type="button"
+											onclick={() => promptRemoveFriend(profileData.user)}
+											class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 hover:border-rose-300 font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center space-x-1.5 active:scale-95 cursor-pointer"
+											title="Unfriend @{profileData.user.username}"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-rose-500">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M22 10.5h-6m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.765z" />
+											</svg>
+											<span>Unfriend</span>
+										</button>
 									{/if}
 
 									<!-- Message User Button -->
 									<button
 										onclick={() => openChatWithUser(profileData.user)}
-										class="px-4 py-2 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center space-x-1.5 active:scale-95"
+										class="px-4 py-2 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center space-x-1.5 active:scale-95 cursor-pointer"
 									>
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.818-.818 5.969 5.969 0 011.057-3.035C4.646 15.657 4 13.916 4 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
