@@ -10,38 +10,48 @@ export async function POST({ request }) {
 		}
 
 		if (action === 'accept') {
-			// 1. Fetch original memory details
 			let memoryToCopy = null;
-			if (memory_id) {
+			let senderUsername = 'a friend';
+			let originalSenderId = null;
+
+			// Fetch details using share_id
+			if (share_id) {
+				const { data: shareRow } = await supabase
+					.from('chronomuse_shared_memories')
+					.select('sender_id, memory_id')
+					.eq('id', share_id)
+					.maybeSingle();
+				
+				if (shareRow) {
+					originalSenderId = shareRow.sender_id || null;
+					const targetMemId = memory_id || shareRow.memory_id;
+					if (targetMemId) {
+						const { data: memData } = await supabase
+							.from('chronomuse_memories')
+							.select('*')
+							.eq('id', targetMemId)
+							.maybeSingle();
+						memoryToCopy = memData;
+					}
+
+					if (shareRow.sender_id) {
+						const { data: senderUser } = await supabase
+							.from('chronomuse_users')
+							.select('username')
+							.eq('id', shareRow.sender_id)
+							.maybeSingle();
+						if (senderUser) {
+							senderUsername = senderUser.username;
+						}
+					}
+				}
+			} else if (memory_id) {
 				const { data: memData } = await supabase
 					.from('chronomuse_memories')
 					.select('*')
 					.eq('id', memory_id)
 					.maybeSingle();
 				memoryToCopy = memData;
-			}
-
-			// 2. Fetch sender username & sender_id
-			let senderUsername = 'a friend';
-			let originalSenderId = null;
-			if (share_id) {
-				const { data: shareRow } = await supabase
-					.from('chronomuse_shared_memories')
-					.select('sender_id')
-					.eq('id', share_id)
-					.maybeSingle();
-				
-				if (shareRow && shareRow.sender_id) {
-					originalSenderId = shareRow.sender_id;
-					const { data: senderUser } = await supabase
-						.from('chronomuse_users')
-						.select('username')
-						.eq('id', shareRow.sender_id)
-						.maybeSingle();
-					if (senderUser) {
-						senderUsername = senderUser.username;
-					}
-				}
 			}
 
 			// 3. Insert into recipient's memories if not already saved

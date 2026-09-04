@@ -297,6 +297,10 @@
 			});
 			const data = await res.json();
 			if (data.success) {
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_notification_change'));
+					window.dispatchEvent(new CustomEvent('chronomuse_memory_change'));
+				}
 				fetchNotifications();
 				broadcastMemoryEvent(user.id, item.sender_id, action === 'accept' ? 'shared_memory_accepted' : 'shared_memory_declined', item.memory);
 			} else {

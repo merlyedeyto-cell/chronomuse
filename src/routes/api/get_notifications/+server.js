@@ -75,7 +75,7 @@ export async function POST({ request }) {
 		// Also check user's own copies for incoming shared memories acceptance
 		const { data: myUserCopies } = await supabase
 			.from('chronomuse_memories')
-			.select('date, description, memory_tag')
+			.select('date, description, memory_tag, title')
 			.eq('user_id', user_id);
 		const userCopies = myUserCopies || [];
 
@@ -92,7 +92,9 @@ export async function POST({ request }) {
 					uc.date === memory.date && 
 					(
 						(uc.description || '').toLowerCase().includes(targetStr) ||
-						(uc.memory_tag || '').toLowerCase().includes(targetStr)
+						(uc.memory_tag || '').toLowerCase().includes(targetStr) ||
+						(uc.description || '').toLowerCase().includes('(shared by') ||
+						(uc.title && memory.title && uc.title.trim().toLowerCase() === memory.title.trim().toLowerCase())
 					)
 				);
 			}
