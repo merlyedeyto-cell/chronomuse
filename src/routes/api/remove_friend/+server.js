@@ -25,24 +25,17 @@ export async function POST({ request }) {
 		}
 
 		if (targetFriendId) {
-			// Delete bidirectional friendship records
-			await supabase
-				.from('chronomuse_friends')
-				.delete()
-				.eq('user_id', user_id)
-				.eq('friend_id', targetFriendId);
-
-			await supabase
-				.from('chronomuse_friends')
-				.delete()
-				.eq('user_id', targetFriendId)
-				.eq('friend_id', user_id);
-
-			// Also reset any friend requests between them so they can send requests again if needed
-			await supabase
-				.from('chronomuse_friend_requests')
-				.delete()
-				.or(`and(sender_id.eq.${user_id},receiver_id.eq.${targetFriendId}),and(sender_id.eq.${targetFriendId},receiver_id.eq.${user_id})`);
+			// Delete bidirectional friendship records & reset friend requests in parallel
+			await Promise.all([
+				supabase
+					.from('chronomuse_friends')
+					.delete()
+					.or(`and(user_id.eq.${user_id},friend_id.eq.${targetFriendId}),and(user_id.eq.${targetFriendId},friend_id.eq.${user_id})`),
+				supabase
+					.from('chronomuse_friend_requests')
+					.delete()
+					.or(`and(sender_id.eq.${user_id},receiver_id.eq.${targetFriendId}),and(sender_id.eq.${targetFriendId},receiver_id.eq.${user_id})`)
+			]);
 		} else if (friendship_id) {
 			await supabase
 				.from('chronomuse_friends')

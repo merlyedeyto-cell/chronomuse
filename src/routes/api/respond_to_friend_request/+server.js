@@ -22,19 +22,19 @@ export async function POST({ request }) {
 		}
 
 		if (action === 'accept') {
-			// Update request status
-			await supabase
-				.from('chronomuse_friend_requests')
-				.update({ status: 'accepted' })
-				.eq('id', request_id);
-
-			// Add mutual friendship entries
-			await supabase
-				.from('chronomuse_friends')
-				.upsert([
-					{ user_id: friendReq.receiver_id, friend_id: friendReq.sender_id },
-					{ user_id: friendReq.sender_id, friend_id: friendReq.receiver_id }
-				], { onConflict: 'user_id,friend_id' });
+			// Update request status and add mutual friendships in parallel
+			await Promise.all([
+				supabase
+					.from('chronomuse_friend_requests')
+					.update({ status: 'accepted' })
+					.eq('id', request_id),
+				supabase
+					.from('chronomuse_friends')
+					.upsert([
+						{ user_id: friendReq.receiver_id, friend_id: friendReq.sender_id },
+						{ user_id: friendReq.sender_id, friend_id: friendReq.receiver_id }
+					], { onConflict: 'user_id,friend_id' })
+			]);
 
 			return json({ success: true, message: 'Friend request accepted!' });
 		} else if (action === 'decline') {

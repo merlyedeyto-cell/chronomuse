@@ -153,6 +153,10 @@
 		addFriendError = '';
 		addFriendSuccess = '';
 
+		// 0ms Optimistic UI update
+		const previousRel = targetUser.relationship;
+		targetUser.relationship = 'request_sent';
+
 		try {
 			const res = await fetch(API_ENDPOINTS.addFriend, {
 				method: 'POST',
@@ -164,10 +168,10 @@
 			});
 			const data = await res.json();
 			if (data.error) {
+				targetUser.relationship = previousRel;
 				addFriendError = data.error;
 			} else {
 				addFriendSuccess = data.message || `Friend request sent to @${targetUser.username}!`;
-				targetUser.relationship = 'request_sent';
 				targetUser.request_id = data.request_id || null;
 				fetchPendingRequests();
 				setTimeout(() => {
@@ -175,7 +179,7 @@
 				}, 3000);
 			}
 		} catch (err) {
-			isAddingFriend = false;
+			targetUser.relationship = previousRel;
 			addFriendError = 'An error occurred. Please try again.';
 			console.error('Add friend error:', err);
 		} finally {
@@ -223,6 +227,26 @@
 		if (!user || !user.id || isResponding) return;
 		isResponding = true;
 
+		// 0ms Optimistic UI removal and addition
+		const reqItem = pendingRequests.find(r => r.id === requestId);
+		const prevPending = [...pendingRequests];
+		const prevFriends = [...friends];
+
+		pendingRequests = pendingRequests.filter(r => r.id !== requestId);
+		if (action === 'accept' && reqItem) {
+			friends = [
+				{
+					id: reqItem.sender_id || reqItem.id,
+					friend_id: reqItem.sender_id || reqItem.id,
+					username: reqItem.username || reqItem.sender_username,
+					email: reqItem.email || reqItem.sender_email,
+					avatar_url: reqItem.avatar_url || reqItem.sender_avatar_url,
+					last_activity: new Date().toISOString()
+				},
+				...friends
+			];
+		}
+
 		fetch(API_ENDPOINTS.respondToFriendRequest, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -239,11 +263,15 @@
 				fetchPendingRequests();
 				fetchFriends();
 			} else {
+				pendingRequests = prevPending;
+				friends = prevFriends;
 				alert('Error: ' + (data.error || 'Failed to respond'));
 			}
 		})
 		.catch(err => {
 			isResponding = false;
+			pendingRequests = prevPending;
+			friends = prevFriends;
 			console.error('Error responding to request:', err);
 		});
 	}

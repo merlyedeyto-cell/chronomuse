@@ -24,23 +24,19 @@ export async function POST({ request }) {
 			return json({ error: 'You cannot add yourself as a friend' }, { status: 400 });
 		}
 
-		// Check if already friends
-		const { data: existingFriend } = await supabase
-			.from('chronomuse_friends')
-			.select('id')
-			.or(`and(user_id.eq.${user_id},friend_id.eq.${targetUser.id}),and(user_id.eq.${targetUser.id},friend_id.eq.${user_id})`)
-			.maybeSingle();
-
-		if (existingFriend) {
-			return json({ error: `You are already friends with ${targetUser.username}` }, { status: 400 });
-		}
-
-		// Check existing request
-		const { data: existingRequest } = await supabase
-			.from('chronomuse_friend_requests')
-			.select('id, status, sender_id')
-			.or(`and(sender_id.eq.${user_id},receiver_id.eq.${targetUser.id}),and(sender_id.eq.${targetUser.id},receiver_id.eq.${user_id})`)
-			.maybeSingle();
+		// Check if already friends & check existing request in parallel for fast response
+		const [{ data: existingFriend }, { data: existingRequest }] = await Promise.all([
+			supabase
+				.from('chronomuse_friends')
+				.select('id')
+				.or(`and(user_id.eq.${user_id},friend_id.eq.${targetUser.id}),and(user_id.eq.${targetUser.id},friend_id.eq.${user_id})`)
+				.maybeSingle(),
+			supabase
+				.from('chronomuse_friend_requests')
+				.select('id, status, sender_id')
+				.or(`and(sender_id.eq.${user_id},receiver_id.eq.${targetUser.id}),and(sender_id.eq.${targetUser.id},receiver_id.eq.${user_id})`)
+				.maybeSingle()
+		]);
 
 		if (existingRequest) {
 			if (existingRequest.status === 'pending') {

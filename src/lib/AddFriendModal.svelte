@@ -117,6 +117,10 @@
 			return;
 		}
 
+		// 0ms Optimistic UI update
+		const previousRel = targetUser.relationship;
+		targetUser.relationship = 'request_sent';
+
 		try {
 			const res = await fetch(API_ENDPOINTS.addFriend, {
 				method: 'POST',
@@ -129,10 +133,10 @@
 			const data = await res.json();
 			isLoading = false;
 			if (data.error) {
+				targetUser.relationship = previousRel;
 				errorMessage = data.error;
 			} else {
 				successMessage = data.message || `Friend request sent to @${targetUser.username}!`;
-				targetUser.relationship = 'request_sent';
 				targetUser.request_id = data.request_id || null;
 				fetchPendingRequests();
 				dispatch('addFriend', data);
@@ -142,6 +146,7 @@
 			}
 		} catch (error) {
 			isLoading = false;
+			targetUser.relationship = previousRel;
 			errorMessage = 'An error occurred. Please try again.';
 			console.error('Add friend error:', error);
 		}

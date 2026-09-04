@@ -297,6 +297,11 @@
 	async function sendFriendRequestToTargetUser() {
 		if (!currentUser || !profileData?.user || isSaving) return;
 		isSaving = true;
+
+		// 0ms Optimistic UI feedback
+		profileData.has_pending_request = true;
+		profileData.pending_request_sender_id = currentUser.id;
+
 		try {
 			const res = await fetch(API_ENDPOINTS.addFriend, {
 				method: 'POST',
@@ -308,14 +313,17 @@
 			});
 			const data = await res.json();
 			if (data.error) {
+				// Revert on error
+				profileData.has_pending_request = false;
+				profileData.pending_request_sender_id = null;
 				showNotification(data.error, 'error');
 			} else {
 				showNotification(data.message || `Friend request sent to @${profileData.user.username}!`);
-				profileData.has_pending_request = true;
-				profileData.pending_request_sender_id = currentUser.id;
 				profileData.pending_request_id = data.request_id || null;
 			}
 		} catch (err) {
+			profileData.has_pending_request = false;
+			profileData.pending_request_sender_id = null;
 			showNotification('Failed to send friend request', 'error');
 		} finally {
 			isSaving = false;
@@ -325,26 +333,40 @@
 	async function cancelFriendRequestOnProfile() {
 		if (!currentUser || !profileData?.user || isSaving) return;
 		isSaving = true;
+
+		// 0ms Optimistic UI feedback
+		const prevPending = profileData.has_pending_request;
+		const prevReqId = profileData.pending_request_id;
+		const prevSenderId = profileData.pending_request_sender_id;
+
+		profileData.has_pending_request = false;
+		profileData.pending_request_id = null;
+		profileData.pending_request_sender_id = null;
+
 		try {
 			const res = await fetch(API_ENDPOINTS.cancelFriendRequest, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					user_id: currentUser.id,
-					request_id: profileData.pending_request_id || null,
+					request_id: prevReqId || null,
 					friend_id: profileData.user.id
 				})
 			});
 			const data = await res.json();
 			if (data.success) {
 				showNotification('Friend request cancelled');
-				profileData.has_pending_request = false;
-				profileData.pending_request_id = null;
-				profileData.pending_request_sender_id = null;
 			} else {
+				// Revert on error
+				profileData.has_pending_request = prevPending;
+				profileData.pending_request_id = prevReqId;
+				profileData.pending_request_sender_id = prevSenderId;
 				showNotification(data.error || 'Failed to cancel request', 'error');
 			}
 		} catch (err) {
+			profileData.has_pending_request = prevPending;
+			profileData.pending_request_id = prevReqId;
+			profileData.pending_request_sender_id = prevSenderId;
 			showNotification('Error cancelling request', 'error');
 		} finally {
 			isSaving = false;
