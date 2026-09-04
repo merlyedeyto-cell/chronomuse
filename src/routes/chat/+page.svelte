@@ -9,9 +9,12 @@
 
 	let user = $state(null);
 	let friends = $state([]);
+	let requests = $state([]);
 	let searchQuery = $state('');
-	let chatListFilter = $state('all'); // 'all' | 'unread'
+	let chatListFilter = $state('all'); // 'all' | 'unread' | 'requests'
 	let unreadFriendsCount = $derived(friends.filter(f => (f.unread_count || 0) > 0).length);
+	let unreadRequestsCount = $derived(requests.filter(r => (r.unread_count || 0) > 0).length);
+	let isSendingFriendRequest = $state(false);
 	let activeFriend = $state(null);
 	let messages = $state([]);
 	let newMessageText = $state('');
@@ -64,7 +67,7 @@
 	let myTypingTimeout = null;
 	let myTypingInterval = null;
 	let typingChannel = null;
-	let unreadTotal = $state(0);
+	let unreadTotal = $derived(unreadFriendsCount + unreadRequestsCount);
 
 	// Presence & Active state
 	let presenceChannel = null;
@@ -112,7 +115,7 @@
 		// Clear any legacy un-scoped cache to prevent cross-account leak
 		localStorage.removeItem('chronomuse_chat_list');
 
-		// Load cached friends list for THIS specific user id
+		// Load cached friends & requests list for THIS specific user id
 		const cachedChatList = user?.id ? localStorage.getItem(`chronomuse_chat_list_${user.id}`) : null;
 		if (cachedChatList) {
 			try {
@@ -124,14 +127,27 @@
 			} catch (e) {}
 		}
 
+		const cachedRequests = user?.id ? localStorage.getItem(`chronomuse_chat_requests_${user.id}`) : null;
+		if (cachedRequests) {
+			try {
+				const parsed = JSON.parse(cachedRequests);
+				if (Array.isArray(parsed)) {
+					requests = parsed;
+				}
+			} catch (e) {}
+		}
+
 		// Read URL params for friend loading
 		const friendIdParam = $page.url.searchParams.get('friend_id');
 		const usernameParam = $page.url.searchParams.get('username');
 
 		if (friendIdParam || usernameParam) {
+			const fid = friendIdParam ? Number(friendIdParam) : null;
 			activeFriend = {
-				friend_id: friendIdParam ? Number(friendIdParam) : null,
-				username: usernameParam || 'Friend'
+				friend_id: fid,
+				id: fid,
+				username: usernameParam || 'User',
+				is_friend: friends.some(f => Number(f.friend_id) === fid)
 			};
 			if (friendIdParam) {
 				fetchMessages(Number(friendIdParam), true);
@@ -154,12 +170,16 @@
 
 		fetchChatList().then(() => {
 			if (activeFriend) {
-				const fullFriend = friends.find(f => 
+				const allList = [...friends, ...requests];
+				const fullFriend = allList.find(f => 
 					(activeFriend.friend_id && String(f.friend_id) === String(activeFriend.friend_id)) ||
 					(activeFriend.username && f.username.toLowerCase() === activeFriend.username.toLowerCase())
 				);
 				if (fullFriend) {
 					activeFriend = fullFriend;
+				} else {
+					activeFriend.is_friend = friends.some(f => String(f.friend_id) === String(activeFriend.friend_id));
+					activeFriend.is_request = !activeFriend.is_friend;
 				}
 			}
 		});
@@ -546,6 +566,32 @@
 		}
 	}
 
+	async function sendFriendRequestFromChat(target) {
+		if (!user || !target || isSendingFriendRequest) return;
+		isSendingFriendRequest = true;
+		try {
+			const res = await fetch(API_ENDPOINTS.addFriend, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					user_id: user.id,
+					friend_username: target.username
+				})
+			});
+			const data = await res.json();
+			if (data.error) {
+				alert(data.error);
+			} else {
+				alert(data.message || `Friend request sent to @${target.username}!`);
+				fetchChatList();
+			}
+		} catch (err) {
+			console.error('Error sending friend request from chat:', err);
+		} finally {
+			isSendingFriendRequest = false;
+		}
+	}
+
 	async function fetchChatList() {
 		if (!user) return;
 		try {
@@ -555,17 +601,21 @@
 				body: JSON.stringify({ user_id: user.id })
 			});
 			const data = await res.json();
-			if (data.data && data.data.friends) {
-				friends = data.data.friends;
-				unreadTotal = friends.reduce((total, f) => total + (f.unread_count || 0), 0);
-				localStorage.setItem(`chronomuse_chat_list_${user.id}`, JSON.stringify(data.data.friends));
+			if (data.data) {
+				friends = data.data.friends || [];
+				requests = data.data.requests || [];
+				localStorage.setItem(`chronomuse_chat_list_${user.id}`, JSON.stringify(friends));
+				localStorage.setItem(`chronomuse_chat_requests_${user.id}`, JSON.stringify(requests));
 
 				if (activeFriend) {
-					const updated = friends.find(f => f.friend_id === activeFriend.friend_id);
+					const allList = [...friends, ...requests];
+					const updated = allList.find(f => Number(f.friend_id) === Number(activeFriend.friend_id));
 					if (updated) {
 						activeFriend.last_activity = updated.last_activity;
 						activeFriend.last_message_time = updated.last_message_time;
 						activeFriend.last_is_read = updated.last_is_read;
+						activeFriend.is_friend = updated.is_friend;
+						activeFriend.is_request = updated.is_request;
 					}
 				}
 			}
@@ -578,10 +628,15 @@
 	}
 
 	function filteredFriends() {
-		let list = friends;
-		if (chatListFilter === 'unread') {
-			list = list.filter(f => (f.unread_count || 0) > 0);
+		let list = [];
+		if (chatListFilter === 'all') {
+			list = friends;
+		} else if (chatListFilter === 'unread') {
+			list = [...friends, ...requests].filter(f => (f.unread_count || 0) > 0);
+		} else if (chatListFilter === 'requests') {
+			list = requests;
 		}
+
 		if (searchQuery.trim()) {
 			list = list.filter(f => f.username.toLowerCase().includes(searchQuery.toLowerCase()));
 		}
@@ -600,7 +655,6 @@
 		stopMyTyping();
 		activeFriend = friend;
 		friend.unread_count = 0;
-		unreadTotal = friends.reduce((total, f) => total + (f.unread_count || 0), 0);
 		showEmojiPicker = false;
 		isSelectionMode = false;
 		selectedMessageIds = new Set();
@@ -1297,9 +1351,9 @@
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
 					</svg>
-					<span>Friends Chat</span>
+					<span>Messages</span>
 				</div>
-				<span class="text-xs bg-white/20 px-2 py-0.5 rounded-full font-medium">{friends.length}</span>
+				<span class="text-xs bg-white/20 px-2 py-0.5 rounded-full font-medium">{friends.length + requests.length}</span>
 			</div>
 
 			<!-- Search Bar -->
@@ -1308,7 +1362,7 @@
 					<input
 						type="text"
 						bind:value={searchQuery}
-						placeholder="Search friends..."
+						placeholder="Search conversations..."
 						class="w-full pl-8 pr-3 py-2 bg-white border border-pink-200 rounded-xl text-pink-900 placeholder-pink-400/60 text-xs focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-300 transition-all font-medium"
 					/>
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-400 absolute left-2.5 top-2.5">
@@ -1316,13 +1370,13 @@
 					</svg>
 				</div>
 
-				<!-- All / Unread Filter Buttons -->
-				<div class="grid grid-cols-2 gap-1.5 p-1 bg-pink-100/70 rounded-xl border border-pink-200/80">
+				<!-- All / Unread / Requests Filter Tabs -->
+				<div class="grid grid-cols-3 gap-1 p-1 bg-pink-100/70 rounded-xl border border-pink-200/80">
 					<button
 						onclick={() => chatListFilter = 'all'}
-						class="py-1.5 px-2 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1.5 active:scale-95 text-center {chatListFilter === 'all' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
+						class="py-1.5 px-1 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center {chatListFilter === 'all' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
 					>
-						<span>All</span>
+						<span>Friends</span>
 						<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'all' ? 'bg-white/20 text-white' : 'bg-pink-200 text-pink-700 font-bold'}">
 							{friends.length}
 						</span>
@@ -1330,15 +1384,31 @@
 
 					<button
 						onclick={() => chatListFilter = 'unread'}
-						class="py-1.5 px-2 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1.5 active:scale-95 text-center relative {chatListFilter === 'unread' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
+						class="py-1.5 px-1 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative {chatListFilter === 'unread' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
 					>
 						<span>Unread</span>
-						{#if unreadFriendsCount > 0}
+						{#if unreadFriendsCount + unreadRequestsCount > 0}
 							<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold {chatListFilter === 'unread' ? 'bg-white text-pink-600' : 'bg-pink-500 text-white animate-pulse'}">
-								{unreadFriendsCount}
+								{unreadFriendsCount + unreadRequestsCount}
 							</span>
 						{:else}
 							<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'unread' ? 'bg-white/20 text-white' : 'bg-pink-200 text-pink-700 font-bold'}">
+								0
+							</span>
+						{/if}
+					</button>
+
+					<button
+						onclick={() => chatListFilter = 'requests'}
+						class="py-1.5 px-1 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative {chatListFilter === 'requests' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
+					>
+						<span>Requests</span>
+						{#if requests.length > 0}
+							<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold {chatListFilter === 'requests' ? 'bg-white text-pink-600' : unreadRequestsCount > 0 ? 'bg-rose-500 text-white animate-pulse' : 'bg-pink-200 text-pink-700'}">
+								{requests.length}
+							</span>
+						{:else}
+							<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'requests' ? 'bg-white/20 text-white' : 'bg-pink-200 text-pink-700 font-bold'}">
 								0
 							</span>
 						{/if}
@@ -1348,7 +1418,7 @@
 
 			<!-- Friends List -->
 			<div class="flex-grow overflow-y-auto divide-y divide-pink-50">
-				{#if isLoadingChatList && friends.length === 0}
+				{#if isLoadingChatList && friends.length === 0 && requests.length === 0}
 					<div class="p-8 text-center text-pink-400 text-sm flex flex-col items-center">
 						<div class="animate-spin w-7 h-7 border-3 border-pink-300 border-t-pink-500 rounded-full mb-2"></div>
 						<span>Loading conversations...</span>
@@ -1358,12 +1428,18 @@
 						{#if chatListFilter === 'unread'}
 							<p class="font-semibold text-pink-700 text-sm mb-1">No unread chats</p>
 							<p class="text-pink-400/80">You're all caught up!</p>
+						{:else if chatListFilter === 'requests'}
+							<div class="flex flex-col items-center">
+								<span class="text-2xl mb-1">📬</span>
+								<p class="font-semibold text-pink-700 text-sm mb-1">No message requests</p>
+								<p class="text-pink-400/80">Messages from people who aren't your friends yet will appear here.</p>
+							</div>
 						{:else if searchQuery.trim()}
-							<p class="font-semibold text-pink-700 text-sm mb-1">No friends found</p>
+							<p class="font-semibold text-pink-700 text-sm mb-1">No conversations found</p>
 							<p class="text-pink-400/80">No results for "{searchQuery}"</p>
 						{:else}
 							<p class="font-semibold text-pink-700 text-sm mb-1">No friends found</p>
-							<p class="text-pink-400/80">Add friends from the sidebar menu to start chatting!</p>
+							<p class="text-pink-400/80">Add friends from the Friends menu to start chatting!</p>
 						{/if}
 					</div>
 				{:else}
@@ -1397,7 +1473,11 @@
 										<p class="text-sm truncate transition-colors {isUnread ? 'font-bold text-pink-950' : isSelected ? 'font-bold text-pink-700' : 'font-semibold text-pink-900 group-hover:text-pink-600'}">
 											@{friend.username}
 										</p>
-										{#if isActive}
+										{#if friend.is_request || !friend.is_friend}
+											<span class="inline-flex items-center text-[9px] font-bold text-amber-700 bg-amber-100 border border-amber-300/80 px-1.5 py-0.2 rounded-full flex-shrink-0">
+												Request
+											</span>
+										{:else if isActive}
 											<span class="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 rounded-full flex-shrink-0">
 												<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
 												<span>Active</span>
@@ -1580,6 +1660,37 @@
 									<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 12.55a1.125 1.125 0 01-1.126 1.095H9.726a1.125 1.125 0 01-1.126-1.095L8.259 9M8.875 5.625V4.5c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.125m-4.5 0V4.5m0 0h4.5m-4.5 0a2.25 2.25 0 00-2.25 2.25v1.5a2.25 2.25 0 002.25 2.25h1.5a2.25 2.25 0 002.25-2.25v-1.5a2.25 2.25 0 00-2.25-2.25h-1.5z" />
 								</svg>
 								<span class="hidden sm:inline">Clear Chat</span>
+							</button>
+						</div>
+					</div>
+				{/if}
+
+				<!-- Message Request Top Banner (Shown if not friends yet) -->
+				{#if activeFriend && (activeFriend.is_request || !activeFriend.is_friend)}
+					<div class="px-3.5 py-2.5 bg-gradient-to-r from-amber-50 via-pink-50 to-rose-50 border-b border-pink-200/90 flex items-center justify-between text-xs flex-wrap gap-2 animate-fade-in shadow-2xs flex-shrink-0">
+						<div class="flex items-center space-x-2 text-pink-950 font-medium min-w-0">
+							<span class="text-base flex-shrink-0">📬</span>
+							<span class="truncate"><strong>Message Request:</strong> You and @{activeFriend.username} are not connected as friends yet.</span>
+						</div>
+						<div class="flex items-center space-x-2 flex-shrink-0">
+							<a
+								href="/profile?id={activeFriend.friend_id}"
+								class="px-2.5 py-1 bg-white hover:bg-pink-50 text-pink-700 border border-pink-300 font-bold rounded-lg transition-colors flex items-center space-x-1 cursor-pointer"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+								</svg>
+								<span>Profile</span>
+							</a>
+							<button
+								onclick={() => sendFriendRequestFromChat(activeFriend)}
+								disabled={isSendingFriendRequest}
+								class="px-2.5 py-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-lg transition-all flex items-center space-x-1 shadow-2xs active:scale-95 disabled:opacity-50"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 19.125a1.125 1.125 0 011.125-1.125h15.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H4.875a1.125 1.125 0 01-1.125-1.125v-2.25z" />
+								</svg>
+								<span>Add Friend</span>
 							</button>
 						</div>
 					</div>

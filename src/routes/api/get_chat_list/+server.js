@@ -9,34 +9,80 @@ export async function POST({ request }) {
 			return json({ error: 'User ID is required' }, { status: 400 });
 		}
 
-		// Get all friends
+		// 1. Get all friends of this user
 		const { data: friendships } = await supabase
 			.from('chronomuse_friends')
 			.select('friend_id')
 			.eq('user_id', user_id);
 
-		if (!friendships || friendships.length === 0) {
-			return json({ success: true, data: { friends: [] } });
+		const friendIds = (friendships || []).map(f => Number(f.friend_id));
+		const friendIdSet = new Set(friendIds);
+
+		// 2. Get distinct conversation partners from chronomuse_messages (both sent and received)
+		const { data: sentMessages } = await supabase
+			.from('chronomuse_messages')
+			.select('receiver_id')
+			.eq('sender_id', user_id);
+
+		const { data: receivedMessages } = await supabase
+			.from('chronomuse_messages')
+			.select('sender_id')
+			.eq('receiver_id', user_id);
+
+		const allPartnerIds = new Set();
+		friendIds.forEach(id => allPartnerIds.add(id));
+		(sentMessages || []).forEach(m => allPartnerIds.add(Number(m.receiver_id)));
+		(receivedMessages || []).forEach(m => allPartnerIds.add(Number(m.sender_id)));
+		allPartnerIds.delete(Number(user_id));
+
+		const allPartnerIdsArray = Array.from(allPartnerIds);
+
+		if (allPartnerIdsArray.length === 0) {
+			return json({
+				success: true,
+				data: {
+					friends: [],
+					requests: [],
+					all_conversations: []
+				}
+			});
 		}
 
-		const friendIds = friendships.map(f => f.friend_id);
-		const { data: friendUsers } = await supabase
+		// 3. Fetch user details for all partners
+		let { data: partnerUsers, error: userError } = await supabase
 			.from('chronomuse_users')
 			.select('id, username, email, avatar_url, last_activity')
-			.in('id', friendIds);
+			.in('id', allPartnerIdsArray);
 
-		if (!friendUsers) {
-			return json({ success: true, data: { friends: [] } });
+		if (userError && userError.message?.includes('avatar_url')) {
+			const fallbackUsers = await supabase
+				.from('chronomuse_users')
+				.select('id, username, email, last_activity')
+				.in('id', allPartnerIdsArray);
+			partnerUsers = fallbackUsers.data;
 		}
 
-		// For each friend, fetch last message and unread count
-		const friendsWithChat = await Promise.all(
-			friendUsers.map(async friend => {
+		if (!partnerUsers || partnerUsers.length === 0) {
+			return json({
+				success: true,
+				data: {
+					friends: [],
+					requests: [],
+					all_conversations: []
+				}
+			});
+		}
+
+		// 4. For each partner, fetch last message and unread count
+		const conversations = await Promise.all(
+			partnerUsers.map(async partner => {
+				const isFriend = friendIdSet.has(Number(partner.id));
+
 				// Last message
 				const { data: lastMsgArr } = await supabase
 					.from('chronomuse_messages')
 					.select('message, created_at, sender_id, is_read')
-					.or(`and(sender_id.eq.${user_id},receiver_id.eq.${friend.id}),and(sender_id.eq.${friend.id},receiver_id.eq.${user_id})`)
+					.or(`and(sender_id.eq.${user_id},receiver_id.eq.${partner.id}),and(sender_id.eq.${partner.id},receiver_id.eq.${user_id})`)
 					.order('created_at', { ascending: false })
 					.limit(1);
 
@@ -44,38 +90,54 @@ export async function POST({ request }) {
 				const { count: unreadCount } = await supabase
 					.from('chronomuse_messages')
 					.select('*', { count: 'exact', head: true })
-					.eq('sender_id', friend.id)
+					.eq('sender_id', partner.id)
 					.eq('receiver_id', user_id)
 					.eq('is_read', false);
 
 				const lastMsg = lastMsgArr && lastMsgArr.length > 0 ? lastMsgArr[0] : null;
 
 				return {
-					friend_id: friend.id,
-					username: friend.username,
-					email: friend.email,
-					avatar_url: friend.avatar_url || null,
-					last_activity: friend.last_activity,
+					friend_id: partner.id,
+					id: partner.id,
+					username: partner.username,
+					email: partner.email,
+					avatar_url: partner.avatar_url || null,
+					last_activity: partner.last_activity,
 					last_message: lastMsg ? lastMsg.message : null,
 					last_message_time: lastMsg ? lastMsg.created_at : null,
 					last_sender_id: lastMsg ? lastMsg.sender_id : null,
 					last_is_read: lastMsg ? Boolean(lastMsg.is_read) : false,
-					unread_count: unreadCount || 0
+					unread_count: unreadCount || 0,
+					is_friend: isFriend,
+					is_request: !isFriend
 				};
 			})
 		);
 
-		// Sort friends by most recent message descending (latest conversation at the very top)
-		friendsWithChat.sort((a, b) => {
+		// Separate friends and message requests
+		const friendsList = conversations.filter(c => c.is_friend);
+		const requestsList = conversations.filter(c => !c.is_friend && c.last_message !== null);
+
+		const sortByTime = (a, b) => {
 			const timeA = a.last_message_time ? new Date(a.last_message_time).getTime() : 0;
 			const timeB = b.last_message_time ? new Date(b.last_message_time).getTime() : 0;
 			if (timeB !== timeA) {
 				return timeB - timeA;
 			}
 			return a.username.localeCompare(b.username);
-		});
+		};
 
-		return json({ success: true, data: { friends: friendsWithChat } });
+		friendsList.sort(sortByTime);
+		requestsList.sort(sortByTime);
+
+		return json({
+			success: true,
+			data: {
+				friends: friendsList,
+				requests: requestsList,
+				all_conversations: [...friendsList, ...requestsList].sort(sortByTime)
+			}
+		});
 	} catch (err) {
 		return json({ error: err.message }, { status: 500 });
 	}
