@@ -17,6 +17,8 @@
 	let isLoading = $state(true);
 	let isLoadingChatList = $state(true);
 	let isFetchingMessages = $state(false);
+	let isLoadingOlder = $state(false);
+	let hasMoreMessages = $state(true);
 	let isSending = $state(false);
 	let isUploadingImage = $state(false);
 	let sidebarOpen = $state(false);
@@ -420,37 +422,55 @@
 		selectedMessageIds = new Set();
 		replyingTo = null;
 		isOtherUserTyping = false;
+		messages = [];
+		hasMoreMessages = true;
 		initTypingChannel(friend.friend_id);
 		await fetchMessages(friend.friend_id, true);
 	}
 
-	async function fetchMessages(friendId, shouldScroll = false) {
+	async function fetchMessages(friendId, isInitialLoad = false) {
 		if (!user) return;
-		if (shouldScroll) {
+		if (isInitialLoad) {
 			isFetchingMessages = true;
 		}
 		try {
 			const res = await fetch(API_ENDPOINTS.getMessages, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ user_id: user.id, friend_id: friendId })
+				body: JSON.stringify({ user_id: user.id, friend_id: friendId, limit: 20 })
 			});
 			const data = await res.json();
 			if (data.data && data.data.messages) {
 				const serverMessages = (data.data.messages || []).filter(m => !removedMessageIds.has(m.id));
 				
-				// Preserve pending optimistic temporary messages so messages never flicker
-				const pendingTempMessages = messages.filter(m => 
-					String(m.id).startsWith('temp-') && 
-					!serverMessages.some(sm => sm.message === m.message && sm.sender_id === m.sender_id)
-				);
-
-				const isAtBottom = chatContainer ? (chatContainer.scrollHeight - chatContainer.scrollTop <= chatContainer.clientHeight + 80) : true;
-				messages = [...serverMessages, ...pendingTempMessages];
-
-				if (shouldScroll || isAtBottom) {
+				if (isInitialLoad) {
+					hasMoreMessages = Boolean(data.data.has_more);
+					messages = serverMessages;
 					await tick();
-					scrollToBottom(shouldScroll ? false : true);
+					scrollToBottom(false);
+				} else {
+					// Polling merge: Avoid duplicates and preserve older prepended messages
+					const existingIds = new Set(messages.map(m => m.id));
+					const newIncoming = serverMessages.filter(sm => !existingIds.has(sm.id));
+
+					// Preserve pending optimistic temporary messages
+					const pendingTempMessages = messages.filter(m => 
+						String(m.id).startsWith('temp-') && 
+						!serverMessages.some(sm => sm.message === m.message && sm.sender_id === m.sender_id)
+					);
+
+					const updatedExisting = messages.filter(m => !String(m.id).startsWith('temp-')).map(m => {
+						const found = serverMessages.find(sm => sm.id === m.id);
+						return found ? { ...m, is_read: found.is_read } : m;
+					});
+
+					const isAtBottom = chatContainer ? (chatContainer.scrollHeight - chatContainer.scrollTop <= chatContainer.clientHeight + 80) : true;
+					messages = [...updatedExisting, ...newIncoming, ...pendingTempMessages];
+
+					if (newIncoming.length > 0 && isAtBottom) {
+						await tick();
+						scrollToBottom(true);
+					}
 				}
 
 				broadcastSeen();
@@ -459,6 +479,56 @@
 			console.error('Error fetching messages:', err);
 		} finally {
 			isFetchingMessages = false;
+		}
+	}
+
+	async function handleChatScroll() {
+		if (!chatContainer || isLoadingOlder || !hasMoreMessages || !activeFriend) return;
+		if (chatContainer.scrollTop <= 40) {
+			await loadOlderMessages();
+		}
+	}
+
+	async function loadOlderMessages() {
+		if (isLoadingOlder || !hasMoreMessages || !activeFriend || messages.length === 0) return;
+		const oldestMsg = messages.find(m => typeof m.id === 'number' || !String(m.id).startsWith('temp-'));
+		if (!oldestMsg) return;
+
+		isLoadingOlder = true;
+		const oldScrollHeight = chatContainer ? chatContainer.scrollHeight : 0;
+		const oldScrollTop = chatContainer ? chatContainer.scrollTop : 0;
+
+		try {
+			const res = await fetch(API_ENDPOINTS.getMessages, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					user_id: user.id,
+					friend_id: activeFriend.friend_id,
+					limit: 20,
+					before_id: oldestMsg.id
+				})
+			});
+			const data = await res.json();
+			if (data.data && data.data.messages) {
+				const olderMessages = (data.data.messages || []).filter(m => !removedMessageIds.has(m.id));
+				hasMoreMessages = Boolean(data.data.has_more);
+
+				if (olderMessages.length > 0) {
+					const existingIds = new Set(messages.map(m => m.id));
+					const uniqueOlder = olderMessages.filter(m => !existingIds.has(m.id));
+					messages = [...uniqueOlder, ...messages];
+
+					await tick();
+					if (chatContainer) {
+						chatContainer.scrollTop = chatContainer.scrollHeight - oldScrollHeight + oldScrollTop;
+					}
+				}
+			}
+		} catch (err) {
+			console.error('Error loading older messages:', err);
+		} finally {
+			isLoadingOlder = false;
 		}
 	}
 
@@ -1223,7 +1293,11 @@
 				{/if}
 
 				<!-- Message Stream Container -->
-				<div bind:this={chatContainer} class="flex-grow p-3 sm:p-4 overflow-y-auto overflow-x-hidden space-y-3 bg-[#fffafb] select-none">
+				<div
+					bind:this={chatContainer}
+					onscroll={handleChatScroll}
+					class="flex-grow p-3 sm:p-4 overflow-y-auto overflow-x-hidden space-y-3 bg-[#fffafb] select-none"
+				>
 					{#if isFetchingMessages && messages.length === 0}
 						<div class="h-full flex items-center justify-center py-12">
 							<div class="animate-spin h-6 w-6 border-2 border-pink-300 border-t-pink-500 rounded-full"></div>
@@ -1237,6 +1311,18 @@
 							<p class="text-xs text-gray-400 mt-1 max-w-xs text-center">Say hi, share photos, or hold messages to reply and interact!</p>
 						</div>
 					{:else}
+						<!-- Loading Older Messages Spinner / History Header -->
+						{#if isLoadingOlder}
+							<div class="py-2.5 flex items-center justify-center space-x-2 text-pink-500 text-xs animate-fade-in bg-pink-50/60 rounded-xl border border-pink-100 mb-2">
+								<div class="animate-spin w-4 h-4 border-2 border-pink-300 border-t-pink-500 rounded-full"></div>
+								<span class="font-medium">Loading earlier messages...</span>
+							</div>
+						{:else if !hasMoreMessages && messages.length >= 20}
+							<div class="py-2 text-center text-pink-400/80 text-[11px] font-medium border-b border-pink-100/60 pb-2 mb-2">
+								<span>Beginning of conversation history</span>
+							</div>
+						{/if}
+
 						{#each messages as msg, i (msg.id)}
 							<!-- Date Separator Header with exact date formatting -->
 							{#if isNewDay(i)}
