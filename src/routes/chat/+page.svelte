@@ -1430,7 +1430,6 @@
 							<p class="text-pink-400/80">You're all caught up!</p>
 						{:else if chatListFilter === 'requests'}
 							<div class="flex flex-col items-center">
-								<span class="text-2xl mb-1">📬</span>
 								<p class="font-semibold text-pink-700 text-sm mb-1">No message requests</p>
 								<p class="text-pink-400/80">Messages from people who aren't your friends yet will appear here.</p>
 							</div>
@@ -1668,8 +1667,7 @@
 				<!-- Message Request Top Banner (Shown if not friends yet) -->
 				{#if activeFriend && (activeFriend.is_request || !activeFriend.is_friend)}
 					<div class="px-3.5 py-2.5 bg-gradient-to-r from-amber-50 via-pink-50 to-rose-50 border-b border-pink-200/90 flex items-center justify-between text-xs flex-wrap gap-2 animate-fade-in shadow-2xs flex-shrink-0">
-						<div class="flex items-center space-x-2 text-pink-950 font-medium min-w-0">
-							<span class="text-base flex-shrink-0">📬</span>
+						<div class="flex items-center text-pink-950 font-medium min-w-0">
 							<span class="truncate"><strong>Message Request:</strong> You and @{activeFriend.username} are not connected as friends yet.</span>
 						</div>
 						<div class="flex items-center space-x-2 flex-shrink-0">

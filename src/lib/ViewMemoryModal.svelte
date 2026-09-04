@@ -828,9 +828,6 @@
 				✕
 			</button>
 			<div class="text-center mb-4">
-				<div class="w-12 h-12 mx-auto mb-2 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 text-xl shadow-inner">
-					🤝
-				</div>
 				<h3 class="text-lg font-bold text-pink-600">Share Memory</h3>
 				<p class="text-xs text-pink-400">Select friends to tag/share this memory with so both of you can see it on this date!</p>
 			</div>
