@@ -373,8 +373,13 @@
 					<div class="space-y-2 max-h-56 overflow-y-auto pr-1">
 						{#each searchResults as targetUser (targetUser.id)}
 							<div class="p-2.5 bg-pink-50/90 border-2 border-pink-200 rounded-xl flex items-center justify-between gap-2 shadow-2xs">
-								<div class="flex items-center space-x-2.5 min-w-0">
-									<div class="w-9 h-9 rounded-full bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 overflow-hidden shadow-xs">
+								<button
+									type="button"
+									onclick={() => handleViewUserProfile(targetUser.id)}
+									class="flex items-center space-x-2.5 min-w-0 text-left hover:opacity-85 transition-opacity group cursor-pointer"
+									title="View @{targetUser.username}'s Profile"
+								>
+									<div class="w-9 h-9 rounded-full bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 overflow-hidden shadow-xs group-hover:scale-105 transition-transform">
 										{#if targetUser.avatar_url}
 											<img src={targetUser.avatar_url} alt={targetUser.username} class="w-full h-full object-cover" />
 										{:else}
@@ -382,14 +387,14 @@
 										{/if}
 									</div>
 									<div class="min-w-0">
-										<p class="text-xs font-bold text-pink-900 truncate">@{targetUser.username}</p>
+										<p class="text-xs font-bold text-pink-900 truncate group-hover:underline">@{targetUser.username}</p>
 										{#if targetUser.mutual_friends_count > 0}
 											<p class="text-[10px] text-pink-600 font-semibold">✨ {targetUser.mutual_friends_count} mutual friend{targetUser.mutual_friends_count === 1 ? '' : 's'}</p>
 										{:else}
 											<p class="text-[10px] text-pink-400 truncate">{targetUser.email}</p>
 										{/if}
 									</div>
-								</div>
+								</button>
 
 								<div class="flex items-center space-x-1.5 flex-shrink-0">
 									<!-- View Profile Button -->

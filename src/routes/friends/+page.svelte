@@ -650,10 +650,15 @@
 
 							<div class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
 								{#each searchResults as targetUser (targetUser.id)}
-									<div class="p-3 bg-pink-50/90 hover:bg-pink-100/70 border-2 border-pink-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all duration-200 shadow-2xs">
-										<!-- User Info -->
-										<div class="flex items-center space-x-3 min-w-0">
-											<div class="w-11 h-11 rounded-full bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-sm flex items-center justify-center flex-shrink-0 shadow-xs overflow-hidden">
+									<div class="p-2.5 sm:p-3 bg-pink-50/90 hover:bg-pink-100/70 border-2 border-pink-200 rounded-2xl flex items-center justify-between gap-2 transition-all duration-200 shadow-2xs">
+										<!-- User Info (Clickable) -->
+										<button
+											type="button"
+											onclick={() => goto(`/profile?id=${targetUser.id}`)}
+											class="flex items-center space-x-2.5 min-w-0 text-left hover:opacity-85 transition-opacity group cursor-pointer"
+											title="View @{targetUser.username}'s Profile"
+										>
+											<div class="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-sm flex items-center justify-center flex-shrink-0 shadow-xs overflow-hidden group-hover:scale-105 transition-transform">
 												{#if targetUser.avatar_url}
 													<img src={targetUser.avatar_url} alt={targetUser.username} class="w-full h-full object-cover" />
 												{:else}
@@ -662,19 +667,19 @@
 											</div>
 											<div class="min-w-0">
 												<div class="flex items-center gap-1.5 flex-wrap">
-													<p class="text-xs sm:text-sm font-bold text-pink-900 truncate">@{targetUser.username}</p>
+													<p class="text-xs sm:text-sm font-bold text-pink-900 truncate group-hover:underline">@{targetUser.username}</p>
 													{#if targetUser.mutual_friends_count > 0}
-														<span class="text-[10px] px-2 py-0.2 rounded-full font-bold bg-pink-200/80 text-pink-700 border border-pink-300">
+														<span class="text-[9px] px-1.5 py-0.2 rounded-full font-bold bg-pink-200/80 text-pink-700 border border-pink-300 whitespace-nowrap">
 															✨ {targetUser.mutual_friends_count} mutual
 														</span>
 													{/if}
 												</div>
-												<p class="text-[11px] text-pink-500 truncate">{targetUser.email}</p>
+												<p class="text-[10px] sm:text-[11px] text-pink-500 truncate">{targetUser.email}</p>
 											</div>
-										</div>
+										</button>
 
 										<!-- Actions (View Profile & Add Friend) -->
-										<div class="flex items-center space-x-2 flex-shrink-0 self-end sm:self-center">
+										<div class="flex items-center space-x-1.5 flex-shrink-0">
 											<!-- View Profile Button -->
 											<button
 												type="button"
@@ -690,14 +695,14 @@
 
 											<!-- Relationship Status Action -->
 											{#if targetUser.relationship === 'self'}
-												<span class="px-3 py-1.5 bg-pink-100 text-pink-500 text-xs font-semibold rounded-xl">
+												<span class="px-2.5 py-1.5 bg-pink-100 text-pink-500 text-xs font-semibold rounded-xl">
 													You
 												</span>
 											{:else if targetUser.relationship === 'friends'}
 												<button
 													type="button"
 													onclick={() => openChatWithFriend({ friend_id: targetUser.id, username: targetUser.username })}
-													class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-all shadow-2xs flex items-center space-x-1 cursor-pointer"
+													class="px-2.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-all shadow-2xs flex items-center space-x-1 cursor-pointer active:scale-95"
 												>
 													<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
 														<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
@@ -709,7 +714,7 @@
 													type="button"
 													onclick={() => handleCancelFriendRequestFromSearch(targetUser)}
 													disabled={isResponding}
-													class="px-3 py-1.5 bg-amber-50 hover:bg-red-50 text-amber-800 hover:text-red-600 border border-amber-300 hover:border-red-300 text-xs font-bold rounded-xl active:scale-95 transition-all shadow-2xs flex items-center space-x-1 cursor-pointer disabled:opacity-50"
+													class="px-2.5 py-1.5 bg-amber-50 hover:bg-red-50 text-amber-800 hover:text-red-600 border border-amber-300 hover:border-red-300 text-xs font-bold rounded-xl active:scale-95 transition-all shadow-2xs flex items-center space-x-1 cursor-pointer disabled:opacity-50"
 													title="Click to cancel friend request"
 												>
 													<span>Cancel Add</span>
@@ -718,7 +723,7 @@
 												<button
 													type="button"
 													onclick={() => handleRespondRequest(targetUser.request_id, 'accept')}
-													class="px-3 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 active:scale-95 transition-all shadow-2xs cursor-pointer"
+													class="px-2.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 active:scale-95 transition-all shadow-2xs cursor-pointer"
 												>
 													Accept
 												</button>
@@ -727,7 +732,7 @@
 													type="button"
 													onclick={() => sendFriendRequestToUser(targetUser)}
 													disabled={isAddingFriend}
-													class="px-3 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-2xs disabled:opacity-50 flex items-center space-x-1 cursor-pointer"
+													class="px-2.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-2xs disabled:opacity-50 flex items-center space-x-1 cursor-pointer"
 												>
 													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 														<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
