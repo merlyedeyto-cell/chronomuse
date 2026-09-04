@@ -5,119 +5,209 @@
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { playIncomingMessageSound, playNotificationSound } from '$lib/soundEffects.js';
 
-	let user = null;
+	let user = $state(null);
 	let globalMsgChannel = null;
+	let subscribedUserId = null;
 	let lastSeenMessageId = 0;
 	let lastTotalNotifs = null;
 	let notifPollInterval = null;
 
+	function getActiveLoggedInUser() {
+		if (typeof window === 'undefined') return null;
+		try {
+			const stored = localStorage.getItem('chronomuse_user');
+			if (!stored) return null;
+			const parsed = JSON.parse(stored);
+			return parsed?.id ? parsed : null;
+		} catch (e) {
+			return null;
+		}
+	}
+
+	function teardownListeners() {
+		if (notifPollInterval) {
+			clearInterval(notifPollInterval);
+			notifPollInterval = null;
+		}
+		if (globalMsgChannel) {
+			try {
+				supabase.removeChannel(globalMsgChannel);
+			} catch (e) {}
+			globalMsgChannel = null;
+		}
+		try {
+			supabase.removeAllChannels();
+		} catch (e) {}
+		subscribedUserId = null;
+		lastTotalNotifs = null;
+		lastSeenMessageId = 0;
+		user = null;
+	}
+
 	async function checkNotificationsCount() {
-		if (!user?.id) return;
+		const activeUser = getActiveLoggedInUser();
+		if (!activeUser?.id || Number(activeUser.id) !== Number(subscribedUserId)) {
+			// User logged out or switched accounts
+			syncUserStateAndListeners();
+			return;
+		}
+
 		try {
 			const res = await fetch(API_ENDPOINTS.getNotifications, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ user_id: user.id })
+				body: JSON.stringify({ user_id: activeUser.id })
 			});
 			const data = await res.json();
+			
+			// Verify again that user is still active before playing any sound
+			const verifiedUser = getActiveLoggedInUser();
+			if (!verifiedUser?.id || Number(verifiedUser.id) !== Number(subscribedUserId)) {
+				syncUserStateAndListeners();
+				return;
+			}
+
 			if (data?.success && data?.data) {
 				const incomingRequests = data.data.incoming_requests?.length || 0;
 				const pendingShared = (data.data.shared_memories || []).filter(m => m.status !== 'accepted').length;
 				const currentTotal = incomingRequests + pendingShared;
 
 				if (lastTotalNotifs !== null && currentTotal > lastTotalNotifs) {
-					// Trigger sound and vibration for new notification
-					playNotificationSound();
+					// Trigger sound and vibration ONLY for the currently active logged-in user
+					playNotificationSound(verifiedUser.id);
 				}
 				lastTotalNotifs = currentTotal;
 			}
 		} catch (e) {}
 	}
 
+	function syncUserStateAndListeners() {
+		if (typeof window === 'undefined') return;
+
+		const activeUser = getActiveLoggedInUser();
+
+		// Case 1: No user is logged in (Logged out)
+		if (!activeUser?.id) {
+			teardownListeners();
+			return;
+		}
+
+		// Case 2: Already subscribed to this exact active user
+		if (subscribedUserId === activeUser.id && globalMsgChannel) {
+			user = activeUser;
+			return;
+		}
+
+		// Case 3: Different user or fresh subscription
+		teardownListeners();
+
+		user = activeUser;
+		subscribedUserId = activeUser.id;
+		const targetUserId = activeUser.id;
+
+		checkNotificationsCount();
+		notifPollInterval = setInterval(checkNotificationsCount, 5000);
+
+		// Listen strictly for this specific logged-in user's inbox
+		globalMsgChannel = supabase.channel(`chronomuse_user_inbox_${targetUserId}`);
+
+		globalMsgChannel
+			.on('broadcast', { event: 'new_message' }, (payload) => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) {
+					syncUserStateAndListeners();
+					return;
+				}
+
+				if (payload?.payload && Number(payload.payload.receiver_id) === Number(targetUserId)) {
+					const isChatPage = $page.url.pathname === '/chat';
+					const currentFriendId = $page.url.searchParams.get('friend_id');
+
+					// Play notification sound if user is not currently inside this friend's active chat
+					if (!isChatPage || String(currentFriendId) !== String(payload.payload.sender_id)) {
+						playIncomingMessageSound(targetUserId);
+					}
+				}
+			})
+			.on('broadcast', { event: 'notification' }, () => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) {
+					syncUserStateAndListeners();
+					return;
+				}
+				playNotificationSound(targetUserId);
+			})
+			.on('postgres_changes', {
+				event: 'INSERT',
+				schema: 'public',
+				table: 'chronomuse_messages',
+				filter: `receiver_id=eq.${targetUserId}`
+			}, (payload) => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) {
+					syncUserStateAndListeners();
+					return;
+				}
+
+				if (payload?.new && payload.new.id !== lastSeenMessageId) {
+					lastSeenMessageId = payload.new.id;
+					const isChatPage = $page.url.pathname === '/chat';
+					const currentFriendId = $page.url.searchParams.get('friend_id');
+					if (!isChatPage || String(currentFriendId) !== String(payload.new.sender_id)) {
+						playIncomingMessageSound(targetUserId);
+					}
+				}
+			})
+			.on('postgres_changes', {
+				event: 'INSERT',
+				schema: 'public',
+				table: 'chronomuse_friend_requests',
+				filter: `receiver_id=eq.${targetUserId}`
+			}, () => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) {
+					syncUserStateAndListeners();
+					return;
+				}
+				playNotificationSound(targetUserId);
+			})
+			.on('postgres_changes', {
+				event: 'INSERT',
+				schema: 'public',
+				table: 'chronomuse_shared_memories',
+				filter: `recipient_id=eq.${targetUserId}`
+			}, () => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) {
+					syncUserStateAndListeners();
+					return;
+				}
+				playNotificationSound(targetUserId);
+			})
+			.subscribe();
+	}
+
+	// Reactively check whenever $page changes (e.g. navigation after login/logout)
+	$effect(() => {
+		const _ = $page.url.pathname;
+		syncUserStateAndListeners();
+	});
+
 	onMount(() => {
-		const initGlobalListener = () => {
-			const storedUser = localStorage.getItem('chronomuse_user');
-			if (storedUser) {
-				try {
-					user = JSON.parse(storedUser);
-				} catch (e) {}
-			}
+		syncUserStateAndListeners();
 
-			if (user?.id && !globalMsgChannel) {
-				checkNotificationsCount();
-				notifPollInterval = setInterval(checkNotificationsCount, 5000);
-
-				// Listen for incoming realtime messages and notifications
-				globalMsgChannel = supabase.channel(`chronomuse_user_inbox_${user.id}`);
-
-				globalMsgChannel
-					.on('broadcast', { event: 'new_message' }, (payload) => {
-						if (payload?.payload && Number(payload.payload.receiver_id) === Number(user.id)) {
-							const isChatPage = $page.url.pathname === '/chat';
-							const currentFriendId = $page.url.searchParams.get('friend_id');
-
-							// Play notification sound + vibrate if user is not currently inside this friend's active chat
-							if (!isChatPage || String(currentFriendId) !== String(payload.payload.sender_id)) {
-								playIncomingMessageSound();
-							}
-						}
-					})
-					.on('broadcast', { event: 'notification' }, () => {
-						playNotificationSound();
-					})
-					.on('postgres_changes', {
-						event: 'INSERT',
-						schema: 'public',
-						table: 'chronomuse_messages',
-						filter: `receiver_id=eq.${user.id}`
-					}, (payload) => {
-						if (payload?.new && payload.new.id !== lastSeenMessageId) {
-							lastSeenMessageId = payload.new.id;
-							const isChatPage = $page.url.pathname === '/chat';
-							const currentFriendId = $page.url.searchParams.get('friend_id');
-							if (!isChatPage || String(currentFriendId) !== String(payload.new.sender_id)) {
-								playIncomingMessageSound();
-							}
-						}
-					})
-					.on('postgres_changes', {
-						event: 'INSERT',
-						schema: 'public',
-						table: 'chronomuse_friend_requests',
-						filter: `receiver_id=eq.${user.id}`
-					}, () => {
-						playNotificationSound();
-					})
-					.on('postgres_changes', {
-						event: 'INSERT',
-						schema: 'public',
-						table: 'chronomuse_shared_memories',
-						filter: `recipient_id=eq.${user.id}`
-					}, () => {
-						playNotificationSound();
-					})
-					.subscribe();
-			}
-		};
-
-		initGlobalListener();
-
-		window.addEventListener('storage', initGlobalListener);
+		window.addEventListener('storage', syncUserStateAndListeners);
+		window.addEventListener('chronomuse_auth_change', syncUserStateAndListeners);
 
 		return () => {
-			window.removeEventListener('storage', initGlobalListener);
-			if (notifPollInterval) clearInterval(notifPollInterval);
-			if (globalMsgChannel) {
-				supabase.removeChannel(globalMsgChannel);
-			}
+			window.removeEventListener('storage', syncUserStateAndListeners);
+			window.removeEventListener('chronomuse_auth_change', syncUserStateAndListeners);
+			teardownListeners();
 		};
 	});
 
 	onDestroy(() => {
-		if (notifPollInterval) clearInterval(notifPollInterval);
-		if (globalMsgChannel) {
-			supabase.removeChannel(globalMsgChannel);
-		}
+		teardownListeners();
 	});
 </script>
 

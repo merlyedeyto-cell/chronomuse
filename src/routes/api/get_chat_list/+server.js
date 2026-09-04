@@ -22,7 +22,7 @@ export async function POST({ request }) {
 		const friendIds = friendships.map(f => f.friend_id);
 		const { data: friendUsers } = await supabase
 			.from('chronomuse_users')
-			.select('id, username, email, last_activity')
+			.select('id, username, email, avatar_url, last_activity')
 			.in('id', friendIds);
 
 		if (!friendUsers) {
@@ -54,6 +54,7 @@ export async function POST({ request }) {
 					friend_id: friend.id,
 					username: friend.username,
 					email: friend.email,
+					avatar_url: friend.avatar_url || null,
 					last_activity: friend.last_activity,
 					last_message: lastMsg ? lastMsg.message : null,
 					last_message_time: lastMsg ? lastMsg.created_at : null,

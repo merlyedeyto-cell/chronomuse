@@ -5,14 +5,12 @@
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import AddFriendModal from './AddFriendModal.svelte';
 	import FriendsListModal from './FriendsListModal.svelte';
-	import ProfileModal from './ProfileModal.svelte';
 	import NotificationsModal from './NotificationsModal.svelte';
 
 	const dispatch = createEventDispatcher();
 	let { isOpen = $bindable(false) } = $props();
 	let showAddFriendModal = $state(false);
 	let showFriendsListModal = $state(false);
-	let showProfileModal = $state(false);
 	let showNotificationsModal = $state(false);
 	let pendingRequestsCount = $state(0);
 	let unreadChatsCount = $state(0);
@@ -50,7 +48,7 @@
 
 	function handleProfile() {
 		closeSidebar();
-		showProfileModal = true;
+		goto('/profile');
 	}
 
 	function handleChat() {
@@ -68,6 +66,9 @@
 		closeSidebar();
 		localStorage.clear();
 		sessionStorage.clear();
+		if (typeof window !== 'undefined') {
+			window.dispatchEvent(new Event('chronomuse_auth_change'));
+		}
 		goto('/');
 		dispatch('logout');
 	}
@@ -297,11 +298,16 @@
 			<!-- Profile Button -->
 			<button
 				onclick={handleProfile}
-				class="w-full py-2 px-4 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200 transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 animate-slide-in-right"
+				class="w-full py-2 px-4 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 animate-slide-in-right"
 				style="animation-delay: 0.35s"
+				class:bg-pink-500={isActive('/profile')}
+				class:text-white={isActive('/profile')}
+				class:bg-pink-100={!isActive('/profile')}
+				class:text-pink-600={!isActive('/profile')}
+				class:hover:bg-pink-200={!isActive('/profile')}
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+					<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21c-2.17 0-5.216-.584-7.499-1.632z" />
 				</svg>
 				<span>Profile</span>
 			</button>
@@ -330,9 +336,6 @@
 
 <!-- Friends List Modal -->
 <FriendsListModal open={showFriendsListModal} on:close={handleFriendsListModalClose} on:friendRemoved={handleFriendRemoved} />
-
-<!-- Profile Modal -->
-<ProfileModal open={showProfileModal} on:close={() => showProfileModal = false} />
 
 <style>
 	.scrollbar-hide::-webkit-scrollbar {

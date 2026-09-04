@@ -36,6 +36,7 @@ export const API_ENDPOINTS = {
 	getTypingStatus: `${API_BASE_URL}/get_typing_status`,
 	getNotifications: `${API_BASE_URL}/get_notifications`,
 	getFriendsList: `${API_BASE_URL}/get_friends_list`,
+	searchUsers: `${API_BASE_URL}/search_users`,
 	addFriend: `${API_BASE_URL}/add_friend`,
 	removeFriend: `${API_BASE_URL}/remove_friend`,
 	getFriendRequests: `${API_BASE_URL}/get_friend_requests`,
@@ -57,6 +58,7 @@ export const API_ENDPOINTS = {
 	getMemoriesByDate: `${API_BASE_URL}/get_memories_by_date`,
 	getMoodData: `${API_BASE_URL}/get_mood_data`,
 	updateProfile: `${API_BASE_URL}/update_profile`,
+	getProfile: `${API_BASE_URL}/get_profile`,
 	pinMemory: `${API_BASE_URL}/pin_memory`,
 	unpinMemory: `${API_BASE_URL}/unpin_memory`
 };

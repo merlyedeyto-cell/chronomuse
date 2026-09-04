@@ -1,6 +1,7 @@
 <script>
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
+	import { supabase } from '$lib/supabaseClient';
 
 	const dispatch = createEventDispatcher();
 
@@ -113,7 +114,14 @@
 
 	function handleLogout() {
 		if (confirm('Are you sure you want to logout?')) {
-			localStorage.removeItem('chronomuse_user');
+			localStorage.clear();
+			sessionStorage.clear();
+			try {
+				supabase.removeAllChannels();
+			} catch (e) {}
+			if (typeof window !== 'undefined') {
+				window.dispatchEvent(new Event('chronomuse_auth_change'));
+			}
 			window.location.href = '/';
 		}
 	}
@@ -146,8 +154,12 @@
 
 			<!-- Header -->
 			<div class="text-center mb-5">
-				<div class="w-14 h-14 mx-auto mb-2.5 rounded-full bg-gradient-to-tr from-pink-400 to-pink-600 flex items-center justify-center text-white text-xl font-bold shadow-md">
-					{username?.charAt(0).toUpperCase() || 'U'}
+				<div class="w-14 h-14 mx-auto mb-2.5 rounded-full bg-gradient-to-tr from-pink-400 to-pink-600 flex items-center justify-center text-white text-xl font-bold shadow-md overflow-hidden">
+					{#if user?.avatar_url}
+						<img src={user.avatar_url} alt={username} class="w-full h-full object-cover" />
+					{:else}
+						{username?.charAt(0).toUpperCase() || 'U'}
+					{/if}
 				</div>
 				<h2 class="text-base sm:text-lg font-bold text-pink-600">My Profile</h2>
 				<p class="text-[11px] sm:text-xs text-pink-400 mt-0.5">Manage your account settings</p>

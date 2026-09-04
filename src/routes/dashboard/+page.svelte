@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
+	import { supabase } from '$lib/supabaseClient';
 	import Sidebar from '$lib/Sidebar.svelte';
 	import Calendar from '$lib/Calendar.svelte';
 	import AddMemoryCard from '$lib/AddMemoryCard.svelte';
@@ -131,8 +132,14 @@
 	}
 
 	function handleLogout() {
+		try {
+			supabase.removeAllChannels();
+		} catch (e) {}
 		localStorage.clear();
 		sessionStorage.clear();
+		if (typeof window !== 'undefined') {
+			window.dispatchEvent(new Event('chronomuse_auth_change'));
+		}
 		goto('/');
 	}
 

@@ -41,13 +41,22 @@
 		}
 	}
 
-	async function handleCancelShare(item) {
-		if (!userId || !item || isCancelling) return;
-		if (!confirm(`Are you sure you want to cancel sharing this memory with @${item.recipient_username}?`)) return;
+	let showCancelConfirmModal = $state(false);
+	let cancelItemTarget = $state(null);
 
+	function promptCancelShare(item, e) {
+		if (e) e.stopPropagation();
+		cancelItemTarget = item;
+		showCancelConfirmModal = true;
+	}
+
+	async function confirmCancelShare() {
+		if (!userId || !cancelItemTarget || isCancelling) return;
+		const item = cancelItemTarget;
 		isCancelling = true;
 		const backupSent = [...(notifications.sent_shared_memories || [])];
 		notifications.sent_shared_memories = (notifications.sent_shared_memories || []).filter(m => m.share_id !== item.share_id);
+		showCancelConfirmModal = false;
 
 		try {
 			const res = await fetch(API_ENDPOINTS.cancelSharedMemory, {
@@ -61,13 +70,12 @@
 			const data = await res.json();
 			if (!data.success) {
 				notifications.sent_shared_memories = backupSent;
-				alert('Error: ' + (data.error || 'Failed to cancel share'));
 			}
 		} catch (err) {
 			notifications.sent_shared_memories = backupSent;
-			console.error('Error cancelling shared memory:', err);
 		} finally {
 			isCancelling = false;
+			cancelItemTarget = null;
 		}
 	}
 
@@ -217,21 +225,44 @@
 							{#each notifications.incoming_requests as req}
 								<div class="p-3 bg-pink-50/80 border border-pink-200 rounded-2xl flex items-center justify-between shadow-xs">
 									<div class="flex items-center space-x-2.5">
-										<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-400 to-pink-600 text-white font-bold text-xs flex items-center justify-center">
-											{req.sender_username.charAt(0).toUpperCase()}
-										</div>
+										<button
+											type="button"
+											onclick={() => { closeModal(); goto(`/profile?id=${req.sender_id}`); }}
+											class="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-400 to-pink-600 text-white font-bold text-xs flex items-center justify-center overflow-hidden hover:scale-105 transition-transform cursor-pointer"
+											title="View @{req.sender_username}'s Profile"
+										>
+											{#if req.sender_avatar_url}
+												<img src={req.sender_avatar_url} alt={req.sender_username} class="w-full h-full object-cover" />
+											{:else}
+												{req.sender_username.charAt(0).toUpperCase()}
+											{/if}
+										</button>
 										<div>
-											<p class="text-xs font-bold text-pink-700">@{req.sender_username}</p>
+											<button
+												type="button"
+												onclick={() => { closeModal(); goto(`/profile?id=${req.sender_id}`); }}
+												class="text-xs font-bold text-pink-700 hover:underline hover:text-pink-900 cursor-pointer text-left block"
+											>
+												@{req.sender_username}
+											</button>
 											<p class="text-[10px] text-pink-400">Sent a friend request • {formatTimeAgo(req.created_at)}</p>
 										</div>
 									</div>
 
-									<button
-										onclick={handleViewFriends}
-										class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
-									>
-										Respond
-									</button>
+									<div class="flex items-center space-x-1.5 flex-shrink-0">
+										<button
+											onclick={() => { closeModal(); goto(`/profile?id=${req.sender_id}`); }}
+											class="px-2.5 py-1.5 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 rounded-xl text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+										>
+											Profile
+										</button>
+										<button
+											onclick={handleViewFriends}
+											class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+										>
+											Respond
+										</button>
+									</div>
 								</div>
 							{/each}
 						</div>
@@ -245,11 +276,29 @@
 								<div class="p-3.5 bg-gradient-to-br from-pink-50/90 to-rose-50/60 border border-pink-200 rounded-2xl shadow-xs hover:border-pink-300 transition-all">
 									<div class="flex items-start justify-between gap-2 mb-2">
 										<div class="flex items-center space-x-2">
-											<div class="w-7 h-7 rounded-lg bg-pink-500 text-white font-bold text-xs flex items-center justify-center">
-												{item.sender_username.charAt(0).toUpperCase()}
-											</div>
+											<button
+												type="button"
+												onclick={() => { closeModal(); goto(`/profile?id=${item.sender_id}`); }}
+												class="w-7 h-7 rounded-lg bg-pink-500 text-white font-bold text-xs flex items-center justify-center overflow-hidden hover:scale-105 transition-transform cursor-pointer"
+												title="View @{item.sender_username}'s Profile"
+											>
+												{#if item.sender_avatar_url}
+													<img src={item.sender_avatar_url} alt={item.sender_username} class="w-full h-full object-cover" />
+												{:else}
+													{item.sender_username.charAt(0).toUpperCase()}
+												{/if}
+											</button>
 											<div>
-												<p class="text-xs font-bold text-pink-800">@{item.sender_username} <span class="font-normal text-pink-500">shared a memory with you</span></p>
+												<p class="text-xs font-bold text-pink-800 flex items-center gap-1 flex-wrap">
+													<button
+														type="button"
+														onclick={() => { closeModal(); goto(`/profile?id=${item.sender_id}`); }}
+														class="hover:underline hover:text-pink-900 cursor-pointer"
+													>
+														@{item.sender_username}
+													</button>
+													<span class="font-normal text-pink-500">shared a memory with you</span>
+												</p>
 												<p class="text-[10px] text-pink-400">{formatTimeAgo(item.shared_at)}</p>
 											</div>
 										</div>
@@ -297,8 +346,14 @@
 									<!-- Action Buttons -->
 									<div class="mt-2 flex items-center justify-end space-x-2">
 										<button
+											onclick={() => { closeModal(); goto(`/profile?id=${item.sender_id}`); }}
+											class="px-2.5 py-1 bg-white border border-pink-300 hover:bg-pink-100 text-pink-600 rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all shadow-2xs cursor-pointer"
+										>
+											<span>Profile</span>
+										</button>
+										<button
 											onclick={() => handleOpenChat(item.sender_id, item.sender_username)}
-											class="px-2.5 py-1 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all shadow-xs"
+											class="px-2.5 py-1 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all shadow-xs cursor-pointer"
 										>
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
@@ -325,12 +380,28 @@
 									<div class="p-3.5 bg-gradient-to-br from-pink-50/90 to-rose-50/60 border border-pink-200 rounded-2xl shadow-xs hover:border-pink-300 transition-all">
 										<div class="flex items-start justify-between gap-2 mb-2">
 											<div class="flex items-center space-x-2">
-												<div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-xs flex items-center justify-center">
-													{item.recipient_username.charAt(0).toUpperCase()}
-												</div>
+												<button
+													type="button"
+													onclick={() => { closeModal(); goto(`/profile?id=${item.recipient_id}`); }}
+													class="w-7 h-7 rounded-lg bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-xs flex items-center justify-center overflow-hidden hover:scale-105 transition-transform cursor-pointer"
+													title="View @{item.recipient_username}'s Profile"
+												>
+													{#if item.recipient_avatar_url}
+														<img src={item.recipient_avatar_url} alt={item.recipient_username} class="w-full h-full object-cover" />
+													{:else}
+														{item.recipient_username.charAt(0).toUpperCase()}
+													{/if}
+												</button>
 												<div>
-													<p class="text-xs font-bold text-pink-800">
-														<span class="font-normal text-pink-500">Shared with</span> @{item.recipient_username}
+													<p class="text-xs font-bold text-pink-800 flex items-center gap-1 flex-wrap">
+														<span class="font-normal text-pink-500">Shared with</span>
+														<button
+															type="button"
+															onclick={() => { closeModal(); goto(`/profile?id=${item.recipient_id}`); }}
+															class="hover:underline hover:text-pink-900 cursor-pointer"
+														>
+															@{item.recipient_username}
+														</button>
 													</p>
 													<p class="text-[10px] text-pink-400">{formatTimeAgo(item.shared_at)}</p>
 												</div>
@@ -367,10 +438,16 @@
 											{/if}
 										</div>
 
-										<!-- Action Button: Cancel Share -->
-										<div class="mt-2 flex items-center justify-end">
+										<!-- Actions (Profile & Cancel Share) -->
+										<div class="mt-2 flex items-center justify-end space-x-2">
 											<button
-												onclick={() => handleCancelShare(item)}
+												onclick={() => { closeModal(); goto(`/profile?id=${item.recipient_id}`); }}
+												class="px-2.5 py-1 bg-white border border-pink-300 hover:bg-pink-100 text-pink-600 rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all shadow-2xs cursor-pointer"
+											>
+												<span>Profile</span>
+											</button>
+											<button
+												onclick={(e) => promptCancelShare(item, e)}
 												disabled={isCancelling}
 												class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all shadow-2xs cursor-pointer disabled:opacity-50"
 												title="Cancel and revoke access to this shared memory"
@@ -387,6 +464,49 @@
 						{/if}
 					{/if}
 				{/if}
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Cancel Shared Memory Confirmation Modal -->
+{#if showCancelConfirmModal && cancelItemTarget}
+	<div
+		class="fixed inset-0 bg-black/50 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in"
+		onclick={(e) => { if (e.target === e.currentTarget) { showCancelConfirmModal = false; cancelItemTarget = null; } }}
+	>
+		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center animate-modal-content relative overflow-hidden">
+			<div class="w-14 h-14 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</div>
+			<h3 class="text-base sm:text-lg font-black text-pink-950 mb-1.5">Cancel Shared Memory?</h3>
+			<p class="text-xs text-pink-600 mb-6 font-medium leading-relaxed">
+				Are you sure you want to cancel sharing this memory with <strong class="text-pink-700">@{cancelItemTarget.recipient_username}</strong>?
+			</p>
+
+			<div class="flex items-center space-x-3">
+				<button
+					type="button"
+					onclick={() => { showCancelConfirmModal = false; cancelItemTarget = null; }}
+					class="w-1/2 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded-xl font-bold text-xs sm:text-sm transition-all"
+				>
+					No, Keep
+				</button>
+				<button
+					type="button"
+					onclick={confirmCancelShare}
+					disabled={isCancelling}
+					class="w-1/2 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center justify-center space-x-1"
+				>
+					{#if isCancelling}
+						<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+						<span>Cancelling...</span>
+					{:else}
+						<span>Yes, Cancel</span>
+					{/if}
+				</button>
 			</div>
 		</div>
 	</div>

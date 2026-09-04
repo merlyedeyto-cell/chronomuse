@@ -52,7 +52,7 @@ export async function POST({ request }) {
 					? supabase.from('chronomuse_memories').select('*').in('id', allMemoryIds)
 					: Promise.resolve({ data: [] }),
 				allRelatedUserIds.length > 0
-					? supabase.from('chronomuse_users').select('id, username').in('id', allRelatedUserIds)
+					? supabase.from('chronomuse_users').select('id, username, avatar_url').in('id', allRelatedUserIds)
 					: Promise.resolve({ data: [] }),
 				outgoingRecipientIds.length > 0
 					? supabase.from('chronomuse_memories').select('user_id, date, description, memory_tag').in('user_id', outgoingRecipientIds)
@@ -65,7 +65,7 @@ export async function POST({ request }) {
 			}, {});
 
 			usersMap = (usersRes.data || []).reduce((acc, u) => {
-				acc[u.id] = u.username;
+				acc[u.id] = { username: u.username, avatar_url: u.avatar_url || null };
 				return acc;
 			}, {});
 
@@ -82,7 +82,8 @@ export async function POST({ request }) {
 		// Build incoming shared memories
 		const sharedMemories = (sharedRows || []).map(row => {
 			const memory = memoriesMap[row.memory_id] || null;
-			const senderName = usersMap[row.sender_id] || 'Friend';
+			const senderInfo = usersMap[row.sender_id] || { username: 'Friend', avatar_url: null };
+			const senderName = senderInfo.username || 'Friend';
 			
 			let isAccepted = false;
 			if (memory) {
@@ -101,6 +102,7 @@ export async function POST({ request }) {
 				shared_at: row.created_at,
 				sender_id: row.sender_id,
 				sender_username: senderName,
+				sender_avatar_url: senderInfo.avatar_url || null,
 				memory: memory,
 				status: isAccepted ? 'accepted' : 'pending'
 			};
@@ -109,7 +111,8 @@ export async function POST({ request }) {
 		// Build outgoing shared memories (Memories shared by this user with friends)
 		const sentSharedMemories = (sentRows || []).map(row => {
 			const memory = memoriesMap[row.memory_id] || null;
-			const recipientName = usersMap[row.recipient_id] || 'Friend';
+			const recipientInfo = usersMap[row.recipient_id] || { username: 'Friend', avatar_url: null };
+			const recipientName = recipientInfo.username || 'Friend';
 
 			let isAcceptedByFriend = false;
 			if (memory && currentUsername) {
@@ -129,6 +132,7 @@ export async function POST({ request }) {
 				shared_at: row.created_at,
 				recipient_id: row.recipient_id,
 				recipient_username: recipientName,
+				recipient_avatar_url: recipientInfo.avatar_url || null,
 				memory: memory,
 				status: isAcceptedByFriend ? 'accepted' : 'pending'
 			};
@@ -147,18 +151,19 @@ export async function POST({ request }) {
 			const senderIds = pendingRequests.map(r => r.sender_id);
 			const { data: senders } = await supabase
 				.from('chronomuse_users')
-				.select('id, username')
+				.select('id, username, avatar_url')
 				.in('id', senderIds);
 
 			const sendersMap = (senders || []).reduce((acc, u) => {
-				acc[u.id] = u.username;
+				acc[u.id] = { username: u.username, avatar_url: u.avatar_url || null };
 				return acc;
 			}, {});
 
 			incomingRequests = pendingRequests.map(r => ({
 				request_id: r.id,
 				sender_id: r.sender_id,
-				sender_username: sendersMap[r.sender_id] || 'User',
+				sender_username: sendersMap[r.sender_id]?.username || 'User',
+				sender_avatar_url: sendersMap[r.sender_id]?.avatar_url || null,
 				created_at: r.created_at
 			}));
 		}

@@ -1,5 +1,6 @@
 <script>
 	import { createEventDispatcher, onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 
 	const dispatch = createEventDispatcher();
@@ -12,6 +13,11 @@
 	let successMessage = $state('');
 
 	let friendUsername = $state('');
+	let searchResults = $state([]);
+	let isSearching = $state(false);
+	let hasSearched = $state(false);
+	let searchDebounceTimer = null;
+
 	let pendingRequests = $state([]);
 	let sentRequests = $state([]);
 	let isResponding = $state(false);
@@ -34,6 +40,8 @@
 			errorMessage = '';
 			successMessage = '';
 			friendUsername = '';
+			searchResults = [];
+			hasSearched = false;
 			document.body.style.overflow = '';
 			dispatch('close');
 		}, 300);
@@ -44,49 +52,134 @@
 		return currentUser ? JSON.parse(currentUser) : null;
 	}
 
-	function handleSubmit() {
+	function handleSearchInput() {
+		if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+		const query = friendUsername.trim();
+		if (!query) {
+			searchResults = [];
+			hasSearched = false;
+			isSearching = false;
+			return;
+		}
+		isSearching = true;
+		searchDebounceTimer = setTimeout(() => {
+			performUserSearch(query);
+		}, 300);
+	}
+
+	async function performUserSearch(query) {
+		const user = getCurrentUser();
+		if (!user || !user.id || !query) return;
+		isSearching = true;
+		hasSearched = true;
+		errorMessage = '';
+		successMessage = '';
+
+		try {
+			const res = await fetch(API_ENDPOINTS.searchUsers, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					user_id: user.id,
+					query: query
+				})
+			});
+			const data = await res.json();
+			if (data.success && data.data) {
+				searchResults = data.data.users || [];
+			} else {
+				searchResults = [];
+			}
+		} catch (err) {
+			console.error('Search error in modal:', err);
+			searchResults = [];
+		} finally {
+			isSearching = false;
+		}
+	}
+
+	function handleViewUserProfile(userId) {
+		handleClose();
+		setTimeout(() => {
+			goto(`/profile?id=${userId}`);
+		}, 300);
+	}
+
+	async function sendFriendRequestToUser(targetUser) {
 		isLoading = true;
 		errorMessage = '';
 		successMessage = '';
 
 		const user = getCurrentUser();
-
 		if (!user || !user.id) {
 			isLoading = false;
 			errorMessage = 'Please log in first.';
 			return;
 		}
 
-		fetch(API_ENDPOINTS.addFriend, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				friend_username: friendUsername,
-				user_id: user.id
-			})
-		})
-		.then(response => response.json())
-		.then(data => {
+		try {
+			const res = await fetch(API_ENDPOINTS.addFriend, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					friend_username: targetUser.username,
+					user_id: user.id
+				})
+			});
+			const data = await res.json();
 			isLoading = false;
 			if (data.error) {
 				errorMessage = data.error;
 			} else {
-				successMessage = data.message || 'Friend request sent successfully!';
+				successMessage = data.message || `Friend request sent to @${targetUser.username}!`;
+				targetUser.relationship = 'request_sent';
+				targetUser.request_id = data.request_id || null;
 				fetchPendingRequests();
 				dispatch('addFriend', data);
 				setTimeout(() => {
 					successMessage = '';
-					friendUsername = '';
-				}, 2000);
+				}, 3000);
 			}
-		})
-		.catch(error => {
+		} catch (error) {
 			isLoading = false;
 			errorMessage = 'An error occurred. Please try again.';
 			console.error('Add friend error:', error);
-		});
+		}
+	}
+
+	async function handleCancelFriendRequestFromSearch(targetUser) {
+		const user = getCurrentUser();
+		if (!user || !user.id || isResponding) return;
+		isResponding = true;
+		const previousRel = targetUser.relationship;
+		const previousReqId = targetUser.request_id;
+		targetUser.relationship = 'none';
+		targetUser.request_id = null;
+
+		try {
+			const res = await fetch(API_ENDPOINTS.cancelFriendRequest, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					user_id: user.id,
+					request_id: previousReqId || null,
+					friend_id: targetUser.id
+				})
+			});
+			const data = await res.json();
+			if (data.success) {
+				fetchPendingRequests();
+			} else {
+				targetUser.relationship = previousRel;
+				targetUser.request_id = previousReqId;
+			}
+		} catch (err) {
+			targetUser.relationship = previousRel;
+			targetUser.request_id = previousReqId;
+			console.error('Cancel friend request error:', err);
+		} finally {
+			isResponding = false;
+		}
 	}
 
 	function fetchPendingRequests() {
@@ -232,36 +325,127 @@
 				</div>
 			{/if}
 
-			<!-- Form -->
-			<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-4">
-				<!-- Friend Username Field -->
+			<!-- Form / Search Bar -->
+			<form onsubmit={(e) => { e.preventDefault(); performUserSearch(friendUsername.trim()); }} class="space-y-3 mb-4">
 				<div>
-					<label class="block text-sm font-medium text-pink-600 mb-2">Username</label>
-					<input
-						type="text"
-						bind:value={friendUsername}
-						class="w-full px-4 py-3 bg-white/90 border-2 border-pink-300 rounded-xl text-pink-700 placeholder-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200"
-						placeholder="Enter friend's username"
-						required
-						disabled={isLoading || successMessage}
-					/>
+					<label for="modal_friend_username" class="block text-xs font-semibold text-pink-600 mb-1.5">Search by Username</label>
+					<div class="relative">
+						<span class="absolute left-3.5 top-3 text-pink-400 font-bold text-sm">@</span>
+						<input
+							id="modal_friend_username"
+							type="text"
+							bind:value={friendUsername}
+							oninput={handleSearchInput}
+							placeholder="Type friend's username..."
+							class="w-full pl-8 pr-10 py-2.5 bg-pink-50 border-2 border-pink-200 rounded-xl text-xs sm:text-sm font-semibold text-pink-700 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all duration-200"
+						/>
+						{#if friendUsername}
+							<button
+								type="button"
+								onclick={() => { friendUsername = ''; searchResults = []; hasSearched = false; }}
+								class="absolute right-3 top-2.5 p-1 text-pink-400 hover:text-pink-600 rounded-full"
+								title="Clear search"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+									<path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+								</svg>
+							</button>
+						{/if}
+					</div>
 				</div>
-
-				<!-- Submit Button -->
-				<button
-					type="submit"
-					class="w-full py-3 px-4 bg-gradient-to-r from-pink-400 to-pink-600 hover:from-pink-500 hover:to-pink-700 text-white font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-					disabled={isLoading || successMessage}
-				>
-					{#if isLoading}
-						Sending Request...
-					{:else if successMessage}
-						Request Sent!
-					{:else}
-						Send Friend Request
-					{/if}
-				</button>
 			</form>
+
+			<!-- Search Results List -->
+			{#if isSearching}
+				<div class="text-center py-6">
+					<div class="animate-spin h-6 w-6 border-3 border-pink-200 border-t-pink-500 rounded-full mx-auto mb-2"></div>
+					<p class="text-xs text-pink-400">Searching users...</p>
+				</div>
+			{:else if searchResults.length > 0}
+				<div class="mb-5 space-y-2">
+					<div class="flex items-center justify-between">
+						<h3 class="text-xs font-bold text-pink-600 uppercase tracking-wide">
+							Search Results ({searchResults.length})
+						</h3>
+						<span class="text-[10px] text-pink-400">Preview profile first</span>
+					</div>
+
+					<div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+						{#each searchResults as targetUser (targetUser.id)}
+							<div class="p-2.5 bg-pink-50/90 border-2 border-pink-200 rounded-xl flex items-center justify-between gap-2 shadow-2xs">
+								<div class="flex items-center space-x-2.5 min-w-0">
+									<div class="w-9 h-9 rounded-full bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 overflow-hidden shadow-xs">
+										{#if targetUser.avatar_url}
+											<img src={targetUser.avatar_url} alt={targetUser.username} class="w-full h-full object-cover" />
+										{:else}
+											{targetUser.username.charAt(0).toUpperCase()}
+										{/if}
+									</div>
+									<div class="min-w-0">
+										<p class="text-xs font-bold text-pink-900 truncate">@{targetUser.username}</p>
+										{#if targetUser.mutual_friends_count > 0}
+											<p class="text-[10px] text-pink-600 font-semibold">✨ {targetUser.mutual_friends_count} mutual friend{targetUser.mutual_friends_count === 1 ? '' : 's'}</p>
+										{:else}
+											<p class="text-[10px] text-pink-400 truncate">{targetUser.email}</p>
+										{/if}
+									</div>
+								</div>
+
+								<div class="flex items-center space-x-1.5 flex-shrink-0">
+									<!-- View Profile Button -->
+									<button
+										type="button"
+										onclick={() => handleViewUserProfile(targetUser.id)}
+										class="px-2 py-1 bg-white border border-pink-300 hover:bg-pink-50 text-pink-600 text-[11px] font-semibold rounded-lg transition-all"
+										title="View Full Profile"
+									>
+										Profile
+									</button>
+
+									<!-- Action button -->
+									{#if targetUser.relationship === 'self'}
+										<span class="px-2 py-1 bg-pink-100 text-pink-500 text-[11px] font-semibold rounded-lg">You</span>
+									{:else if targetUser.relationship === 'friends'}
+										<span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-lg">Friends</span>
+									{:else if targetUser.relationship === 'request_sent'}
+										<button
+											type="button"
+											onclick={() => handleCancelFriendRequestFromSearch(targetUser)}
+											disabled={isResponding}
+											class="px-2.5 py-1 bg-amber-50 hover:bg-red-50 text-amber-800 hover:text-red-600 border border-amber-300 hover:border-red-300 text-[11px] font-bold rounded-lg active:scale-95 transition-all shadow-2xs flex items-center space-x-1 cursor-pointer disabled:opacity-50"
+											title="Cancel Friend Request"
+										>
+											<span>Cancel Add</span>
+										</button>
+									{:else if targetUser.relationship === 'request_received'}
+										<button
+											type="button"
+											onclick={() => handleRespond(targetUser.request_id, 'accept')}
+											class="px-2.5 py-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[11px] font-bold rounded-lg shadow-xs"
+										>
+											Accept
+										</button>
+									{:else}
+										<button
+											type="button"
+											onclick={() => sendFriendRequestToUser(targetUser)}
+											disabled={isLoading}
+											class="px-2.5 py-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white text-[11px] font-bold rounded-lg shadow-xs disabled:opacity-50"
+										>
+											Add
+										</button>
+									{/if}
+								</div>
+							</div>
+						{/each}
+					</div>
+				</div>
+			{:else if hasSearched && friendUsername.trim()}
+				<div class="mb-4 text-center py-6 bg-pink-50/50 rounded-xl border border-dashed border-pink-200">
+					<p class="text-xs font-bold text-pink-700">No user found matching "@{friendUsername.trim()}"</p>
+					<p class="text-[10px] text-pink-400 mt-0.5">Please check the spelling and try again.</p>
+				</div>
+			{/if}
 
 			<!-- Pending Incoming Requests Section -->
 			{#if pendingRequests.length > 0}
@@ -270,20 +454,37 @@
 					<div class="space-y-3 max-h-48 overflow-y-auto">
 						{#each pendingRequests as request (request.id)}
 							<div class="p-3 bg-pink-50 border-2 border-pink-200 rounded-xl flex items-center justify-between">
-								<div class="flex items-center space-x-3">
-									<div class="w-10 h-10 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center text-white font-bold">
-										{request.username.charAt(0).toUpperCase()}
+								<button
+									type="button"
+									onclick={() => handleViewUserProfile(request.sender_id || request.id)}
+									class="flex items-center space-x-3 text-left hover:opacity-85 transition-opacity group cursor-pointer min-w-0"
+									title="View @{request.username}'s Profile"
+								>
+									<div class="w-10 h-10 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center text-white font-bold overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform">
+										{#if request.avatar_url}
+											<img src={request.avatar_url} alt={request.username} class="w-full h-full object-cover" />
+										{:else}
+											{request.username.charAt(0).toUpperCase()}
+										{/if}
 									</div>
-									<div>
-										<p class="text-sm font-semibold text-pink-700">{request.username}</p>
-										<p class="text-xs text-pink-400">{request.email}</p>
+									<div class="min-w-0">
+										<p class="text-sm font-semibold text-pink-700 truncate group-hover:underline">@{request.username}</p>
+										<p class="text-xs text-pink-400 truncate">{request.email}</p>
 									</div>
-								</div>
-								<div class="flex space-x-2">
+								</button>
+								<div class="flex items-center space-x-1.5 flex-shrink-0">
+									<button
+										type="button"
+										onclick={() => handleViewUserProfile(request.sender_id || request.id)}
+										class="px-2 py-1 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 rounded-lg text-xs font-semibold transition-all shadow-2xs cursor-pointer"
+										title="View Profile"
+									>
+										Profile
+									</button>
 									<button
 										onclick={() => handleRespond(request.id, 'accept')}
 										disabled={isResponding}
-										class="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 disabled:opacity-50"
+										class="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 disabled:opacity-50 cursor-pointer"
 										title="Accept"
 									>
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
@@ -293,7 +494,7 @@
 									<button
 										onclick={() => handleRespond(request.id, 'decline')}
 										disabled={isResponding}
-										class="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200 disabled:opacity-50"
+										class="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200 disabled:opacity-50 cursor-pointer"
 										title="Decline"
 									>
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
@@ -314,22 +515,41 @@
 					<div class="space-y-3 max-h-48 overflow-y-auto">
 						{#each sentRequests as request (request.id)}
 							<div class="p-3 bg-pink-50 border-2 border-pink-200 rounded-xl flex items-center justify-between">
-								<div class="flex items-center space-x-3">
-									<div class="w-10 h-10 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center text-white font-bold">
-										{request.username.charAt(0).toUpperCase()}
+								<button
+									type="button"
+									onclick={() => handleViewUserProfile(request.receiver_id || request.id)}
+									class="flex items-center space-x-3 text-left hover:opacity-85 transition-opacity group cursor-pointer min-w-0"
+									title="View @{request.username}'s Profile"
+								>
+									<div class="w-10 h-10 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center text-white font-bold overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform">
+										{#if request.avatar_url}
+											<img src={request.avatar_url} alt={request.username} class="w-full h-full object-cover" />
+										{:else}
+											{request.username.charAt(0).toUpperCase()}
+										{/if}
 									</div>
-									<div>
-										<p class="text-sm font-semibold text-pink-700">{request.username}</p>
+									<div class="min-w-0">
+										<p class="text-sm font-semibold text-pink-700 truncate group-hover:underline">@{request.username}</p>
 										<p class="text-xs text-pink-400">Pending approval...</p>
 									</div>
-								</div>
-								<button
-									onclick={() => handleCancelSentRequest(request.id)}
-									disabled={isResponding}
-									class="px-3 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
-								>
-									Cancel Add
 								</button>
+								<div class="flex items-center space-x-1.5 flex-shrink-0">
+									<button
+										type="button"
+										onclick={() => handleViewUserProfile(request.receiver_id || request.id)}
+										class="px-2 py-1 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 rounded-lg text-xs font-semibold transition-all shadow-2xs cursor-pointer"
+										title="View Profile"
+									>
+										Profile
+									</button>
+									<button
+										onclick={() => handleCancelSentRequest(request.id)}
+										disabled={isResponding}
+										class="px-2.5 py-1 bg-amber-50 hover:bg-red-50 border border-amber-300 hover:border-red-300 text-amber-800 hover:text-red-600 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-2xs"
+									>
+										Cancel Add
+									</button>
+								</div>
 							</div>
 						{/each}
 					</div>

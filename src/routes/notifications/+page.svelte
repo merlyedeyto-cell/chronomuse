@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
+	import { supabase } from '$lib/supabaseClient';
 	import Sidebar from '$lib/Sidebar.svelte';
 
 	let user = $state(null);
@@ -77,8 +78,14 @@
 	}
 
 	function handleLogout() {
+		try {
+			supabase.removeAllChannels();
+		} catch (e) {}
 		localStorage.clear();
 		sessionStorage.clear();
+		if (typeof window !== 'undefined') {
+			window.dispatchEvent(new Event('chronomuse_auth_change'));
+		}
 		goto('/');
 	}
 
@@ -107,7 +114,7 @@
 
 	function getCleanDesc(desc) {
 		if (!desc) return '';
-		return desc.replace(/\s*\(Shared by @[a-zA-Z0-9_]+\)\s*$/gi, '').trim();
+		return desc.replace(/\s*\(Shared by @[^)\r\n]+\)\s*/gi, '').trim();
 	}
 
 	function formatTimeAgo(dateStr) {
@@ -473,12 +480,27 @@
 										>
 											<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 												<div class="flex items-center space-x-3 min-w-0">
-													<div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-														{item.sender_username.charAt(0).toUpperCase()}
-													</div>
+													<button
+														type="button"
+														onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.sender_id}`); }}
+														class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform overflow-hidden cursor-pointer"
+														title="View @{item.sender_username}'s Profile"
+													>
+														{#if item.sender_avatar_url}
+															<img src={item.sender_avatar_url} alt={item.sender_username} class="w-full h-full object-cover" />
+														{:else}
+															{item.sender_username.charAt(0).toUpperCase()}
+														{/if}
+													</button>
 													<div class="min-w-0 flex-grow">
 														<div class="flex items-center gap-1.5 flex-wrap">
-															<span class="text-sm font-bold text-pink-700">@{item.sender_username}</span>
+															<button
+																type="button"
+																onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.sender_id}`); }}
+																class="text-sm font-bold text-pink-700 hover:underline hover:text-pink-900 cursor-pointer"
+															>
+																@{item.sender_username}
+															</button>
 															<span class="text-[11px] text-pink-500 font-medium">shared a memory</span>
 															{#if item.memory.mood_tag}
 																<span class="text-[10px] px-2 py-0.5 rounded-full font-bold border {getMoodColor(item.memory.mood_tag)}">
@@ -502,8 +524,17 @@
 													</div>
 												</div>
 
-												<!-- Accept / Decline Buttons -->
-												<div class="flex items-center space-x-2 self-end sm:self-center flex-shrink-0">
+												<!-- Accept / Decline / Profile Buttons -->
+												<div class="flex items-center space-x-1.5 self-end sm:self-center flex-shrink-0">
+													<button
+														type="button"
+														onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.sender_id}`); }}
+														class="px-2.5 py-1.5 bg-white border border-pink-300 hover:bg-pink-100 text-pink-600 active:scale-95 rounded-xl text-xs font-semibold transition-all shadow-2xs cursor-pointer flex items-center space-x-1"
+														title="View Profile"
+													>
+														<span>Profile</span>
+													</button>
+
 													<button
 														type="button"
 														onclick={(e) => handleRespondSharedMemory(item, 'accept', e)}
@@ -545,26 +576,42 @@
 								<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 									{#each pendingFriendRequests as req (req.request_id)}
 										<div class="p-3 bg-pink-50/80 border-2 border-pink-200 rounded-xl flex items-center justify-between shadow-xs">
-											<div class="flex items-center space-x-2.5 min-w-0">
-												<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-400 to-pink-600 text-white font-bold text-sm flex items-center justify-center flex-shrink-0 shadow-sm">
-													{req.sender_username.charAt(0).toUpperCase()}
+											<a
+												href="/profile?id={req.sender_id}"
+												class="flex items-center space-x-2.5 min-w-0 hover:opacity-85 transition-opacity group cursor-pointer"
+												title="View @{req.sender_username}'s Profile"
+											>
+												<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-400 to-pink-600 text-white font-bold text-sm flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
+													{#if req.sender_avatar_url}
+														<img src={req.sender_avatar_url} alt={req.sender_username} class="w-full h-full object-cover" />
+													{:else}
+														{req.sender_username.charAt(0).toUpperCase()}
+													{/if}
 												</div>
 												<div class="min-w-0">
-													<p class="text-xs sm:text-sm font-bold text-pink-700 truncate">@{req.sender_username}</p>
+													<p class="text-xs sm:text-sm font-bold text-pink-700 truncate group-hover:underline">@{req.sender_username}</p>
 													<p class="text-[10px] text-pink-400">{formatTimeAgo(req.created_at)}</p>
 												</div>
-											</div>
+											</a>
 
-											<div class="flex items-center space-x-1.5 flex-shrink-0 ml-2">
+											<div class="flex items-center space-x-1 flex-shrink-0 ml-2">
+												<button
+													type="button"
+													onclick={() => goto(`/profile?id=${req.sender_id}`)}
+													class="px-2 py-1.5 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 rounded-lg text-xs font-semibold transition-all active:scale-95 shadow-2xs cursor-pointer"
+													title="View Profile"
+												>
+													Profile
+												</button>
 												<button
 													onclick={() => handleRespondRequest(req.request_id, 'accept')}
-													class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-lg transition-all active:scale-95 shadow-xs"
+													class="px-2.5 py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-lg transition-all active:scale-95 shadow-xs cursor-pointer"
 												>
 													Accept
 												</button>
 												<button
 													onclick={() => handleRespondRequest(req.request_id, 'decline')}
-													class="px-2.5 py-1.5 bg-pink-100 hover:bg-red-100 text-pink-600 hover:text-red-600 text-xs font-bold rounded-lg transition-all active:scale-95"
+													class="px-2 py-1.5 bg-pink-100 hover:bg-red-100 text-pink-600 hover:text-red-600 text-xs font-bold rounded-lg transition-all active:scale-95 cursor-pointer"
 												>
 													Decline
 												</button>
@@ -614,12 +661,27 @@
 								>
 									<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 										<div class="flex items-center space-x-3 min-w-0">
-											<div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-												{item.sender_username.charAt(0).toUpperCase()}
-											</div>
+											<button
+												type="button"
+												onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.sender_id}`); }}
+												class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform overflow-hidden cursor-pointer"
+												title="View @{item.sender_username}'s Profile"
+											>
+												{#if item.sender_avatar_url}
+													<img src={item.sender_avatar_url} alt={item.sender_username} class="w-full h-full object-cover" />
+												{:else}
+													{item.sender_username.charAt(0).toUpperCase()}
+												{/if}
+											</button>
 											<div class="min-w-0 flex-grow">
 												<div class="flex items-center gap-1.5 flex-wrap">
-													<span class="text-sm font-bold text-pink-700">@{item.sender_username}</span>
+													<button
+														type="button"
+														onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.sender_id}`); }}
+														class="text-sm font-bold text-pink-700 hover:underline hover:text-pink-900 cursor-pointer"
+													>
+														@{item.sender_username}
+													</button>
 													<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
 														✓ Saved to Calendar
 													</span>
@@ -646,6 +708,14 @@
 										</div>
 
 										<div class="flex items-center space-x-2 self-end sm:self-center flex-shrink-0">
+											<button
+												type="button"
+												onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.sender_id}`); }}
+												class="px-2.5 py-1.5 bg-white border border-pink-300 hover:bg-pink-100 text-pink-600 active:scale-95 rounded-xl text-xs font-semibold transition-all shadow-2xs cursor-pointer flex items-center space-x-1"
+												title="View Profile"
+											>
+												<span>Profile</span>
+											</button>
 											<button
 												type="button"
 												onclick={(e) => goToCalendarDate(item.memory.date, e)}
@@ -700,13 +770,28 @@
 								>
 									<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 										<div class="flex items-center space-x-3 min-w-0">
-											<div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-												{item.recipient_username.charAt(0).toUpperCase()}
-											</div>
+											<button
+												type="button"
+												onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.recipient_id}`); }}
+												class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform overflow-hidden cursor-pointer"
+												title="View @{item.recipient_username}'s Profile"
+											>
+												{#if item.recipient_avatar_url}
+													<img src={item.recipient_avatar_url} alt={item.recipient_username} class="w-full h-full object-cover" />
+												{:else}
+													{item.recipient_username.charAt(0).toUpperCase()}
+												{/if}
+											</button>
 											<div class="min-w-0 flex-grow">
 												<div class="flex items-center gap-1.5 flex-wrap">
 													<span class="text-xs text-pink-500 font-medium">Shared with</span>
-													<span class="text-sm font-bold text-pink-700">@{item.recipient_username}</span>
+													<button
+														type="button"
+														onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.recipient_id}`); }}
+														class="text-sm font-bold text-pink-700 hover:underline hover:text-pink-900 cursor-pointer"
+													>
+														@{item.recipient_username}
+													</button>
 													{#if item.status === 'accepted'}
 														<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
 															✓ Accepted by Friend
@@ -741,8 +826,16 @@
 											</div>
 										</div>
 
-										<!-- Cancel / Unshare Button -->
+										<!-- Actions (Profile & Cancel Share) -->
 										<div class="flex items-center space-x-2 self-end sm:self-center flex-shrink-0">
+											<button
+												type="button"
+												onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.recipient_id}`); }}
+												class="px-2.5 py-1.5 bg-white border border-pink-300 hover:bg-pink-100 text-pink-600 active:scale-95 rounded-xl text-xs font-semibold transition-all shadow-2xs cursor-pointer flex items-center space-x-1"
+												title="View Profile"
+											>
+												<span>Profile</span>
+											</button>
 											<button
 												type="button"
 												onclick={(e) => promptCancelShare(item, e)}
@@ -823,12 +916,17 @@
 							<!-- Header row: Shared by badge & mood tag & memory tag -->
 							<div class="flex items-center justify-between gap-2 border-b border-pink-100 pb-2.5">
 								<div class="flex items-center flex-wrap gap-1.5 min-w-0">
-									<span class="text-[11px] px-2.5 py-0.5 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bold shadow-xs inline-flex items-center space-x-1">
+									<button
+										type="button"
+										onclick={() => { showViewMemoryModal = false; goto(`/profile?id=${selectedMemoryToView.sender_id || selectedMemoryToView.recipient_id}`); }}
+										class="text-[11px] px-2.5 py-0.5 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 text-white font-bold shadow-xs inline-flex items-center space-x-1 cursor-pointer hover:scale-102 transition-transform"
+										title="View Profile"
+									>
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-pink-100 flex-shrink-0">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a5.97 5.97 0 00-.942 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
 										</svg>
-										<span>Shared by @{selectedMemoryToView.sender_username}</span>
-									</span>
+										<span>{selectedMemoryToView.sender_username ? `Shared by @${selectedMemoryToView.sender_username}` : `Shared with @${selectedMemoryToView.recipient_username}`}</span>
+									</button>
 
 									{#if selectedMemoryToView.memory.mood_tag}
 										<span class="text-[10px] px-2.5 py-0.5 rounded-full border {getMoodColor(selectedMemoryToView.memory.mood_tag)} font-bold whitespace-nowrap shadow-xs">

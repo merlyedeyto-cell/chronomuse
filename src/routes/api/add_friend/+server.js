@@ -64,12 +64,12 @@ export async function POST({ request }) {
 				if (updateError) {
 					return json({ error: updateError.message }, { status: 500 });
 				}
-				return json({ success: true, message: `Friend request sent to ${targetUser.username}!` });
+				return json({ success: true, request_id: existingRequest.id, message: `Friend request sent to ${targetUser.username}!` });
 			}
 		}
 
 		// Insert friend request
-		const { error: insertError } = await supabase
+		const { data: newReq, error: insertError } = await supabase
 			.from('chronomuse_friend_requests')
 			.insert([
 				{
@@ -77,13 +77,15 @@ export async function POST({ request }) {
 					receiver_id: targetUser.id,
 					status: 'pending'
 				}
-			]);
+			])
+			.select('id')
+			.single();
 
 		if (insertError) {
 			return json({ error: insertError.message }, { status: 500 });
 		}
 
-		return json({ success: true, message: `Friend request sent to ${targetUser.username}!` });
+		return json({ success: true, request_id: newReq?.id || null, message: `Friend request sent to ${targetUser.username}!` });
 	} catch (err) {
 		return json({ error: err.message }, { status: 500 });
 	}

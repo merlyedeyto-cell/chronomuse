@@ -37,12 +37,32 @@ export function triggerVibrate(pattern = [120, 60, 120]) {
 	}
 }
 
-let lastTypingSoundTime = 0;
+export function getActiveUser() {
+	if (typeof window === 'undefined') return null;
+	try {
+		const stored = localStorage.getItem('chronomuse_user');
+		if (!stored) return null;
+		const parsed = JSON.parse(stored);
+		return parsed?.id ? parsed : null;
+	} catch (e) {
+		return null;
+	}
+}
+
+function hasActiveUser(expectedUserId = null) {
+	const user = getActiveUser();
+	if (!user?.id) return false;
+	if (expectedUserId !== null && expectedUserId !== undefined) {
+		return Number(user.id) === Number(expectedUserId);
+	}
+	return true;
+}
 
 /**
  * Play a subtle, cute bubble tap sound when the other user types
  */
-export function playTypingSound() {
+export function playTypingSound(expectedUserId = null) {
+	if (!hasActiveUser(expectedUserId)) return;
 	const now = Date.now();
 	if (now - lastTypingSoundTime < 700) return; // Debounce typing sound
 	lastTypingSoundTime = now;
@@ -73,6 +93,7 @@ export function playTypingSound() {
  * Play an outgoing send message sound (pleasant soft chime/pop)
  */
 export function playMessageSentSound() {
+	if (!hasActiveUser()) return;
 	try {
 		const ctx = getAudioContext();
 		if (!ctx) return;
@@ -99,7 +120,8 @@ export function playMessageSentSound() {
 /**
  * Play an incoming message sound (crystal-clear 2-tone melodic notification chime) + vibration
  */
-export function playIncomingMessageSound() {
+export function playIncomingMessageSound(expectedUserId = null) {
+	if (!hasActiveUser(expectedUserId)) return;
 	triggerVibrate([100, 50, 100]);
 
 	try {
@@ -137,7 +159,8 @@ export function playIncomingMessageSound() {
 /**
  * Play a notification alert chime (for friend requests, shared memories, etc.) + vibration
  */
-export function playNotificationSound() {
+export function playNotificationSound(expectedUserId = null) {
+	if (!hasActiveUser(expectedUserId)) return;
 	triggerVibrate([140, 70, 140]);
 
 	try {

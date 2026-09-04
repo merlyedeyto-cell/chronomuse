@@ -28,7 +28,7 @@ export async function POST({ request }) {
 		// Get friend details
 		const { data: friendUsers, error: userError } = await supabase
 			.from('chronomuse_users')
-			.select('id, username, email, last_activity')
+			.select('id, username, email, avatar_url, last_activity')
 			.in('id', friendIds);
 
 		if (userError) {
@@ -42,6 +42,7 @@ export async function POST({ request }) {
 				friend_id: u.id,
 				username: u.username,
 				email: u.email,
+				avatar_url: u.avatar_url || null,
 				last_activity: u.last_activity,
 				created_at: rel ? rel.created_at : null,
 				friends_since: rel ? rel.created_at : null

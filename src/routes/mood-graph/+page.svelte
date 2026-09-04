@@ -2,6 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
+	import { supabase } from '$lib/supabaseClient';
 	import Sidebar from '$lib/Sidebar.svelte';
 	import ViewMemoryModal from '$lib/ViewMemoryModal.svelte';
 
@@ -178,14 +179,26 @@
 	}
 
 	function handleLogout() {
+		try {
+			supabase.removeAllChannels();
+		} catch (e) {}
 		localStorage.clear();
 		sessionStorage.clear();
+		if (typeof window !== 'undefined') {
+			window.dispatchEvent(new Event('chronomuse_auth_change'));
+		}
 		window.location.href = '/';
 	}
 
 	function handleSidebarLogout() {
+		try {
+			supabase.removeAllChannels();
+		} catch (e) {}
 		localStorage.clear();
 		sessionStorage.clear();
+		if (typeof window !== 'undefined') {
+			window.dispatchEvent(new Event('chronomuse_auth_change'));
+		}
 		goto('/');
 	}
 

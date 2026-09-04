@@ -31,6 +31,10 @@
 	let isLoadingSharedRecipients = $state(false);
 	let isSharing = $state(false);
 	let shareSuccessMsg = $state('');
+
+	// Delete Confirmation state
+	let showDeleteConfirmModal = $state(false);
+	let memoryToDeleteId = $state(null);
 	
 	// Full-screen image viewer
 	let showFullScreenImage = $state(false);
@@ -290,37 +294,46 @@
 
 		// Extract sender from description or memory_tag if not already set
 		if (!senderName) {
-			const matchDesc = desc.match(/\(Shared by @([a-zA-Z0-9_]+)\)/i);
+			const matchDesc = desc.match(/\(Shared by @([^)\r\n]+)\)/i);
 			if (matchDesc) {
-				senderName = matchDesc[1];
+				senderName = matchDesc[1].trim();
 			} else {
-				const matchTag = memTag.match(/Shared memory from @([a-zA-Z0-9_]+)/i);
+				const matchTag = memTag.match(/Shared memory from @([^)\r\n]+)/i);
 				if (matchTag) {
-					senderName = matchTag[1];
+					senderName = matchTag[1].trim();
 				}
 			}
 		}
 
-		// Clean description: strip trailing (Shared by @...) from the body text
-		const cleanDesc = desc.replace(/\s*\(Shared by @[a-zA-Z0-9_]+\)\s*$/gi, '').trim();
+		// Clean description: strip (Shared by @...) from the body text
+		const cleanDesc = desc.replace(/\s*\(Shared by @[^)\r\n]+\)\s*/gi, '').trim();
 
 		// Clean memory tag: strip "Shared memory from @..."
-		let cleanTag = memTag.replace(/^Shared memory from @[a-zA-Z0-9_]+\s*$/gi, '').trim();
+		let cleanTag = memTag.replace(/^Shared memory from @[^)\r\n]+\s*$/gi, '').trim();
 		if (cleanTag === 'Untitled Memory' || cleanTag === 'Special Memory') {
 			cleanTag = '';
 		}
 
+		const isShared = Boolean(senderName || memory.is_shared || (memory.description || '').includes('(Shared by @'));
+
 		return {
-			senderName,
-			isShared: !!(senderName || memory.is_shared),
+			senderName: senderName || (isShared ? 'Friend' : null),
+			isShared,
 			cleanDesc,
 			cleanTag
 		};
 	}
 
 	function handleDeleteMemory(memoryId) {
-		if (confirm('Are you sure you want to delete this memory?')) {
-			dispatch('deleteMemory', { memoryId, date: selectedDate });
+		memoryToDeleteId = memoryId;
+		showDeleteConfirmModal = true;
+	}
+
+	function confirmDeleteMemory() {
+		if (memoryToDeleteId) {
+			dispatch('deleteMemory', { memoryId: memoryToDeleteId, date: selectedDate });
+			showDeleteConfirmModal = false;
+			memoryToDeleteId = null;
 		}
 	}
 
@@ -850,8 +863,12 @@
 							class="w-full p-2.5 rounded-xl border-2 transition-all flex items-center justify-between text-left {isAlreadyShared ? 'bg-pink-50/70 border-pink-200/80 opacity-80 cursor-not-allowed' : isSelected ? 'border-pink-500 bg-pink-50/90 shadow-2xs cursor-pointer' : 'border-pink-200 bg-white hover:bg-pink-50/40 hover:border-pink-300 cursor-pointer'}"
 						>
 							<div class="flex items-center space-x-2.5 min-w-0">
-								<div class="w-8 h-8 rounded-full {isAlreadyShared ? 'bg-gradient-to-r from-pink-300 to-rose-300' : 'bg-gradient-to-r from-pink-400 to-pink-600'} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-2xs">
-									{friend.username.charAt(0).toUpperCase()}
+								<div class="w-8 h-8 rounded-full {isAlreadyShared ? 'bg-gradient-to-r from-pink-300 to-rose-300' : 'bg-gradient-to-r from-pink-400 to-pink-600'} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-2xs overflow-hidden">
+									{#if friend.avatar_url}
+										<img src={friend.avatar_url} alt={friend.username} class="w-full h-full object-cover" />
+									{:else}
+										{friend.username.charAt(0).toUpperCase()}
+									{/if}
 								</div>
 								<div class="min-w-0">
 									<span class="text-xs font-semibold text-pink-700 block truncate">@{friend.username}</span>
@@ -887,6 +904,43 @@
 					{#if isSharing}Sharing...{:else}Share Memory{/if}
 				</button>
 			{/if}
+		</div>
+	</div>
+{/if}
+
+<!-- Delete Memory Confirmation Modal -->
+{#if showDeleteConfirmModal}
+	<div
+		class="fixed inset-0 bg-black/50 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in"
+		onclick={(e) => { if (e.target === e.currentTarget) { showDeleteConfirmModal = false; memoryToDeleteId = null; } }}
+	>
+		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center animate-modal-content relative overflow-hidden">
+			<div class="w-14 h-14 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 12.55a1.125 1.125 0 01-1.126 1.095H9.726a1.125 1.125 0 01-1.126-1.095L8.259 9M8.875 5.625V4.5c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.125m-4.5 0V4.5m0 0h4.5m-4.5 0a2.25 2.25 0 00-2.25 2.25v1.5a2.25 2.25 0 002.25 2.25h1.5a2.25 2.25 0 002.25-2.25v-1.5a2.25 2.25 0 00-2.25-2.25h-1.5z" />
+				</svg>
+			</div>
+			<h3 class="text-base sm:text-lg font-black text-pink-950 mb-1.5">Delete Memory?</h3>
+			<p class="text-xs text-pink-600 mb-6 font-medium leading-relaxed">
+				Are you sure you want to delete this memory? This action cannot be undone.
+			</p>
+
+			<div class="flex items-center space-x-3">
+				<button
+					type="button"
+					onclick={() => { showDeleteConfirmModal = false; memoryToDeleteId = null; }}
+					class="w-1/2 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded-xl font-bold text-xs sm:text-sm transition-all"
+				>
+					Cancel
+				</button>
+				<button
+					type="button"
+					onclick={confirmDeleteMemory}
+					class="w-1/2 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md active:scale-95"
+				>
+					Delete
+				</button>
+			</div>
 		</div>
 	</div>
 {/if}

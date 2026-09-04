@@ -40,6 +40,9 @@
 				sessionStorage.clear();
 				// Store new user in localStorage
 				localStorage.setItem('chronomuse_user', JSON.stringify(data.data.user));
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new Event('chronomuse_auth_change'));
+				}
 				// Redirect to dashboard using SvelteKit navigation
 				setTimeout(() => {
 					goto('/dashboard');

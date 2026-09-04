@@ -779,6 +779,10 @@
 							receiver_id: activeFriend.friend_id,
 							message: formattedMessage
 						}
+					}).then(() => {
+						setTimeout(() => {
+							try { supabase.removeChannel(recipientInbox); } catch (e) {}
+						}, 800);
 					});
 				}
 			});
@@ -1200,8 +1204,28 @@
 	}
 
 	function handleLogout() {
+		if (presenceChannel) {
+			try {
+				presenceChannel.untrack();
+				supabase.removeChannel(presenceChannel);
+			} catch (e) {}
+		}
+		if (typingChannel) {
+			try {
+				supabase.removeChannel(typingChannel);
+			} catch (e) {}
+		}
+		if (user) {
+			updateServerActivity(false);
+		}
+		try {
+			supabase.removeAllChannels();
+		} catch (e) {}
 		localStorage.clear();
 		sessionStorage.clear();
+		if (typeof window !== 'undefined') {
+			window.dispatchEvent(new Event('chronomuse_auth_change'));
+		}
 		goto('/');
 	}
 </script>
@@ -1353,8 +1377,12 @@
 							class="w-full p-3 sm:p-3.5 flex items-center space-x-3 transition-all text-left relative group {isSelected ? 'bg-gradient-to-r from-pink-100/90 to-pink-50/70 border-l-4 border-pink-500 shadow-2xs' : 'hover:bg-pink-50/60'}"
 						>
 							<div class="relative flex-shrink-0">
-								<div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-pink-100 to-pink-200 text-pink-700 border border-pink-200/90 flex items-center justify-center font-bold text-sm sm:text-base shadow-2xs group-hover:scale-105 transition-transform">
-									{friend.username.charAt(0).toUpperCase()}
+								<div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-pink-100 to-pink-200 text-pink-700 border border-pink-200/90 flex items-center justify-center font-bold text-sm sm:text-base shadow-2xs group-hover:scale-105 transition-transform overflow-hidden">
+									{#if friend.avatar_url}
+										<img src={friend.avatar_url} alt={friend.username} class="w-full h-full object-cover" />
+									{:else}
+										{friend.username.charAt(0).toUpperCase()}
+									{/if}
 								</div>
 								<!-- Active / Offline Status Dot -->
 								{#if isActive}
@@ -1469,7 +1497,7 @@
 				{:else}
 					<!-- Active Chat Normal Header -->
 					<div class="p-3 sm:p-3.5 bg-gradient-to-r from-pink-400 to-rose-400 text-white flex items-center justify-between shadow-xs flex-shrink-0 sticky top-0 z-30">
-						<div class="flex items-center space-x-3 min-w-0">
+						<div class="flex items-center space-x-2 min-w-0">
 							<button
 								onclick={handleBackToChatList}
 								class="md:hidden p-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors flex-shrink-0 active:scale-95"
@@ -1479,47 +1507,70 @@
 									<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
 								</svg>
 							</button>
-							<div class="relative flex-shrink-0">
-								<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/20 border border-white/40 flex items-center justify-center text-white font-bold text-sm sm:text-base">
-									{activeFriend.username.charAt(0).toUpperCase()}
-								</div>
-								{#if isFriendActive(activeFriend.friend_id)}
-									<span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-pink-400 rounded-full shadow-2xs" title="Active"></span>
-								{:else}
-									<span class="absolute bottom-0 right-0 w-3 h-3 bg-slate-300 border-2 border-pink-400 rounded-full" title="Offline"></span>
-								{/if}
-							</div>
-							<div class="min-w-0">
-								<h3 class="font-bold text-sm leading-tight truncate">
-									@{activeFriend.username}
-								</h3>
-								<div class="text-[11px] text-pink-50 flex items-center gap-1.5 mt-0.5">
-									{#if isOtherUserTyping}
-										<span class="font-semibold italic text-yellow-200 flex items-center gap-1">
-											<span>typing</span>
-											<span class="inline-flex gap-0.5">
-												<span class="w-1 h-1 rounded-full bg-yellow-200 animate-bounce" style="animation-delay: 0ms"></span>
-												<span class="w-1 h-1 rounded-full bg-yellow-200 animate-bounce" style="animation-delay: 150ms"></span>
-												<span class="w-1 h-1 rounded-full bg-yellow-200 animate-bounce" style="animation-delay: 300ms"></span>
-											</span>
-										</span>
-									{:else if isFriendActive(activeFriend.friend_id)}
-										<span class="flex items-center gap-1">
-											<span class="w-1.5 h-1.5 rounded-full bg-emerald-300 inline-block animate-pulse"></span>
-											<span>Active now</span>
-										</span>
+							<a
+								href="/profile?id={activeFriend.friend_id}"
+								class="flex items-center space-x-2.5 min-w-0 hover:opacity-95 transition-opacity group cursor-pointer"
+								title="View @{activeFriend.username}'s Profile"
+							>
+								<div class="relative flex-shrink-0">
+									<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/20 border border-white/40 flex items-center justify-center text-white font-bold text-sm sm:text-base overflow-hidden group-hover:scale-105 transition-transform">
+										{#if activeFriend.avatar_url}
+											<img src={activeFriend.avatar_url} alt={activeFriend.username} class="w-full h-full object-cover" />
+										{:else}
+											{activeFriend.username.charAt(0).toUpperCase()}
+										{/if}
+									</div>
+									{#if isFriendActive(activeFriend.friend_id)}
+										<span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-pink-400 rounded-full shadow-2xs" title="Active"></span>
 									{:else}
-										<span class="flex items-center gap-1 text-pink-100/90">
-											<span class="w-1.5 h-1.5 rounded-full bg-white/60 inline-block"></span>
-											<span>{formatLastActive(activeFriend)}</span>
-										</span>
+										<span class="absolute bottom-0 right-0 w-3 h-3 bg-slate-300 border-2 border-pink-400 rounded-full" title="Offline"></span>
 									{/if}
 								</div>
-							</div>
+								<div class="min-w-0">
+									<h3 class="font-bold text-sm leading-tight truncate group-hover:underline flex items-center gap-1">
+										<span>@{activeFriend.username}</span>
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 opacity-70 group-hover:opacity-100">
+											<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+										</svg>
+									</h3>
+									<div class="text-[11px] text-pink-50 flex items-center gap-1.5 mt-0.5">
+										{#if isOtherUserTyping}
+											<span class="font-semibold italic text-yellow-200 flex items-center gap-1">
+												<span>typing</span>
+												<span class="inline-flex gap-0.5">
+													<span class="w-1 h-1 rounded-full bg-yellow-200 animate-bounce" style="animation-delay: 0ms"></span>
+													<span class="w-1 h-1 rounded-full bg-yellow-200 animate-bounce" style="animation-delay: 150ms"></span>
+													<span class="w-1 h-1 rounded-full bg-yellow-200 animate-bounce" style="animation-delay: 300ms"></span>
+												</span>
+											</span>
+										{:else if isFriendActive(activeFriend.friend_id)}
+											<span class="flex items-center gap-1">
+												<span class="w-1.5 h-1.5 rounded-full bg-emerald-300 inline-block animate-pulse"></span>
+												<span>Active now</span>
+											</span>
+										{:else}
+											<span class="flex items-center gap-1 text-pink-100/90">
+												<span class="w-1.5 h-1.5 rounded-full bg-white/60 inline-block"></span>
+												<span>{formatLastActive(activeFriend)}</span>
+											</span>
+										{/if}
+									</div>
+								</div>
+							</a>
 						</div>
 
 						<!-- Header Actions -->
-						<div class="flex items-center space-x-2 flex-shrink-0">
+						<div class="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
+							<a
+								href="/profile?id={activeFriend.friend_id}"
+								class="px-2.5 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1"
+								title="View Profile"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+								</svg>
+								<span class="hidden sm:inline">Profile</span>
+							</a>
 							<button
 								onclick={() => showClearModal = true}
 								class="px-2.5 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg transition-colors text-xs font-medium flex items-center space-x-1"
@@ -1734,8 +1785,12 @@
 						<!-- Typing Indicator Bubble in message stream -->
 						{#if isOtherUserTyping}
 							<div class="flex items-start space-x-2 animate-message-pop py-1 my-1">
-								<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-400 to-rose-400 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-2xs mt-0.5">
-									{activeFriend.username.charAt(0).toUpperCase()}
+								<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-400 to-rose-400 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-2xs mt-0.5 overflow-hidden">
+									{#if activeFriend.avatar_url}
+										<img src={activeFriend.avatar_url} alt={activeFriend.username} class="w-full h-full object-cover" />
+									{:else}
+										{activeFriend.username.charAt(0).toUpperCase()}
+									{/if}
 								</div>
 								<div class="flex flex-col items-start space-y-1">
 									<!-- 3-dot Bubble -->

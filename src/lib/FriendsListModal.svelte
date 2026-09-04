@@ -1,5 +1,6 @@
 <script>
 	import { createEventDispatcher, onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 
 	const dispatch = createEventDispatcher();
@@ -31,6 +32,11 @@
 			document.body.style.overflow = '';
 			dispatch('close');
 		}, 300);
+	}
+
+	function handleViewProfile(friendId) {
+		handleClose();
+		goto(`/profile?id=${friendId}`);
 	}
 
 	function getCurrentUser() {
@@ -173,27 +179,51 @@
 				{:else}
 					<div class="space-y-3">
 						{#each friends as friend (friend.friend_id)}
-							<div class="p-4 bg-pink-50 border-2 border-pink-200 rounded-xl hover:border-pink-300 transition-all duration-200">
+							<div class="p-3 bg-pink-50 border-2 border-pink-200 rounded-xl hover:border-pink-300 transition-all duration-200">
 								<div class="flex items-center space-x-3">
-									<div class="w-12 h-12 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-										{friend.username.charAt(0).toUpperCase()}
-									</div>
+									<button
+										type="button"
+										onclick={() => handleViewProfile(friend.friend_id)}
+										class="w-11 h-11 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center text-white font-bold text-base flex-shrink-0 overflow-hidden hover:scale-105 transition-transform cursor-pointer"
+										title="View @{friend.username}'s Profile"
+									>
+										{#if friend.avatar_url}
+											<img src={friend.avatar_url} alt={friend.username} class="w-full h-full object-cover" />
+										{:else}
+											{friend.username.charAt(0).toUpperCase()}
+										{/if}
+									</button>
 									<div class="flex-1 min-w-0">
-										<p class="text-sm font-semibold text-pink-700 truncate">{friend.username}</p>
-										<p class="text-xs text-pink-400 truncate">{friend.email}</p>
+										<button
+											type="button"
+											onclick={() => handleViewProfile(friend.friend_id)}
+											class="text-left font-semibold text-pink-700 hover:text-pink-900 hover:underline text-xs sm:text-sm truncate block cursor-pointer"
+										>
+											@{friend.username}
+										</button>
+										<p class="text-[11px] text-pink-400 truncate">{friend.email}</p>
 										{#if friend.friends_since}
-											<p class="text-xs text-pink-300 mt-1">Friends since {formatDate(friend.friends_since)}</p>
+											<p class="text-[10px] text-pink-300 mt-0.5">Friends since {formatDate(friend.friends_since)}</p>
 										{/if}
 									</div>
-									<button
-										onclick={() => confirmRemoveFriend(friend)}
-										class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
-										title="Remove Friend"
-									>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 12.55a1.125 1.125 0 01-1.126 1.095H9.726a1.125 1.125 0 01-1.126-1.095L8.259 9M8.875 5.625V4.5c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.125m-4.5 0V4.5m0 0h4.5m-4.5 0a2.25 2.25 0 00-2.25 2.25v1.5a2.25 2.25 0 002.25 2.25h1.5a2.25 2.25 0 002.25-2.25v-1.5a2.25 2.25 0 00-2.25-2.25h-1.5z" />
-										</svg>
-									</button>
+									<div class="flex items-center space-x-1 flex-shrink-0">
+										<button
+											onclick={() => handleViewProfile(friend.friend_id)}
+											class="px-2.5 py-1 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 rounded-lg text-xs font-semibold transition-all shadow-2xs cursor-pointer flex items-center space-x-1"
+											title="View Profile"
+										>
+											<span>Profile</span>
+										</button>
+										<button
+											onclick={() => confirmRemoveFriend(friend)}
+											class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 cursor-pointer"
+											title="Remove Friend"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 12.55a1.125 1.125 0 01-1.126 1.095H9.726a1.125 1.125 0 01-1.126-1.095L8.259 9M8.875 5.625V4.5c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.125m-4.5 0V4.5m0 0h4.5m-4.5 0a2.25 2.25 0 00-2.25 2.25v1.5a2.25 2.25 0 002.25 2.25h1.5a2.25 2.25 0 002.25-2.25v-1.5a2.25 2.25 0 00-2.25-2.25h-1.5z" />
+											</svg>
+										</button>
+									</div>
 								</div>
 							</div>
 						{/each}

@@ -32,7 +32,7 @@ export async function POST({ request }) {
 			const senderIds = requests.map(r => r.sender_id);
 			const { data: senders } = await supabase
 				.from('chronomuse_users')
-				.select('id, username, email')
+				.select('id, username, email, avatar_url')
 				.in('id', senderIds);
 
 			formattedIncoming = requests.map(r => {
@@ -43,6 +43,7 @@ export async function POST({ request }) {
 					sender_id: r.sender_id,
 					username: sender?.username || 'Unknown',
 					email: sender?.email || '',
+					avatar_url: sender?.avatar_url || null,
 					created_at: r.created_at
 				};
 			});
@@ -53,7 +54,7 @@ export async function POST({ request }) {
 			const receiverIds = sentRequests.map(r => r.receiver_id);
 			const { data: receivers } = await supabase
 				.from('chronomuse_users')
-				.select('id, username, email')
+				.select('id, username, email, avatar_url')
 				.in('id', receiverIds);
 
 			formattedSent = sentRequests.map(r => {
@@ -64,6 +65,7 @@ export async function POST({ request }) {
 					receiver_id: r.receiver_id,
 					username: receiver?.username || 'Unknown',
 					email: receiver?.email || '',
+					avatar_url: receiver?.avatar_url || null,
 					created_at: r.created_at
 				};
 			});

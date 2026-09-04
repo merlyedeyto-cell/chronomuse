@@ -41,7 +41,7 @@ export async function POST({ request }) {
 			.insert([
 				{ username, email, password: hashedPassword }
 			])
-			.select('id, username, email')
+			.select('id, username, email, avatar_url')
 			.single();
 
 		if (insertError) {
