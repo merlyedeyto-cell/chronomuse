@@ -283,13 +283,19 @@
 	function confirmRemoveFriend() {
 		if (!friendToRemove || !user || !user.id || isRemoving) return;
 		isRemoving = true;
+		const targetFriendId = friendToRemove.friend_id || friendToRemove.id;
+		const prevFriends = [...friends];
+
+		// Optimistic UI update
+		friends = friends.filter(f => (f.friend_id || f.id) !== targetFriendId);
 
 		fetch(API_ENDPOINTS.removeFriend, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
-				friendship_id: friendToRemove.friendship_id,
-				user_id: user.id
+				user_id: user.id,
+				friend_id: targetFriendId,
+				friendship_id: friendToRemove.friendship_id || null
 			})
 		})
 		.then(res => res.json())
@@ -300,11 +306,13 @@
 			if (data.success) {
 				fetchFriends();
 			} else {
+				friends = prevFriends;
 				alert('Error: ' + (data.error || 'Failed to remove friend'));
 			}
 		})
 		.catch(err => {
 			isRemoving = false;
+			friends = prevFriends;
 			console.error('Error removing friend:', err);
 		});
 	}
