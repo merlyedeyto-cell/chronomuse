@@ -29,10 +29,8 @@
 	let pendingSharedMemories = $derived((notifications.shared_memories || []).filter(m => m.status !== 'accepted'));
 	let acceptedSharedMemories = $derived((notifications.shared_memories || []).filter(m => m.status === 'accepted'));
 	let sentSharedMemories = $derived(notifications.sent_shared_memories || []);
-	let pendingFriendRequests = $derived(notifications.incoming_requests || []);
 
 	let totalPendingMemoriesCount = $derived(pendingSharedMemories.length);
-	let totalRequestsCount = $derived(pendingSharedMemories.length + pendingFriendRequests.length);
 	let totalMemoriesCount = $derived(acceptedSharedMemories.length);
 	let totalSentCount = $derived(sentSharedMemories.length);
 
@@ -41,7 +39,7 @@
 		if (storedUser) {
 			user = JSON.parse(storedUser);
 			fetchNotifications().then(() => {
-				if (pendingSharedMemories.length > 0 || pendingFriendRequests.length > 0) {
+				if (pendingSharedMemories.length > 0) {
 					activeTab = 'pending_memories';
 				} else if (acceptedSharedMemories.length > 0) {
 					activeTab = 'memories';
@@ -404,9 +402,9 @@
 							</button>
 							<h1 class="text-base sm:text-lg font-extrabold text-pink-600 flex items-center space-x-2">
 								<span>Notifications & Requests</span>
-								{#if totalRequestsCount > 0}
+								{#if totalPendingMemoriesCount > 0}
 									<span class="text-xs bg-pink-500 text-white px-2 py-0.5 rounded-full font-bold">
-										{totalRequestsCount}
+										{totalPendingMemoriesCount}
 									</span>
 								{/if}
 							</h1>
@@ -559,8 +557,8 @@
 					</div>
 				{/if}
 			{:else if activeTab === 'pending_memories'}
-				<!-- Tab: Pending Memories & Incoming Requests -->
-				{#if pendingSharedMemories.length === 0 && pendingFriendRequests.length === 0}
+				<!-- Tab 2: Pending Memories Tab -->
+				{#if pendingSharedMemories.length === 0}
 					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-10 text-center animate-fade-in">
 						<div class="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3 text-pink-400">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
@@ -574,151 +572,97 @@
 					</div>
 				{:else}
 					<div class="space-y-4 animate-fade-in">
-						<!-- Pending Shared Memories Section -->
-						{#if pendingSharedMemories.length > 0}
-							<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5">
-								<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide flex items-center space-x-1.5">
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
-									</svg>
-									<span>Action Required: Memory Share Requests ({pendingSharedMemories.length})</span>
-								</h2>
+						<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5">
+							<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide flex items-center space-x-1.5">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+								</svg>
+								<span>Action Required: Memory Share Requests ({pendingSharedMemories.length})</span>
+							</h2>
 
-								<div class="space-y-3">
-									{#each pendingSharedMemories as item (item.share_id)}
-										<div
-											role="button"
-											tabindex="0"
-											onclick={(e) => handleCardClick(item, e)}
-											onkeydown={(e) => { if (e.key === 'Enter') handleCardClick(item, e); }}
-											class="p-3.5 sm:p-4 bg-white hover:bg-pink-50/50 border border-pink-200 hover:border-pink-300 rounded-2xl shadow-xs transition-all duration-200 cursor-pointer group hover:shadow-md"
-										>
-											<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-												<div class="flex items-center space-x-3 min-w-0">
-													<button
-														type="button"
-														onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.sender_id}`); }}
-														class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform overflow-hidden cursor-pointer"
-														title="View @{item.sender_username}'s Profile"
-													>
-														{#if item.sender_avatar_url}
-															<img src={item.sender_avatar_url} alt={item.sender_username} class="w-full h-full object-cover" />
-														{:else}
-															{item.sender_username.charAt(0).toUpperCase()}
+							<div class="space-y-3">
+								{#each pendingSharedMemories as item (item.share_id)}
+									<div
+										role="button"
+										tabindex="0"
+										onclick={(e) => handleCardClick(item, e)}
+										onkeydown={(e) => { if (e.key === 'Enter') handleCardClick(item, e); }}
+										class="p-3.5 sm:p-4 bg-white hover:bg-pink-50/50 border border-pink-200 hover:border-pink-300 rounded-2xl shadow-xs transition-all duration-200 cursor-pointer group hover:shadow-md"
+									>
+										<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+											<div class="flex items-center space-x-3 min-w-0">
+												<button
+													type="button"
+													onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.sender_id}`); }}
+													class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform overflow-hidden cursor-pointer"
+													title="View @{item.sender_username}'s Profile"
+												>
+													{#if item.sender_avatar_url}
+														<img src={item.sender_avatar_url} alt={item.sender_username} class="w-full h-full object-cover" />
+													{:else}
+														{item.sender_username.charAt(0).toUpperCase()}
+													{/if}
+												</button>
+												<div class="min-w-0 flex-grow">
+													<div class="flex items-center gap-1.5 flex-wrap">
+														<button
+															type="button"
+															onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.sender_id}`); }}
+															class="text-sm font-bold text-pink-700 hover:underline hover:text-pink-900 cursor-pointer"
+														>
+															@{item.sender_username}
+														</button>
+														<span class="text-[11px] text-pink-500 font-medium">shared a memory</span>
+														{#if item.memory.mood_tag}
+															<span class="text-[10px] px-2 py-0.5 rounded-full font-bold border {getMoodColor(item.memory.mood_tag)}">
+																{item.memory.mood_tag}
+															</span>
 														{/if}
-													</button>
-													<div class="min-w-0 flex-grow">
-														<div class="flex items-center gap-1.5 flex-wrap">
-															<button
-																type="button"
-																onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.sender_id}`); }}
-																class="text-sm font-bold text-pink-700 hover:underline hover:text-pink-900 cursor-pointer"
-															>
-																@{item.sender_username}
-															</button>
-															<span class="text-[11px] text-pink-500 font-medium">shared a memory</span>
-															{#if item.memory.mood_tag}
-																<span class="text-[10px] px-2 py-0.5 rounded-full font-bold border {getMoodColor(item.memory.mood_tag)}">
-																	{item.memory.mood_tag}
-																</span>
-															{/if}
-														</div>
-
-														<p class="text-xs text-pink-900 font-semibold mt-1 truncate">
-															{item.memory.memory_tag || 'Special Memory'}
-															<span class="text-pink-400 font-normal ml-1">• {formatDate(item.memory.date)}</span>
-														</p>
-
-														<p class="text-[11px] text-pink-400 mt-0.5 flex items-center space-x-1 group-hover:text-pink-600 transition-colors">
-															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-pink-400 group-hover:text-pink-500">
-																<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-																<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-															</svg>
-															<span>Tap to preview details</span>
-														</p>
 													</div>
-												</div>
 
-												<!-- Accept / Decline Buttons -->
-												<div class="flex items-center space-x-1.5 self-end sm:self-center flex-shrink-0">
-													<button
-														type="button"
-														onclick={(e) => handleRespondSharedMemory(item, 'accept', e)}
-														class="px-3.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
-														title="Accept and add memory to my calendar"
-													>
-														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-															<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+													<p class="text-xs text-pink-900 font-semibold mt-1 truncate">
+														{item.memory.memory_tag || 'Special Memory'}
+														<span class="text-pink-400 font-normal ml-1">• {formatDate(item.memory.date)}</span>
+													</p>
+
+													<p class="text-[11px] text-pink-400 mt-0.5 flex items-center space-x-1 group-hover:text-pink-600 transition-colors">
+														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-pink-400 group-hover:text-pink-500">
+															<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+															<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
 														</svg>
-														<span>Accept</span>
-													</button>
-
-													<button
-														type="button"
-														onclick={(e) => handleRespondSharedMemory(item, 'decline', e)}
-														class="px-3 py-1.5 bg-pink-100 hover:bg-red-100 text-pink-600 hover:text-red-600 active:scale-95 rounded-xl text-xs font-bold transition-all cursor-pointer"
-														title="Decline memory share request"
-													>
-														Decline
-													</button>
+														<span>Tap to preview details</span>
+													</p>
 												</div>
 											</div>
-										</div>
-									{/each}
-								</div>
-							</div>
-						{/if}
 
-						<!-- Incoming Friend Requests Section -->
-						{#if pendingFriendRequests.length > 0}
-							<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5">
-								<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide flex items-center space-x-1.5">
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 19.125a1.125 1.125 0 011.125-1.125h15.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H4.875a1.125 1.125 0 01-1.125-1.125v-2.25z" />
-									</svg>
-									<span>Incoming Friend Requests ({pendingFriendRequests.length})</span>
-								</h2>
-
-								<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-									{#each pendingFriendRequests as req (req.request_id)}
-										<div class="p-3 bg-pink-50/80 border-2 border-pink-200 rounded-xl flex items-center justify-between shadow-xs">
-											<a
-												href="/profile?id={req.sender_id}"
-												class="flex items-center space-x-2.5 min-w-0 hover:opacity-85 transition-opacity group cursor-pointer"
-												title="View @{req.sender_username}'s Profile"
-											>
-												<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-400 to-pink-600 text-white font-bold text-sm flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
-													{#if req.sender_avatar_url}
-														<img src={req.sender_avatar_url} alt={req.sender_username} class="w-full h-full object-cover" />
-													{:else}
-														{req.sender_username.charAt(0).toUpperCase()}
-													{/if}
-												</div>
-												<div class="min-w-0">
-													<p class="text-xs sm:text-sm font-bold text-pink-700 truncate group-hover:underline">@{req.sender_username}</p>
-													<p class="text-[10px] text-pink-400">{formatTimeAgo(req.created_at)}</p>
-												</div>
-											</a>
-
-											<div class="flex items-center space-x-1 flex-shrink-0 ml-2">
+											<!-- Accept / Decline Buttons -->
+											<div class="flex items-center space-x-1.5 self-end sm:self-center flex-shrink-0">
 												<button
-													onclick={() => handleRespondRequest(req.request_id, 'accept')}
-													class="px-3 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-xs font-bold rounded-lg transition-all active:scale-95 shadow-xs cursor-pointer"
+													type="button"
+													onclick={(e) => handleRespondSharedMemory(item, 'accept', e)}
+													class="px-3.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+													title="Accept and add memory to my calendar"
 												>
-													Accept
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+														<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+													</svg>
+													<span>Accept</span>
 												</button>
+
 												<button
-													onclick={() => handleRespondRequest(req.request_id, 'decline')}
-													class="px-2.5 py-1.5 bg-pink-100 hover:bg-red-100 text-pink-600 hover:text-red-600 text-xs font-bold rounded-lg transition-all active:scale-95 cursor-pointer"
+													type="button"
+													onclick={(e) => handleRespondSharedMemory(item, 'decline', e)}
+													class="px-3 py-1.5 bg-pink-100 hover:bg-red-100 text-pink-600 hover:text-red-600 active:scale-95 rounded-xl text-xs font-bold transition-all cursor-pointer"
+													title="Decline memory share request"
 												>
 													Decline
 												</button>
 											</div>
 										</div>
-									{/each}
-								</div>
+									</div>
+								{/each}
 							</div>
-						{/if}
+						</div>
 					</div>
 				{/if}
 			{:else if activeTab === 'sent'}
