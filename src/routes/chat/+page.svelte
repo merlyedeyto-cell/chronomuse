@@ -7,7 +7,7 @@
 	import { playTypingSound, playMessageSentSound, playIncomingMessageSound } from '$lib/soundEffects.js';
 	import Sidebar from '$lib/Sidebar.svelte';
 
-	let user = $state(null);
+	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let friends = $state([]);
 	let requests = $state([]);
 	let searchQuery = $state('');

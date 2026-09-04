@@ -2,6 +2,7 @@
 	import LoginCard from '$lib/LoginCard.svelte';
 	import TopBar from '$lib/TopBar.svelte';
 	import { onMount, tick } from 'svelte';
+	import { goto } from '$app/navigation';
 
 	let isLoginHighlight = $state(false);
 	let isAboutHighlight = $state(false);
@@ -31,6 +32,17 @@
 	}
 
 	onMount(() => {
+		const storedUser = localStorage.getItem('chronomuse_user');
+		if (storedUser) {
+			try {
+				const parsed = JSON.parse(storedUser);
+				if (parsed && parsed.id) {
+					goto('/dashboard');
+					return;
+				}
+			} catch (e) {}
+		}
+
 		const observer = new IntersectionObserver(
 			(entries) => {
 				entries.forEach((entry) => {

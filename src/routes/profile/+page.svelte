@@ -7,10 +7,10 @@
 	import { broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
 	import Sidebar from '$lib/Sidebar.svelte';
 
-	let currentUser = $state(null);
+	let currentUser = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let targetUserId = $state(null);
 	let profileData = $state(null);
-	let isLoading = $state(true);
+	let isLoading = $state(false);
 	let isSaving = $state(false);
 	let isUploadingAvatar = $state(false);
 	let sidebarOpen = $state(false);

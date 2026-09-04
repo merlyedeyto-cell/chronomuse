@@ -6,8 +6,9 @@
 	import Sidebar from '$lib/Sidebar.svelte';
 	import ViewMemoryModal from '$lib/ViewMemoryModal.svelte';
 
-	let user = $state(null);
-	let isLoading = $state(true);
+	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
+	let isLoading = $state(false);
+	let hasLoadedOnce = $state(false);
 	let moodData = $state([]);
 	let selectedPeriod = $state('all'); // Default to all time
 	let sidebarOpen = $state(false);
@@ -91,16 +92,26 @@
 	let periodCache = {};
 
 	async function loadMoodData(targetPeriod = selectedPeriod) {
+		const currentUser = user || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
+		if (!currentUser?.id) return;
+		user = currentUser;
+
+		if (!hasLoadedOnce) {
+			isLoading = true;
+		}
+
 		if (periodCache[targetPeriod]) {
 			if (targetPeriod === selectedPeriod) {
 				moodData = periodCache[targetPeriod];
 				calculateMoodStats();
 			}
+			isLoading = false;
+			hasLoadedOnce = true;
 			return;
 		}
 
 		try {
-			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${user.id}&period=${targetPeriod}`);
+			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${currentUser.id}&period=${targetPeriod}`);
 			const data = await res.json();
 			if (data.success && data.data) {
 				periodCache[targetPeriod] = data.data;
@@ -111,6 +122,9 @@
 			}
 		} catch (error) {
 			console.error('Error loading mood data:', error);
+		} finally {
+			isLoading = false;
+			hasLoadedOnce = true;
 		}
 	}
 
@@ -137,14 +151,12 @@
 		const storedUser = localStorage.getItem('chronomuse_user');
 		if (storedUser) {
 			user = JSON.parse(storedUser);
+			loadMoodData().then(() => {
+				prefetchPeriods();
+			});
 		} else {
-			window.location.href = '/';
+			goto('/');
 		}
-		isLoading = false;
-
-		loadMoodData().then(() => {
-			prefetchPeriods();
-		});
 	});
 
 	function calculateMoodStats() {
@@ -255,17 +267,9 @@
 	let hasNotifications = $state(false);
 </script>
 
-{#if isLoading}
-	<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300">
-		<div class="text-center">
-			<div class="animate-spin rounded-full h-16 w-16 border-b-2 border-pink-500 mx-auto"></div>
-			<p class="mt-4 text-pink-700 font-semibold">Loading...</p>
-		</div>
-	</div>
-{:else}
-	<div class="flex flex-col min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 animate-fade-in">
-		<!-- Top Navigation -->
-		<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
+<div class="flex flex-col min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 animate-fade-in">
+	<!-- Top Navigation -->
+	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
 			<div class="container mx-auto px-4 py-3 flex items-center justify-between">
 				<div class="flex items-center space-x-2.5">
 					<button
@@ -656,7 +660,6 @@
 			</div>
 		</footer>
 	</div>
-{/if}
 
 <style>
 	@keyframes fade-in {
