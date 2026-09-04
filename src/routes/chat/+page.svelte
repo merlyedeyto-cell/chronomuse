@@ -54,6 +54,10 @@
 	const SWIPE_THRESHOLD = 45; // px threshold to trigger reply
 	const SWIPE_MAX = 75; // max horizontal drag distance
 
+	// Visual Viewport tracking for mobile virtual keyboard
+	let mobileViewportHeight = $state('100dvh');
+	let mobileViewportTop = $state('0px');
+
 	// Typing indicator state
 	let isOtherUserTyping = $state(false);
 	let typingTimeout = null;
@@ -197,6 +201,16 @@
 		window.addEventListener('mousemove', onWindowMouseMove);
 		window.addEventListener('mouseup', onWindowMouseUp);
 
+		if (typeof window !== 'undefined') {
+			if (window.visualViewport) {
+				window.visualViewport.addEventListener('resize', updateMobileViewport);
+				window.visualViewport.addEventListener('scroll', updateMobileViewport);
+			}
+			window.addEventListener('resize', updateMobileViewport);
+			window.addEventListener('scroll', updateMobileViewport);
+			updateMobileViewport();
+		}
+
 		return () => {
 			document.removeEventListener('visibilitychange', handleVisibilityChange);
 			window.removeEventListener('focus', handleFocus);
@@ -204,6 +218,16 @@
 			window.removeEventListener('mousemove', onWindowMouseMove);
 			window.removeEventListener('mouseup', onWindowMouseUp);
 			window.removeEventListener('popstate', handlePopState);
+			if (typeof window !== 'undefined') {
+				if (window.visualViewport) {
+					window.visualViewport.removeEventListener('resize', updateMobileViewport);
+					window.visualViewport.removeEventListener('scroll', updateMobileViewport);
+				}
+				window.removeEventListener('resize', updateMobileViewport);
+				window.removeEventListener('scroll', updateMobileViewport);
+				document.documentElement.style.overflow = '';
+				document.body.style.overflow = '';
+			}
 		};
 	});
 
@@ -423,23 +447,39 @@
 		broadcastTyping(false);
 	}
 
-	function handleInputFocus() {
+	function updateMobileViewport() {
 		if (typeof window !== 'undefined') {
 			window.scrollTo(0, 0);
-			document.documentElement.scrollTop = 0;
 			document.body.scrollTop = 0;
-		}
-		tick().then(() => {
-			if (chatContainer) {
-				const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop <= chatContainer.clientHeight + 140;
-				if (isAtBottom) {
-					scrollToBottom(true);
-				}
+			document.documentElement.scrollTop = 0;
+			if (window.visualViewport) {
+				mobileViewportHeight = `${window.visualViewport.height}px`;
+				mobileViewportTop = `${window.visualViewport.offsetTop || 0}px`;
+			} else {
+				mobileViewportHeight = `${window.innerHeight}px`;
+				mobileViewportTop = '0px';
 			}
-		});
+		}
+	}
+
+	function handleInputFocus() {
+		updateMobileViewport();
+		setTimeout(() => {
+			updateMobileViewport();
+			if (chatContainer) {
+				scrollToBottom(true);
+			}
+		}, 80);
+		setTimeout(() => {
+			updateMobileViewport();
+			if (chatContainer) {
+				scrollToBottom(true);
+			}
+		}, 280);
 	}
 
 	function handleInputBlur() {
+		updateMobileViewport();
 		if (newMessageText.trim().length === 0) {
 			stopMyTyping();
 		}
@@ -1100,7 +1140,10 @@
 	<title>Chat - ChronoMuse</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-pink-50/80 via-pink-100/50 to-pink-200/40 flex flex-col font-sans animate-fade-in {activeFriend !== null ? 'fixed inset-0 z-40 h-[100dvh] w-full overflow-hidden overscroll-none md:static md:z-auto md:h-auto md:min-h-screen' : ''}">
+<div
+	style={activeFriend !== null ? `height: ${mobileViewportHeight}; top: ${mobileViewportTop};` : ''}
+	class="bg-gradient-to-br from-pink-50/80 via-pink-100/50 to-pink-200/40 flex flex-col font-sans animate-fade-in {activeFriend !== null ? 'fixed inset-x-0 bottom-auto z-40 w-full overflow-hidden overscroll-none md:static md:z-auto md:h-auto md:min-h-screen md:top-auto md:w-auto' : 'min-h-screen'}"
+>
 	<!-- Top Navigation (Hidden on mobile when chat is open, always visible on desktop) -->
 	<nav class="bg-white/90 backdrop-blur-md border-b border-pink-200 shadow-xs sticky top-0 z-50 animate-slide-down {activeFriend !== null ? 'hidden md:block' : 'block'}">
 		<div class="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -1413,7 +1456,7 @@
 				<div
 					bind:this={chatContainer}
 					onscroll={handleChatScroll}
-					class="flex-grow p-3 sm:p-4 overflow-y-auto overflow-x-hidden space-y-3 bg-[#fffafb] select-none"
+					class="flex-1 min-h-0 p-3 sm:p-4 overflow-y-auto overflow-x-hidden space-y-3 bg-[#fffafb] select-none overscroll-contain"
 				>
 					{#if isFetchingMessages && messages.length === 0}
 						<div class="h-full flex items-center justify-center py-12">
