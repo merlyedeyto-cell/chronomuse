@@ -635,27 +635,30 @@
 				</div>
 			{/if}
 
-			<!-- Mutual Friends Section (When viewing another user's profile) -->
+		<!-- Content Sections Container (Left & Right layout on Desktop when mutual friends exist) -->
+		<div class="{!profileData.is_self && profileData.mutual_friends?.length > 0 ? 'grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 items-start' : 'space-y-5 sm:space-y-6'}">
+			
+			<!-- Mutual Friends Section (Left column on Desktop when viewing another user's profile) -->
 			{#if !profileData.is_self && profileData.mutual_friends?.length > 0}
-				<div class="bg-white/80 backdrop-blur-md rounded-2xl border-2 border-rose-200 shadow-xs p-5 space-y-3">
-					<div class="flex items-center justify-between">
+				<div class="bg-white/80 backdrop-blur-md rounded-2xl border-2 border-rose-200 shadow-xs p-5 space-y-3 flex flex-col h-full">
+					<div class="flex items-center justify-between pb-2 border-b border-rose-100">
 						<div class="flex items-center space-x-2">
-							<div class="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-rose-600">
+							<div class="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 flex-shrink-0">
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a5.97 5.97 0 00-.942 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
 								</svg>
 							</div>
-							<div>
-								<h3 class="text-sm font-bold text-rose-900">Mutual Friends</h3>
-								<p class="text-xs text-rose-600">You and @{profileData.user.username} both know these people</p>
+							<div class="min-w-0">
+								<h3 class="text-sm font-bold text-rose-900 truncate">Mutual Friends</h3>
+								<p class="text-[11px] text-rose-600 truncate">You and @{profileData.user.username} both know these people</p>
 							</div>
 						</div>
-						<span class="px-2.5 py-0.5 bg-rose-100 text-rose-700 text-xs font-bold rounded-full">
+						<span class="px-2.5 py-0.5 bg-rose-100 text-rose-700 text-xs font-bold rounded-full flex-shrink-0">
 							{profileData.mutual_friends.length}
 						</span>
 					</div>
 
-					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
+					<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2.5 pt-1 overflow-y-auto max-h-[480px]">
 						{#each profileData.mutual_friends as mutual}
 							<div class="flex items-center justify-between p-3 bg-rose-50/70 hover:bg-rose-100/80 rounded-xl border border-rose-200 transition-all">
 								<button
@@ -678,7 +681,7 @@
 								</button>
 								<button
 									onclick={() => viewUserProfile(mutual)}
-									class="px-2.5 py-1 bg-white border border-rose-300 text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-lg transition-all shadow-2xs cursor-pointer flex items-center space-x-1"
+									class="px-2.5 py-1 bg-white border border-rose-300 text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-lg transition-all shadow-2xs cursor-pointer flex items-center space-x-1 flex-shrink-0"
 									title="View Profile"
 								>
 									<span>Profile</span>
@@ -689,10 +692,10 @@
 				</div>
 			{/if}
 
-			<!-- Tab 1: Friends Showcase List -->
+			<!-- Tab 1: Friends Showcase List (Right column on Desktop when mutual friends exist, full width otherwise) -->
 			{#if activeTab === 'friends' || !profileData.is_self}
-				<div class="bg-white/80 backdrop-blur-md rounded-2xl border-2 border-pink-200 shadow-xs p-5 sm:p-6 space-y-4">
-					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+				<div class="bg-white/80 backdrop-blur-md rounded-2xl border-2 border-pink-200 shadow-xs p-5 sm:p-6 space-y-4 flex flex-col h-full">
+					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-pink-100">
 						<div>
 							<h3 class="text-base font-bold text-pink-950">
 								{profileData.is_self ? 'My Friends' : `@${profileData.user.username}'s Friends`}
@@ -703,7 +706,7 @@
 						</div>
 
 						<!-- Search Friends Input -->
-						<div class="relative w-full sm:w-64">
+						<div class="relative w-full {!profileData.is_self && profileData.mutual_friends?.length > 0 ? 'sm:w-48 lg:w-44 xl:w-56' : 'sm:w-64'}">
 							<input
 								type="text"
 								bind:value={friendsSearch}
@@ -729,17 +732,17 @@
 							</p>
 						</div>
 					{:else}
-						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+						<div class="grid {!profileData.is_self && profileData.mutual_friends?.length > 0 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'} gap-3 overflow-y-auto max-h-[480px]">
 							{#each filteredFriends as friend}
-								<div class="bg-white/90 border border-pink-200 hover:border-pink-300 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs hover:shadow-md transition-all">
+								<div class="bg-white/90 border border-pink-200 hover:border-pink-300 rounded-2xl p-3 flex items-center justify-between gap-2 shadow-xs hover:shadow-md transition-all">
 									<button
 										type="button"
 										onclick={() => viewUserProfile(friend)}
-										class="flex items-center space-x-3 min-w-0 text-left hover:opacity-85 transition-opacity group cursor-pointer"
+										class="flex items-center space-x-2.5 min-w-0 text-left hover:opacity-85 transition-opacity group cursor-pointer"
 										title="View @{friend.username}'s Profile"
 									>
 										<div class="relative flex-shrink-0">
-											<div class="w-11 h-11 rounded-full bg-gradient-to-tr from-pink-400 to-rose-500 text-white flex items-center justify-center font-bold text-sm shadow-xs overflow-hidden group-hover:scale-105 transition-transform">
+											<div class="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-400 to-rose-500 text-white flex items-center justify-center font-bold text-sm shadow-xs overflow-hidden group-hover:scale-105 transition-transform">
 												{#if friend.avatar_url}
 													<img src={friend.avatar_url} alt={friend.username} class="w-full h-full object-cover" />
 												{:else}
@@ -761,7 +764,7 @@
 										<!-- Profile button -->
 										<button
 											onclick={() => viewUserProfile(friend)}
-											class="px-2 py-1.5 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 rounded-xl text-xs font-semibold transition-all shadow-2xs cursor-pointer"
+											class="px-2 py-1 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 rounded-xl text-xs font-semibold transition-all shadow-2xs cursor-pointer"
 											title="View Profile"
 										>
 											Profile
@@ -770,7 +773,7 @@
 										<!-- Chat button -->
 										<button
 											onclick={() => openChatWithUser(friend)}
-											class="p-2 text-pink-600 hover:text-pink-800 hover:bg-pink-100 rounded-xl transition-all"
+											class="p-1.5 text-pink-600 hover:text-pink-800 hover:bg-pink-100 rounded-xl transition-all"
 											title="Chat"
 											aria-label="Chat with friend"
 										>
@@ -783,7 +786,7 @@
 										{#if profileData.is_self}
 											<button
 												onclick={() => promptRemoveFriend(friend)}
-												class="p-2 text-pink-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+												class="p-1.5 text-pink-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
 												title="Unfriend"
 												aria-label="Unfriend"
 											>
@@ -799,6 +802,8 @@
 					{/if}
 				</div>
 			{/if}
+
+		</div>
 
 			<!-- Tab 2: Account Settings (Own profile only) -->
 			{#if profileData.is_self && activeTab === 'settings'}
