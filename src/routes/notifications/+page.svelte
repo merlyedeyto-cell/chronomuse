@@ -7,7 +7,8 @@
 	import Sidebar from '$lib/Sidebar.svelte';
 
 	let user = $state(null);
-	let isLoading = $state(true);
+	let isLoading = $state(false);
+	let hasLoadedOnce = $state(false);
 	let sidebarOpen = $state(false);
 	let activeTab = $state('pending_memories'); // 'memories', 'pending_memories', 'sent'
 	let autoSyncNotifsInterval = null;
@@ -48,10 +49,8 @@
 					incoming_requests: [],
 					total_notifications_count: 0
 				};
-				fetchNotifications();
+				fetchNotifications(false);
 			}
-		} else if (typeof window !== 'undefined' && !isLoading) {
-			goto('/');
 		}
 	});
 
@@ -59,26 +58,13 @@
 		const storedUser = localStorage.getItem('chronomuse_user');
 		if (storedUser) {
 			user = JSON.parse(storedUser);
-			isLoading = false;
-			fetchNotifications().then(() => {
-				if (pendingSharedMemories.length > 0) {
-					activeTab = 'pending_memories';
-				} else if (acceptedSharedMemories.length > 0) {
-					activeTab = 'memories';
-				} else if (sentSharedMemories.length > 0) {
-					activeTab = 'sent';
-				} else {
-					activeTab = 'pending_memories';
-				}
-			});
+			fetchNotifications(false);
 		} else {
 			goto('/');
 		}
 
 		const handleRealtimeNotifs = () => {
-			if (user && user.id) {
-				fetchNotifications(true);
-			}
+			fetchNotifications(true);
 		};
 
 		const handleAuthOrStorage = () => {
@@ -93,7 +79,7 @@
 						incoming_requests: [],
 						total_notifications_count: 0
 					};
-					fetchNotifications();
+					fetchNotifications(false);
 				}
 			} else {
 				goto('/');
@@ -106,11 +92,9 @@
 		window.addEventListener('chronomuse_friend_change', handleRealtimeNotifs);
 		window.addEventListener('chronomuse_memory_change', handleRealtimeNotifs);
 
-		// Fast periodic polling for zero-delay synchronization without refresh
+		// Periodic background polling
 		autoSyncNotifsInterval = setInterval(() => {
-			if (user && user.id) {
-				fetchNotifications(true);
-			}
+			fetchNotifications(true);
 		}, 3000);
 
 		return () => {
@@ -126,27 +110,30 @@
 	let fetchAbortController = null;
 
 	async function fetchNotifications(isSilent = false) {
-		if (!user || !user.id) return;
+		const currentUser = user || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
+		if (!currentUser || !currentUser.id) return;
+		user = currentUser;
+
+		if (!isSilent && !hasLoadedOnce) {
+			isLoading = true;
+		}
+
 		if (fetchAbortController) {
 			fetchAbortController.abort();
 		}
 		fetchAbortController = new AbortController();
 
-		if (!isSilent && notifications.shared_memories.length === 0 && notifications.sent_shared_memories.length === 0 && notifications.incoming_requests.length === 0) {
-			isLoading = true;
-		}
-
 		try {
 			const res = await fetch(API_ENDPOINTS.getNotifications, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ user_id: user.id }),
+				body: JSON.stringify({ user_id: currentUser.id }),
 				signal: fetchAbortController.signal
 			});
 			const data = await res.json();
 			if (data.success && data.data) {
 				notifications = data.data;
-				if (!isSilent) {
+				if (!hasLoadedOnce) {
 					if (pendingSharedMemories.length > 0) {
 						activeTab = 'pending_memories';
 					} else if (acceptedSharedMemories.length > 0) {
@@ -161,6 +148,7 @@
 			console.error('Error fetching notifications:', err);
 		} finally {
 			isLoading = false;
+			hasLoadedOnce = true;
 		}
 	}
 
@@ -432,17 +420,9 @@
 	<title>Notifications & Requests - ChronoMuse</title>
 </svelte:head>
 
-{#if isLoading}
-	<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300">
-		<div class="text-center">
-			<div class="animate-spin rounded-full h-16 w-16 border-b-2 border-pink-500 mx-auto"></div>
-			<p class="mt-4 text-pink-700 font-semibold">Loading notifications...</p>
-		</div>
-	</div>
-{:else}
-	<div class="flex flex-col min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 animate-fade-in font-sans">
-		<!-- Top Navigation -->
-		<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
+<div class="flex flex-col min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 animate-fade-in font-sans">
+	<!-- Top Navigation -->
+	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
 			<div class="container mx-auto px-4 py-3 flex items-center justify-between">
 				<div class="flex items-center space-x-3 min-w-0">
 					<!-- Hamburger Menu Button -->
@@ -557,8 +537,13 @@
 				</div>
 			</div>
 
-			<!-- Tab: Shared Memories (Accepted) -->
-			{#if activeTab === 'memories'}
+			<!-- Tab Contents -->
+			{#if isLoading && !hasLoadedOnce}
+				<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-12 text-center animate-fade-in">
+					<div class="w-10 h-10 border-4 border-pink-400 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+					<p class="text-xs text-pink-500 font-semibold animate-pulse">Loading notifications...</p>
+				</div>
+			{:else if activeTab === 'memories'}
 				{#if acceptedSharedMemories.length === 0}
 					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-10 text-center animate-fade-in">
 						<div class="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3 text-pink-400">
@@ -1131,7 +1116,6 @@
 			</div>
 		{/if}
 	</div>
-{/if}
 
 <style>
 	@keyframes fade-in {

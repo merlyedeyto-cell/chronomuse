@@ -12,7 +12,7 @@
 		incoming_requests: [],
 		total_notifications_count: 0
 	});
-	let isLoading = $state(true);
+	let isLoading = $state(false);
 	let isCancelling = $state(false);
 	let isResponding = $state(false);
 	let activeTab = $state('pending_memories'); // 'memories', 'pending_memories', 'sent'
