@@ -175,6 +175,11 @@
 					if (!isChatPage || String(currentFriendId) !== String(payload.payload.sender_id)) {
 						playIncomingMessageSound(targetUserId);
 					}
+
+					if (typeof window !== 'undefined') {
+						window.dispatchEvent(new CustomEvent('chronomuse_new_message', { detail: payload.payload }));
+						window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload.payload }));
+					}
 				}
 			})
 			.on('broadcast', { event: 'friend_request' }, (payload) => {
@@ -226,6 +231,11 @@
 					const currentFriendId = $page.url.searchParams.get('friend_id');
 					if (!isChatPage || String(currentFriendId) !== String(payload.new.sender_id)) {
 						playIncomingMessageSound(targetUserId);
+					}
+
+					if (typeof window !== 'undefined') {
+						window.dispatchEvent(new CustomEvent('chronomuse_new_message', { detail: payload.new }));
+						window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload.new }));
 					}
 				}
 			})

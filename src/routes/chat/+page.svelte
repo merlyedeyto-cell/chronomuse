@@ -189,7 +189,20 @@
 			if (activeFriend) {
 				fetchMessages(activeFriend.friend_id, false);
 			}
-		}, 3000);
+		}, 2000);
+
+		const handleRealtimeChatMessage = (e) => {
+			fetchChatList();
+			if (activeFriend) {
+				const detail = e?.detail;
+				if (detail && (Number(detail.sender_id) === Number(activeFriend.friend_id) || Number(detail.receiver_id) === Number(activeFriend.friend_id))) {
+					fetchMessages(activeFriend.friend_id, false);
+				}
+			}
+		};
+
+		window.addEventListener('chronomuse_new_message', handleRealtimeChatMessage);
+		window.addEventListener('chronomuse_friend_change', handleRealtimeChatMessage);
 
 		// Handle mobile hardware & browser back button to return to chat list
 		const handlePopState = () => {
@@ -250,6 +263,8 @@
 			window.removeEventListener('mousemove', onWindowMouseMove);
 			window.removeEventListener('mouseup', onWindowMouseUp);
 			window.removeEventListener('popstate', handlePopState);
+			window.removeEventListener('chronomuse_new_message', handleRealtimeChatMessage);
+			window.removeEventListener('chronomuse_friend_change', handleRealtimeChatMessage);
 			if (typeof window !== 'undefined') {
 				if (window.visualViewport) {
 					window.visualViewport.removeEventListener('resize', updateMobileViewport);
@@ -435,6 +450,26 @@
 		});
 
 		typingChannel
+			.on('broadcast', { event: 'direct_message' }, async (payload) => {
+				if (payload.payload && Number(payload.payload.sender_id) === Number(friendId)) {
+					const incoming = payload.payload;
+					if (!messages.some(m => m.id === incoming.id || (m.message === incoming.message && m.sender_id === incoming.sender_id))) {
+						messages = [...messages, incoming];
+						playIncomingMessageSound();
+						await tick();
+						scrollToBottom(true);
+						broadcastSeen();
+						fetchChatList();
+					}
+				}
+			})
+			.on('broadcast', { event: 'unsend_message' }, (payload) => {
+				if (payload.payload && Array.isArray(payload.payload.message_ids)) {
+					const delIds = new Set(payload.payload.message_ids);
+					messages = messages.filter(m => !delIds.has(m.id));
+					fetchChatList();
+				}
+			})
 			.on('broadcast', { event: 'typing' }, (payload) => {
 				if (payload.payload && Number(payload.payload.sender_id) === Number(friendId)) {
 					const isTyping = Boolean(payload.payload.is_typing);
@@ -855,6 +890,17 @@
 
 		messages = [...messages, tempMsg];
 
+		// Direct broadcast over active typingChannel for 0ms delivery if friend is currently inside chat
+		if (typingChannel) {
+			try {
+				typingChannel.send({
+					type: 'broadcast',
+					event: 'direct_message',
+					payload: tempMsg
+				});
+			} catch (e) {}
+		}
+
 		// Instantly bump activeFriend to the top of friends list with the new message preview
 		const nowIso = new Date().toISOString();
 		friends = [
@@ -952,6 +998,16 @@
 		isDeletingMessages = true;
 		messages = messages.filter(m => !validIds.includes(m.id));
 		exitSelectionMode();
+
+		if (typingChannel) {
+			try {
+				typingChannel.send({
+					type: 'broadcast',
+					event: 'unsend_message',
+					payload: { message_ids: validIds, sender_id: user.id }
+				});
+			} catch (e) {}
+		}
 
 		try {
 			await fetch(API_ENDPOINTS.deleteMessages, {

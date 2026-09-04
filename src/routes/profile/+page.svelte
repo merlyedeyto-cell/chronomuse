@@ -63,13 +63,15 @@
 	let loadedProfileId = null;
 	let fetchAbortController = null;
 
-	async function loadProfile(targetId = null) {
+	async function loadProfile(targetId = null, isSilent = false) {
 		if (fetchAbortController) {
 			fetchAbortController.abort();
 		}
 		fetchAbortController = new AbortController();
 
-		isLoading = true;
+		if (!isSilent && !profileData) {
+			isLoading = true;
+		}
 		try {
 			const stored = localStorage.getItem('chronomuse_user');
 			if (!stored) {
@@ -100,13 +102,15 @@
 					editUsername = profileData.user.username || '';
 					editEmail = profileData.user.email || '';
 				}
-			} else {
+			} else if (!isSilent) {
 				showNotification(data.error || 'Failed to load profile', 'error');
 			}
 		} catch (err) {
 			if (err.name === 'AbortError') return;
 			console.error('Error loading profile:', err);
-			showNotification('Failed to load profile data', 'error');
+			if (!isSilent) {
+				showNotification('Failed to load profile data', 'error');
+			}
 		} finally {
 			isLoading = false;
 		}
@@ -426,7 +430,7 @@
 	onMount(() => {
 		const handleRealtimeProfile = () => {
 			if (loadedProfileId) {
-				loadProfile(loadedProfileId);
+				loadProfile(loadedProfileId, true);
 			}
 		};
 
@@ -436,7 +440,7 @@
 		// Periodic background polling to sync profile if other user accepts/unfriends
 		profilePollInterval = setInterval(() => {
 			if (loadedProfileId) {
-				loadProfile(loadedProfileId);
+				loadProfile(loadedProfileId, true);
 			}
 		}, 2500);
 
@@ -506,12 +510,18 @@
 
 	<!-- Main Profile Container -->
 	<main class="flex-grow container mx-auto px-4 py-6 sm:py-8 max-w-5xl space-y-5 sm:space-y-6">
-		{#if isLoading}
-			<div class="flex flex-col items-center justify-center py-24 space-y-3">
-				<div class="w-10 h-10 border-4 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
-				<p class="text-sm font-semibold text-pink-600 animate-pulse">Loading profile...</p>
-			</div>
-		{:else if profileData}
+		{#if !profileData}
+			{#if isLoading}
+				<div class="flex flex-col items-center justify-center py-24 space-y-3">
+					<div class="w-10 h-10 border-4 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
+					<p class="text-sm font-semibold text-pink-600 animate-pulse">Loading profile...</p>
+				</div>
+			{:else}
+				<div class="flex flex-col items-center justify-center py-24 space-y-3">
+					<p class="text-sm font-semibold text-pink-600">Profile not found.</p>
+				</div>
+			{/if}
+		{:else}
 			<!-- Hero Profile Header Card -->
 			<div class="bg-white/90 backdrop-blur-md rounded-3xl border-2 border-pink-200 shadow-md p-6 sm:p-8 relative overflow-hidden animate-fade-in-up">
 				<!-- Background ambient decorative glow -->

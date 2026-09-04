@@ -20,6 +20,20 @@ export async function POST({ request }) {
 			return json({ error: error.message }, { status: 500 });
 		}
 
+		// Broadcast unsend event
+		try {
+			const globalChannel = supabase.channel('chronomuse_global_events');
+			globalChannel.subscribe((status) => {
+				if (status === 'SUBSCRIBED') {
+					globalChannel.send({
+						type: 'broadcast',
+						event: 'global_message_unsend',
+						payload: { sender_id: user_id, message_ids }
+					});
+				}
+			});
+		} catch (e) {}
+
 		return json({ success: true, message: 'Messages deleted successfully' });
 	} catch (err) {
 		return json({ error: err.message }, { status: 500 });
