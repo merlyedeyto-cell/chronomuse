@@ -7,11 +7,23 @@
 	import ViewMemoryModal from '$lib/ViewMemoryModal.svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
+
+	function getInitialMoodData() {
+		if (typeof window === 'undefined' || !user?.id) return [];
+		try {
+			const cached = localStorage.getItem(`chronomuse_mood_cache_${user.id}_all`);
+			return cached ? JSON.parse(cached) : [];
+		} catch (e) {
+			return [];
+		}
+	}
+
 	let isLoading = $state(false);
 	let hasLoadedOnce = $state(false);
-	let moodData = $state([]);
+	let moodData = $state(getInitialMoodData());
 	let selectedPeriod = $state('all'); // Default to all time
 	let sidebarOpen = $state(false);
+	let hasNotifications = $state(false);
 
 	let showViewMemoryModal = $state(false);
 	let selectedMemoryDate = $state('');
@@ -90,14 +102,44 @@
 	}
 
 	let periodCache = {};
+	let activeFetchControllers = {};
+	let autoSyncNotifsInterval = null;
 
-	async function loadMoodData(targetPeriod = selectedPeriod) {
+	function checkNotifications() {
+		if (!user || !user.id) return;
+		Promise.all([
+			fetch(API_ENDPOINTS.getNotifications, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: user.id })
+			}).then(r => r.json()).catch(() => null),
+			fetch(API_ENDPOINTS.getChatList, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: user.id })
+			}).then(r => r.json()).catch(() => null)
+		])
+		.then(([notifData, chatData]) => {
+			const notifCount = notifData?.data?.total_notifications_count || 0;
+			const unreadChats = chatData?.data?.friends?.reduce((sum, f) => sum + (f.unread_count || 0), 0) || 0;
+			hasNotifications = notifCount > 0 || unreadChats > 0;
+		})
+		.catch(() => {});
+	}
+
+	async function loadMoodData(targetPeriod = selectedPeriod, isSilent = false) {
 		const currentUser = user || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 		if (!currentUser?.id) return;
 		user = currentUser;
 
-		if (!hasLoadedOnce) {
-			isLoading = true;
+		// Check memory cache or localStorage
+		if (!periodCache[targetPeriod]) {
+			try {
+				const local = localStorage.getItem(`chronomuse_mood_cache_${currentUser.id}_${targetPeriod}`);
+				if (local) {
+					periodCache[targetPeriod] = JSON.parse(local);
+				}
+			} catch (e) {}
 		}
 
 		if (periodCache[targetPeriod]) {
@@ -105,26 +147,42 @@
 				moodData = periodCache[targetPeriod];
 				calculateMoodStats();
 			}
-			isLoading = false;
-			hasLoadedOnce = true;
-			return;
 		}
 
+		if (!isSilent && targetPeriod === selectedPeriod && !periodCache[targetPeriod]) {
+			isLoading = true;
+		}
+
+		if (activeFetchControllers[targetPeriod]) {
+			activeFetchControllers[targetPeriod].abort();
+		}
+		const controller = new AbortController();
+		activeFetchControllers[targetPeriod] = controller;
+
 		try {
-			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${currentUser.id}&period=${targetPeriod}`);
+			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${currentUser.id}&period=${targetPeriod}`, {
+				signal: controller.signal
+			});
 			const data = await res.json();
 			if (data.success && data.data) {
 				periodCache[targetPeriod] = data.data;
+				try {
+					localStorage.setItem(`chronomuse_mood_cache_${currentUser.id}_${targetPeriod}`, JSON.stringify(data.data));
+				} catch (e) {}
 				if (targetPeriod === selectedPeriod) {
 					moodData = data.data;
 					calculateMoodStats();
 				}
 			}
 		} catch (error) {
-			console.error('Error loading mood data:', error);
+			if (error.name !== 'AbortError') {
+				console.error('Error loading mood data:', error);
+			}
 		} finally {
-			isLoading = false;
-			hasLoadedOnce = true;
+			if (targetPeriod === selectedPeriod) {
+				isLoading = false;
+				hasLoadedOnce = true;
+			}
 		}
 	}
 
@@ -134,15 +192,16 @@
 		if (periodCache[newPeriod]) {
 			moodData = periodCache[newPeriod];
 			calculateMoodStats();
+			loadMoodData(newPeriod, true);
 		} else {
-			loadMoodData(newPeriod);
+			loadMoodData(newPeriod, false);
 		}
 	}
 
 	function prefetchPeriods() {
 		['all', 'week', 'month', 'year'].forEach(p => {
 			if (p !== selectedPeriod) {
-				loadMoodData(p);
+				loadMoodData(p, true);
 			}
 		});
 	}
@@ -151,12 +210,53 @@
 		const storedUser = localStorage.getItem('chronomuse_user');
 		if (storedUser) {
 			user = JSON.parse(storedUser);
-			loadMoodData().then(() => {
+			calculateMoodStats();
+			loadMoodData(selectedPeriod, false).then(() => {
 				prefetchPeriods();
 			});
+			checkNotifications();
 		} else {
 			goto('/');
 		}
+
+		const handleRealtimeUpdate = () => {
+			if (user && user.id) {
+				periodCache = {};
+				loadMoodData(selectedPeriod, true);
+				checkNotifications();
+			}
+		};
+
+		const handleAuthChange = () => {
+			const updatedUser = localStorage.getItem('chronomuse_user');
+			if (updatedUser) {
+				user = JSON.parse(updatedUser);
+				periodCache = {};
+				loadMoodData(selectedPeriod, true);
+				checkNotifications();
+			} else {
+				goto('/');
+			}
+		};
+
+		window.addEventListener('chronomuse_memory_change', handleRealtimeUpdate);
+		window.addEventListener('chronomuse_friend_change', handleRealtimeUpdate);
+		window.addEventListener('chronomuse_notification_change', handleRealtimeUpdate);
+		window.addEventListener('chronomuse_chat_change', handleRealtimeUpdate);
+		window.addEventListener('chronomuse_auth_change', handleAuthChange);
+
+		autoSyncNotifsInterval = setInterval(() => {
+			checkNotifications();
+		}, 8000);
+
+		return () => {
+			if (autoSyncNotifsInterval) clearInterval(autoSyncNotifsInterval);
+			window.removeEventListener('chronomuse_memory_change', handleRealtimeUpdate);
+			window.removeEventListener('chronomuse_friend_change', handleRealtimeUpdate);
+			window.removeEventListener('chronomuse_notification_change', handleRealtimeUpdate);
+			window.removeEventListener('chronomuse_chat_change', handleRealtimeUpdate);
+			window.removeEventListener('chronomuse_auth_change', handleAuthChange);
+		};
 	});
 
 	function calculateMoodStats() {
@@ -176,18 +276,23 @@
 		
 		// Count moods
 		moodData.forEach(memory => {
-			if (memory.mood_tag && moodStats.hasOwnProperty(memory.mood_tag.toLowerCase())) {
-				moodStats[memory.mood_tag.toLowerCase()]++;
+			const tag = (memory.mood_tag || '').toLowerCase().trim();
+			if (tag && moodStats.hasOwnProperty(tag)) {
+				moodStats[tag]++;
 			}
 		});
 		
 		totalMemories = moodData.length;
 		
 		// Find most frequent mood
-		const maxMood = Object.entries(moodStats).reduce((a, b) => 
-			moodStats[a[0]] > moodStats[b[0]] ? a : b
-		);
-		mostFrequentMood = maxMood[0] ? maxMood[0].charAt(0).toUpperCase() + maxMood[0].slice(1) : 'N/A';
+		if (totalMemories > 0) {
+			const maxMood = Object.entries(moodStats).reduce((a, b) => 
+				moodStats[a[0]] > moodStats[b[0]] ? a : b
+			);
+			mostFrequentMood = maxMood[1] > 0 ? (maxMood[0].charAt(0).toUpperCase() + maxMood[0].slice(1)) : 'None';
+		} else {
+			mostFrequentMood = 'None';
+		}
 	}
 
 	function handleLogout() {
@@ -264,7 +369,6 @@
 			.sort((a, b) => new Date(b.date || b.created_at || 0).getTime() - new Date(a.date || a.created_at || 0).getTime())
 			.slice(0, 10)
 	);
-	let hasNotifications = $state(false);
 </script>
 
 <div class="flex flex-col min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 animate-fade-in">
