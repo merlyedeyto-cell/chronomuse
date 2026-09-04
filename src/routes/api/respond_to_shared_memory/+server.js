@@ -17,25 +17,27 @@ export async function POST({ request }) {
 					.from('chronomuse_memories')
 					.select('*')
 					.eq('id', memory_id)
-					.single();
+					.maybeSingle();
 				memoryToCopy = memData;
 			}
 
-			// 2. Fetch sender username
+			// 2. Fetch sender username & sender_id
 			let senderUsername = 'a friend';
+			let originalSenderId = null;
 			if (share_id) {
 				const { data: shareRow } = await supabase
 					.from('chronomuse_shared_memories')
 					.select('sender_id')
 					.eq('id', share_id)
-					.single();
+					.maybeSingle();
 				
 				if (shareRow && shareRow.sender_id) {
+					originalSenderId = shareRow.sender_id;
 					const { data: senderUser } = await supabase
 						.from('chronomuse_users')
 						.select('username')
 						.eq('id', shareRow.sender_id)
-						.single();
+						.maybeSingle();
 					if (senderUser) {
 						senderUsername = senderUser.username;
 					}
@@ -76,15 +78,15 @@ export async function POST({ request }) {
 			}
 
 			// Broadcast realtime notification to sender
-			if (shareRow?.sender_id) {
+			if (originalSenderId) {
 				try {
-					const senderChannel = supabase.channel(`chronomuse_user_inbox_${shareRow.sender_id}`);
+					const senderChannel = supabase.channel(`chronomuse_user_inbox_${originalSenderId}`);
 					senderChannel.subscribe((status) => {
 						if (status === 'SUBSCRIBED') {
 							senderChannel.send({
 								type: 'broadcast',
 								event: 'notification',
-								payload: { sender_id: user_id, receiver_id: shareRow.sender_id, eventType: 'shared_memory_accepted', memory_id }
+								payload: { sender_id: user_id, receiver_id: originalSenderId, eventType: 'shared_memory_accepted', memory_id }
 							});
 						}
 					});
@@ -94,7 +96,7 @@ export async function POST({ request }) {
 							globalChannel.send({
 								type: 'broadcast',
 								event: 'global_memory_event',
-								payload: { sender_id: user_id, target_id: shareRow.sender_id, eventType: 'shared_memory_accepted', memory_id }
+								payload: { sender_id: user_id, target_id: originalSenderId, eventType: 'shared_memory_accepted', memory_id }
 							});
 						}
 					});
