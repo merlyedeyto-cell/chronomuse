@@ -26,6 +26,17 @@ if (typeof window !== 'undefined') {
 	window.addEventListener('keydown', unlockAudio, { passive: true });
 }
 
+/**
+ * Safely trigger mobile vibration pattern if supported
+ */
+export function triggerVibrate(pattern = [120, 60, 120]) {
+	if (typeof navigator !== 'undefined' && navigator.vibrate) {
+		try {
+			navigator.vibrate(pattern);
+		} catch (e) {}
+	}
+}
+
 let lastTypingSoundTime = 0;
 
 /**
@@ -86,9 +97,11 @@ export function playMessageSentSound() {
 }
 
 /**
- * Play an incoming message sound (crystal-clear 2-tone melodic notification chime)
+ * Play an incoming message sound (crystal-clear 2-tone melodic notification chime) + vibration
  */
 export function playIncomingMessageSound() {
+	triggerVibrate([100, 50, 100]);
+
 	try {
 		const ctx = getAudioContext();
 		if (!ctx) return;
@@ -118,5 +131,43 @@ export function playIncomingMessageSound() {
 		gain2.connect(ctx.destination);
 		osc2.start(now + 0.07);
 		osc2.stop(now + 0.32);
+	} catch (e) {}
+}
+
+/**
+ * Play a notification alert chime (for friend requests, shared memories, etc.) + vibration
+ */
+export function playNotificationSound() {
+	triggerVibrate([140, 70, 140]);
+
+	try {
+		const ctx = getAudioContext();
+		if (!ctx) return;
+
+		const now = ctx.currentTime;
+
+		// Note 1: E5 (659.25 Hz)
+		const osc1 = ctx.createOscillator();
+		const gain1 = ctx.createGain();
+		osc1.type = 'sine';
+		osc1.frequency.setValueAtTime(659.25, now);
+		gain1.gain.setValueAtTime(0.18, now);
+		gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+		osc1.connect(gain1);
+		gain1.connect(ctx.destination);
+		osc1.start(now);
+		osc1.stop(now + 0.16);
+
+		// Note 2: A5 (880 Hz)
+		const osc2 = ctx.createOscillator();
+		const gain2 = ctx.createGain();
+		osc2.type = 'sine';
+		osc2.frequency.setValueAtTime(880, now + 0.08);
+		gain2.gain.setValueAtTime(0.22, now + 0.08);
+		gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+		osc2.connect(gain2);
+		gain2.connect(ctx.destination);
+		osc2.start(now + 0.08);
+		osc2.stop(now + 0.36);
 	} catch (e) {}
 }
