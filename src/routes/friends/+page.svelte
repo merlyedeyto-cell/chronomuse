@@ -849,26 +849,18 @@
 												</div>
 											</a>
 
-											<div class="flex items-center space-x-1 flex-shrink-0">
-												<button
-													type="button"
-													onclick={() => goto(`/profile?id=${req.sender_id || req.id}`)}
-													class="px-2 py-1 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 active:scale-95 text-[11px] font-bold rounded-md transition-all cursor-pointer"
-													title="View Profile"
-												>
-													Profile
-												</button>
+											<div class="flex items-center space-x-1.5 flex-shrink-0">
 												<button
 													onclick={() => handleRespondRequest(req.id || req.request_id, 'accept')}
 													disabled={isResponding}
-													class="px-2.5 py-1 bg-gradient-to-r from-pink-500 to-pink-600 text-white text-[11px] font-bold rounded-md hover:from-pink-600 hover:to-pink-700 active:scale-95 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+													class="px-3 py-1.5 bg-gradient-to-r from-pink-500 to-pink-600 text-white text-xs font-bold rounded-lg hover:from-pink-600 hover:to-pink-700 active:scale-95 transition-all shadow-sm cursor-pointer disabled:opacity-50"
 												>
 													Accept
 												</button>
 												<button
 													onclick={() => handleRespondRequest(req.id || req.request_id, 'decline')}
 													disabled={isResponding}
-													class="px-2 py-1 bg-pink-100 text-pink-600 hover:bg-pink-200 active:scale-95 text-[11px] font-bold rounded-md transition-all cursor-pointer disabled:opacity-50"
+													class="px-2.5 py-1.5 bg-pink-100 text-pink-600 hover:bg-pink-200 active:scale-95 text-xs font-bold rounded-lg transition-all cursor-pointer disabled:opacity-50"
 												>
 													Decline
 												</button>
@@ -916,17 +908,9 @@
 
 											<div class="flex items-center space-x-1.5 flex-shrink-0">
 												<button
-													type="button"
-													onclick={() => goto(`/profile?id=${req.receiver_id || req.id}`)}
-													class="px-2 py-1 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 active:scale-95 text-[11px] font-bold rounded-md transition-all cursor-pointer shadow-2xs"
-													title="View Profile"
-												>
-													Profile
-												</button>
-												<button
 													onclick={() => handleCancelSentRequest(req.id || req.request_id)}
 													disabled={isResponding}
-													class="px-2.5 py-1 bg-amber-50 hover:bg-red-50 border border-amber-300 hover:border-red-300 text-amber-800 hover:text-red-600 active:scale-95 text-[11px] font-bold rounded-md transition-all flex-shrink-0 shadow-sm cursor-pointer disabled:opacity-50"
+													class="px-2.5 py-1.5 bg-amber-50 hover:bg-red-50 border border-amber-300 hover:border-red-300 text-amber-800 hover:text-red-600 active:scale-95 text-xs font-bold rounded-lg transition-all flex-shrink-0 shadow-sm cursor-pointer disabled:opacity-50"
 												>
 													Cancel Add
 												</button>

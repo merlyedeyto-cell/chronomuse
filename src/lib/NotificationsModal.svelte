@@ -14,7 +14,17 @@
 	});
 	let isLoading = $state(true);
 	let isCancelling = $state(false);
-	let activeTab = $state('memories'); // 'memories', 'requests', 'sent'
+	let isResponding = $state(false);
+	let activeTab = $state('pending_memories'); // 'memories', 'pending_memories', 'sent'
+
+	let pendingSharedMemories = $derived((notifications.shared_memories || []).filter(m => m.status !== 'accepted'));
+	let acceptedSharedMemories = $derived((notifications.shared_memories || []).filter(m => m.status === 'accepted'));
+	let sentSharedMemories = $derived(notifications.sent_shared_memories || []);
+	let pendingFriendRequests = $derived(notifications.incoming_requests || []);
+
+	let totalPendingMemoriesCount = $derived(pendingSharedMemories.length);
+	let totalMemoriesCount = $derived(acceptedSharedMemories.length);
+	let totalSentCount = $derived(sentSharedMemories.length);
 
 	function closeModal() {
 		isOpen = false;
@@ -33,11 +43,100 @@
 			const data = await res.json();
 			if (data.success && data.data) {
 				notifications = data.data;
+				if (pendingSharedMemories.length > 0 || pendingFriendRequests.length > 0) {
+					activeTab = 'pending_memories';
+				} else if (acceptedSharedMemories.length > 0) {
+					activeTab = 'memories';
+				} else if (sentSharedMemories.length > 0) {
+					activeTab = 'sent';
+				}
 			}
 		} catch (err) {
 			console.error('Error fetching notifications:', err);
 		} finally {
 			isLoading = false;
+		}
+	}
+
+	async function handleRespondRequest(requestId, action) {
+		if (!userId || isResponding) return;
+		isResponding = true;
+
+		// Optimistic removal
+		const backupReqs = [...notifications.incoming_requests];
+		notifications.incoming_requests = notifications.incoming_requests.filter(r => r.request_id !== requestId);
+		notifications.total_notifications_count = Math.max(0, notifications.total_notifications_count - 1);
+
+		try {
+			const res = await fetch(API_ENDPOINTS.respondToFriendRequest, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					request_id: requestId,
+					action,
+					user_id: userId
+				})
+			});
+			const data = await res.json();
+			if (!data.success) {
+				notifications.incoming_requests = backupReqs;
+			} else {
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new Event('chronomuse_friend_change'));
+					window.dispatchEvent(new Event('chronomuse_notification_change'));
+				}
+			}
+		} catch (err) {
+			notifications.incoming_requests = backupReqs;
+			console.error('Error responding to request:', err);
+		} finally {
+			isResponding = false;
+		}
+	}
+
+	async function handleRespondSharedMemory(item, action, e) {
+		if (e) e.stopPropagation();
+		if (!userId || isResponding) return;
+		isResponding = true;
+
+		const backupMemories = [...notifications.shared_memories];
+
+		if (action === 'accept') {
+			// Update status in place to 'accepted' so it moves to Shared Memories
+			notifications.shared_memories = notifications.shared_memories.map(m => 
+				m.share_id === item.share_id ? { ...m, status: 'accepted' } : m
+			);
+		} else {
+			// Decline removes it
+			notifications.shared_memories = notifications.shared_memories.filter(m => m.share_id !== item.share_id);
+			notifications.total_notifications_count = Math.max(0, notifications.total_notifications_count - 1);
+		}
+
+		try {
+			const res = await fetch(API_ENDPOINTS.respondToSharedMemory, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					share_id: item.share_id,
+					memory_id: item.memory?.id,
+					user_id: userId,
+					action
+				})
+			});
+			const data = await res.json();
+			if (!data.success) {
+				notifications.shared_memories = backupMemories;
+			} else {
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new Event('chronomuse_notification_change'));
+					window.dispatchEvent(new Event('chronomuse_memory_change'));
+				}
+			}
+		} catch (err) {
+			notifications.shared_memories = backupMemories;
+			console.error('Error responding to shared memory:', err);
+		} finally {
+			isResponding = false;
 		}
 	}
 
@@ -70,6 +169,10 @@
 			const data = await res.json();
 			if (!data.success) {
 				notifications.sent_shared_memories = backupSent;
+			} else {
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new Event('chronomuse_notification_change'));
+				}
 			}
 		} catch (err) {
 			notifications.sent_shared_memories = backupSent;
@@ -181,36 +284,39 @@
 			</div>
 
 			<!-- Filter Tabs -->
-			<div class="p-3 bg-pink-50 border-b border-pink-200 flex items-center space-x-2 text-xs font-semibold">
+			<div class="p-3 bg-pink-50 border-b border-pink-200 flex items-center space-x-1.5 text-xs font-semibold">
 				<button
 					onclick={() => activeTab = 'memories'}
-					class="px-3 py-1.5 rounded-lg transition-all"
+					class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer"
 					class:bg-pink-500={activeTab === 'memories'}
 					class:text-white={activeTab === 'memories'}
 					class:text-pink-600={activeTab !== 'memories'}
 					class:hover:bg-pink-100={activeTab !== 'memories'}
 				>
-					Shared Memories ({(notifications.shared_memories || []).length})
+					Shared Memories ({totalMemoriesCount})
 				</button>
 				<button
-					onclick={() => activeTab = 'requests'}
-					class="px-3 py-1.5 rounded-lg transition-all"
-					class:bg-pink-500={activeTab === 'requests'}
-					class:text-white={activeTab === 'requests'}
-					class:text-pink-600={activeTab !== 'requests'}
-					class:hover:bg-pink-100={activeTab !== 'requests'}
+					onclick={() => activeTab = 'pending_memories'}
+					class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all relative cursor-pointer"
+					class:bg-pink-500={activeTab === 'pending_memories'}
+					class:text-white={activeTab === 'pending_memories'}
+					class:text-pink-600={activeTab !== 'pending_memories'}
+					class:hover:bg-pink-100={activeTab !== 'pending_memories'}
 				>
-					Memories Pending ({(notifications.incoming_requests || []).length})
+					Pending Memories ({totalPendingMemoriesCount})
+					{#if pendingSharedMemories.length > 0}
+						<span class="w-2 h-2 rounded-full bg-rose-500 animate-ping absolute -top-0.5 -right-0.5"></span>
+					{/if}
 				</button>
 				<button
 					onclick={() => activeTab = 'sent'}
-					class="px-3 py-1.5 rounded-lg transition-all"
+					class="px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer"
 					class:bg-pink-500={activeTab === 'sent'}
 					class:text-white={activeTab === 'sent'}
 					class:text-pink-600={activeTab !== 'sent'}
 					class:hover:bg-pink-100={activeTab !== 'sent'}
 				>
-					Shared by You ({(notifications.sent_shared_memories || []).length})
+					Shared by You ({totalSentCount})
 				</button>
 			</div>
 
@@ -221,72 +327,22 @@
 						<div class="animate-spin h-7 w-7 text-pink-500 mx-auto mb-2 border-3 border-pink-200 border-t-pink-500 rounded-full"></div>
 						<p class="text-xs text-pink-400 font-medium">Loading notifications...</p>
 					</div>
-				{:else if notifications.total_notifications_count === 0}
-					<div class="py-12 text-center">
-						<div class="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3 text-pink-400">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-							</svg>
+				{:else if activeTab === 'memories'}
+					<!-- Accepted Shared Memories -->
+					{#if acceptedSharedMemories.length === 0}
+						<div class="py-10 text-center">
+							<div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-2.5 text-pink-400">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
+							</div>
+							<p class="text-sm font-bold text-pink-700">No shared memories yet</p>
+							<p class="text-xs text-pink-400 mt-0.5">Memories accepted from friends are saved to your calendar and listed here.</p>
 						</div>
-						<p class="text-sm font-bold text-pink-700">No notifications yet</p>
-						<p class="text-xs text-pink-400 mt-1">When friends share memories or send requests, they'll appear here.</p>
-					</div>
-				{:else}
-					<!-- Friend Requests -->
-					{#if activeTab === 'requests' && notifications.incoming_requests.length > 0}
-						<div class="space-y-2">
-							<h3 class="text-xs font-bold text-pink-600 uppercase tracking-wide">Friend Requests</h3>
-							{#each notifications.incoming_requests as req}
-								<div class="p-3 bg-pink-50/80 border border-pink-200 rounded-2xl flex items-center justify-between shadow-xs">
-									<div class="flex items-center space-x-2.5">
-										<button
-											type="button"
-											onclick={() => { closeModal(); goto(`/profile?id=${req.sender_id}`); }}
-											class="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-400 to-pink-600 text-white font-bold text-xs flex items-center justify-center overflow-hidden hover:scale-105 transition-transform cursor-pointer"
-											title="View @{req.sender_username}'s Profile"
-										>
-											{#if req.sender_avatar_url}
-												<img src={req.sender_avatar_url} alt={req.sender_username} class="w-full h-full object-cover" />
-											{:else}
-												{req.sender_username.charAt(0).toUpperCase()}
-											{/if}
-										</button>
-										<div>
-											<button
-												type="button"
-												onclick={() => { closeModal(); goto(`/profile?id=${req.sender_id}`); }}
-												class="text-xs font-bold text-pink-700 hover:underline hover:text-pink-900 cursor-pointer text-left block"
-											>
-												@{req.sender_username}
-											</button>
-											<p class="text-[10px] text-pink-400">Sent a friend request • {formatTimeAgo(req.created_at)}</p>
-										</div>
-									</div>
-
-									<div class="flex items-center space-x-1.5 flex-shrink-0">
-										<button
-											onclick={() => { closeModal(); goto(`/profile?id=${req.sender_id}`); }}
-											class="px-2.5 py-1.5 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 rounded-xl text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-										>
-											Profile
-										</button>
-										<button
-											onclick={handleViewFriends}
-											class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
-										>
-											Respond
-										</button>
-									</div>
-								</div>
-							{/each}
-						</div>
-					{/if}
-
-					<!-- Shared Memories -->
-					{#if activeTab === 'memories' && notifications.shared_memories.length > 0}
-						<div class="space-y-2">
-							<h3 class="text-xs font-bold text-pink-600 uppercase tracking-wide">Shared Memories From Friends</h3>
-							{#each notifications.shared_memories as item}
+					{:else}
+						<div class="space-y-2.5">
+							<h3 class="text-xs font-bold text-pink-600 uppercase tracking-wide">Saved on Calendar ({acceptedSharedMemories.length})</h3>
+							{#each acceptedSharedMemories as item (item.share_id)}
 								<div class="p-3.5 bg-gradient-to-br from-pink-50/90 to-rose-50/60 border border-pink-200 rounded-2xl shadow-xs hover:border-pink-300 transition-all">
 									<div class="flex items-start justify-between gap-2 mb-2">
 										<div class="flex items-center space-x-2">
@@ -360,10 +416,13 @@
 									<!-- Action Buttons -->
 									<div class="mt-2 flex items-center justify-end space-x-2">
 										<button
-											onclick={() => { closeModal(); goto(`/profile?id=${item.sender_id}`); }}
+											onclick={() => { closeModal(); goto(`/dashboard?date=${item.memory.date}`); }}
 											class="px-2.5 py-1 bg-white border border-pink-300 hover:bg-pink-100 text-pink-600 rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all shadow-2xs cursor-pointer"
 										>
-											<span>Profile</span>
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+											</svg>
+											<span>Calendar</span>
 										</button>
 										<button
 											onclick={() => handleOpenChat(item.sender_id, item.sender_username)}
@@ -372,110 +431,244 @@
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
 											</svg>
-											<span>Say Thanks in Chat</span>
+											<span>Say Thanks</span>
 										</button>
 									</div>
 								</div>
 							{/each}
 						</div>
 					{/if}
-
-					<!-- Shared by You (Sent) -->
-					{#if activeTab === 'sent'}
-						{#if (notifications.sent_shared_memories || []).length === 0}
-							<div class="py-8 text-center">
-								<p class="text-sm font-bold text-pink-700">No shared memories</p>
-								<p class="text-xs text-pink-400 mt-1">You haven't shared any memories with friends yet.</p>
+				{:else if activeTab === 'pending_memories'}
+					<!-- Pending Memories & Incoming Requests -->
+					{#if pendingSharedMemories.length === 0 && pendingFriendRequests.length === 0}
+						<div class="py-10 text-center">
+							<div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-2.5 text-pink-400">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
 							</div>
-						{:else}
-							<div class="space-y-2">
-								<h3 class="text-xs font-bold text-pink-600 uppercase tracking-wide">Memories You Shared With Friends</h3>
-								{#each notifications.sent_shared_memories as item}
-									<div class="p-3.5 bg-gradient-to-br from-pink-50/90 to-rose-50/60 border border-pink-200 rounded-2xl shadow-xs hover:border-pink-300 transition-all">
-										<div class="flex items-start justify-between gap-2 mb-2">
-											<div class="flex items-center space-x-2">
-												<button
-													type="button"
-													onclick={() => { closeModal(); goto(`/profile?id=${item.recipient_id}`); }}
-													class="w-7 h-7 rounded-lg bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-xs flex items-center justify-center overflow-hidden hover:scale-105 transition-transform cursor-pointer"
-													title="View @{item.recipient_username}'s Profile"
-												>
-													{#if item.recipient_avatar_url}
-														<img src={item.recipient_avatar_url} alt={item.recipient_username} class="w-full h-full object-cover" />
-													{:else}
-														{item.recipient_username.charAt(0).toUpperCase()}
-													{/if}
-												</button>
-												<div>
-													<p class="text-xs font-bold text-pink-800 flex items-center gap-1 flex-wrap">
-														<span class="font-normal text-pink-500">Shared with</span>
-														<button
-															type="button"
-															onclick={() => { closeModal(); goto(`/profile?id=${item.recipient_id}`); }}
-															class="hover:underline hover:text-pink-900 cursor-pointer"
-														>
-															@{item.recipient_username}
-														</button>
-													</p>
-													<p class="text-[10px] text-pink-400">{formatTimeAgo(item.shared_at)}</p>
+							<p class="text-sm font-bold text-pink-700">No pending memories</p>
+							<p class="text-xs text-pink-400 mt-0.5">When friends share memories with you, you can accept or decline them here.</p>
+						</div>
+					{:else}
+						<div class="space-y-4">
+							<!-- Pending Memory Requests -->
+							{#if pendingSharedMemories.length > 0}
+								<div class="space-y-2">
+									<h3 class="text-xs font-bold text-pink-600 uppercase tracking-wide">Memory Share Requests ({pendingSharedMemories.length})</h3>
+									{#each pendingSharedMemories as item (item.share_id)}
+										<div class="p-3.5 bg-gradient-to-br from-pink-50/90 to-rose-50/60 border border-pink-200 rounded-2xl shadow-xs">
+											<div class="flex items-start justify-between gap-2 mb-2">
+												<div class="flex items-center space-x-2">
+													<button
+														type="button"
+														onclick={() => { closeModal(); goto(`/profile?id=${item.sender_id}`); }}
+														class="w-8 h-8 rounded-lg bg-pink-500 text-white font-bold text-xs flex items-center justify-center overflow-hidden hover:scale-105 transition-transform cursor-pointer"
+														title="View @{item.sender_username}'s Profile"
+													>
+														{#if item.sender_avatar_url}
+															<img src={item.sender_avatar_url} alt={item.sender_username} class="w-full h-full object-cover" />
+														{:else}
+															{item.sender_username.charAt(0).toUpperCase()}
+														{/if}
+													</button>
+													<div>
+														<p class="text-xs font-bold text-pink-800 flex items-center gap-1 flex-wrap">
+															<button
+																type="button"
+																onclick={() => { closeModal(); goto(`/profile?id=${item.sender_id}`); }}
+																class="hover:underline hover:text-pink-900 cursor-pointer"
+															>
+																@{item.sender_username}
+															</button>
+															<span class="font-normal text-pink-500">shared a memory</span>
+														</p>
+														<p class="text-[10px] text-pink-400">{formatTimeAgo(item.shared_at)}</p>
+													</div>
 												</div>
-											</div>
 
-											<div class="flex items-center space-x-1.5">
-												{#if item.status === 'accepted'}
-													<span class="text-[9px] px-1.5 py-0.2 rounded-full font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-														✓ Accepted
-													</span>
-												{:else}
-													<span class="text-[9px] px-1.5 py-0.2 rounded-full font-bold bg-amber-50 text-amber-700 border border-amber-200">
-														Pending
-													</span>
-												{/if}
 												{#if item.memory.mood_tag}
-													<span class="text-[9px] px-1.5 py-0.2 rounded-full font-bold border {getMoodColor(item.memory.mood_tag)}">
+													<span class="text-[10px] px-2 py-0.5 rounded-full font-bold border {getMoodColor(item.memory.mood_tag)}">
 														{item.memory.mood_tag}
 													</span>
 												{/if}
 											</div>
+
+											<div class="p-2.5 bg-white/90 border border-pink-200 rounded-xl space-y-1 text-xs">
+												<div class="flex items-center justify-between">
+													<span class="font-bold text-pink-700 truncate">{item.memory.memory_tag || 'Special Memory'}</span>
+													<span class="text-[10px] text-pink-400 flex-shrink-0 ml-1">{formatDate(item.memory.date)}</span>
+												</div>
+												{#if item.memory.description}
+													<p class="text-xs text-pink-900/85 line-clamp-2 leading-relaxed">
+														{item.memory.description}
+													</p>
+												{/if}
+											</div>
+
+											<!-- Accept / Decline Buttons -->
+											<div class="mt-2.5 flex items-center justify-end space-x-2">
+												<button
+													onclick={(e) => handleRespondSharedMemory(item, 'accept', e)}
+													class="px-3.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+												>
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+														<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+													</svg>
+													<span>Accept</span>
+												</button>
+												<button
+													onclick={(e) => handleRespondSharedMemory(item, 'decline', e)}
+													class="px-3 py-1.5 bg-pink-100 hover:bg-red-100 text-pink-600 hover:text-red-600 active:scale-95 text-xs font-bold rounded-xl transition-all cursor-pointer"
+												>
+													Decline
+												</button>
+											</div>
+										</div>
+									{/each}
+								</div>
+							{/if}
+
+							<!-- Incoming Friend Requests -->
+							{#if pendingFriendRequests.length > 0}
+								<div class="space-y-2">
+									<h3 class="text-xs font-bold text-pink-600 uppercase tracking-wide">Incoming Friend Requests ({pendingFriendRequests.length})</h3>
+									{#each pendingFriendRequests as req (req.request_id)}
+										<div class="p-3 bg-pink-50/80 border border-pink-200 rounded-2xl flex items-center justify-between shadow-xs">
+											<div class="flex items-center space-x-2.5 min-w-0">
+												<button
+													type="button"
+													onclick={() => { closeModal(); goto(`/profile?id=${req.sender_id}`); }}
+													class="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-400 to-pink-600 text-white font-bold text-xs flex items-center justify-center overflow-hidden hover:scale-105 transition-transform cursor-pointer flex-shrink-0"
+													title="View @{req.sender_username}'s Profile"
+												>
+													{#if req.sender_avatar_url}
+														<img src={req.sender_avatar_url} alt={req.sender_username} class="w-full h-full object-cover" />
+													{:else}
+														{req.sender_username.charAt(0).toUpperCase()}
+													{/if}
+												</button>
+												<div class="min-w-0">
+													<button
+														type="button"
+														onclick={() => { closeModal(); goto(`/profile?id=${req.sender_id}`); }}
+														class="text-xs font-bold text-pink-700 hover:underline hover:text-pink-900 cursor-pointer text-left block truncate"
+													>
+														@{req.sender_username}
+													</button>
+													<p class="text-[10px] text-pink-400 truncate">Sent a friend request • {formatTimeAgo(req.created_at)}</p>
+												</div>
+											</div>
+
+											<div class="flex items-center space-x-1.5 flex-shrink-0 ml-2">
+												<button
+													onclick={() => handleRespondRequest(req.request_id, 'accept')}
+													class="px-3 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+												>
+													Accept
+												</button>
+												<button
+													onclick={() => handleRespondRequest(req.request_id, 'decline')}
+													class="px-2.5 py-1.5 bg-pink-100 hover:bg-red-100 text-pink-600 hover:text-red-600 active:scale-95 text-xs font-bold rounded-xl transition-all cursor-pointer"
+												>
+													Decline
+												</button>
+											</div>
+										</div>
+									{/each}
+								</div>
+							{/if}
+						</div>
+					{/if}
+				{:else if activeTab === 'sent'}
+					<!-- Shared by You (Sent) -->
+					{#if (notifications.sent_shared_memories || []).length === 0}
+						<div class="py-10 text-center">
+							<p class="text-sm font-bold text-pink-700">No shared memories</p>
+							<p class="text-xs text-pink-400 mt-0.5">You haven't shared any memories with friends yet.</p>
+						</div>
+					{:else}
+						<div class="space-y-2">
+							<h3 class="text-xs font-bold text-pink-600 uppercase tracking-wide">Memories You Shared With Friends ({totalSentCount})</h3>
+							{#each notifications.sent_shared_memories as item (item.share_id)}
+								<div class="p-3.5 bg-gradient-to-br from-pink-50/90 to-rose-50/60 border border-pink-200 rounded-2xl shadow-xs hover:border-pink-300 transition-all">
+									<div class="flex items-start justify-between gap-2 mb-2">
+										<div class="flex items-center space-x-2">
+											<button
+												type="button"
+												onclick={() => { closeModal(); goto(`/profile?id=${item.recipient_id}`); }}
+												class="w-7 h-7 rounded-lg bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-xs flex items-center justify-center overflow-hidden hover:scale-105 transition-transform cursor-pointer"
+												title="View @{item.recipient_username}'s Profile"
+											>
+												{#if item.recipient_avatar_url}
+													<img src={item.recipient_avatar_url} alt={item.recipient_username} class="w-full h-full object-cover" />
+												{:else}
+													{item.recipient_username.charAt(0).toUpperCase()}
+												{/if}
+											</button>
+											<div>
+												<p class="text-xs font-bold text-pink-800 flex items-center gap-1 flex-wrap">
+													<span class="font-normal text-pink-500">Shared with</span>
+													<button
+														type="button"
+														onclick={() => { closeModal(); goto(`/profile?id=${item.recipient_id}`); }}
+														class="hover:underline hover:text-pink-900 cursor-pointer"
+													>
+														@{item.recipient_username}
+													</button>
+												</p>
+												<p class="text-[10px] text-pink-400">{formatTimeAgo(item.shared_at)}</p>
+											</div>
 										</div>
 
-										<!-- Memory Details Card -->
-										<div class="p-2.5 bg-white/90 border border-pink-200 rounded-xl space-y-1 text-xs">
-											<div class="flex items-center justify-between">
-												<span class="font-bold text-pink-700 truncate">{item.memory.memory_tag || item.memory.title || 'Special Memory'}</span>
-												<span class="text-[10px] text-pink-400 flex-shrink-0 ml-1">{formatDate(item.memory.date)}</span>
-											</div>
-											{#if item.memory.description}
-												<p class="text-xs text-pink-900/85 line-clamp-2 leading-relaxed">
-													{item.memory.description}
-												</p>
+										<div class="flex items-center space-x-1.5">
+											{#if item.status === 'accepted'}
+												<span class="text-[9px] px-1.5 py-0.2 rounded-full font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+													✓ Accepted
+												</span>
+											{:else}
+												<span class="text-[9px] px-1.5 py-0.2 rounded-full font-bold bg-amber-50 text-amber-700 border border-amber-200">
+													Pending
+												</span>
+											{/if}
+											{#if item.memory.mood_tag}
+												<span class="text-[9px] px-1.5 py-0.2 rounded-full font-bold border {getMoodColor(item.memory.mood_tag)}">
+													{item.memory.mood_tag}
+												</span>
 											{/if}
 										</div>
-
-										<!-- Actions (Profile & Cancel Share) -->
-										<div class="mt-2 flex items-center justify-end space-x-2">
-											<button
-												onclick={() => { closeModal(); goto(`/profile?id=${item.recipient_id}`); }}
-												class="px-2.5 py-1 bg-white border border-pink-300 hover:bg-pink-100 text-pink-600 rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all shadow-2xs cursor-pointer"
-											>
-												<span>Profile</span>
-											</button>
-											<button
-												onclick={(e) => promptCancelShare(item, e)}
-												disabled={isCancelling}
-												class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all shadow-2xs cursor-pointer disabled:opacity-50"
-												title="Cancel and revoke access to this shared memory"
-											>
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-rose-500">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-												</svg>
-												<span>Cancel Share</span>
-											</button>
-										</div>
 									</div>
-								{/each}
-							</div>
-						{/if}
+
+									<!-- Memory Details Card -->
+									<div class="p-2.5 bg-white/90 border border-pink-200 rounded-xl space-y-1 text-xs">
+										<div class="flex items-center justify-between">
+											<span class="font-bold text-pink-700 truncate">{item.memory.memory_tag || item.memory.title || 'Special Memory'}</span>
+											<span class="text-[10px] text-pink-400 flex-shrink-0 ml-1">{formatDate(item.memory.date)}</span>
+										</div>
+										{#if item.memory.description}
+											<p class="text-xs text-pink-900/85 line-clamp-2 leading-relaxed">
+												{item.memory.description}
+											</p>
+										{/if}
+									</div>
+
+									<!-- Actions (Cancel Share) -->
+									<div class="mt-2 flex items-center justify-end space-x-2">
+										<button
+											onclick={(e) => promptCancelShare(item, e)}
+											disabled={isCancelling}
+											class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+											title="Cancel and revoke access to this shared memory"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-rose-500">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+											</svg>
+											<span>Cancel Share</span>
+										</button>
+									</div>
+								</div>
+							{/each}
+						</div>
 					{/if}
 				{/if}
 			</div>
