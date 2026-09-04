@@ -2,6 +2,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
+	import { broadcastMemoryEvent } from '$lib/realtimeBroadcast.js';
 
 	const dispatch = createEventDispatcher();
 
@@ -173,6 +174,11 @@
 			if (data.success) {
 				alreadySharedRecipientIds = [...alreadySharedRecipientIds, ...friendsToShare];
 				shareSuccessMsg = 'Memory shared successfully!';
+				
+				for (const fid of friendsToShare) {
+					broadcastMemoryEvent(user.id, fid, 'shared_memory_incoming', memoryToShare);
+				}
+
 				setTimeout(() => {
 					showShareModal = false;
 					memoryToShare = null;

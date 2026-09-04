@@ -27,6 +27,32 @@ export async function POST({ request }) {
 			return json({ error: error.message }, { status: 500 });
 		}
 
+		// Broadcast realtime notifications to recipients
+		try {
+			for (const recId of recipient_ids) {
+				const recChannel = supabase.channel(`chronomuse_user_inbox_${recId}`);
+				recChannel.subscribe((status) => {
+					if (status === 'SUBSCRIBED') {
+						recChannel.send({
+							type: 'broadcast',
+							event: 'notification',
+							payload: { sender_id, receiver_id: recId, eventType: 'shared_memory_incoming', memory_id }
+						});
+					}
+				});
+				const globalChannel = supabase.channel('chronomuse_global_events');
+				globalChannel.subscribe((status) => {
+					if (status === 'SUBSCRIBED') {
+						globalChannel.send({
+							type: 'broadcast',
+							event: 'global_memory_event',
+							payload: { sender_id, target_id: recId, eventType: 'shared_memory_incoming', memory_id }
+						});
+					}
+				});
+			}
+		} catch (e) {}
+
 		return json({ success: true, message: 'Memory shared successfully with tagged friends!' });
 	} catch (err) {
 		return json({ error: err.message }, { status: 500 });

@@ -1,15 +1,16 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
-	import { broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
+	import { broadcastFriendEvent, broadcastMemoryEvent } from '$lib/realtimeBroadcast.js';
 	import Sidebar from '$lib/Sidebar.svelte';
 
 	let user = $state(null);
 	let isLoading = $state(true);
 	let sidebarOpen = $state(false);
 	let activeTab = $state('pending_memories'); // 'memories', 'pending_memories', 'sent'
+	let autoSyncNotifsInterval = null;
 
 	let notifications = $state({
 		shared_memories: [],
@@ -63,10 +64,20 @@
 
 		window.addEventListener('chronomuse_notification_change', handleRealtimeNotifs);
 		window.addEventListener('chronomuse_friend_change', handleRealtimeNotifs);
+		window.addEventListener('chronomuse_memory_change', handleRealtimeNotifs);
+
+		// Fast periodic polling for zero-delay synchronization without refresh
+		autoSyncNotifsInterval = setInterval(() => {
+			if (user && user.id) {
+				fetchNotifications();
+			}
+		}, 2500);
 
 		return () => {
 			window.removeEventListener('chronomuse_notification_change', handleRealtimeNotifs);
 			window.removeEventListener('chronomuse_friend_change', handleRealtimeNotifs);
+			window.removeEventListener('chronomuse_memory_change', handleRealtimeNotifs);
+			if (autoSyncNotifsInterval) clearInterval(autoSyncNotifsInterval);
 		};
 	});
 
@@ -271,6 +282,8 @@
 			showViewMemoryModal = false;
 		}
 
+		broadcastMemoryEvent(user.id, item.sender_id, action === 'accept' ? 'shared_memory_accepted' : 'shared_memory_declined', item.memory);
+
 		try {
 			const res = await fetch(API_ENDPOINTS.respondToSharedMemory, {
 				method: 'POST',
@@ -283,7 +296,10 @@
 				})
 			});
 			const data = await res.json();
-			if (!data.success) {
+			if (data.success) {
+				fetchNotifications();
+				broadcastMemoryEvent(user.id, item.sender_id, action === 'accept' ? 'shared_memory_accepted' : 'shared_memory_declined', item.memory);
+			} else {
 				notifications.shared_memories = backupMemories;
 				alert('Error: ' + (data.error || 'Failed to process request'));
 			}
@@ -312,6 +328,8 @@
 		showCancelModal = false;
 		cancelConfirmItem = null;
 
+		broadcastMemoryEvent(user.id, itemToCancel.recipient_id, 'shared_memory_cancelled', itemToCancel.memory);
+
 		try {
 			const res = await fetch(API_ENDPOINTS.cancelSharedMemory, {
 				method: 'POST',
@@ -322,7 +340,10 @@
 				})
 			});
 			const data = await res.json();
-			if (!data.success) {
+			if (data.success) {
+				fetchNotifications();
+				broadcastMemoryEvent(user.id, itemToCancel.recipient_id, 'shared_memory_cancelled', itemToCancel.memory);
+			} else {
 				notifications.sent_shared_memories = backupSent;
 				alert('Error: ' + (data.error || 'Failed to cancel share'));
 			}

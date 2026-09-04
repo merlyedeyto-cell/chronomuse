@@ -5,6 +5,7 @@
 	import { browser } from '$app/environment';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
+	import { broadcastMemoryEvent } from '$lib/realtimeBroadcast.js';
 	import Sidebar from '$lib/Sidebar.svelte';
 	import Calendar from '$lib/Calendar.svelte';
 	import AddMemoryCard from '$lib/AddMemoryCard.svelte';
@@ -104,12 +105,20 @@
 		// Listen for pinned dates changes (client-side only)
 		if (browser) {
 			window.addEventListener('pinnedDatesChanged', loadPinnedDates);
+			window.addEventListener('chronomuse_notification_change', checkNotifications);
+			window.addEventListener('chronomuse_memory_change', () => {
+				checkNotifications();
+				const now = new Date();
+				loadMemoriesForMonth(now.getMonth(), now.getFullYear());
+				if (selectedDate) loadMemoriesForDate(selectedDate);
+			});
 		}
 	});
 
 	onDestroy(() => {
 		if (browser) {
 			window.removeEventListener('pinnedDatesChanged', loadPinnedDates);
+			window.removeEventListener('chronomuse_notification_change', checkNotifications);
 		}
 	});
 
@@ -300,6 +309,9 @@
 								recipient_ids: memoryData.taggedFriendIds
 							})
 						});
+						for (const fid of memoryData.taggedFriendIds) {
+							broadcastMemoryEvent(user.id, fid, 'shared_memory_incoming', data.data);
+						}
 					} catch (shareErr) {
 						console.error('Error sharing memory:', shareErr);
 					}

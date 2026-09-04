@@ -136,6 +136,24 @@
 					}
 				}
 			})
+			.on('broadcast', { event: 'global_memory_event' }, (payload) => {
+				const current = getActiveLoggedInUser();
+				if (!current?.id) return;
+				const sId = payload?.payload?.sender_id;
+				const tId = payload?.payload?.target_id;
+				const myId = Number(current.id);
+
+				if (Number(sId) === myId || Number(tId) === myId) {
+					if (payload?.payload?.eventType === 'shared_memory_incoming' && Number(tId) === myId) {
+						playNotificationSound(myId);
+					}
+					checkNotificationsCount();
+					if (typeof window !== 'undefined') {
+						window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload?.payload }));
+						window.dispatchEvent(new CustomEvent('chronomuse_memory_change', { detail: payload?.payload }));
+					}
+				}
+			})
 			.subscribe();
 
 		// Listen strictly for this specific logged-in user's inbox

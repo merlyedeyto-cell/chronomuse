@@ -55,3 +55,60 @@ export function broadcastFriendEvent(senderId, targetUserId, eventType = 'friend
 		console.error('Error broadcasting friend event:', err);
 	}
 }
+
+/**
+ * Broadcasts memory share, accept, decline, or cancel events in real time
+ */
+export function broadcastMemoryEvent(senderId, recipientId, eventType = 'shared_memory_change', memoryData = null) {
+	if (typeof window === 'undefined') return;
+
+	try {
+		// 1. Send direct to recipient's or sender's private inbox channel
+		if (recipientId) {
+			const targetChannel = supabase.channel(`chronomuse_user_inbox_${recipientId}`);
+			targetChannel.subscribe((status) => {
+				if (status === 'SUBSCRIBED') {
+					targetChannel.send({
+						type: 'broadcast',
+						event: 'notification',
+						payload: {
+							sender_id: senderId,
+							receiver_id: recipientId,
+							eventType,
+							memoryData,
+							timestamp: Date.now()
+						}
+					});
+				}
+			});
+		}
+
+		// 2. Send to global realtime events channel
+		const globalChannel = supabase.channel('chronomuse_global_events');
+		globalChannel.subscribe((status) => {
+			if (status === 'SUBSCRIBED') {
+				globalChannel.send({
+					type: 'broadcast',
+					event: 'global_memory_event',
+					payload: {
+						sender_id: senderId,
+						target_id: recipientId,
+						eventType,
+						memoryData,
+						timestamp: Date.now()
+					}
+				});
+			}
+		});
+
+		// 3. Dispatch local window events for immediate same-window reactivity
+		window.dispatchEvent(new CustomEvent('chronomuse_notification_change', {
+			detail: { sender_id: senderId, target_id: recipientId, eventType, memoryData }
+		}));
+		window.dispatchEvent(new CustomEvent('chronomuse_memory_change', {
+			detail: { sender_id: senderId, target_id: recipientId, eventType, memoryData }
+		}));
+	} catch (err) {
+		console.error('Error broadcasting memory event:', err);
+	}
+}
