@@ -290,23 +290,30 @@
 			supabase.removeChannel(typingChannel);
 		}
 
-		const channelName = `chat_presence_${Math.min(user.id, friendId)}_${Math.max(user.id, friendId)}`;
-		typingChannel = supabase.channel(channelName);
+		const id1 = Number(user.id);
+		const id2 = Number(friendId);
+		const channelName = `chat_presence_${Math.min(id1, id2)}_${Math.max(id1, id2)}`;
+		typingChannel = supabase.channel(channelName, {
+			config: {
+				broadcast: { ack: false, self: false }
+			}
+		});
 
 		typingChannel
 			.on('broadcast', { event: 'typing' }, (payload) => {
-				if (payload.payload && payload.payload.sender_id === friendId) {
+				if (payload.payload && Number(payload.payload.sender_id) === Number(friendId)) {
 					isOtherUserTyping = Boolean(payload.payload.is_typing);
 					if (isOtherUserTyping) {
 						if (typingTimeout) clearTimeout(typingTimeout);
 						typingTimeout = setTimeout(() => {
 							isOtherUserTyping = false;
-						}, 3000);
+						}, 3500);
+						tick().then(() => scrollToBottom(true));
 					}
 				}
 			})
 			.on('broadcast', { event: 'seen' }, (payload) => {
-				if (payload.payload && payload.payload.reader_id === friendId) {
+				if (payload.payload && Number(payload.payload.reader_id) === Number(friendId)) {
 					messages = messages.map(m => m.sender_id === user.id ? { ...m, is_read: true } : m);
 					if (activeFriend) {
 						activeFriend.last_is_read = true;
@@ -1398,16 +1405,16 @@
 
 						<!-- Typing Indicator Bubble in message stream -->
 						{#if isOtherUserTyping}
-							<div class="flex items-end space-x-2 animate-message-pop">
-								<div class="w-7 h-7 rounded-full bg-pink-100 border border-pink-200/80 text-pink-600 flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-2xs">
+							<div class="flex items-center space-x-2 animate-message-pop py-1.5">
+								<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-400 to-rose-400 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-2xs">
 									{activeFriend.username.charAt(0).toUpperCase()}
 								</div>
-								<div class="bg-white border border-pink-100/90 px-3.5 py-2 rounded-2xl rounded-bl-xs shadow-2xs flex items-center space-x-1.5">
-									<div class="w-2 h-2 rounded-full bg-pink-400 animate-bounce" style="animation-delay: 0s"></div>
-									<div class="w-2 h-2 rounded-full bg-pink-400 animate-bounce" style="animation-delay: 0.18s"></div>
-									<div class="w-2 h-2 rounded-full bg-pink-400 animate-bounce" style="animation-delay: 0.36s"></div>
+								<div class="bg-white border border-pink-200 px-3.5 py-2.5 rounded-2xl rounded-bl-xs shadow-xs flex items-center space-x-1.5">
+									<div class="w-2 h-2 rounded-full bg-pink-500 animate-bounce" style="animation-delay: 0ms"></div>
+									<div class="w-2 h-2 rounded-full bg-pink-500 animate-bounce" style="animation-delay: 150ms"></div>
+									<div class="w-2 h-2 rounded-full bg-pink-500 animate-bounce" style="animation-delay: 300ms"></div>
 								</div>
-								<span class="text-[11px] text-pink-400 font-medium italic">@{activeFriend.username} is typing...</span>
+								<span class="text-xs text-pink-500 font-semibold italic">@{activeFriend.username} is typing...</span>
 							</div>
 						{/if}
 					{/if}
