@@ -14,19 +14,30 @@ export async function POST({ request }) {
 		// 1. Fetch Target User Data
 		let { data: targetUser, error: userError } = await supabase
 			.from('chronomuse_users')
-			.select('id, username, email, avatar_url, created_at, last_activity')
+			.select('id, username, email, avatar_url, created_at, last_activity, bio, birthday, relationship_status, gender')
 			.eq('id', targetId)
 			.maybeSingle();
 
-		// If avatar_url column might not exist or error occurred with that select, fallback gracefully
-		if (userError && userError.message?.includes('avatar_url')) {
+		// If new columns might not exist in database table yet, fallback gracefully
+		if (userError) {
 			const fallbackQuery = await supabase
 				.from('chronomuse_users')
-				.select('id, username, email, created_at, last_activity')
+				.select('id, username, email, avatar_url, created_at, last_activity')
 				.eq('id', targetId)
 				.maybeSingle();
-			targetUser = fallbackQuery.data;
-			userError = fallbackQuery.error;
+
+			if (fallbackQuery.error && fallbackQuery.error.message?.includes('avatar_url')) {
+				const minimalQuery = await supabase
+					.from('chronomuse_users')
+					.select('id, username, email, created_at, last_activity')
+					.eq('id', targetId)
+					.maybeSingle();
+				targetUser = minimalQuery.data;
+				userError = minimalQuery.error;
+			} else {
+				targetUser = fallbackQuery.data;
+				userError = fallbackQuery.error;
+			}
 		}
 
 		if (userError) {

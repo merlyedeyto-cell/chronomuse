@@ -37,10 +37,30 @@ export function triggerVibrate(pattern = [120, 60, 120]) {
 	}
 }
 
+export function isSoundEnabled() {
+	if (typeof window === 'undefined') return false;
+	try {
+		return localStorage.getItem('chronomuse_sound_enabled') !== 'false';
+	} catch (e) {
+		return true;
+	}
+}
+
+export function setSoundEnabled(enabled) {
+	if (typeof window === 'undefined') return;
+	try {
+		localStorage.setItem('chronomuse_sound_enabled', enabled ? 'true' : 'false');
+		if (enabled) {
+			playClickSound(true);
+		}
+	} catch (e) {}
+}
+
 /**
  * Play a subtle, tactile UI click sound on button/element press
  */
-export function playClickSound() {
+export function playClickSound(force = false) {
+	if (!force && !isSoundEnabled()) return;
 	try {
 		const ctx = getAudioContext();
 		if (!ctx) return;
@@ -77,6 +97,7 @@ export function getActiveUser() {
 }
 
 function hasActiveUser(expectedUserId = null) {
+	if (!isSoundEnabled()) return false;
 	const user = getActiveUser();
 	if (!user?.id) return false;
 	if (expectedUserId !== null && expectedUserId !== undefined) {

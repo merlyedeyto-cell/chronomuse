@@ -11,6 +11,11 @@ export async function POST({ request }) {
 		let avatar_url;
 		let avatarFile = null;
 
+		let bio;
+		let birthday;
+		let relationship_status;
+		let gender;
+
 		const contentType = request.headers.get('content-type') || '';
 		if (contentType.includes('multipart/form-data')) {
 			const formData = await request.formData();
@@ -20,6 +25,10 @@ export async function POST({ request }) {
 			new_password = formData.get('new_password');
 			avatar_url = formData.get('avatar_url');
 			avatarFile = formData.get('avatar');
+			bio = formData.get('bio');
+			birthday = formData.get('birthday');
+			relationship_status = formData.get('relationship_status');
+			gender = formData.get('gender');
 		} else {
 			const body = await request.json();
 			user_id = body.user_id;
@@ -27,6 +36,10 @@ export async function POST({ request }) {
 			email = body.email;
 			new_password = body.new_password;
 			avatar_url = body.avatar_url;
+			bio = body.bio;
+			birthday = body.birthday;
+			relationship_status = body.relationship_status;
+			gender = body.gender;
 		}
 
 		if (!user_id) {
@@ -87,6 +100,10 @@ export async function POST({ request }) {
 		if (username) updateData.username = username;
 		if (email) updateData.email = email;
 		if (avatar_url !== undefined && avatar_url !== null) updateData.avatar_url = avatar_url;
+		if (bio !== undefined) updateData.bio = bio;
+		if (birthday !== undefined) updateData.birthday = birthday;
+		if (relationship_status !== undefined) updateData.relationship_status = relationship_status;
+		if (gender !== undefined) updateData.gender = gender;
 
 		// If a new password is provided, hash it
 		if (new_password && new_password.trim() !== '') {
@@ -98,18 +115,22 @@ export async function POST({ request }) {
 
 		let updatedUser = null;
 
-		// Try updating with avatar_url
-		let { data: userWithAvatar, error: updateError } = await supabase
+		// Try updating with all fields
+		let { data: userFull, error: updateError } = await supabase
 			.from('chronomuse_users')
 			.update(updateData)
 			.eq('id', user_id)
-			.select('id, username, email, avatar_url')
+			.select('id, username, email, avatar_url, bio, birthday, relationship_status, gender')
 			.single();
 
-		if (updateError && updateError.message?.includes('avatar_url')) {
-			// If column avatar_url does not exist, update without avatar_url
-			delete updateData.avatar_url;
-			const { data: fallbackUser, error: fallbackError } = await supabase
+		if (updateError) {
+			// If column bio/birthday/avatar_url does not exist yet in table, fallback without new fields
+			delete updateData.bio;
+			delete updateData.birthday;
+			delete updateData.relationship_status;
+			delete updateData.gender;
+
+			let { data: fallbackUser, error: fallbackError } = await supabase
 				.from('chronomuse_users')
 				.update(updateData)
 				.eq('id', user_id)
@@ -119,11 +140,16 @@ export async function POST({ request }) {
 			if (fallbackError) {
 				return json({ error: 'Database update error: ' + fallbackError.message }, { status: 500 });
 			}
-			updatedUser = { ...fallbackUser, avatar_url: avatar_url || null };
-		} else if (updateError) {
-			return json({ error: 'Database update error: ' + updateError.message }, { status: 500 });
+			updatedUser = {
+				...fallbackUser,
+				avatar_url: avatar_url || null,
+				bio: bio !== undefined ? bio : null,
+				birthday: birthday !== undefined ? birthday : null,
+				relationship_status: relationship_status !== undefined ? relationship_status : null,
+				gender: gender !== undefined ? gender : null
+			};
 		} else {
-			updatedUser = userWithAvatar;
+			updatedUser = userFull;
 		}
 
 		return json({

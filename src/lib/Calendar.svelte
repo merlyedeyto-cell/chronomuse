@@ -320,9 +320,9 @@
 						onclick={() => { closeTooltip(); highlightedDateStr = ''; selectDate(day); }}
 						onmouseenter={() => handleMouseEnter(day)}
 						onmouseleave={handleMouseLeave}
-						ontouchstart={(e) => { e.preventDefault(); e.stopPropagation(); startLongPress(day); }}
-						ontouchend={(e) => { e.stopPropagation(); cancelLongPress(); }}
-						ontouchcancel={(e) => { e.stopPropagation(); cancelLongPress(); }}
+						ontouchstart={() => { startLongPress(day); }}
+						ontouchend={() => { cancelLongPress(); }}
+						ontouchcancel={() => { cancelLongPress(); }}
 						class="relative p-2.5 text-sm rounded-xl transition-all duration-200 flex flex-col items-center justify-center min-h-[45px] w-full cursor-pointer"
 						class:bg-pink-500={isToday(day)}
 						class:text-white={isToday(day)}
