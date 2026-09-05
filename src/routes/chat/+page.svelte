@@ -1064,18 +1064,21 @@
 		if (!isDragging || swipingMessageId !== msg.id) return;
 		const diffX = clientX - startDragX;
 		const diffY = clientY - startDragY;
+		const isUserSender = msg.sender_id === user.id;
 
 		// Cancel long press when moving
 		if (Math.abs(diffX) > 8 || Math.abs(diffY) > 8) {
 			cancelLongPress();
 		}
 
-		// Lock gesture direction once movement exceeds threshold
+		// Lock gesture direction once movement exceeds threshold:
+		// For own message (right side): swipe left (diffX < -8)
+		// For kausap message (left side): swipe right (diffX > 8)
 		if (!isGestureLocked) {
 			if (Math.abs(diffX) > 8 || Math.abs(diffY) > 8) {
 				isGestureLocked = true;
-				// Only activate horizontal swipe if dragging to the right and diffX is dominant
-				if (diffX > 8 && diffX > Math.abs(diffY) * 1.1) {
+				const isCorrectSwipeDirection = isUserSender ? (diffX < -8) : (diffX > 8);
+				if (isCorrectSwipeDirection && Math.abs(diffX) > Math.abs(diffY) * 1.1) {
 					isHorizontalSwipe = true;
 				} else {
 					isHorizontalSwipe = false;
@@ -1088,17 +1091,31 @@
 				originalEvent.preventDefault();
 			}
 
-			let offset = 0;
-			if (diffX > 0) {
-				if (diffX <= SWIPE_THRESHOLD) {
-					offset = diffX;
-				} else {
-					offset = SWIPE_THRESHOLD + (diffX - SWIPE_THRESHOLD) * 0.35;
+			let rawOffset = 0;
+			if (isUserSender) {
+				// Own message: diffX is negative when dragging left
+				if (diffX < 0) {
+					const mag = Math.abs(diffX);
+					if (mag <= SWIPE_THRESHOLD) {
+						rawOffset = -mag;
+					} else {
+						rawOffset = -(SWIPE_THRESHOLD + (mag - SWIPE_THRESHOLD) * 0.35);
+					}
 				}
+				swipeOffset = Math.max(Math.min(rawOffset, 0), -SWIPE_MAX);
+			} else {
+				// Kausap message: diffX is positive when dragging right
+				if (diffX > 0) {
+					if (diffX <= SWIPE_THRESHOLD) {
+						rawOffset = diffX;
+					} else {
+						rawOffset = SWIPE_THRESHOLD + (diffX - SWIPE_THRESHOLD) * 0.35;
+					}
+				}
+				swipeOffset = Math.min(Math.max(rawOffset, 0), SWIPE_MAX);
 			}
-			swipeOffset = Math.min(Math.max(offset, 0), SWIPE_MAX);
 
-			const reached = swipeOffset >= SWIPE_THRESHOLD;
+			const reached = Math.abs(swipeOffset) >= SWIPE_THRESHOLD;
 			if (reached && !isSwipeThresholdReached) {
 				isSwipeThresholdReached = true;
 				if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -1119,7 +1136,7 @@
 			wasSwiping = true;
 			setTimeout(() => { wasSwiping = false; }, 160);
 
-			const shouldReply = swipeOffset >= SWIPE_THRESHOLD && !isSelectionMode;
+			const shouldReply = Math.abs(swipeOffset) >= SWIPE_THRESHOLD && !isSelectionMode;
 			if (shouldReply) {
 				triggerReply(msg);
 			}
@@ -1847,13 +1864,13 @@
 
 									<!-- Bubble Wrapper with Swipe Indicator -->
 									<div class="relative flex items-center max-w-[82%] sm:max-w-[78%]">
-										<!-- Swipe Reply Indicator Icon (emerges right beside the bubble) -->
-										{#if swipingMessageId === msg.id && (swipeOffset > 4 || isResettingSwipe)}
-											{@const progress = Math.min(Math.max((swipeOffset - 4) / (SWIPE_THRESHOLD - 4), 0), 1)}
+										<!-- Swipe Reply Indicator Icon (emerges right or left of bubble based on sender) -->
+										{#if swipingMessageId === msg.id && (Math.abs(swipeOffset) > 4 || isResettingSwipe)}
+											{@const progress = Math.min(Math.max((Math.abs(swipeOffset) - 4) / (SWIPE_THRESHOLD - 4), 0), 1)}
 											<div
-												class="absolute -left-9 sm:-left-10 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none z-20"
+												class="absolute top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none z-20 {isUserSender ? '-right-9 sm:-right-10' : '-left-9 sm:-left-10'}"
 												style="
-													transform: translateY(-50%) scale({isResettingSwipe ? 0.35 : 0.45 + progress * 0.65}) rotate({isResettingSwipe ? '-20deg' : `${(1 - progress) * -35}deg`});
+													transform: translateY(-50%) scale({isResettingSwipe ? 0.35 : 0.45 + progress * 0.65}) rotate({isResettingSwipe ? (isUserSender ? '20deg' : '-20deg') : `${(1 - progress) * (isUserSender ? 35 : -35)}deg`});
 													opacity: {isResettingSwipe ? 0 : progress};
 													transition: {isResettingSwipe ? 'all 0.32s cubic-bezier(0.18, 0.9, 0.32, 1.15)' : 'none'};
 												"
@@ -1861,7 +1878,7 @@
 												<div
 													class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-xs transition-all duration-200 {isSwipeThresholdReached ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-pink-300 ring-2 ring-white scale-110' : 'bg-pink-100 text-pink-600 border border-pink-200'}"
 												>
-													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 {isSwipeThresholdReached ? 'scale-110 -rotate-12' : ''}">
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 {isSwipeThresholdReached ? 'scale-110 -rotate-12' : ''} {isUserSender ? 'rotate-180' : ''}">
 														<path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
 													</svg>
 												</div>
