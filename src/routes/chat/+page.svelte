@@ -1786,11 +1786,13 @@
 						</div>
 					{:else if messages.length === 0}
 						<div class="h-full flex flex-col items-center justify-center text-pink-400 text-sm py-12">
-							<div class="w-14 h-14 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center mb-3 shadow-2xs">
-								<span class="text-2xl">💬</span>
+							<div class="w-12 h-12 rounded-2xl bg-pink-100 border border-pink-200 text-pink-600 flex items-center justify-center mb-2.5 shadow-2xs">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+								</svg>
 							</div>
-							<p class="font-bold text-gray-700 text-sm sm:text-base">Start a conversation with @{activeFriend.username}</p>
-							<p class="text-xs text-gray-400 mt-1 max-w-xs text-center">Say hi, share photos, or hold messages to reply and interact!</p>
+							<p class="font-bold text-pink-950 text-sm sm:text-base">Start a conversation with @{activeFriend.username}</p>
+							<p class="text-xs text-pink-600 mt-1 max-w-xs text-center font-medium">Say hi, share photos, or hold messages to reply and interact!</p>
 						</div>
 					{:else}
 						<!-- Loading Older Messages Spinner / History Header -->
@@ -1809,7 +1811,7 @@
 							<!-- Date Separator Header with exact date formatting -->
 							{#if isNewDay(i)}
 								<div class="flex items-center justify-center my-3">
-									<span class="px-3.5 py-1 bg-pink-100/90 text-pink-600 text-[11px] font-semibold rounded-full shadow-2xs backdrop-blur-xs border border-pink-200/70">
+									<span class="px-3.5 py-1 bg-white border-2 border-pink-300 text-pink-700 text-[11px] font-bold rounded-full shadow-2xs">
 										{formatDateDivider(msg.created_at)}
 									</span>
 								</div>
@@ -1923,18 +1925,19 @@
 											<div
 												class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm shadow-2xs transition-all relative leading-relaxed"
 												class:bg-gradient-to-r={isUserSender}
-												class:from-pink-400={isUserSender}
-												class:to-rose-400={isUserSender}
+												class:from-pink-500={isUserSender}
+												class:to-pink-600={isUserSender}
 												class:text-white={isUserSender}
+												class:font-bold={isUserSender}
 												class:rounded-br-xs={isUserSender}
 												class:bg-white={!isUserSender}
 												class:text-pink-950={!isUserSender}
-												class:font-medium={!isUserSender}
-												class:border={!isUserSender}
-												class:border-pink-100={!isUserSender}
+												class:font-bold={!isUserSender}
+												class:border-2={!isUserSender}
+												class:border-pink-300={!isUserSender}
 												class:rounded-bl-xs={!isUserSender}
 												class:ring-2={isSelected}
-												class:ring-pink-400={isSelected}
+												class:ring-pink-500={isSelected}
 											>
 												{#if parsed.isImage}
 													<div class="rounded-xl overflow-hidden max-w-xs">
@@ -1945,7 +1948,7 @@
 												{/if}
 											</div>
 											<!-- Message Status & Time -->
-											<div class="flex items-center gap-1 mt-1 px-1 text-[10px] font-medium {isUserSender ? 'text-pink-500 justify-end' : 'text-pink-400/80 justify-start'}">
+											<div class="flex items-center gap-1 mt-1 px-1 text-[10px] font-bold {isUserSender ? 'text-pink-600 justify-end' : 'text-pink-600 justify-start'}">
 												<span>{formatTime(msg.created_at)}</span>
 												{#if isUserSender}
 													{#if msg.is_read}
