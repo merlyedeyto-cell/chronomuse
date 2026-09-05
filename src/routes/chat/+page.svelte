@@ -2066,7 +2066,7 @@
 							oninput={handleInputTyping}
 							onfocus={handleInputFocus}
 							onblur={handleInputBlur}
-							placeholder="Type a message... (swipe right to reply, hold to select)"
+							placeholder="Type a message... (swipe to reply, hold to select)"
 							class="w-full pl-3 pr-9 py-2 sm:py-2.5 bg-pink-50/40 border border-pink-200 rounded-xl text-gray-800 text-xs sm:text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-300 focus:bg-white transition-all font-normal"
 						/>
 						<!-- Emoji Picker Toggle Button -->
