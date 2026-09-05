@@ -84,10 +84,10 @@ export async function POST({ request }) {
 
 			(bRows || []).forEach(r => {
 				if (String(r.blocker_id) === String(user_id)) {
-					blockedSetByMe.add(Number(r.blocked_id));
+					blockedSetByMe.add(String(r.blocked_id));
 				}
 				if (String(r.blocked_id) === String(user_id)) {
-					blockedSetByThem.add(Number(r.blocker_id));
+					blockedSetByThem.add(String(r.blocker_id));
 				}
 			});
 		} catch (e) {}
@@ -95,7 +95,7 @@ export async function POST({ request }) {
 		// 4. For each partner, fetch last message and unread count
 		const conversations = await Promise.all(
 			partnerUsers.map(async partner => {
-				const isFriend = friendIdSet.has(Number(partner.id));
+				const isFriend = friendIdSet.has(Number(partner.id)) || friendIdSet.has(String(partner.id));
 
 				// Last message
 				const { data: lastMsgArr } = await supabase
@@ -129,8 +129,8 @@ export async function POST({ request }) {
 					unread_count: unreadCount || 0,
 					is_friend: isFriend,
 					is_request: !isFriend,
-					is_blocked_by_me: blockedSetByMe.has(Number(partner.id)),
-					is_blocking_me: blockedSetByThem.has(Number(partner.id))
+					is_blocked_by_me: blockedSetByMe.has(String(partner.id)),
+					is_blocking_me: blockedSetByThem.has(String(partner.id))
 				};
 			})
 		);

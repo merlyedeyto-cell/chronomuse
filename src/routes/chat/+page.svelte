@@ -44,6 +44,8 @@
 	let sidebarOpen = $state(false);
 	let showEmojiPicker = $state(false);
 	let showClearModal = $state(false);
+	let showBlockConfirmModal = $state(false);
+	let blockModalTarget = $state(null);
 	let isClearing = $state(false);
 	let pollInterval;
 	let chatContainer;
@@ -93,6 +95,24 @@
 	let userLastSeenMap = $state({});
 	let currentTime = $state(Date.now());
 	let heartbeatInterval = null;
+
+	let isCurrentFriendBlockedByMe = $derived.by(() => {
+		if (!activeFriend) return false;
+		if (activeFriend.is_blocked_by_me) return true;
+		if (typeof window !== 'undefined' && user?.id) {
+			try {
+				const stored = localStorage.getItem(`chronomuse_blocked_${user.id}`);
+				if (stored) {
+					const list = JSON.parse(stored);
+					const fId = String(activeFriend.friend_id || activeFriend.id);
+					if (Array.isArray(list) && list.some(b => String(b.id || b.friend_id) === fId)) {
+						return true;
+					}
+				}
+			} catch (e) {}
+		}
+		return false;
+	});
 
 	const emojis = ['😀', '😁', '😂', '🥰', '😍', '🤩', '😊', '😎', '🥳', '🎉', '❤️', '🔥', '✨', '🌟', '💫', '🎈', '🎊', '📸', '🎵', '🎶', '💕', '💖', '💗', '🌸', '🌈', '☀️', '🌙', '⭐'];
 
@@ -883,6 +903,16 @@
 		}
 	}
 
+	function promptToggleBlockUser(target) {
+		if (!target) return;
+		if (isCurrentFriendBlockedByMe) {
+			handleToggleBlockUser(target.friend_id || target.id, true);
+		} else {
+			blockModalTarget = target;
+			showBlockConfirmModal = true;
+		}
+	}
+
 	async function handleToggleBlockUser(targetId, currentIsBlocked) {
 		if (!user || !targetId) return;
 		const action = currentIsBlocked ? 'unblock' : 'block';
@@ -899,9 +929,23 @@
 			const data = await res.json();
 			if (data.success) {
 				const isBlockedNow = action === 'block';
-				if (activeFriend && Number(activeFriend.friend_id) === Number(targetId)) {
+				if (activeFriend && String(activeFriend.friend_id || activeFriend.id) === String(targetId)) {
 					activeFriend.is_blocked_by_me = isBlockedNow;
 				}
+
+				try {
+					const stored = localStorage.getItem(`chronomuse_blocked_${user.id}`);
+					let list = stored ? JSON.parse(stored) : [];
+					if (isBlockedNow) {
+						if (!list.some(b => String(b.id || b.friend_id) === String(targetId))) {
+							list.push({ id: targetId, username: activeFriend?.username || 'User' });
+						}
+					} else {
+						list = list.filter(b => String(b.id || b.friend_id) !== String(targetId));
+					}
+					localStorage.setItem(`chronomuse_blocked_${user.id}`, JSON.stringify(list));
+				} catch (e) {}
+
 				fetchChatList();
 			} else if (data.error) {
 				alert(data.error);
@@ -2083,14 +2127,14 @@
 								<span class="hidden sm:inline">Profile</span>
 							</a>
 							<button
-								onclick={() => handleToggleBlockUser(activeFriend.friend_id, activeFriend.is_blocked_by_me)}
-								class="px-2.5 py-1.5 bg-white/80 hover:bg-white border border-pink-300 {activeFriend.is_blocked_by_me ? 'text-emerald-700 hover:text-emerald-800' : 'text-rose-600 hover:text-rose-700'} rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 shadow-2xs cursor-pointer"
-								title={activeFriend.is_blocked_by_me ? "Unblock User" : "Block User"}
+								onclick={() => promptToggleBlockUser(activeFriend)}
+								class="px-2.5 py-1.5 bg-white/80 hover:bg-white border border-pink-300 {isCurrentFriendBlockedByMe ? 'text-emerald-700 hover:text-emerald-800' : 'text-rose-600 hover:text-rose-700'} rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 shadow-2xs cursor-pointer"
+								title={isCurrentFriendBlockedByMe ? "Unblock User" : "Block User"}
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
 								</svg>
-								<span class="hidden sm:inline">{activeFriend.is_blocked_by_me ? 'Unblock' : 'Block'}</span>
+								<span class="hidden sm:inline">{isCurrentFriendBlockedByMe ? 'Unblock' : 'Block'}</span>
 							</button>
 							<button
 								onclick={() => showClearModal = true}
@@ -2456,14 +2500,14 @@
 				{/if}
 
 				<!-- Input Form Section or Blocked Banner -->
-				{#if activeFriend?.is_blocked_by_me}
+				{#if isCurrentFriendBlockedByMe}
 					<div class="p-3 sm:p-4 bg-gradient-to-r from-pink-50 via-rose-50 to-pink-100 border-t-2 border-pink-200 flex flex-col sm:flex-row items-center justify-between gap-3 sticky bottom-0 z-20 shadow-md">
 						<div class="flex items-center space-x-2 text-pink-950 text-xs sm:text-sm font-semibold">
 							<span class="text-base sm:text-lg">🚫</span>
 							<span>You blocked @{activeFriend.username}. You cannot send or receive messages from this user.</span>
 						</div>
 						<button
-							onclick={() => handleToggleBlockUser(activeFriend.friend_id, true)}
+							onclick={() => handleToggleBlockUser(activeFriend.friend_id || activeFriend.id, true)}
 							class="px-3.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs rounded-xl shadow-2xs hover:shadow-md active:scale-95 transition-all cursor-pointer flex-shrink-0"
 						>
 							Unblock @{activeFriend.username}
@@ -2582,6 +2626,50 @@
 					class="flex-1 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 text-white rounded-xl font-bold text-sm hover:from-rose-600 hover:to-red-700 active:scale-95 transition-all shadow-md shadow-rose-200 flex items-center justify-center space-x-1"
 				>
 					{#if isClearing}Clearing...{:else}Clear Chat{/if}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Block User Confirmation Modal -->
+{#if showBlockConfirmModal && blockModalTarget}
+	<div
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
+		onclick={(e) => { if (e.target === e.currentTarget) { showBlockConfirmModal = false; blockModalTarget = null; } }}
+	>
+		<div
+			class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-6 max-w-sm w-full text-center animate-modal-content"
+			onclick={(e) => e.stopPropagation()}
+		>
+			<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-7 h-7">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+				</svg>
+			</div>
+			<h3 class="text-lg font-extrabold text-pink-950 mb-1.5">Block @{blockModalTarget.username}?</h3>
+			<p class="text-xs sm:text-sm text-pink-700 mb-6 leading-relaxed bg-pink-50 p-3 rounded-2xl border border-pink-200">
+				Are you sure you want to block <strong class="text-pink-900">@{blockModalTarget.username}</strong>? You will no longer be able to message each other or view each other's profile details.
+			</p>
+			<div class="flex space-x-3">
+				<button
+					type="button"
+					onclick={() => { showBlockConfirmModal = false; blockModalTarget = null; }}
+					class="flex-1 py-2.5 bg-pink-100 text-pink-700 rounded-xl font-bold text-xs sm:text-sm hover:bg-pink-200 active:scale-95 transition-all shadow-xs cursor-pointer"
+				>
+					No, Cancel
+				</button>
+				<button
+					type="button"
+					onclick={() => {
+						const targetId = blockModalTarget.friend_id;
+						showBlockConfirmModal = false;
+						blockModalTarget = null;
+						handleToggleBlockUser(targetId, false);
+					}}
+					class="flex-1 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 text-white rounded-xl font-bold text-xs sm:text-sm hover:from-rose-600 hover:to-red-700 active:scale-95 transition-all shadow-md shadow-rose-200 flex items-center justify-center space-x-1 cursor-pointer"
+				>
+					Yes, Block
 				</button>
 			</div>
 		</div>
