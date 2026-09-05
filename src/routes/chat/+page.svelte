@@ -1669,11 +1669,11 @@
 					</div>
 				{:else}
 					<!-- Active Chat Normal Header (Harmonious Home Background Theme) -->
-					<div class="p-3 sm:p-3.5 bg-pink-50/90 backdrop-blur-md border-b-2 border-pink-300 text-pink-950 flex items-center justify-between shadow-2xs flex-shrink-0 sticky top-0 z-30">
+					<div class="p-3 sm:p-3.5 bg-gradient-to-r from-pink-100 via-pink-200 to-pink-300 backdrop-blur-md border-b-2 border-pink-300 text-pink-950 flex items-center justify-between shadow-2xs flex-shrink-0 sticky top-0 z-30">
 						<div class="flex items-center space-x-2 min-w-0">
 							<button
 								onclick={handleBackToChatList}
-								class="md:hidden p-1.5 bg-pink-100 hover:bg-pink-200 border border-pink-300 rounded-lg text-pink-700 transition-colors flex-shrink-0 active:scale-95"
+								class="md:hidden p-1.5 bg-white/80 hover:bg-white border border-pink-300 rounded-lg text-pink-700 transition-colors flex-shrink-0 active:scale-95 shadow-2xs"
 								title="Back to Chat List"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
@@ -1703,7 +1703,7 @@
 									<h3 class="font-bold text-sm leading-tight text-pink-950 truncate group-hover:underline flex items-center gap-1">
 										<span>@{activeFriend.username}</span>
 										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-pink-500 opacity-70 group-hover:opacity-100">
-											<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+											<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 111.04-1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
 										</svg>
 									</h3>
 									<div class="text-[11px] text-pink-600 flex items-center gap-1.5 mt-0.5">
@@ -1736,7 +1736,7 @@
 						<div class="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
 							<a
 								href="/profile?id={activeFriend.friend_id}"
-								class="px-2.5 py-1.5 bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-700 rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 shadow-2xs cursor-pointer"
+								class="px-2.5 py-1.5 bg-white/80 hover:bg-white border border-pink-300 text-pink-700 rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 shadow-2xs cursor-pointer"
 								title="View Profile"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5">
@@ -1746,7 +1746,7 @@
 							</a>
 							<button
 								onclick={() => showClearModal = true}
-								class="px-2.5 py-1.5 bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-700 rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 shadow-2xs cursor-pointer"
+								class="px-2.5 py-1.5 bg-white/80 hover:bg-white border border-pink-300 text-pink-700 rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 shadow-2xs cursor-pointer"
 								title="Clear Chat History"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-pink-600">
