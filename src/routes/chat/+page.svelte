@@ -28,6 +28,7 @@
 	let viewingImageModalUrl = $state(null);
 	let viewingImageIndex = $state(-1);
 	let zoomScale = $state(1);
+	let baseScale = 1;
 	let touchStartX = 0;
 	let touchStartY = 0;
 	let touchDistStart = 0;
@@ -1251,6 +1252,7 @@
 	}
 
 	// Photo Gallery Viewer & Zoom functions
+
 	let chatImagesList = $derived(() => {
 		const list = [];
 		for (const msg of messages) {
@@ -1276,11 +1278,13 @@
 			viewingImageIndex = 0;
 		}
 		zoomScale = 1;
+		baseScale = 1;
 	}
 
 	function closeImageViewer() {
 		viewingImageIndex = -1;
 		zoomScale = 1;
+		baseScale = 1;
 	}
 
 	function prevImage() {
@@ -1289,6 +1293,7 @@
 		if (viewingImageIndex > 0) {
 			viewingImageIndex--;
 			zoomScale = 1;
+			baseScale = 1;
 		}
 	}
 
@@ -1298,6 +1303,7 @@
 		if (viewingImageIndex < imgs.length - 1) {
 			viewingImageIndex++;
 			zoomScale = 1;
+			baseScale = 1;
 		}
 	}
 
@@ -1315,10 +1321,11 @@
 	function handleViewerWheel(e) {
 		if (viewingImageIndex === -1) return;
 		if (e.deltaY < 0) {
-			zoomScale = Math.min(3.5, zoomScale + 0.25);
+			zoomScale = Math.min(4, zoomScale + 0.25);
 		} else {
 			zoomScale = Math.max(1, zoomScale - 0.25);
 		}
+		baseScale = zoomScale;
 	}
 
 	function toggleZoom() {
@@ -1327,6 +1334,7 @@
 		} else {
 			zoomScale = 1.8;
 		}
+		baseScale = zoomScale;
 	}
 
 	function handleViewerTouchStart(e) {
@@ -1334,6 +1342,7 @@
 			touchStartX = e.touches[0].clientX;
 			touchStartY = e.touches[0].clientY;
 		} else if (e.touches.length === 2) {
+			baseScale = zoomScale;
 			touchDistStart = Math.hypot(
 				e.touches[0].clientX - e.touches[1].clientX,
 				e.touches[0].clientY - e.touches[1].clientY
@@ -1343,24 +1352,29 @@
 
 	function handleViewerTouchMove(e) {
 		if (e.touches.length === 2 && touchDistStart > 0) {
-			const dist = Math.hypot(
+			const currentDist = Math.hypot(
 				e.touches[0].clientX - e.touches[1].clientX,
 				e.touches[0].clientY - e.touches[1].clientY
 			);
-			const factor = dist / touchDistStart;
-			zoomScale = Math.min(3.5, Math.max(1, zoomScale * factor));
-			touchDistStart = dist;
+			const ratio = currentDist / touchDistStart;
+			// 2-finger pinch zoom calculation
+			zoomScale = Math.min(4, Math.max(1, baseScale * ratio));
 		}
 	}
 
 	function handleViewerTouchEnd(e) {
+		if (e.touches.length < 2) {
+			baseScale = zoomScale;
+		}
+
+		// 1-finger swipe navigation (only when not zoomed in)
 		if (e.changedTouches.length === 1 && zoomScale <= 1.05) {
 			const touchEndX = e.changedTouches[0].clientX;
 			const touchEndY = e.changedTouches[0].clientY;
 			const deltaX = touchEndX - touchStartX;
 			const deltaY = touchEndY - touchStartY;
 
-			if (Math.abs(deltaX) > 40 && Math.abs(deltaY) < 80) {
+			if (Math.abs(deltaX) > 50 && Math.abs(deltaY) < 80) {
 				if (deltaX < 0) {
 					nextImage();
 				} else {
