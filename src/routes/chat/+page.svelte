@@ -29,6 +29,11 @@
 	let viewingImageIndex = $state(-1);
 	let zoomScale = $state(1);
 	let baseScale = 1;
+	let panX = $state(0);
+	let panY = $state(0);
+	let basePanX = 0;
+	let basePanY = 0;
+	let isMouseDragging = $state(false);
 	let touchStartX = 0;
 	let touchStartY = 0;
 	let touchDistStart = 0;
@@ -1273,22 +1278,25 @@
 		return list;
 	});
 
+	function resetZoomAndPan() {
+		zoomScale = 1;
+		baseScale = 1;
+		panX = 0;
+		panY = 0;
+		basePanX = 0;
+		basePanY = 0;
+	}
+
 	function openImageViewer(imageUrl) {
 		const imgs = chatImagesList();
 		const idx = imgs.findIndex(img => img.url === imageUrl);
-		if (idx !== -1) {
-			viewingImageIndex = idx;
-		} else {
-			viewingImageIndex = 0;
-		}
-		zoomScale = 1;
-		baseScale = 1;
+		viewingImageIndex = idx !== -1 ? idx : 0;
+		resetZoomAndPan();
 	}
 
 	function closeImageViewer() {
 		viewingImageIndex = -1;
-		zoomScale = 1;
-		baseScale = 1;
+		resetZoomAndPan();
 	}
 
 	function prevImage() {
@@ -1296,8 +1304,7 @@
 		if (imgs.length === 0) return;
 		if (viewingImageIndex > 0) {
 			viewingImageIndex--;
-			zoomScale = 1;
-			baseScale = 1;
+			resetZoomAndPan();
 		}
 	}
 
@@ -1306,8 +1313,7 @@
 		if (imgs.length === 0) return;
 		if (viewingImageIndex < imgs.length - 1) {
 			viewingImageIndex++;
-			zoomScale = 1;
-			baseScale = 1;
+			resetZoomAndPan();
 		}
 	}
 
@@ -1324,29 +1330,49 @@
 
 	function handleViewerWheel(e) {
 		if (viewingImageIndex === -1) return;
+		e.preventDefault();
 		if (e.deltaY < 0) {
 			zoomScale = Math.min(4, zoomScale + 0.25);
 		} else {
 			zoomScale = Math.max(1, zoomScale - 0.25);
 		}
-		baseScale = zoomScale;
-	}
-
-	function toggleZoom() {
-		if (zoomScale > 1) {
-			zoomScale = 1;
-		} else {
-			zoomScale = 1.8;
+		if (zoomScale === 1) {
+			panX = 0;
+			panY = 0;
 		}
 		baseScale = zoomScale;
+		basePanX = panX;
+		basePanY = panY;
+	}
+
+	function toggleZoomAtPoint(e) {
+		if (zoomScale > 1) {
+			resetZoomAndPan();
+		} else {
+			zoomScale = 2.2;
+			baseScale = 2.2;
+			if (e && e.clientX && e.clientY && e.currentTarget) {
+				const rect = e.currentTarget.getBoundingClientRect();
+				const offsetX = e.clientX - (rect.left + rect.width / 2);
+				const offsetY = e.clientY - (rect.top + rect.height / 2);
+				panX = Math.round(-offsetX * 1.1);
+				panY = Math.round(-offsetY * 1.1);
+				basePanX = panX;
+				basePanY = panY;
+			}
+		}
 	}
 
 	function handleViewerTouchStart(e) {
 		if (e.touches.length === 1) {
 			touchStartX = e.touches[0].clientX;
 			touchStartY = e.touches[0].clientY;
+			basePanX = panX;
+			basePanY = panY;
 		} else if (e.touches.length === 2) {
 			baseScale = zoomScale;
+			basePanX = panX;
+			basePanY = panY;
 			touchDistStart = Math.hypot(
 				e.touches[0].clientX - e.touches[1].clientX,
 				e.touches[0].clientY - e.touches[1].clientY
@@ -1361,17 +1387,22 @@
 				e.touches[0].clientY - e.touches[1].clientY
 			);
 			const ratio = currentDist / touchDistStart;
-			// 2-finger pinch zoom calculation
 			zoomScale = Math.min(4, Math.max(1, baseScale * ratio));
+		} else if (e.touches.length === 1 && zoomScale > 1.05) {
+			const deltaX = e.touches[0].clientX - touchStartX;
+			const deltaY = e.touches[0].clientY - touchStartY;
+			panX = basePanX + deltaX;
+			panY = basePanY + deltaY;
 		}
 	}
 
 	function handleViewerTouchEnd(e) {
 		if (e.touches.length < 2) {
 			baseScale = zoomScale;
+			basePanX = panX;
+			basePanY = panY;
 		}
 
-		// 1-finger swipe navigation (only when not zoomed in)
 		if (e.changedTouches.length === 1 && zoomScale <= 1.05) {
 			const touchEndX = e.changedTouches[0].clientX;
 			const touchEndY = e.changedTouches[0].clientY;
@@ -1387,6 +1418,29 @@
 			}
 		}
 		touchDistStart = 0;
+	}
+
+	function handleMouseDown(e) {
+		if (zoomScale <= 1) return;
+		isMouseDragging = true;
+		touchStartX = e.clientX;
+		touchStartY = e.clientY;
+		basePanX = panX;
+		basePanY = panY;
+	}
+
+	function handleMouseMove(e) {
+		if (!isMouseDragging || zoomScale <= 1) return;
+		const deltaX = e.clientX - touchStartX;
+		const deltaY = e.clientY - touchStartY;
+		panX = basePanX + deltaX;
+		panY = basePanY + deltaY;
+	}
+
+	function handleMouseUp() {
+		isMouseDragging = false;
+		basePanX = panX;
+		basePanY = panY;
 	}
 
 	async function clearConversation() {
@@ -2471,7 +2525,6 @@
 			ontouchmove={handleViewerTouchMove}
 			ontouchend={handleViewerTouchEnd}
 			onwheel={handleViewerWheel}
-			ondblclick={toggleZoom}
 		>
 			<!-- Prev Button -->
 			{#if viewingImageIndex > 0}
@@ -2487,13 +2540,26 @@
 				</button>
 			{/if}
 
-			<!-- Image -->
-			<div class="w-full h-full flex items-center justify-center p-2 transition-transform duration-150 ease-out" style="transform: scale({zoomScale});">
+			<!-- Image Container with translate and scale -->
+			<div 
+				class="w-full h-full flex items-center justify-center p-2 transition-transform duration-75 ease-out" 
+				style="transform: translate3d({panX}px, {panY}px, 0px) scale({zoomScale});"
+				onmousedown={handleMouseDown}
+				onmousemove={handleMouseMove}
+				onmouseup={handleMouseUp}
+				onmouseleave={handleMouseUp}
+				role="button"
+				tabindex="0"
+			>
 				<img 
 					src={currentImg.url} 
 					alt="Full Preview" 
-					class="max-h-[72vh] max-w-full object-contain rounded-2xl border-2 border-pink-300 shadow-xl bg-white/40 cursor-zoom-in"
-					title="Double click or pinch to zoom"
+					class="max-h-[72vh] max-w-full object-contain rounded-2xl border-2 border-pink-300 shadow-xl bg-white/40"
+					class:cursor-grab={zoomScale > 1 && !isMouseDragging}
+					class:cursor-grabbing={zoomScale > 1 && isMouseDragging}
+					class:cursor-zoom-in={zoomScale <= 1}
+					ondblclick={toggleZoomAtPoint}
+					title="Double tap/click any spot to zoom into that location • Drag to pan"
 				/>
 			</div>
 
@@ -2527,10 +2593,10 @@
 					<span>Download Photo</span>
 				</button>
 
-				{#if zoomScale > 1}
+				{#if zoomScale > 1 || panX !== 0 || panY !== 0}
 					<button 
 						type="button"
-						onclick={() => zoomScale = 1}
+						onclick={resetZoomAndPan}
 						class="px-3.5 py-2.5 bg-white/90 hover:bg-white text-pink-700 rounded-xl font-semibold text-xs transition-all border border-pink-300 shadow-2xs active:scale-95 cursor-pointer"
 					>
 						Reset Zoom
