@@ -57,6 +57,8 @@
 
 	// Swipe-to-reply state
 	let replyingTo = $state(null);
+	let highlightedMessageId = $state(null);
+	let highlightTimer = null;
 	let swipingMessageId = $state(null);
 	let swipeOffset = $state(0);
 	let isSwipeThresholdReached = $state(false);
@@ -1602,6 +1604,32 @@
 		};
 	}
 
+	function scrollToMessage(targetId) {
+		if (!targetId) return;
+
+		let targetElem = document.getElementById(`msg-${targetId}`);
+		
+		// Fallback: search by message id or matching reply text if element not immediately found by exact id
+		if (!targetElem) {
+			const foundMsg = messages.find(m => String(m.id) === String(targetId));
+			if (foundMsg) {
+				targetElem = document.getElementById(`msg-${foundMsg.id}`);
+			}
+		}
+
+		if (targetElem) {
+			targetElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			const actualId = targetElem.id.replace('msg-', '');
+			highlightedMessageId = actualId;
+			if (highlightTimer) clearTimeout(highlightTimer);
+			highlightTimer = setTimeout(() => {
+				if (highlightedMessageId === actualId) {
+					highlightedMessageId = null;
+				}
+			}, 2400);
+		}
+	}
+
 	function formatLastMessagePreview(text) {
 		if (!text) return 'Tap to start chatting';
 		const parsed = parseMessage(text);
@@ -2190,6 +2218,7 @@
 
 										<!-- Bubble Container -->
 										<div
+											id="msg-{msg.id}"
 											role="button"
 											tabindex="0"
 											onclick={() => handleMessageClick(msg)}
@@ -2199,7 +2228,7 @@
 											ontouchend={() => handleDragEnd(msg)}
 											ontouchcancel={() => handleDragEnd(msg)}
 											onmousedown={(e) => { if (e.button === 0) handleDragStart(e.clientX, e.clientY, msg); }}
-											class="flex flex-col w-full cursor-pointer select-none {msg.is_new ? 'animate-message-pop' : ''}"
+											class="flex flex-col w-full cursor-pointer select-none transition-all duration-300 {msg.is_new ? 'animate-message-pop' : ''}"
 											class:items-end={isUserSender}
 											class:items-start={!isUserSender}
 											style="
@@ -2214,11 +2243,21 @@
 											{#if parsed.reply}
 												{@const replyDetails = getReplyDetails(parsed.reply.text)}
 												<div
-													class="mb-1 px-2.5 py-1 rounded-xl text-[11px] border-l-3 bg-pink-100/90 text-pink-900 border-pink-400 shadow-2xs max-w-full flex items-center space-x-1.5"
+													role="button"
+													tabindex="0"
+													onclick={(e) => { e.stopPropagation(); scrollToMessage(parsed.reply.id); }}
+													onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); scrollToMessage(parsed.reply.id); } }}
+													class="mb-1 px-2.5 py-1 rounded-xl text-[11px] border-l-3 bg-pink-100/90 text-pink-900 border-pink-400 shadow-2xs max-w-full flex items-center space-x-1.5 cursor-pointer hover:bg-pink-200/90 hover:border-pink-500 hover:shadow-xs active:scale-95 transition-all group/reply"
 													class:self-end={isUserSender}
 													class:self-start={!isUserSender}
+													title="Click to jump to replied message"
 												>
-													<span class="font-bold text-pink-700">@{parsed.reply.user}:</span>
+													<span class="font-bold text-pink-700 flex items-center gap-1 group-hover/reply:text-pink-900 transition-colors">
+														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-pink-600 group-hover/reply:-translate-x-0.5 transition-transform">
+															<path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+														</svg>
+														@{parsed.reply.user}:
+													</span>
 													{#if replyDetails.isImage}
 														<div class="inline-flex items-center space-x-1 bg-white/80 px-1.5 py-0.5 rounded-md border border-pink-300">
 															{#if replyDetails.imageUrl}
@@ -2234,11 +2273,9 @@
 
 											<!-- Main Chat Bubble with Clear Visible Pink Border & Tail -->
 											<div
-												class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-pink-950 border-2 border-pink-300 shadow-2xs transition-all relative leading-relaxed"
-												class:bg-pink-100={isUserSender}
-												class:bg-white={!isUserSender}
-												class:ring-2={isSelected}
-												class:ring-pink-500={isSelected}
+												class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold border-2 transition-all duration-300 relative leading-relaxed {highlightedMessageId === String(msg.id) ? 'bg-gradient-to-r from-pink-200 via-rose-200 to-pink-200 text-pink-950 border-pink-500 ring-4 ring-pink-400/80 shadow-xl shadow-pink-300/60 scale-[1.03] animate-pulse z-20' : isUserSender ? 'bg-pink-100 text-pink-950 border-pink-300 shadow-2xs' : 'bg-white text-pink-950 border-pink-300 shadow-2xs'}"
+												class:ring-2={isSelected && highlightedMessageId !== String(msg.id)}
+												class:ring-pink-500={isSelected && highlightedMessageId !== String(msg.id)}
 											>
 												{#if isUserSender}
 													<span class="absolute -right-[7px] top-3.5 w-3 h-3 bg-pink-100 border-t-2 border-r-2 border-pink-300 transform rotate-45 pointer-events-none rounded-tr-xs"></span>
