@@ -1342,7 +1342,9 @@
 				<div class="flex items-center justify-between border-b border-pink-100 pb-3">
 					<div class="flex items-center space-x-2.5">
 						<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-300 flex items-center justify-center font-bold text-base shadow-2xs">
-							✏️
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+							</svg>
 						</div>
 						<h3 class="text-base sm:text-lg font-black text-pink-950">Edit Profile Info</h3>
 					</div>
@@ -1372,7 +1374,7 @@
 
 					<!-- Birthday -->
 					<div>
-						<label class="block text-xs font-extrabold text-pink-950 mb-1">Birthday 🎂</label>
+						<label class="block text-xs font-extrabold text-pink-950 mb-1">Birthday</label>
 						<input
 							type="date"
 							bind:value={editBirthday}
@@ -1382,7 +1384,7 @@
 
 					<!-- Relationship Status -->
 					<div>
-						<label class="block text-xs font-extrabold text-pink-950 mb-1">Relationship Status 💖</label>
+						<label class="block text-xs font-extrabold text-pink-950 mb-1">Relationship Status</label>
 						<select
 							bind:value={editRelationshipStatus}
 							class="w-full px-3.5 py-2.5 bg-pink-50/50 border-2 border-pink-200 rounded-xl text-xs sm:text-sm font-semibold text-pink-950 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all cursor-pointer"
