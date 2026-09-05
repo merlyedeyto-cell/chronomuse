@@ -2221,7 +2221,7 @@
 <!-- Full-Screen Image Preview & Download Modal -->
 {#if viewingImageModalUrl}
 	<div 
-		class="fixed inset-0 z-[100] bg-pink-950/80 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 animate-fade-in"
+		class="fixed inset-0 z-[100] bg-pink-100/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) viewingImageModalUrl = null; }}
 		onkeydown={(e) => { if (e.key === 'Escape') viewingImageModalUrl = null; }}
 		role="button"
@@ -2229,13 +2229,13 @@
 	>
 		<!-- Header -->
 		<div class="w-full max-w-4xl flex items-center justify-between z-10">
-			<span class="text-xs sm:text-sm font-bold text-pink-800 bg-pink-100/95 px-3.5 py-1.5 rounded-full backdrop-blur-sm border border-pink-300 shadow-md">
+			<span class="text-xs sm:text-sm font-bold text-pink-900 bg-white/90 px-3.5 py-1.5 rounded-full backdrop-blur-sm border border-pink-300 shadow-2xs">
 				Photo Preview
 			</span>
 			<button 
 				type="button"
 				onclick={() => viewingImageModalUrl = null}
-				class="p-2 text-pink-700 hover:text-pink-900 bg-pink-100 hover:bg-pink-200 border border-pink-300 rounded-full transition-all backdrop-blur-sm cursor-pointer active:scale-95 shadow-md flex items-center justify-center"
+				class="p-2 text-pink-700 hover:text-pink-900 bg-white/90 hover:bg-white border border-pink-300 rounded-full transition-all backdrop-blur-sm cursor-pointer active:scale-95 shadow-2xs flex items-center justify-center"
 				title="Close Preview (Esc)"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
@@ -2249,7 +2249,7 @@
 			<img 
 				src={viewingImageModalUrl} 
 				alt="Full Preview" 
-				class="max-h-[75vh] max-w-full object-contain rounded-2xl border-2 border-pink-300/70 shadow-2xl animate-fade-in" 
+				class="max-h-[75vh] max-w-full object-contain rounded-2xl border-2 border-pink-300 shadow-xl bg-white/40 animate-fade-in" 
 			/>
 		</div>
 
@@ -2258,7 +2258,7 @@
 			<button 
 				type="button"
 				onclick={() => downloadChatImage(viewingImageModalUrl)}
-				class="px-5 py-2.5 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-lg shadow-pink-500/30 flex items-center space-x-2 active:scale-95 cursor-pointer border border-pink-300/40"
+				class="px-5 py-2.5 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md shadow-pink-300 flex items-center space-x-2 active:scale-95 cursor-pointer border border-pink-300/40"
 				title="Download Photo"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
