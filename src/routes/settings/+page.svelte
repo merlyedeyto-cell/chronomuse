@@ -73,6 +73,11 @@
 		if (currentUser?.id) {
 			try {
 				localStorage.setItem(`chronomuse_active_status_${currentUser.id}`, enabled ? 'true' : 'false');
+				fetch(API_ENDPOINTS.updateActivity, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ user_id: currentUser.id, is_active: enabled })
+				}).catch(() => {});
 			} catch (err) {}
 		}
 		playClickSound();

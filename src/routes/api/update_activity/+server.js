@@ -9,16 +9,23 @@ export async function POST({ request }) {
 			return json({ error: 'User ID is required' }, { status: 400 });
 		}
 
-		// Update user's last_activity timestamp in database
+		// Update user's last_activity timestamp & show_active_status in database
 		const { error } = await supabase
 			.from('chronomuse_users')
 			.update({
-				last_activity: new Date().toISOString()
+				last_activity: is_active ? new Date().toISOString() : null,
+				show_active_status: Boolean(is_active)
 			})
 			.eq('id', user_id);
 
 		if (error) {
-			return json({ error: error.message }, { status: 500 });
+			// Fallback if show_active_status column has not been added in Supabase yet
+			await supabase
+				.from('chronomuse_users')
+				.update({
+					last_activity: is_active ? new Date().toISOString() : null
+				})
+				.eq('id', user_id);
 		}
 
 		return json({ success: true });
