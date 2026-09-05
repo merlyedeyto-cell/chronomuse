@@ -59,6 +59,7 @@ export const API_ENDPOINTS = {
 	getMoodData: `${API_BASE_URL}/get_mood_data`,
 	updateProfile: `${API_BASE_URL}/update_profile`,
 	getProfile: `${API_BASE_URL}/get_profile`,
+	blockUser: `${API_BASE_URL}/block_user`,
 	pinMemory: `${API_BASE_URL}/pin_memory`,
 	unpinMemory: `${API_BASE_URL}/unpin_memory`
 };

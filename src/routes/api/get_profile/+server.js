@@ -14,7 +14,7 @@ export async function POST({ request }) {
 		// 1. Fetch Target User Data
 		let { data: targetUser, error: userError } = await supabase
 			.from('chronomuse_users')
-			.select('id, username, email, avatar_url, created_at, last_activity, bio, birthday, relationship_status, gender')
+			.select('id, username, email, avatar_url, cover_url, note, bio, birthday, relationship_status, gender, created_at, last_activity')
 			.eq('id', targetId)
 			.maybeSingle();
 
@@ -22,11 +22,11 @@ export async function POST({ request }) {
 		if (userError) {
 			const fallbackQuery = await supabase
 				.from('chronomuse_users')
-				.select('id, username, email, avatar_url, created_at, last_activity')
+				.select('id, username, email, avatar_url, created_at, last_activity, bio, birthday, relationship_status, gender')
 				.eq('id', targetId)
 				.maybeSingle();
 
-			if (fallbackQuery.error && fallbackQuery.error.message?.includes('avatar_url')) {
+			if (fallbackQuery.error) {
 				const minimalQuery = await supabase
 					.from('chronomuse_users')
 					.select('id, username, email, created_at, last_activity')
@@ -97,9 +97,24 @@ export async function POST({ request }) {
 		let hasPendingRequest = false;
 		let pendingReq = null;
 		let mutualFriends = [];
+		let isBlockedByMe = false;
+		let isBlockingMe = false;
 
-		// 4. If viewing another user, compute friendship status and mutual friends
+		// 4. If viewing another user, compute friendship status, block status, and mutual friends
 		if (!isSelf && user_id) {
+			// Check block status
+			try {
+				const { data: bData } = await supabase
+					.from('chronomuse_blocked_users')
+					.select('blocker_id, blocked_id')
+					.or(`and(blocker_id.eq.${user_id},blocked_id.eq.${targetId}),and(blocker_id.eq.${targetId},blocked_id.eq.${user_id})`);
+
+				if (bData && bData.length > 0) {
+					isBlockedByMe = bData.some(b => String(b.blocker_id) === String(user_id));
+					isBlockingMe = bData.some(b => String(b.blocker_id) === String(targetId));
+				}
+			} catch (bErr) {}
+
 			// Check if viewer and target are friends
 			isFriend = targetFriendIds.includes(Number(user_id)) || targetFriendIds.includes(String(user_id));
 
@@ -136,11 +151,19 @@ export async function POST({ request }) {
 					username: targetUser.username,
 					email: targetUser.email,
 					avatar_url: targetUser.avatar_url || null,
+					cover_url: targetUser.cover_url || null,
+					note: targetUser.note || targetUser.bio || null,
+					bio: targetUser.bio || null,
+					birthday: targetUser.birthday || null,
+					relationship_status: targetUser.relationship_status || null,
+					gender: targetUser.gender || null,
 					created_at: targetUser.created_at || null,
 					last_activity: targetUser.last_activity || null
 				},
 				is_self: isSelf,
 				is_friend: isFriend,
+				is_blocked_by_me: isBlockedByMe,
+				is_blocking_me: isBlockingMe,
 				has_pending_request: hasPendingRequest,
 				pending_request_id: pendingReq?.id || null,
 				pending_request_sender_id: pendingReq?.sender_id || null,

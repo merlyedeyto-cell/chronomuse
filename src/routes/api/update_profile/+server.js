@@ -15,6 +15,8 @@ export async function POST({ request }) {
 		let birthday;
 		let relationship_status;
 		let gender;
+		let cover_url;
+		let note;
 
 		const contentType = request.headers.get('content-type') || '';
 		if (contentType.includes('multipart/form-data')) {
@@ -29,6 +31,8 @@ export async function POST({ request }) {
 			birthday = formData.get('birthday');
 			relationship_status = formData.get('relationship_status');
 			gender = formData.get('gender');
+			cover_url = formData.get('cover_url');
+			note = formData.get('note');
 		} else {
 			const body = await request.json();
 			user_id = body.user_id;
@@ -40,6 +44,8 @@ export async function POST({ request }) {
 			birthday = body.birthday;
 			relationship_status = body.relationship_status;
 			gender = body.gender;
+			cover_url = body.cover_url;
+			note = body.note;
 		}
 
 		if (!user_id) {
@@ -100,6 +106,8 @@ export async function POST({ request }) {
 		if (username) updateData.username = username;
 		if (email) updateData.email = email;
 		if (avatar_url !== undefined && avatar_url !== null) updateData.avatar_url = avatar_url;
+		if (cover_url !== undefined && cover_url !== null) updateData.cover_url = cover_url;
+		if (note !== undefined) updateData.note = note;
 		if (bio !== undefined) updateData.bio = bio;
 		if (birthday !== undefined) updateData.birthday = birthday;
 		if (relationship_status !== undefined) updateData.relationship_status = relationship_status;

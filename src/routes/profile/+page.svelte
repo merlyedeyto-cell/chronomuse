@@ -43,12 +43,16 @@
 		showNoteModal = true;
 	}
 
-	function saveUserNote() {
+	async function saveUserNote() {
 		playClickSound();
 		const effectiveId = targetUserId || currentUser?.id;
 		if (!effectiveId) return;
 		const trimmed = noteInputText.trim();
 		userNote = trimmed;
+		if (profileData?.user) {
+			profileData.user.note = trimmed;
+			profileData.user.bio = trimmed;
+		}
 		if (typeof window !== 'undefined') {
 			if (trimmed) {
 				localStorage.setItem(`chronomuse_note_${effectiveId}`, trimmed);
@@ -56,18 +60,50 @@
 				localStorage.removeItem(`chronomuse_note_${effectiveId}`);
 			}
 		}
+
+		if (currentUser?.id) {
+			try {
+				await fetch(API_ENDPOINTS.updateProfile, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						user_id: currentUser.id,
+						note: trimmed,
+						bio: trimmed
+					})
+				});
+			} catch (e) {}
+		}
+
 		showNoteModal = false;
 		showNotification(trimmed ? 'Note updated!' : 'Note removed', 'success');
 	}
 
-	function deleteUserNote() {
+	async function deleteUserNote() {
 		playClickSound();
 		const effectiveId = targetUserId || currentUser?.id;
 		if (!effectiveId) return;
 		userNote = '';
 		noteInputText = '';
+		if (profileData?.user) {
+			profileData.user.note = '';
+			profileData.user.bio = '';
+		}
 		if (typeof window !== 'undefined') {
 			localStorage.removeItem(`chronomuse_note_${effectiveId}`);
+		}
+		if (currentUser?.id) {
+			try {
+				await fetch(API_ENDPOINTS.updateProfile, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						user_id: currentUser.id,
+						note: '',
+						bio: ''
+					})
+				});
+			} catch (e) {}
 		}
 		showNoteModal = false;
 		showNotification('Note removed', 'success');
@@ -125,6 +161,17 @@
 					if (typeof window !== 'undefined' && currentUser?.id) {
 						localStorage.setItem(`chronomuse_cover_${currentUser.id}`, data.publicUrl);
 					}
+					// Persist cover_url to database table
+					try {
+						await fetch(API_ENDPOINTS.updateProfile, {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({
+								user_id: currentUser.id,
+								cover_url: data.publicUrl
+							})
+						});
+					} catch (dbErr) {}
 				}
 			}
 			showNotification('Cover photo updated successfully!');
@@ -274,6 +321,13 @@
 		const targetUsername = blockTarget.username || 'User';
 
 		try {
+			// Call blockUser API endpoint
+			await fetch(API_ENDPOINTS.blockUser, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: currentUser.id, target_id: targetId, action: 'block' })
+			}).catch(() => {});
+
 			if (profileData && profileData.is_friend) {
 				await fetch(API_ENDPOINTS.removeFriend, {
 					method: 'POST',

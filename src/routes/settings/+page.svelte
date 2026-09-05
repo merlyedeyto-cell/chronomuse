@@ -121,10 +121,17 @@
 		} catch (e) {}
 	}
 
-	function handleUserBlockToggle(/** @type {any} */ userItem, /** @type {any} */ e) {
+	async function handleUserBlockToggle(/** @type {any} */ userItem, /** @type {any} */ e) {
 		const isBlocked = e.target.checked;
 		playClickSound();
-		if (!isBlocked) {
+		if (!isBlocked && currentUser?.id) {
+			try {
+				await fetch(API_ENDPOINTS.blockUser, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ user_id: currentUser.id, target_id: userItem.id, action: 'unblock' })
+				});
+			} catch (err) {}
 			const updated = blockedUsers.filter(b => String(b.id) !== String(userItem.id));
 			saveBlockedUsers(updated);
 			showNotification(`Unblocked @${userItem.username}`, 'success');
@@ -175,12 +182,20 @@
 		searchResults = [];
 	}
 
-	function confirmBlockSelectedUser() {
+	async function confirmBlockSelectedUser() {
 		if (!selectedUserToBlock || !currentUser?.id) return;
 		playClickSound();
 
 		const uname = selectedUserToBlock.username || selectedUserToBlock.email?.split('@')[0] || 'User';
 		const targetId = selectedUserToBlock.id;
+
+		try {
+			await fetch(API_ENDPOINTS.blockUser, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: currentUser.id, target_id: targetId, action: 'block' })
+			});
+		} catch (e) {}
 
 		const exists = blockedUsers.some(b => String(b.id) === String(targetId) || b.username?.toLowerCase() === uname.toLowerCase());
 		if (exists) {

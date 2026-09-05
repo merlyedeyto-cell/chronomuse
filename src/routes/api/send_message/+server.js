@@ -13,6 +13,19 @@ export async function POST({ request }) {
 			return json({ error: 'You cannot send messages to yourself' }, { status: 400 });
 		}
 
+		// Check if either user has blocked the other
+		try {
+			const { data: isBlocked } = await supabase
+				.from('chronomuse_blocked_users')
+				.select('id')
+				.or(`and(blocker_id.eq.${user_id},blocked_id.eq.${friend_id}),and(blocker_id.eq.${friend_id},blocked_id.eq.${user_id})`)
+				.maybeSingle();
+
+			if (isBlocked) {
+				return json({ error: 'Messaging is unavailable because one of the accounts has blocked the other.' }, { status: 403 });
+			}
+		} catch (bErr) {}
+
 		const { data: newMessage, error } = await supabase
 			.from('chronomuse_messages')
 			.insert([
