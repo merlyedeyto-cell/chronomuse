@@ -2604,10 +2604,9 @@
 				</button>
 			{/if}
 
-			<!-- Image Container with translate and scale -->
+			<!-- Stationary Frame Container (Fixed Pink Border & Shadow, Clips Zoomed Image) -->
 			<div 
-				class="w-full h-full flex items-center justify-center p-2 {isTouching || isMouseDragging ? 'transition-none' : 'transition-transform duration-200 ease-out'}" 
-				style="transform: translate3d({panX}px, {panY}px, 0px) scale({zoomScale}); transform-origin: center center; will-change: transform;"
+				class="relative overflow-hidden rounded-2xl border-2 border-pink-300 shadow-2xl bg-white/40 max-h-[72vh] flex items-center justify-center select-none"
 				onmousedown={handleMouseDown}
 				onmousemove={handleMouseMove}
 				onmouseup={handleMouseUp}
@@ -2618,12 +2617,13 @@
 				<img 
 					src={currentImg.url} 
 					alt="Full Preview" 
-					class="max-h-[72vh] max-w-full object-contain rounded-2xl border-2 border-pink-300 shadow-xl bg-white/40"
+					class="max-h-[72vh] max-w-full object-contain {isTouching || isMouseDragging ? 'transition-none' : 'transition-transform duration-200 ease-out'}"
+					style="transform: translate3d({panX}px, {panY}px, 0px) scale({zoomScale}); transform-origin: center center; will-change: transform;"
 					class:cursor-grab={zoomScale > 1 && !isMouseDragging}
 					class:cursor-grabbing={zoomScale > 1 && isMouseDragging}
 					class:cursor-zoom-in={zoomScale <= 1}
 					ondblclick={toggleZoomAtPoint}
-					title="Double tap/click any spot to zoom into that location • Drag to pan"
+					title="Double tap/click to zoom inside frame • Drag to pan inside frame"
 				/>
 			</div>
 
