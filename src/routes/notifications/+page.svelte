@@ -435,11 +435,10 @@
 				<div class="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 ml-2">
 					<button
 						onclick={() => goto('/profile')}
-						class="text-pink-700 hover:text-pink-900 transition-colors font-medium cursor-pointer text-left active:scale-95"
+						class="hidden md:block text-pink-700 hover:text-pink-900 transition-colors font-medium cursor-pointer text-left active:scale-95"
 						title="View Profile"
 					>
-						<span class="text-sm hidden md:inline">Welcome, <strong>{user?.username}</strong></span>
-						<span class="text-xs sm:text-sm md:hidden truncate max-w-[110px]"><strong>{user?.username}</strong></span>
+						<span class="text-sm">Welcome, <strong>{user?.username}</strong></span>
 					</button>
 					<button
 						onclick={() => goto('/settings')}
@@ -1054,36 +1053,36 @@
 		<!-- Cancel Shared Memory Confirmation Modal -->
 		{#if showCancelModal && cancelConfirmItem}
 			<div
-				class="fixed inset-0 bg-black/50 backdrop-blur-xs z-[60] flex items-center justify-center p-4 animate-fade-in"
+				class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fade-in"
 				onclick={() => { if (!isCancelling) showCancelModal = false; }}
 			>
 				<div
-					class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-5 sm:p-6 max-w-sm w-full animate-pop-in text-center"
+					class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-6 max-w-sm w-full animate-modal-content text-center"
 					onclick={(e) => e.stopPropagation()}
 				>
-					<div class="w-13 h-13 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center mx-auto mb-3.5 shadow-xs">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
+						<svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+							<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.088 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 00-3.273 0C6.39 3.05 6 3.678 6 4.478v.113a49.488 49.488 0 0012 0v-.113c0-.8-.39-1.428-1.091-1.452a51.196 51.196 0 00-3.273 0zM9.75 9.75a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75zm4.5 0a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 						</svg>
 					</div>
-					<h3 class="text-base sm:text-lg font-bold text-pink-700">Cancel Shared Memory?</h3>
-					<p class="text-xs text-pink-600/90 mt-2 leading-relaxed">
-						Are you sure you want to cancel sharing this memory with <strong class="text-pink-700 font-bold">@{cancelConfirmItem.recipient_username}</strong>? This will revoke their access to it from their calendar.
+					<h3 class="text-lg font-bold text-pink-950 mb-1.5">Cancel Shared Memory?</h3>
+					<p class="text-xs sm:text-sm text-pink-600 mb-6 leading-relaxed">
+						Are you sure you want to cancel sharing this memory with <strong class="text-pink-900 font-bold">@{cancelConfirmItem.recipient_username}</strong>? This will revoke their access to it from their calendar.
 					</p>
-					<div class="flex items-center justify-center space-x-2.5 mt-6">
+					<div class="flex items-center space-x-3">
 						<button
 							onclick={() => showCancelModal = false}
 							disabled={isCancelling}
-							class="px-4 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold rounded-xl transition-all cursor-pointer disabled:opacity-50"
+							class="w-1/2 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 text-sm font-bold rounded-xl transition-all active:scale-95 cursor-pointer disabled:opacity-50 shadow-xs"
 						>
 							Keep Shared
 						</button>
 						<button
 							onclick={confirmCancelShare}
 							disabled={isCancelling}
-							class="px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+							class="w-1/2 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white text-sm font-bold rounded-xl shadow-md shadow-rose-200 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
 						>
-							{isCancelling ? 'Cancelling...' : 'Yes, Cancel Share'}
+							{isCancelling ? 'Cancelling...' : 'Cancel Share'}
 						</button>
 					</div>
 				</div>

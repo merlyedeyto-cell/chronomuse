@@ -521,11 +521,10 @@
 				<div class="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 ml-2">
 					<button
 						onclick={() => goto('/profile')}
-						class="text-pink-700 hover:text-pink-900 transition-colors font-medium cursor-pointer text-left active:scale-95"
+						class="hidden md:block text-pink-700 hover:text-pink-900 transition-colors font-medium cursor-pointer text-left active:scale-95"
 						title="View Profile"
 					>
-						<span class="text-sm hidden md:inline">Welcome, <strong>{user?.username}</strong></span>
-						<span class="text-xs sm:text-sm md:hidden truncate max-w-[110px]"><strong>{user?.username}</strong></span>
+						<span class="text-sm">Welcome, <strong>{user?.username}</strong></span>
 					</button>
 					<button
 						onclick={() => goto('/settings')}
@@ -699,8 +698,8 @@
 											class="p-1.5 bg-pink-100 text-pink-600 hover:bg-red-100 hover:text-red-600 active:scale-95 rounded-lg transition-all duration-200"
 											title="Remove Friend"
 										>
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 12.55a1.125 1.125 0 01-1.126 1.095H9.726a1.125 1.125 0 01-1.126-1.095L8.259 9M8.875 5.625V4.5c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.125m-4.5 0V4.5m0 0h4.5m-4.5 0a2.25 2.25 0 00-2.25 2.25v1.5a2.25 2.25 0 002.25 2.25h1.5a2.25 2.25 0 002.25-2.25v-1.5a2.25 2.25 0 00-2.25-2.25h-1.5z" />
+											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
+												<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 											</svg>
 										</button>
 									</div>
@@ -809,7 +808,7 @@
 													<p class="text-xs sm:text-sm font-bold text-pink-900 truncate group-hover:underline">@{targetUser.username}</p>
 													{#if targetUser.mutual_friends_count > 0}
 														<span class="text-[9px] px-1.5 py-0.2 rounded-full font-bold bg-pink-200/80 text-pink-700 border border-pink-300 whitespace-nowrap">
-															✨ {targetUser.mutual_friends_count} mutual
+															{targetUser.mutual_friends_count} mutual
 														</span>
 													{/if}
 												</div>
@@ -1022,29 +1021,29 @@
 
 		<!-- Confirmation Modal for Removing Friend -->
 		{#if showConfirmDelete}
-			<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
-				<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-xl max-w-sm w-full p-6 text-center animate-modal-content">
-					<div class="w-12 h-12 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+			<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+				<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center animate-modal-content">
+					<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
+						<svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+							<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.088 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 00-3.273 0C6.39 3.05 6 3.678 6 4.478v.113a49.488 49.488 0 0012 0v-.113c0-.8-.39-1.428-1.091-1.452a51.196 51.196 0 00-3.273 0zM9.75 9.75a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75zm4.5 0a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 						</svg>
 					</div>
-					<h3 class="text-lg font-bold text-pink-600 mb-1">Remove Friend</h3>
-					<p class="text-xs text-pink-400 mb-5">
-						Are you sure you want to remove <span class="font-bold text-pink-600">@{friendToRemove?.username}</span> from your friends list?
+					<h3 class="text-lg font-bold text-pink-950 mb-1.5">Remove Friend?</h3>
+					<p class="text-xs sm:text-sm text-pink-600 mb-6 leading-relaxed">
+						Are you sure you want to remove <span class="font-bold text-pink-900">@{friendToRemove?.username}</span> from your friends list?
 					</p>
 
 					<div class="flex space-x-3">
 						<button
 							onclick={() => { showConfirmDelete = false; friendToRemove = null; }}
-							class="w-1/2 py-2.5 bg-pink-100 text-pink-600 rounded-xl font-bold text-xs hover:bg-pink-200 transition-all"
+							class="w-1/2 py-2.5 bg-pink-100 text-pink-700 rounded-xl font-bold text-sm hover:bg-pink-200 active:scale-95 transition-all shadow-xs"
 						>
 							Cancel
 						</button>
 						<button
 							onclick={confirmRemoveFriend}
 							disabled={isRemoving}
-							class="w-1/2 py-2.5 bg-red-500 text-white rounded-xl font-bold text-xs hover:bg-red-600 transition-all shadow-md"
+							class="w-1/2 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 text-white rounded-xl font-bold text-sm hover:from-rose-600 hover:to-red-700 active:scale-95 transition-all shadow-md shadow-rose-200"
 						>
 							{isRemoving ? 'Removing...' : 'Remove'}
 						</button>

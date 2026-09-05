@@ -261,8 +261,19 @@
 		try {
 			supabase.removeAllChannels();
 		} catch (e) {}
+
+		// Preserve user active status setting before wiping local storage
+		const savedActiveStatus = currentUser?.id ? localStorage.getItem(`chronomuse_active_status_${currentUser.id}`) : null;
+		const savedPrivateStatus = currentUser?.id ? localStorage.getItem(`chronomuse_private_${currentUser.id}`) : null;
+
 		localStorage.clear();
 		sessionStorage.clear();
+
+		if (currentUser?.id) {
+			if (savedActiveStatus !== null) localStorage.setItem(`chronomuse_active_status_${currentUser.id}`, savedActiveStatus);
+			if (savedPrivateStatus !== null) localStorage.setItem(`chronomuse_private_${currentUser.id}`, savedPrivateStatus);
+		}
+
 		if (typeof window !== 'undefined') {
 			window.dispatchEvent(new Event('chronomuse_auth_change'));
 		}
@@ -322,17 +333,14 @@
 				</div>
 			</div>
 
-			<!-- Header Controls -->
 			<div class="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 ml-2">
 				<button
 					onclick={() => goto('/profile')}
-					class="text-pink-700 hover:text-pink-900 transition-colors font-medium cursor-pointer text-left active:scale-95"
+					class="hidden md:block text-pink-700 hover:text-pink-900 transition-colors font-medium cursor-pointer text-left active:scale-95"
 					title="View Profile"
 				>
-					<span class="text-sm hidden md:inline">Welcome, <strong>{currentUser?.username}</strong></span>
-					<span class="text-xs sm:text-sm md:hidden truncate max-w-[110px]"><strong>{currentUser?.username}</strong></span>
+					<span class="text-sm">Welcome, <strong>{currentUser?.username}</strong></span>
 				</button>
-
 				<!-- Soft Pink Glassmorphic Gear Settings Icon Button -->
 				<button
 					onclick={() => goto('/settings')}

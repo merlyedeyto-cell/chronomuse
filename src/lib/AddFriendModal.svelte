@@ -405,7 +405,7 @@
 									<div class="min-w-0">
 										<p class="text-xs font-bold text-pink-900 truncate group-hover:underline">@{targetUser.username}</p>
 										{#if targetUser.mutual_friends_count > 0}
-											<p class="text-[10px] text-pink-600 font-semibold">✨ {targetUser.mutual_friends_count} mutual friend{targetUser.mutual_friends_count === 1 ? '' : 's'}</p>
+											<p class="text-[10px] text-pink-600 font-semibold">{targetUser.mutual_friends_count} mutual friend{targetUser.mutual_friends_count === 1 ? '' : 's'}</p>
 										{:else}
 											<p class="text-[10px] text-pink-400 truncate">{targetUser.email}</p>
 										{/if}

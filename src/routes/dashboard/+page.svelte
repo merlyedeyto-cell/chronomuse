@@ -631,11 +631,10 @@
 				<div class="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 ml-2">
 					<button
 						onclick={() => goto('/profile')}
-						class="text-pink-700 hover:text-pink-900 transition-colors font-medium cursor-pointer text-left active:scale-95"
+						class="hidden md:block text-pink-700 hover:text-pink-900 transition-colors font-medium cursor-pointer text-left active:scale-95"
 						title="View Profile"
 					>
-						<span class="text-sm hidden md:inline">Welcome, <strong>{user?.username}</strong></span>
-						<span class="text-xs sm:text-sm md:hidden truncate max-w-[110px]"><strong>{user?.username}</strong></span>
+						<span class="text-sm">Welcome, <strong>{user?.username}</strong></span>
 					</button>
 					<button
 						onclick={() => goto('/settings')}
@@ -731,34 +730,32 @@
 			</div>
 		</footer>
 
-		<!-- Delete Pinned Date Modal -->
+		<!-- Unpin Date Modal -->
 		{#if showDeletePinnedModal}
-			<div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-fade-in">
-				<div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border-2 border-pink-300 animate-modal-content">
-					<!-- Modal Header -->
-					<div class="text-center mb-4">
-						<div class="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 12.55a1.125 1.125 0 01-1.126 1.095H9.726a1.125 1.125 0 01-1.126-1.095L8.259 9M8.875 5.625V4.5c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.125m-4.5 0V4.5m0 0h4.5m-4.5 0a2.25 2.25 0 00-2.25 2.25v1.5a2.25 2.25 0 002.25 2.25h1.5a2.25 2.25 0 002.25-2.25v-1.5a2.25 2.25 0 00-2.25-2.25h-1.5z" />
-							</svg>
-						</div>
-						<h3 class="text-lg font-bold text-pink-600">Delete Pinned Date?</h3>
-						<p class="text-sm text-pink-400 mt-1">This action cannot be undone</p>
+			<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+				<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center animate-modal-content relative overflow-hidden">
+					<!-- Unpin Circle Icon -->
+					<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+						</svg>
 					</div>
+					<h3 class="text-base sm:text-lg font-black text-pink-950 mb-1.5">Unpin Date?</h3>
+					<p class="text-xs sm:text-sm text-pink-600 mb-5 font-medium leading-relaxed">Are you sure you want to unpin this date from your pinned memories?</p>
 
 					<!-- Modal Actions -->
-					<div class="flex space-x-3">
+					<div class="flex items-center space-x-3">
 						<button
 							onclick={closeDeletePinnedModal}
-							class="flex-1 py-2.5 px-4 bg-white border-2 border-pink-300 text-pink-600 rounded-xl hover:bg-pink-50 transition-all duration-200 text-sm font-semibold"
+							class="w-1/2 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs"
 						>
 							Cancel
 						</button>
 						<button
 							onclick={deletePinnedDate}
-							class="flex-1 py-2.5 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md"
+							class="w-1/2 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md shadow-rose-200 active:scale-95 cursor-pointer"
 						>
-							Delete
+							Unpin
 						</button>
 					</div>
 				</div>

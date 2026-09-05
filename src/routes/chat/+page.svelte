@@ -341,31 +341,35 @@
 			})
 			.subscribe(async (status) => {
 				if (status === 'SUBSCRIBED') {
+					const activeSetting = localStorage.getItem(`chronomuse_active_status_${user.id}`);
 					const isAppVisible = typeof document !== 'undefined' && !document.hidden;
+					const effectiveActive = activeSetting === 'false' ? false : isAppVisible;
 					await presenceChannel.track({
 						user_id: user.id,
 						username: user.username,
-						is_active: isAppVisible,
+						is_active: effectiveActive,
 						online_at: new Date().toISOString()
 					});
-					updateServerActivity(isAppVisible);
+					updateServerActivity(effectiveActive);
 				}
 			});
 	}
 
 	async function updateUserPresence(isActive) {
 		if (!user) return;
+		const activeSetting = localStorage.getItem(`chronomuse_active_status_${user.id}`);
+		const effectiveActive = activeSetting === 'false' ? false : isActive;
 		if (presenceChannel) {
 			try {
 				await presenceChannel.track({
 					user_id: user.id,
 					username: user.username,
-					is_active: isActive,
+					is_active: effectiveActive,
 					online_at: new Date().toISOString()
 				});
 			} catch (e) {}
 		}
-		updateServerActivity(isActive);
+		updateServerActivity(effectiveActive);
 	}
 
 	function updateServerActivity(isActive) {
@@ -1354,8 +1358,19 @@
 		try {
 			supabase.removeAllChannels();
 		} catch (e) {}
+
+		// Preserve user active status setting before wiping local storage
+		const savedActiveStatus = user?.id ? localStorage.getItem(`chronomuse_active_status_${user.id}`) : null;
+		const savedPrivateStatus = user?.id ? localStorage.getItem(`chronomuse_private_${user.id}`) : null;
+
 		localStorage.clear();
 		sessionStorage.clear();
+
+		if (user?.id) {
+			if (savedActiveStatus !== null) localStorage.setItem(`chronomuse_active_status_${user.id}`, savedActiveStatus);
+			if (savedPrivateStatus !== null) localStorage.setItem(`chronomuse_private_${user.id}`, savedPrivateStatus);
+		}
+
 		if (typeof window !== 'undefined') {
 			window.dispatchEvent(new Event('chronomuse_auth_change'));
 		}
@@ -1401,11 +1416,10 @@
 			<div class="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 ml-2">
 				<button
 					onclick={() => goto('/profile')}
-					class="text-gray-700 hover:text-pink-800 transition-colors font-medium cursor-pointer text-left active:scale-95"
+					class="hidden md:block text-pink-700 hover:text-pink-900 transition-colors font-medium cursor-pointer text-left active:scale-95"
 					title="View Profile"
 				>
-					<span class="text-sm hidden md:inline">Welcome, <strong class="text-pink-600 font-semibold">{user?.username}</strong></span>
-					<span class="text-xs sm:text-sm md:hidden truncate max-w-[110px]"><strong class="text-pink-600 font-semibold">{user?.username}</strong></span>
+					<span class="text-sm">Welcome, <strong>{user?.username}</strong></span>
 				</button>
 				<button
 					onclick={() => goto('/settings')}
@@ -1435,14 +1449,14 @@
 		<!-- Left Panel: Friends & Search -->
 		<div class="w-full md:w-84 lg:w-96 flex-shrink-0 bg-white/95 backdrop-blur-md border-2 border-pink-300 rounded-2xl shadow-md flex flex-col overflow-hidden animate-fade-in-up" class:hidden={activeFriend !== null} class:md:flex={true} style="animation-delay: 0.05s">
 			<!-- Conversations Header -->
-			<div class="p-3.5 sm:p-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white font-bold text-sm sm:text-base flex items-center justify-between shadow-xs">
+			<div class="p-3.5 sm:p-4 bg-gradient-to-r from-pink-100 via-pink-200 to-pink-300 text-pink-950 border-b border-pink-300 font-bold text-sm sm:text-base flex items-center justify-between shadow-2xs">
 				<div class="flex items-center space-x-2">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-pink-600">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
 					</svg>
 					<span>Messages</span>
 				</div>
-				<span class="text-xs bg-white/20 px-2 py-0.5 rounded-full font-medium">{friends.length + requests.length}</span>
+				<span class="text-xs bg-pink-200/80 text-pink-700 px-2 py-0.5 rounded-full font-bold border border-pink-300">{friends.length + requests.length}</span>
 			</div>
 
 			<!-- Search Bar -->
@@ -1654,12 +1668,12 @@
 						</div>
 					</div>
 				{:else}
-					<!-- Active Chat Normal Header -->
-					<div class="p-3 sm:p-3.5 bg-gradient-to-r from-pink-500 to-pink-600 text-white flex items-center justify-between shadow-xs flex-shrink-0 sticky top-0 z-30">
+					<!-- Active Chat Normal Header (Harmonious Home Background Theme) -->
+					<div class="p-3 sm:p-3.5 bg-white/90 backdrop-blur-md border-b-2 border-pink-300 text-pink-950 flex items-center justify-between shadow-2xs flex-shrink-0 sticky top-0 z-30">
 						<div class="flex items-center space-x-2 min-w-0">
 							<button
 								onclick={handleBackToChatList}
-								class="md:hidden p-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors flex-shrink-0 active:scale-95"
+								class="md:hidden p-1.5 bg-pink-100 hover:bg-pink-200 border border-pink-300 rounded-lg text-pink-700 transition-colors flex-shrink-0 active:scale-95"
 								title="Back to Chat List"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
@@ -1672,7 +1686,7 @@
 								title="View @{activeFriend.username}'s Profile"
 							>
 								<div class="relative flex-shrink-0">
-									<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/20 border border-white/40 flex items-center justify-center text-white font-bold text-sm sm:text-base overflow-hidden group-hover:scale-105 transition-transform">
+									<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-pink-100 to-pink-200 border border-pink-300 flex items-center justify-center text-pink-700 font-bold text-sm sm:text-base overflow-hidden group-hover:scale-105 transition-transform">
 										{#if activeFriend.avatar_url}
 											<img src={activeFriend.avatar_url} alt={activeFriend.username} class="w-full h-full object-cover" />
 										{:else}
@@ -1680,36 +1694,36 @@
 										{/if}
 									</div>
 									{#if isFriendActive(activeFriend.friend_id)}
-										<span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-pink-400 rounded-full shadow-2xs" title="Active"></span>
+										<span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-white rounded-full shadow-2xs" title="Active"></span>
 									{:else}
-										<span class="absolute bottom-0 right-0 w-3 h-3 bg-slate-300 border-2 border-pink-400 rounded-full" title="Offline"></span>
+										<span class="absolute bottom-0 right-0 w-3 h-3 bg-slate-300 border-2 border-white rounded-full" title="Offline"></span>
 									{/if}
 								</div>
 								<div class="min-w-0">
-									<h3 class="font-bold text-sm leading-tight truncate group-hover:underline flex items-center gap-1">
+									<h3 class="font-bold text-sm leading-tight text-pink-950 truncate group-hover:underline flex items-center gap-1">
 										<span>@{activeFriend.username}</span>
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 opacity-70 group-hover:opacity-100">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-pink-500 opacity-70 group-hover:opacity-100">
 											<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
 										</svg>
 									</h3>
-									<div class="text-[11px] text-pink-50 flex items-center gap-1.5 mt-0.5">
+									<div class="text-[11px] text-pink-600 flex items-center gap-1.5 mt-0.5">
 										{#if isOtherUserTyping}
-											<span class="font-semibold italic text-yellow-200 flex items-center gap-1">
+											<span class="font-semibold italic text-pink-600 flex items-center gap-1">
 												<span>typing</span>
 												<span class="inline-flex gap-0.5">
-													<span class="w-1 h-1 rounded-full bg-yellow-200 animate-bounce" style="animation-delay: 0ms"></span>
-													<span class="w-1 h-1 rounded-full bg-yellow-200 animate-bounce" style="animation-delay: 150ms"></span>
-													<span class="w-1 h-1 rounded-full bg-yellow-200 animate-bounce" style="animation-delay: 300ms"></span>
+													<span class="w-1 h-1 rounded-full bg-pink-500 animate-bounce" style="animation-delay: 0ms"></span>
+													<span class="w-1 h-1 rounded-full bg-pink-500 animate-bounce" style="animation-delay: 150ms"></span>
+													<span class="w-1 h-1 rounded-full bg-pink-500 animate-bounce" style="animation-delay: 300ms"></span>
 												</span>
 											</span>
 										{:else if isFriendActive(activeFriend.friend_id)}
-											<span class="flex items-center gap-1">
-												<span class="w-1.5 h-1.5 rounded-full bg-emerald-300 inline-block animate-pulse"></span>
+											<span class="flex items-center gap-1 text-emerald-600 font-semibold">
+												<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
 												<span>Active now</span>
 											</span>
 										{:else}
-											<span class="flex items-center gap-1 text-pink-100/90">
-												<span class="w-1.5 h-1.5 rounded-full bg-white/60 inline-block"></span>
+											<span class="flex items-center gap-1 text-pink-600/80 font-medium">
+												<span class="w-1.5 h-1.5 rounded-full bg-pink-300 inline-block"></span>
 												<span>{formatLastActive(activeFriend)}</span>
 											</span>
 										{/if}
@@ -1722,7 +1736,7 @@
 						<div class="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
 							<a
 								href="/profile?id={activeFriend.friend_id}"
-								class="px-2.5 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1"
+								class="px-2.5 py-1.5 bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-700 rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 shadow-2xs cursor-pointer"
 								title="View Profile"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5">
@@ -1732,11 +1746,11 @@
 							</a>
 							<button
 								onclick={() => showClearModal = true}
-								class="px-2.5 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg transition-colors text-xs font-medium flex items-center space-x-1"
+								class="px-2.5 py-1.5 bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-700 rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 shadow-2xs cursor-pointer"
 								title="Clear Chat History"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 12.55a1.125 1.125 0 01-1.126 1.095H9.726a1.125 1.125 0 01-1.126-1.095L8.259 9M8.875 5.625V4.5c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v1.125m-4.5 0V4.5m0 0h4.5m-4.5 0a2.25 2.25 0 00-2.25 2.25v1.5a2.25 2.25 0 002.25 2.25h1.5a2.25 2.25 0 002.25-2.25v-1.5a2.25 2.25 0 00-2.25-2.25h-1.5z" />
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-pink-600">
+									<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 								</svg>
 								<span class="hidden sm:inline">Clear Chat</span>
 							</button>
@@ -1864,15 +1878,30 @@
 										</button>
 									{/if}
 
+									<!-- Partner Profile Avatar (shown only on incoming partner messages) -->
+									{#if !isUserSender}
+										<a
+											href="/profile?id={activeFriend.friend_id}"
+											class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-pink-100 to-pink-200 text-pink-700 border border-pink-300 flex items-center justify-center font-bold text-xs shadow-2xs overflow-hidden flex-shrink-0 self-end mb-1 mr-1 hover:scale-105 transition-transform"
+											title="View @{activeFriend.username}'s Profile"
+										>
+											{#if activeFriend.avatar_url}
+												<img src={activeFriend.avatar_url} alt={activeFriend.username} class="w-full h-full object-cover" />
+											{:else}
+												{activeFriend.username.charAt(0).toUpperCase()}
+											{/if}
+										</a>
+									{/if}
+
 									<!-- Bubble Wrapper with Swipe Indicator -->
 									<div class="relative flex items-center max-w-[82%] sm:max-w-[78%]">
 										<!-- Swipe Reply Indicator Icon (emerges right or left of bubble based on sender) -->
 										{#if swipingMessageId === msg.id && (Math.abs(swipeOffset) > 4 || isResettingSwipe)}
 											{@const progress = Math.min(Math.max((Math.abs(swipeOffset) - 4) / (SWIPE_THRESHOLD - 4), 0), 1)}
 											<div
-												class="absolute top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none z-20 {isUserSender ? '-right-9 sm:-right-10' : '-left-9 sm:-left-10'}"
+												class="absolute top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none z-20 {isUserSender ? 'right-1 sm:right-2' : 'left-1 sm:left-2'}"
 												style="
-													transform: translateY(-50%) scale({isResettingSwipe ? 0.35 : 0.45 + progress * 0.65}) rotate({isResettingSwipe ? (isUserSender ? '20deg' : '-20deg') : `${(1 - progress) * (isUserSender ? 35 : -35)}deg`});
+													transform: translateY(-50%) scale({isResettingSwipe ? 0.35 : 0.45 + progress * 0.65}) rotate({isResettingSwipe ? (isUserSender ? '-20deg' : '20deg') : `${(1 - progress) * (isUserSender ? -35 : 35)}deg`});
 													opacity: {isResettingSwipe ? 0 : progress};
 													transition: {isResettingSwipe ? 'all 0.32s cubic-bezier(0.18, 0.9, 0.32, 1.15)' : 'none'};
 												"
@@ -1880,7 +1909,7 @@
 												<div
 													class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-xs transition-all duration-200 {isSwipeThresholdReached ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-pink-300 ring-2 ring-white scale-110' : 'bg-pink-100 text-pink-600 border border-pink-200'}"
 												>
-													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 {isSwipeThresholdReached ? 'scale-110 -rotate-12' : ''} {isUserSender ? 'rotate-180' : ''}">
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 {isSwipeThresholdReached ? 'scale-110 -rotate-12' : ''} {!isUserSender ? 'rotate-180' : ''}">
 														<path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
 													</svg>
 												</div>
@@ -1921,31 +1950,32 @@
 												</div>
 											{/if}
 
-											<!-- Main Chat Bubble (Harmonious ChronoMuse Palette) -->
+											<!-- Main Chat Bubble with Cute Speech Bubble Tail (Buntot) -->
 											<div
-												class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm shadow-2xs transition-all relative leading-relaxed"
-												class:bg-gradient-to-r={isUserSender}
-												class:from-pink-500={isUserSender}
-												class:to-pink-600={isUserSender}
-												class:text-white={isUserSender}
-												class:font-bold={isUserSender}
-												class:rounded-br-xs={isUserSender}
+												class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-pink-950 shadow-2xs transition-all relative leading-relaxed"
+												class:bg-pink-100={isUserSender}
+												class:border={isUserSender}
+												class:border-pink-300={isUserSender}
 												class:bg-white={!isUserSender}
-												class:text-pink-950={!isUserSender}
-												class:font-bold={!isUserSender}
-												class:border-2={!isUserSender}
-												class:border-pink-300={!isUserSender}
-												class:rounded-bl-xs={!isUserSender}
+												class:border-pink-200={!isUserSender}
 												class:ring-2={isSelected}
 												class:ring-pink-500={isSelected}
 											>
-												{#if parsed.isImage}
-													<div class="rounded-xl overflow-hidden max-w-xs">
-														<img src={parsed.imageUrl} alt="Chat Attachment" class="w-full h-auto object-cover rounded-lg pointer-events-none select-none" draggable="false" />
-													</div>
+												{#if isUserSender}
+													<span class="absolute -right-1.5 top-3 w-3 h-3 bg-pink-100 border-t border-r border-pink-300 transform rotate-45 pointer-events-none rounded-tr-xs"></span>
 												{:else}
-													<p class="whitespace-pre-wrap break-words">{parsed.text}</p>
+													<span class="absolute -left-1.5 top-3 w-3 h-3 bg-white border-b border-l border-pink-200 transform rotate-45 pointer-events-none rounded-bl-xs"></span>
 												{/if}
+
+												<div class="relative z-10">
+													{#if parsed.isImage}
+														<div class="rounded-xl overflow-hidden max-w-xs">
+															<img src={parsed.imageUrl} alt="Chat Attachment" class="w-full h-auto object-cover rounded-lg pointer-events-none select-none" draggable="false" />
+														</div>
+													{:else}
+														<p class="whitespace-pre-wrap break-words">{parsed.text}</p>
+													{/if}
+												</div>
 											</div>
 											<!-- Message Status & Time -->
 											<div class="flex items-center gap-1 mt-1 px-1 text-[10px] font-bold {isUserSender ? 'text-pink-600 justify-end' : 'text-pink-600 justify-start'}">
@@ -1985,11 +2015,12 @@
 									{/if}
 								</div>
 								<div class="flex flex-col items-start space-y-1">
-									<!-- 3-dot Bubble -->
-									<div class="bg-white border border-pink-200 px-3.5 py-2.5 rounded-2xl rounded-tl-xs shadow-xs flex items-center space-x-1.5">
-										<div class="w-2 h-2 rounded-full bg-pink-500 animate-bounce" style="animation-delay: 0ms"></div>
-										<div class="w-2 h-2 rounded-full bg-pink-500 animate-bounce" style="animation-delay: 150ms"></div>
-										<div class="w-2 h-2 rounded-full bg-pink-500 animate-bounce" style="animation-delay: 300ms"></div>
+									<!-- 3-dot Bubble with Cute Tail -->
+									<div class="bg-white border border-pink-200 px-3.5 py-2.5 rounded-2xl shadow-xs flex items-center space-x-1.5 relative">
+										<span class="absolute -left-1.5 top-3 w-3 h-3 bg-white border-b border-l border-pink-200 transform rotate-45 pointer-events-none rounded-bl-xs"></span>
+										<div class="w-2 h-2 rounded-full bg-pink-500 animate-bounce relative z-10" style="animation-delay: 0ms"></div>
+										<div class="w-2 h-2 rounded-full bg-pink-500 animate-bounce relative z-10" style="animation-delay: 150ms"></div>
+										<div class="w-2 h-2 rounded-full bg-pink-500 animate-bounce relative z-10" style="animation-delay: 300ms"></div>
 									</div>
 									<!-- Label below the bubble -->
 									<span class="text-[11px] text-pink-500 font-medium italic pl-1">
@@ -2112,29 +2143,34 @@
 <!-- Clear Chat Confirmation Modal -->
 {#if showClearModal}
 	<div
-		class="fixed inset-0 bg-black/35 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
+		class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) showClearModal = false; }}
 	>
 		<div
-			class="bg-white rounded-2xl p-5 max-w-sm w-full border border-pink-200 shadow-xl text-center animate-message-pop"
+			class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-6 max-w-sm w-full text-center animate-modal-content"
 			onclick={(e) => e.stopPropagation()}
 		>
-			<h3 class="text-sm sm:text-base font-bold text-gray-800 mb-1.5">Clear Conversation?</h3>
-			<p class="text-xs text-gray-500 mb-4">
-				Are you sure you want to clear all chat messages with <span class="font-semibold text-pink-600">@{activeFriend?.username}</span>? This action cannot be undone.
+			<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
+				<svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+					<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.088 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 00-3.273 0C6.39 3.05 6 3.678 6 4.478v.113a49.488 49.488 0 0012 0v-.113c0-.8-.39-1.428-1.091-1.452a51.196 51.196 0 00-3.273 0zM9.75 9.75a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75zm4.5 0a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+				</svg>
+			</div>
+			<h3 class="text-lg font-bold text-pink-950 mb-1.5">Clear Conversation?</h3>
+			<p class="text-xs sm:text-sm text-pink-600 mb-6 leading-relaxed">
+				Are you sure you want to clear all chat messages with <span class="font-bold text-pink-900">@{activeFriend?.username}</span>? This action cannot be undone.
 			</p>
-			<div class="flex space-x-2">
+			<div class="flex space-x-3">
 				<button
 					onclick={() => showClearModal = false}
 					disabled={isClearing}
-					class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-xl font-semibold text-xs hover:bg-gray-200 transition-colors"
+					class="flex-1 py-2.5 bg-pink-100 text-pink-700 rounded-xl font-bold text-sm hover:bg-pink-200 active:scale-95 transition-all shadow-xs"
 				>
 					Cancel
 				</button>
 				<button
 					onclick={clearConversation}
 					disabled={isClearing}
-					class="flex-1 py-2 bg-gradient-to-r from-rose-500 to-red-500 text-white rounded-xl font-semibold text-xs hover:from-rose-600 hover:to-red-600 transition-all flex items-center justify-center space-x-1"
+					class="flex-1 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 text-white rounded-xl font-bold text-sm hover:from-rose-600 hover:to-red-700 active:scale-95 transition-all shadow-md shadow-rose-200 flex items-center justify-center space-x-1"
 				>
 					{#if isClearing}Clearing...{:else}Clear Chat{/if}
 				</button>

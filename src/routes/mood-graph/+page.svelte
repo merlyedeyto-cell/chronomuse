@@ -402,11 +402,10 @@
 				<div class="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 ml-2">
 					<button
 						onclick={() => goto('/profile')}
-						class="text-pink-700 hover:text-pink-900 transition-colors font-medium cursor-pointer text-left active:scale-95"
+						class="hidden md:block text-pink-700 hover:text-pink-900 transition-colors font-medium cursor-pointer text-left active:scale-95"
 						title="View Profile"
 					>
-						<span class="text-sm hidden md:inline">Welcome, <strong>{user?.username}</strong></span>
-						<span class="text-xs sm:text-sm md:hidden truncate max-w-[110px]"><strong>{user?.username}</strong></span>
+						<span class="text-sm">Welcome, <strong>{user?.username}</strong></span>
 					</button>
 					<button
 						onclick={() => goto('/settings')}

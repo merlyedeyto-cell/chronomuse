@@ -122,7 +122,12 @@
 <div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 transition-all duration-300 hover:shadow-lg">
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-4">
-		<h3 class="text-xs sm:text-sm font-bold text-pink-500 uppercase tracking-wide">Pinned Memories</h3>
+		<div class="flex items-center space-x-1.5">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-pink-500">
+				<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+			</svg>
+			<h3 class="text-xs sm:text-sm font-bold text-pink-500 uppercase tracking-wide">Pinned Memories</h3>
+		</div>
 		<span class="text-[11px] text-pink-400">{pinnedMemories.length} pinned</span>
 	</div>
 
@@ -201,10 +206,10 @@
 						</button>
 						<button
 							onclick={(e) => { e.stopPropagation(); confirmDelete(pinned); }}
-							class="p-1.5 rounded transition-all duration-200"
-							title="Delete pinned date"
+							class="p-1.5 text-pink-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all duration-200"
+							title="Unpin date"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke-width="1.5" class="w-4 h-4 text-pink-400 hover:text-red-600">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
 							</svg>
 						</button>
