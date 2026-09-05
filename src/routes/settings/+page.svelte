@@ -103,14 +103,25 @@
 		showNotification(enabled ? 'Private Account Mode turned ON' : 'Public Account Mode turned ON', 'success');
 	}
 
-	function loadBlockedUsers() {
+	async function loadBlockedUsers() {
 		if (typeof window === 'undefined' || !currentUser?.id) return;
 		try {
 			const stored = localStorage.getItem(`chronomuse_blocked_${currentUser.id}`);
-			blockedUsers = stored ? JSON.parse(stored) : [];
-		} catch (e) {
-			blockedUsers = [];
-		}
+			if (stored) blockedUsers = JSON.parse(stored);
+		} catch (e) {}
+
+		try {
+			const res = await fetch(API_ENDPOINTS.blockUser, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: currentUser.id, action: 'get_blocked' })
+			});
+			const data = await res.json();
+			if (data.success && Array.isArray(data.data)) {
+				blockedUsers = data.data;
+				saveBlockedUsers(data.data);
+			}
+		} catch (e) {}
 	}
 
 	function saveBlockedUsers(/** @type {any[]} */ list) {
@@ -124,17 +135,34 @@
 	async function handleUserBlockToggle(/** @type {any} */ userItem, /** @type {any} */ e) {
 		const isBlocked = e.target.checked;
 		playClickSound();
-		if (!isBlocked && currentUser?.id) {
+		if (!currentUser?.id || !userItem) return;
+		const targetId = userItem.id || userItem.friend_id;
+
+		if (!isBlocked) {
 			try {
 				await fetch(API_ENDPOINTS.blockUser, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ user_id: currentUser.id, target_id: userItem.id, action: 'unblock' })
+					body: JSON.stringify({ user_id: currentUser.id, target_id: targetId, action: 'unblock' })
 				});
 			} catch (err) {}
-			const updated = blockedUsers.filter(b => String(b.id) !== String(userItem.id));
+			const updated = blockedUsers.filter(b => String(b.id || b.friend_id) !== String(targetId));
 			saveBlockedUsers(updated);
 			showNotification(`Unblocked @${userItem.username}`, 'success');
+		} else {
+			try {
+				await fetch(API_ENDPOINTS.blockUser, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ user_id: currentUser.id, target_id: targetId, action: 'block' })
+				});
+			} catch (err) {}
+			const exists = blockedUsers.some(b => String(b.id || b.friend_id) === String(targetId));
+			if (!exists) {
+				const updated = [...blockedUsers, userItem];
+				saveBlockedUsers(updated);
+			}
+			showNotification(`Blocked @${userItem.username}`, 'success');
 		}
 	}
 
@@ -187,7 +215,7 @@
 		playClickSound();
 
 		const uname = selectedUserToBlock.username || selectedUserToBlock.email?.split('@')[0] || 'User';
-		const targetId = selectedUserToBlock.id;
+		const targetId = selectedUserToBlock.id || selectedUserToBlock.friend_id;
 
 		try {
 			await fetch(API_ENDPOINTS.blockUser, {
@@ -197,16 +225,8 @@
 			});
 		} catch (e) {}
 
-		const exists = blockedUsers.some(b => String(b.id) === String(targetId) || b.username?.toLowerCase() === uname.toLowerCase());
-		if (exists) {
-			showNotification(`@${uname} is already blocked`, 'error');
-			showConfirmBlockModal = false;
-			selectedUserToBlock = null;
-			return;
-		}
-
 		const updated = [
-			...blockedUsers,
+			...blockedUsers.filter(b => String(b.id || b.friend_id) !== String(targetId)),
 			{
 				id: targetId,
 				username: uname,
