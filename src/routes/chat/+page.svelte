@@ -1669,7 +1669,7 @@
 					</div>
 				{:else}
 					<!-- Active Chat Normal Header (Harmonious Home Background Theme) -->
-					<div class="p-3 sm:p-3.5 bg-white/90 backdrop-blur-md border-b-2 border-pink-300 text-pink-950 flex items-center justify-between shadow-2xs flex-shrink-0 sticky top-0 z-30">
+					<div class="p-3 sm:p-3.5 bg-pink-50/90 backdrop-blur-md border-b-2 border-pink-300 text-pink-950 flex items-center justify-between shadow-2xs flex-shrink-0 sticky top-0 z-30">
 						<div class="flex items-center space-x-2 min-w-0">
 							<button
 								onclick={handleBackToChatList}
