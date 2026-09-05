@@ -25,6 +25,7 @@
 	let hasMoreMessages = $state(true);
 	let isSending = $state(false);
 	let isUploadingImage = $state(false);
+	let viewingImageModalUrl = $state(null);
 	let sidebarOpen = $state(false);
 	let showEmojiPicker = $state(false);
 	let showClearModal = $state(false);
@@ -1185,34 +1186,55 @@
 	}
 
 	async function handleImageUpload(e) {
-		const file = e.target.files[0];
-		if (!file || !activeFriend) return;
+		const files = Array.from(e.target.files || []);
+		if (files.length === 0 || !activeFriend) return;
 
 		isUploadingImage = true;
 		try {
-			const fileExt = file.name.split('.').pop();
-			const fileName = `chat_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-			const filePath = `${user.id}/${fileName}`;
+			for (const file of files) {
+				const fileExt = file.name.split('.').pop();
+				const fileName = `chat_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+				const filePath = `${user.id}/${fileName}`;
 
-			const { error: uploadError } = await supabase.storage
-				.from('memories')
-				.upload(filePath, file);
+				const { error: uploadError } = await supabase.storage
+					.from('memories')
+					.upload(filePath, file);
 
-			if (uploadError) {
-				alert('Image upload failed: ' + uploadError.message);
-				return;
+				if (uploadError) {
+					console.error('Image upload failed:', file.name, uploadError.message);
+					alert('Image upload failed: ' + uploadError.message);
+					continue;
+				}
+
+				const { data: urlData } = supabase.storage.from('memories').getPublicUrl(filePath);
+				const imageUrl = urlData.publicUrl;
+
+				await sendMessage(`[IMG]${imageUrl}[/IMG]`);
 			}
-
-			const { data: urlData } = supabase.storage.from('memories').getPublicUrl(filePath);
-			const imageUrl = urlData.publicUrl;
-
-			await sendMessage(`[IMG]${imageUrl}[/IMG]`);
 		} catch (err) {
 			console.error('Error uploading chat image:', err);
 			alert('Failed to upload image. Please try again.');
 		} finally {
 			isUploadingImage = false;
 			if (imageInput) imageInput.value = '';
+		}
+	}
+
+	async function downloadChatImage(url) {
+		if (!url) return;
+		try {
+			const res = await fetch(url);
+			const blob = await res.blob();
+			const blobUrl = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = blobUrl;
+			link.download = `chronomuse_photo_${Date.now()}.jpg`;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			URL.revokeObjectURL(blobUrl);
+		} catch (e) {
+			window.open(url, '_blank');
 		}
 	}
 
@@ -1564,7 +1586,7 @@
 								</div>
 								<!-- Active / Offline Status Dot -->
 								{#if isActive}
-									<span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white shadow-2xs" title="Active now"></span>
+									<span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-2xs animate-pulse" title="Active now"></span>
 								{:else}
 									<span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-pink-200 border-2 border-white" title={formatLastActive(friend)}></span>
 								{/if}
@@ -1966,8 +1988,27 @@
 
 												<div class="relative z-10">
 													{#if parsed.isImage}
-														<div class="rounded-xl overflow-hidden max-w-xs">
-															<img src={parsed.imageUrl} alt="Chat Attachment" class="w-full h-auto object-cover rounded-lg pointer-events-none select-none" draggable="false" />
+														<div 
+															class="relative group/img rounded-xl overflow-hidden max-w-[200px] sm:max-w-[230px] border border-pink-300/80 shadow-2xs cursor-pointer active:scale-98 transition-all my-0.5"
+															onclick={(e) => { e.stopPropagation(); viewingImageModalUrl = parsed.imageUrl; }}
+															role="button"
+															tabindex="0"
+															onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); viewingImageModalUrl = parsed.imageUrl; } }}
+															title="Click to view & download photo"
+														>
+															<img 
+																src={parsed.imageUrl} 
+																alt="Chat Attachment" 
+																class="w-full max-h-52 sm:max-h-60 object-cover rounded-xl transition-transform duration-200 group-hover/img:scale-105" 
+																loading="lazy" 
+															/>
+															<div class="absolute inset-0 bg-pink-950/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white">
+																<div class="p-1.5 bg-black/40 backdrop-blur-xs rounded-full shadow-md">
+																	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-white">
+																		<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+																	</svg>
+																</div>
+															</div>
 														</div>
 													{:else}
 														<p class="whitespace-pre-wrap break-words">{parsed.text}</p>
@@ -2078,6 +2119,7 @@
 						<input
 							type="file"
 							accept="image/*"
+							multiple
 							bind:this={imageInput}
 							onchange={handleImageUpload}
 							disabled={isUploadingImage}
@@ -2172,6 +2214,58 @@
 					{#if isClearing}Clearing...{:else}Clear Chat{/if}
 				</button>
 			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Full-Screen Image Preview & Download Modal -->
+{#if viewingImageModalUrl}
+	<div 
+		class="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 animate-fade-in"
+		onclick={(e) => { if (e.target === e.currentTarget) viewingImageModalUrl = null; }}
+		onkeydown={(e) => { if (e.key === 'Escape') viewingImageModalUrl = null; }}
+		role="button"
+		tabindex="0"
+	>
+		<!-- Header -->
+		<div class="w-full max-w-4xl flex items-center justify-between z-10">
+			<span class="text-xs sm:text-sm font-semibold text-white/90 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/10">
+				Photo Preview
+			</span>
+			<button 
+				type="button"
+				onclick={() => viewingImageModalUrl = null}
+				class="p-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm cursor-pointer active:scale-95 border border-white/10"
+				title="Close Preview (Esc)"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+		</div>
+
+		<!-- Main Image Preview Container -->
+		<div class="flex-grow flex items-center justify-center p-2 sm:p-4 w-full max-w-4xl overflow-hidden my-auto">
+			<img 
+				src={viewingImageModalUrl} 
+				alt="Full Preview" 
+				class="max-h-[75vh] max-w-full object-contain rounded-2xl border-2 border-pink-300/50 shadow-2xl animate-fade-in" 
+			/>
+		</div>
+
+		<!-- Download Action Button -->
+		<div class="w-full max-w-4xl flex items-center justify-center gap-3 z-10 pb-2">
+			<button 
+				type="button"
+				onclick={() => downloadChatImage(viewingImageModalUrl)}
+				class="px-5 py-2.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-lg shadow-pink-500/30 flex items-center space-x-2 active:scale-95 cursor-pointer"
+				title="Download Photo"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+				</svg>
+				<span>Download Photo</span>
+			</button>
 		</div>
 	</div>
 {/if}
