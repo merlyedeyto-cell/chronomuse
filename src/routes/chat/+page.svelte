@@ -1717,8 +1717,8 @@
 												</span>
 											</span>
 										{:else if isFriendActive(activeFriend.friend_id)}
-											<span class="flex items-center gap-1 text-emerald-600 font-semibold">
-												<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+											<span class="flex items-center gap-1.5 text-emerald-600 font-bold">
+												<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse shadow-xs"></span>
 												<span>Active now</span>
 											</span>
 										{:else}
