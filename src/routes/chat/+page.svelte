@@ -869,7 +869,8 @@
 
 		let formattedMessage = textToSend;
 		if (replyingTo && !textCustom) {
-			formattedMessage = `[REPLY id="${replyingTo.id}" user="${replyingTo.sender_name}" text="${encodeURIComponent(replyingTo.text)}"]${textToSend}[/REPLY]`;
+			const replyPayloadText = replyingTo.isImage ? '📷 Photo' : replyingTo.text;
+			formattedMessage = `[REPLY id="${replyingTo.id}" user="${replyingTo.sender_name}" text="${encodeURIComponent(replyPayloadText)}"]${textToSend}[/REPLY]`;
 			replyingTo = null;
 		}
 
@@ -1182,10 +1183,13 @@
 
 	function triggerReply(msg) {
 		const parsed = parseMessage(msg.message);
+		const replyText = parsed.isImage ? '📷 Photo' : (parsed.text || 'Photo / Attachment');
 		replyingTo = {
 			id: msg.id,
 			sender_name: msg.sender_id === user.id ? 'You' : activeFriend.username,
-			text: parsed.text || 'Photo / Attachment'
+			text: replyText,
+			isImage: parsed.isImage,
+			imageUrl: parsed.isImage ? parsed.imageUrl : null
 		};
 		tick().then(() => {
 			if (messageInputRef) {
@@ -1468,6 +1472,25 @@
 
 	function extractImageUrl(text) {
 		return text.replace('[IMG]', '').replace('[/IMG]', '');
+	}
+
+	function getReplyDetails(rawReplyText) {
+		if (!rawReplyText) return { isImage: false, text: '', imageUrl: '' };
+		const isImg = isImageUrl(rawReplyText) || rawReplyText.includes('[IMG]') || rawReplyText.includes('.supabase.co') || rawReplyText.includes('📷 Photo');
+		if (isImg) {
+			const cleanUrl = extractImageUrl(rawReplyText);
+			const hasValidUrl = cleanUrl && (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://'));
+			return {
+				isImage: true,
+				text: '📷 Photo',
+				imageUrl: hasValidUrl ? cleanUrl : ''
+			};
+		}
+		return {
+			isImage: false,
+			text: rawReplyText,
+			imageUrl: ''
+		};
 	}
 
 	function parseMessage(text) {
@@ -2109,13 +2132,23 @@
 										>
 											<!-- Replied Quote Pill if present -->
 											{#if parsed.reply}
+												{@const replyDetails = getReplyDetails(parsed.reply.text)}
 												<div
-													class="mb-1 px-3 py-1 rounded-xl text-[11px] border-l-3 bg-pink-100/70 text-pink-900 border-pink-400 shadow-2xs max-w-full truncate"
+													class="mb-1 px-2.5 py-1 rounded-xl text-[11px] border-l-3 bg-pink-100/90 text-pink-900 border-pink-400 shadow-2xs max-w-full flex items-center space-x-1.5"
 													class:self-end={isUserSender}
 													class:self-start={!isUserSender}
 												>
-													<span class="font-bold text-pink-600">@{parsed.reply.user}:</span>
-													<span class="italic ml-1 opacity-85 truncate">{parsed.reply.text}</span>
+													<span class="font-bold text-pink-700">@{parsed.reply.user}:</span>
+													{#if replyDetails.isImage}
+														<div class="inline-flex items-center space-x-1 bg-white/80 px-1.5 py-0.5 rounded-md border border-pink-300">
+															{#if replyDetails.imageUrl}
+																<img src={replyDetails.imageUrl} alt="Replying photo" class="w-4 h-4 rounded-xs object-cover border border-pink-300 flex-shrink-0" />
+															{/if}
+															<span class="font-bold text-pink-700 text-[10px]">📷 Photo</span>
+														</div>
+													{:else}
+														<span class="italic opacity-85 truncate">{replyDetails.text}</span>
+													{/if}
 												</div>
 											{/if}
 
@@ -2221,13 +2254,18 @@
 				{#if replyingTo}
 					<div class="px-3.5 py-2 bg-pink-50/95 border-t border-pink-200 flex items-center justify-between text-xs animate-slide-down">
 						<div class="flex items-center space-x-2 min-w-0">
-							<div class="w-1 h-7 bg-pink-400 rounded-full flex-shrink-0"></div>
-							<div class="min-w-0">
-								<p class="font-bold text-pink-600">Replying to @{replyingTo.sender_name}</p>
-								<p class="text-gray-500 truncate text-[11px]">{replyingTo.text}</p>
+							<div class="w-1 h-7 bg-pink-500 rounded-full flex-shrink-0"></div>
+							<div class="min-w-0 flex items-center space-x-2">
+								{#if replyingTo.isImage && replyingTo.imageUrl}
+									<img src={replyingTo.imageUrl} alt="Replying photo" class="w-7 h-7 rounded-lg object-cover border border-pink-300 flex-shrink-0 shadow-2xs" />
+								{/if}
+								<div class="min-w-0">
+									<p class="font-bold text-pink-600">Replying to @{replyingTo.sender_name}</p>
+									<p class="text-pink-900/80 truncate text-[11px] font-medium">{replyingTo.text}</p>
+								</div>
 							</div>
 						</div>
-						<button onclick={cancelReply} class="p-1 text-gray-400 hover:text-gray-600 rounded-full" aria-label="Cancel reply">
+						<button onclick={cancelReply} class="p-1 text-pink-400 hover:text-pink-600 rounded-full cursor-pointer transition-colors" aria-label="Cancel reply">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 							</svg>
