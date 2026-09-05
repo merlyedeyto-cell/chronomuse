@@ -684,6 +684,8 @@
 						activeFriend.last_is_read = updated.last_is_read;
 						activeFriend.is_friend = updated.is_friend;
 						activeFriend.is_request = updated.is_request;
+						activeFriend.is_blocked_by_me = Boolean(updated.is_blocked_by_me);
+						activeFriend.is_blocking_me = Boolean(updated.is_blocking_me);
 					}
 				}
 			}
@@ -770,6 +772,11 @@
 			if (data.data && data.data.messages) {
 				const serverMessages = (data.data.messages || []).filter(m => !removedMessageIds.has(m.id));
 				
+				if (activeFriend && Number(activeFriend.friend_id) === Number(friendId)) {
+					activeFriend.is_blocked_by_me = Boolean(data.data.is_blocked_by_me);
+					activeFriend.is_blocking_me = Boolean(data.data.is_blocking_me);
+				}
+
 				if (isInitialLoad) {
 					hasMoreMessages = Boolean(data.data.has_more);
 					messages = serverMessages;
@@ -870,6 +877,34 @@
 				top: chatContainer.scrollHeight,
 				behavior: smooth ? 'smooth' : 'auto'
 			});
+		}
+	}
+
+	async function handleToggleBlockUser(targetId, currentIsBlocked) {
+		if (!user || !targetId) return;
+		const action = currentIsBlocked ? 'unblock' : 'block';
+		try {
+			const res = await fetch(API_ENDPOINTS.blockUser, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					user_id: user.id,
+					target_id: targetId,
+					action: action
+				})
+			});
+			const data = await res.json();
+			if (data.success) {
+				const isBlockedNow = action === 'block';
+				if (activeFriend && Number(activeFriend.friend_id) === Number(targetId)) {
+					activeFriend.is_blocked_by_me = isBlockedNow;
+				}
+				fetchChatList();
+			} else if (data.error) {
+				alert(data.error);
+			}
+		} catch (err) {
+			console.error('Error toggling block user:', err);
 		}
 	}
 
@@ -2045,6 +2080,16 @@
 								<span class="hidden sm:inline">Profile</span>
 							</a>
 							<button
+								onclick={() => handleToggleBlockUser(activeFriend.friend_id, activeFriend.is_blocked_by_me)}
+								class="px-2.5 py-1.5 bg-white/80 hover:bg-white border border-pink-300 {activeFriend.is_blocked_by_me ? 'text-emerald-700 hover:text-emerald-800' : 'text-rose-600 hover:text-rose-700'} rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 shadow-2xs cursor-pointer"
+								title={activeFriend.is_blocked_by_me ? "Unblock User" : "Block User"}
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+								</svg>
+								<span class="hidden sm:inline">{activeFriend.is_blocked_by_me ? 'Unblock' : 'Block'}</span>
+							</button>
+							<button
 								onclick={() => showClearModal = true}
 								class="px-2.5 py-1.5 bg-white/80 hover:bg-white border border-pink-300 text-pink-700 rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 shadow-2xs cursor-pointer"
 								title="Clear Chat History"
@@ -2407,65 +2452,85 @@
 					</div>
 				{/if}
 
-				<!-- Input Form Section -->
-				<form onsubmit={(e) => { e.preventDefault(); sendMessage(); }} class="p-2 sm:p-3 bg-white border-t border-pink-100 flex items-center space-x-1.5 sm:space-x-2 w-full min-w-0 flex-shrink-0 sticky bottom-0 z-20">
-					<!-- Upload Photo Button -->
-					<label class="p-1.5 sm:p-2 text-pink-500 hover:text-pink-600 hover:bg-pink-50 rounded-xl cursor-pointer transition-colors flex-shrink-0" title="Attach Photo">
-						{#if isUploadingImage}
-							<div class="animate-spin w-5 h-5 border-2 border-pink-300 border-t-pink-500 rounded-full"></div>
-						{:else}
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-							</svg>
-						{/if}
-						<input
-							type="file"
-							accept="image/*"
-							multiple
-							bind:this={imageInput}
-							onchange={handleImageUpload}
-							disabled={isUploadingImage}
-							class="hidden"
-						/>
-					</label>
-
-					<!-- Text Input with Typing Handler & Emoji Button -->
-					<div class="flex-grow min-w-0 relative flex items-center">
-						<input
-							type="text"
-							bind:this={messageInputRef}
-							bind:value={newMessageText}
-							oninput={handleInputTyping}
-							onfocus={handleInputFocus}
-							onblur={handleInputBlur}
-							placeholder="Type a message... (swipe to reply, hold to select)"
-							class="w-full pl-3 pr-9 py-2 sm:py-2.5 bg-pink-50/40 border border-pink-200 rounded-xl text-gray-800 text-xs sm:text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-300 focus:bg-white transition-all font-normal"
-						/>
-						<!-- Emoji Picker Toggle Button -->
+				<!-- Input Form Section or Blocked Banner -->
+				{#if activeFriend?.is_blocked_by_me}
+					<div class="p-3 sm:p-4 bg-gradient-to-r from-pink-50 via-rose-50 to-pink-100 border-t-2 border-pink-200 flex flex-col sm:flex-row items-center justify-between gap-3 sticky bottom-0 z-20 shadow-md">
+						<div class="flex items-center space-x-2 text-pink-950 text-xs sm:text-sm font-semibold">
+							<span class="text-base sm:text-lg">🚫</span>
+							<span>You blocked @{activeFriend.username}. You cannot send or receive messages from this user.</span>
+						</div>
 						<button
-							type="button"
-							onclick={() => showEmojiPicker = !showEmojiPicker}
-							class="absolute right-2 p-1 text-pink-400 hover:text-pink-600 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
-							title="Emojis"
+							onclick={() => handleToggleBlockUser(activeFriend.friend_id, true)}
+							class="px-3.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs rounded-xl shadow-2xs hover:shadow-md active:scale-95 transition-all cursor-pointer flex-shrink-0"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
-							</svg>
+							Unblock @{activeFriend.username}
 						</button>
 					</div>
+				{:else if activeFriend?.is_blocking_me}
+					<div class="p-3 sm:p-4 bg-gradient-to-r from-gray-50 via-pink-50 to-rose-50 border-t-2 border-pink-200 flex items-center justify-center space-x-2 text-pink-900 text-xs sm:text-sm font-semibold sticky bottom-0 z-20 shadow-md">
+						<span class="text-base sm:text-lg">🚫</span>
+						<span>You cannot message @{activeFriend.username} because you have been blocked by this user.</span>
+					</div>
+				{:else}
+					<form onsubmit={(e) => { e.preventDefault(); sendMessage(); }} class="p-2 sm:p-3 bg-white border-t border-pink-100 flex items-center space-x-1.5 sm:space-x-2 w-full min-w-0 flex-shrink-0 sticky bottom-0 z-20">
+						<!-- Upload Photo Button -->
+						<label class="p-1.5 sm:p-2 text-pink-500 hover:text-pink-600 hover:bg-pink-50 rounded-xl cursor-pointer transition-colors flex-shrink-0" title="Attach Photo">
+							{#if isUploadingImage}
+								<div class="animate-spin w-5 h-5 border-2 border-pink-300 border-t-pink-500 rounded-full"></div>
+							{:else}
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+								</svg>
+							{/if}
+							<input
+								type="file"
+								accept="image/*"
+								multiple
+								bind:this={imageInput}
+								onchange={handleImageUpload}
+								disabled={isUploadingImage}
+								class="hidden"
+							/>
+						</label>
 
-					<!-- Send Button with Smooth Feedback -->
-					<button
-						type="submit"
-						disabled={!newMessageText.trim() || isSending}
-						class="py-2 sm:py-2.5 px-3.5 sm:px-4 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex items-center space-x-1.5 flex-shrink-0 active:scale-95 group cursor-pointer"
-					>
-						<span>Send</span>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 flex-shrink-0 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform duration-200">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-						</svg>
-					</button>
-				</form>
+						<!-- Text Input with Typing Handler & Emoji Button -->
+						<div class="flex-grow min-w-0 relative flex items-center">
+							<input
+								type="text"
+								bind:this={messageInputRef}
+								bind:value={newMessageText}
+								oninput={handleInputTyping}
+								onfocus={handleInputFocus}
+								onblur={handleInputBlur}
+								placeholder="Type a message... (swipe to reply, hold to select)"
+								class="w-full pl-3 pr-9 py-2 sm:py-2.5 bg-pink-50/40 border border-pink-200 rounded-xl text-gray-800 text-xs sm:text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-300 focus:bg-white transition-all font-normal"
+							/>
+							<!-- Emoji Picker Toggle Button -->
+							<button
+								type="button"
+								onclick={() => showEmojiPicker = !showEmojiPicker}
+								class="absolute right-2 p-1 text-pink-400 hover:text-pink-600 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+								title="Emojis"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
+								</svg>
+							</button>
+						</div>
+
+						<!-- Send Button with Smooth Feedback -->
+						<button
+							type="submit"
+							disabled={!newMessageText.trim() || isSending}
+							class="py-2 sm:py-2.5 px-3.5 sm:px-4 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex items-center space-x-1.5 flex-shrink-0 active:scale-95 group cursor-pointer"
+						>
+							<span>Send</span>
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 flex-shrink-0 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform duration-200">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+							</svg>
+						</button>
+					</form>
+				{/if}
 			{:else}
 				<div class="h-full flex flex-col items-center justify-center p-6 text-center text-gray-400">
 					<div class="w-14 h-14 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center mb-3 shadow-2xs">

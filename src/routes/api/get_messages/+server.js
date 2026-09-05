@@ -39,11 +39,28 @@ export async function POST({ request }) {
 			.eq('receiver_id', user_id)
 			.eq('is_read', false);
 
+		let isBlockedByMe = false;
+		let isBlockingMe = false;
+
+		try {
+			const { data: bData } = await supabase
+				.from('chronomuse_blocked_users')
+				.select('blocker_id, blocked_id')
+				.or(`and(blocker_id.eq.${user_id},blocked_id.eq.${friend_id}),and(blocker_id.eq.${friend_id},blocked_id.eq.${user_id})`);
+
+			if (bData && bData.length > 0) {
+				isBlockedByMe = bData.some(b => String(b.blocker_id) === String(user_id));
+				isBlockingMe = bData.some(b => String(b.blocker_id) === String(friend_id));
+			}
+		} catch (bErr) {}
+
 		return json({
 			success: true,
 			data: {
 				messages: sortedMessages,
-				has_more
+				has_more,
+				is_blocked_by_me: isBlockedByMe,
+				is_blocking_me: isBlockingMe
 			}
 		});
 	} catch (err) {

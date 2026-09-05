@@ -73,6 +73,25 @@ export async function POST({ request }) {
 			});
 		}
 
+		// Fetch blocked relationships
+		let blockedSetByMe = new Set();
+		let blockedSetByThem = new Set();
+		try {
+			const { data: bRows } = await supabase
+				.from('chronomuse_blocked_users')
+				.select('blocker_id, blocked_id')
+				.or(`blocker_id.eq.${user_id},blocked_id.eq.${user_id}`);
+
+			(bRows || []).forEach(r => {
+				if (String(r.blocker_id) === String(user_id)) {
+					blockedSetByMe.add(Number(r.blocked_id));
+				}
+				if (String(r.blocked_id) === String(user_id)) {
+					blockedSetByThem.add(Number(r.blocker_id));
+				}
+			});
+		} catch (e) {}
+
 		// 4. For each partner, fetch last message and unread count
 		const conversations = await Promise.all(
 			partnerUsers.map(async partner => {
@@ -109,7 +128,9 @@ export async function POST({ request }) {
 					last_is_read: lastMsg ? Boolean(lastMsg.is_read) : false,
 					unread_count: unreadCount || 0,
 					is_friend: isFriend,
-					is_request: !isFriend
+					is_request: !isFriend,
+					is_blocked_by_me: blockedSetByMe.has(Number(partner.id)),
+					is_blocking_me: blockedSetByThem.has(Number(partner.id))
 				};
 			})
 		);
