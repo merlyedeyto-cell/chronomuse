@@ -34,9 +34,12 @@
 	let basePanX = 0;
 	let basePanY = 0;
 	let isMouseDragging = $state(false);
+	let isTouching = $state(false);
 	let touchStartX = 0;
 	let touchStartY = 0;
 	let touchDistStart = 0;
+	let touchCenterStartX = 0;
+	let touchCenterStartY = 0;
 	let sidebarOpen = $state(false);
 	let showEmojiPicker = $state(false);
 	let showClearModal = $state(false);
@@ -1285,6 +1288,8 @@
 		panY = 0;
 		basePanX = 0;
 		basePanY = 0;
+		isTouching = false;
+		isMouseDragging = false;
 	}
 
 	function openImageViewer(imageUrl) {
@@ -1332,7 +1337,7 @@
 		if (viewingImageIndex === -1) return;
 		e.preventDefault();
 		if (e.deltaY < 0) {
-			zoomScale = Math.min(4, zoomScale + 0.25);
+			zoomScale = Math.min(5, zoomScale + 0.25);
 		} else {
 			zoomScale = Math.max(1, zoomScale - 0.25);
 		}
@@ -1349,14 +1354,14 @@
 		if (zoomScale > 1) {
 			resetZoomAndPan();
 		} else {
-			zoomScale = 2.2;
-			baseScale = 2.2;
+			zoomScale = 2.5;
+			baseScale = 2.5;
 			if (e && e.clientX && e.clientY && e.currentTarget) {
 				const rect = e.currentTarget.getBoundingClientRect();
 				const offsetX = e.clientX - (rect.left + rect.width / 2);
 				const offsetY = e.clientY - (rect.top + rect.height / 2);
-				panX = Math.round(-offsetX * 1.1);
-				panY = Math.round(-offsetY * 1.1);
+				panX = Math.round(-offsetX * 1.15);
+				panY = Math.round(-offsetY * 1.15);
 				basePanX = panX;
 				basePanY = panY;
 			}
@@ -1365,11 +1370,13 @@
 
 	function handleViewerTouchStart(e) {
 		if (e.touches.length === 1) {
+			isTouching = true;
 			touchStartX = e.touches[0].clientX;
 			touchStartY = e.touches[0].clientY;
 			basePanX = panX;
 			basePanY = panY;
 		} else if (e.touches.length === 2) {
+			isTouching = true;
 			baseScale = zoomScale;
 			basePanX = panX;
 			basePanY = panY;
@@ -1377,18 +1384,33 @@
 				e.touches[0].clientX - e.touches[1].clientX,
 				e.touches[0].clientY - e.touches[1].clientY
 			);
+			touchCenterStartX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+			touchCenterStartY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
 		}
 	}
 
 	function handleViewerTouchMove(e) {
 		if (e.touches.length === 2 && touchDistStart > 0) {
+			if (e.cancelable) e.preventDefault();
+			isTouching = true;
 			const currentDist = Math.hypot(
 				e.touches[0].clientX - e.touches[1].clientX,
 				e.touches[0].clientY - e.touches[1].clientY
 			);
+			const currentCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+			const currentCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
 			const ratio = currentDist / touchDistStart;
-			zoomScale = Math.min(4, Math.max(1, baseScale * ratio));
+			const newScale = Math.min(5, Math.max(1, baseScale * ratio));
+			zoomScale = newScale;
+
+			const deltaCenterX = currentCenterX - touchCenterStartX;
+			const deltaCenterY = currentCenterY - touchCenterStartY;
+			panX = basePanX + deltaCenterX;
+			panY = basePanY + deltaCenterY;
 		} else if (e.touches.length === 1 && zoomScale > 1.05) {
+			if (e.cancelable) e.preventDefault();
+			isTouching = true;
 			const deltaX = e.touches[0].clientX - touchStartX;
 			const deltaY = e.touches[0].clientY - touchStartY;
 			panX = basePanX + deltaX;
@@ -1401,6 +1423,10 @@
 			baseScale = zoomScale;
 			basePanX = panX;
 			basePanY = panY;
+		}
+
+		if (e.touches.length === 0) {
+			isTouching = false;
 		}
 
 		if (e.changedTouches.length === 1 && zoomScale <= 1.05) {
@@ -2520,10 +2546,11 @@
 
 		<!-- Main Image Preview & Controls -->
 		<div 
-			class="flex-grow flex items-center justify-center relative w-full max-w-5xl mx-auto overflow-hidden my-auto py-2"
+			class="flex-grow flex items-center justify-center relative w-full max-w-5xl mx-auto overflow-hidden my-auto py-2 touch-none select-none overscroll-none"
 			ontouchstart={handleViewerTouchStart}
 			ontouchmove={handleViewerTouchMove}
 			ontouchend={handleViewerTouchEnd}
+			ontouchcancel={handleViewerTouchEnd}
 			onwheel={handleViewerWheel}
 		>
 			<!-- Prev Button -->
@@ -2542,8 +2569,8 @@
 
 			<!-- Image Container with translate and scale -->
 			<div 
-				class="w-full h-full flex items-center justify-center p-2 transition-transform duration-75 ease-out" 
-				style="transform: translate3d({panX}px, {panY}px, 0px) scale({zoomScale});"
+				class="w-full h-full flex items-center justify-center p-2 {isTouching || isMouseDragging ? 'transition-none' : 'transition-transform duration-200 ease-out'}" 
+				style="transform: translate3d({panX}px, {panY}px, 0px) scale({zoomScale}); transform-origin: center center; will-change: transform;"
 				onmousedown={handleMouseDown}
 				onmousemove={handleMouseMove}
 				onmouseup={handleMouseUp}
