@@ -426,6 +426,13 @@
 		}
 	}
 
+	function isRecentActive(friend) {
+		if (!friend) return false;
+		if (isFriendActive(friend.friend_id)) return true;
+		const statusText = formatLastActive(friend);
+		return statusText === 'Active now' || statusText === 'Active just now';
+	}
+
 	function loadRemovedMessages() {
 		if (!user) return;
 		try {
@@ -1568,7 +1575,7 @@
 					</div>
 				{:else}
 					{#each filteredFriends() as friend (friend.friend_id)}
-						{@const isActive = isFriendActive(friend.friend_id)}
+						{@const isActive = isRecentActive(friend)}
 						{@const isSelected = activeFriend?.friend_id === friend.friend_id}
 						{@const isSentByMe = friend.last_sender_id === user?.id}
 						{@const isUnread = friend.unread_count > 0}
@@ -1715,8 +1722,8 @@
 											{activeFriend.username.charAt(0).toUpperCase()}
 										{/if}
 									</div>
-									{#if isFriendActive(activeFriend.friend_id)}
-										<span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-white rounded-full shadow-2xs" title="Active"></span>
+									{#if isRecentActive(activeFriend)}
+										<span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full shadow-2xs animate-pulse" title="Active"></span>
 									{:else}
 										<span class="absolute bottom-0 right-0 w-3 h-3 bg-slate-300 border-2 border-white rounded-full" title="Offline"></span>
 									{/if}
@@ -1738,10 +1745,10 @@
 													<span class="w-1 h-1 rounded-full bg-pink-500 animate-bounce" style="animation-delay: 300ms"></span>
 												</span>
 											</span>
-										{:else if isFriendActive(activeFriend.friend_id)}
+										{:else if isRecentActive(activeFriend)}
 											<span class="flex items-center gap-1.5 text-emerald-600 font-bold">
 												<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse shadow-xs"></span>
-												<span>Active now</span>
+												<span>{formatLastActive(activeFriend)}</span>
 											</span>
 										{:else}
 											<span class="flex items-center gap-1 text-pink-600/80 font-medium">

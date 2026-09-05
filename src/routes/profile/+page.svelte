@@ -1089,7 +1089,7 @@
 						{/if}
 
 						<div class="px-3 py-1.5 bg-white border border-pink-300 rounded-full text-xs font-semibold text-pink-600 flex items-center space-x-1.5">
-							<span class="w-2 h-2 rounded-full {formatLastActive(profileData.user.last_activity) === 'Active now' ? 'bg-emerald-500 animate-pulse' : 'bg-pink-300'}"></span>
+							<span class="w-2 h-2 rounded-full {formatLastActive(profileData.user.last_activity) === 'Active now' || formatLastActive(profileData.user.last_activity) === 'Active just now' ? 'bg-emerald-500 animate-pulse' : 'bg-pink-300'}"></span>
 							<span>{formatLastActive(profileData.user.last_activity)}</span>
 						</div>
 					</div>
@@ -1290,7 +1290,7 @@
 													{friend.username?.charAt(0).toUpperCase()}
 												{/if}
 											</div>
-											<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white {formatLastActive(friend.last_activity) === 'Active now' ? 'bg-emerald-500' : 'bg-pink-300'}"></span>
+											<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white {formatLastActive(friend.last_activity) === 'Active now' || formatLastActive(friend.last_activity) === 'Active just now' ? 'bg-emerald-500 animate-pulse' : 'bg-pink-300'}"></span>
 										</div>
 
 										<div class="min-w-0 flex-grow pr-2">
