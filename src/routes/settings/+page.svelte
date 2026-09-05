@@ -293,7 +293,7 @@
 	<title>Account Settings - ChronoMuse</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-pink-50/80 via-pink-100/50 to-pink-200/40 flex flex-col font-sans">
+<div class="min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 flex flex-col font-sans animate-fade-in">
 	<!-- Top Navigation Bar -->
 	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
 		<div class="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -352,9 +352,9 @@
 	<Sidebar bind:isOpen={sidebarOpen} on:logout={handleLogout} />
 
 	<!-- Main Settings Container -->
-	<main class="flex-grow container mx-auto px-4 py-6 sm:py-8 max-w-4xl space-y-6">
+	<main class="flex-grow container mx-auto px-4 py-6 sm:py-8 max-w-3xl space-y-6">
 		<!-- Page Title Banner -->
-		<div class="flex items-center space-x-3.5 pb-3 border-b-2 border-pink-200">
+		<div class="flex items-center space-x-3.5 pb-3 border-b-2 border-pink-300">
 			<div class="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
@@ -371,7 +371,7 @@
 		<div class="space-y-4">
 			
 			<!-- ITEM 1: PRIVACY & ONLINE ACTIVE STATUS -->
-			<div class="bg-white/95 backdrop-blur-md rounded-3xl border-2 border-pink-200 shadow-md overflow-hidden transition-all duration-300">
+			<div class="bg-white/95 backdrop-blur-md rounded-3xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->
 				<button
 					type="button"
@@ -464,7 +464,7 @@
 			</div>
 
 			<!-- ITEM 2: SOUND & TOUCH FEEDBACK -->
-			<div class="bg-white/95 backdrop-blur-md rounded-3xl border-2 border-pink-200 shadow-md overflow-hidden transition-all duration-300">
+			<div class="bg-white/95 backdrop-blur-md rounded-3xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->
 				<button
 					type="button"
@@ -529,7 +529,7 @@
 			</div>
 
 			<!-- ITEM 3: BLOCKED ACCOUNTS & USERS -->
-			<div class="bg-white/95 backdrop-blur-md rounded-3xl border-2 border-pink-200 shadow-md overflow-hidden transition-all duration-300">
+			<div class="bg-white/95 backdrop-blur-md rounded-3xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->
 				<button
 					type="button"
@@ -670,7 +670,7 @@
 			</div>
 
 			<!-- ITEM 4: PASSWORDS & EMAIL SECURITY -->
-			<div class="bg-white/95 backdrop-blur-md rounded-3xl border-2 border-pink-200 shadow-md overflow-hidden transition-all duration-300">
+			<div class="bg-white/95 backdrop-blur-md rounded-3xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->
 				<button
 					type="button"
