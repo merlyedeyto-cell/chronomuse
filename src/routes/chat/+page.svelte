@@ -10,6 +10,7 @@
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let friends = $state([]);
 	let requests = $state([]);
+	let allConversations = $state([]);
 	let searchQuery = $state('');
 	let chatListFilter = $state('all'); // 'all' | 'unread' | 'requests'
 	let unreadFriendsCount = $derived(friends.filter(f => (f.unread_count || 0) > 0).length);
@@ -671,7 +672,8 @@
 			const data = await res.json();
 			if (data.data) {
 				friends = data.data.friends || [];
-				requests = data.data.requests || [];
+				requests = (data.data.requests || []).filter(r => !r.is_blocked_by_me && !r.is_blocking_me);
+				allConversations = data.data.all_conversations || [...friends, ...requests];
 				localStorage.setItem(`chronomuse_chat_list_${user.id}`, JSON.stringify(friends));
 				localStorage.setItem(`chronomuse_chat_requests_${user.id}`, JSON.stringify(requests));
 
@@ -700,11 +702,12 @@
 	function filteredFriends() {
 		let list = [];
 		if (chatListFilter === 'all') {
-			list = friends;
+			list = allConversations.length > 0 ? allConversations : [...friends, ...requests];
 		} else if (chatListFilter === 'unread') {
-			list = [...friends, ...requests].filter(f => (f.unread_count || 0) > 0);
+			const pool = allConversations.length > 0 ? allConversations : [...friends, ...requests];
+			list = pool.filter(f => (f.unread_count || 0) > 0);
 		} else if (chatListFilter === 'requests') {
-			list = requests;
+			list = requests.filter(r => !r.is_blocked_by_me && !r.is_blocking_me);
 		}
 
 		if (searchQuery.trim()) {
@@ -1814,9 +1817,9 @@
 						onclick={() => chatListFilter = 'all'}
 						class="py-1.5 px-1.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center {chatListFilter === 'all' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
 					>
-						<span>Friends</span>
+						<span>All</span>
 						<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'all' ? 'bg-white/20 text-white' : 'bg-pink-200 text-pink-700 font-bold'}">
-							{friends.length}
+							{allConversations.length || (friends.length + requests.length)}
 						</span>
 					</button>
 

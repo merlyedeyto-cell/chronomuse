@@ -356,6 +356,7 @@
 			if (profileData && String(profileData.user?.id) === String(targetId)) {
 				profileData.is_friend = false;
 				profileData.has_pending_request = false;
+				profileData.is_blocked_by_me = true;
 			}
 
 			showBlockModal = false;
@@ -364,6 +365,33 @@
 			showNotification('Failed to block user', 'error');
 		} finally {
 			isBlocking = false;
+		}
+	}
+
+	async function handleUnblockTargetUser() {
+		if (!currentUser || !profileData || !profileData.user) return;
+		playClickSound();
+		try {
+			const res = await fetch(API_ENDPOINTS.blockUser, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					user_id: currentUser.id,
+					target_id: profileData.user.id,
+					action: 'unblock'
+				})
+			});
+			const data = await res.json();
+			if (data.success) {
+				showNotification(`Unblocked @${profileData.user.username}`);
+				profileData.is_blocked_by_me = false;
+				loadProfileData(profileData.user.id);
+			} else {
+				showNotification(data.error || 'Failed to unblock user', 'error');
+			}
+		} catch (err) {
+			console.error('Error unblocking user:', err);
+			showNotification('Error unblocking user', 'error');
 		}
 	}
 
@@ -876,6 +904,40 @@
 					<p class="text-sm font-semibold text-pink-600">Profile not found.</p>
 				</div>
 			{/if}
+		{:else if profileData.is_blocked_by_me || profileData.is_blocking_me}
+			<!-- Blocked Profile View Screen -->
+			<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-xl overflow-hidden animate-fade-in-up p-8 sm:p-12 text-center space-y-6 max-w-2xl mx-auto my-8">
+				<div class="w-20 h-20 bg-pink-100 text-pink-500 rounded-full flex items-center justify-center mx-auto shadow-inner">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-10 h-10">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+					</svg>
+				</div>
+				
+				<div class="space-y-2">
+					<h2 class="text-xl sm:text-2xl font-black text-pink-950">@{profileData.user.username}</h2>
+					{#if profileData.is_blocked_by_me}
+						<p class="text-pink-700 text-xs sm:text-sm font-semibold max-w-md mx-auto leading-relaxed">
+							You have blocked @{profileData.user.username}. You cannot view their profile details, notes, cover photo, or memories while blocked.
+						</p>
+					{:else}
+						<p class="text-pink-700 text-xs sm:text-sm font-semibold max-w-md mx-auto leading-relaxed">
+							You are blocked by @{profileData.user.username}. You cannot view this profile or interact with this user.
+						</p>
+					{/if}
+				</div>
+
+				{#if profileData.is_blocked_by_me}
+					<button
+						onclick={handleUnblockTargetUser}
+						class="px-6 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md hover:shadow-lg active:scale-95 transition-all cursor-pointer inline-flex items-center space-x-2"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+						</svg>
+						<span>Unblock @{profileData.user.username}</span>
+					</button>
+				{/if}
+			</div>
 		{:else}
 			<!-- Hero Profile Header Card -->
 			<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-xl overflow-hidden animate-fade-in-up relative">
