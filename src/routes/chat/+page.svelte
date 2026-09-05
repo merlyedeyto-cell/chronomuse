@@ -1950,21 +1950,18 @@
 												</div>
 											{/if}
 
-											<!-- Main Chat Bubble with Cute Speech Bubble Tail (Buntot) -->
+											<!-- Main Chat Bubble with Clear Visible Pink Border & Tail -->
 											<div
-												class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-pink-950 shadow-2xs transition-all relative leading-relaxed"
+												class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold text-pink-950 border-2 border-pink-300 shadow-2xs transition-all relative leading-relaxed"
 												class:bg-pink-100={isUserSender}
-												class:border={isUserSender}
-												class:border-pink-300={isUserSender}
 												class:bg-white={!isUserSender}
-												class:border-pink-200={!isUserSender}
 												class:ring-2={isSelected}
 												class:ring-pink-500={isSelected}
 											>
 												{#if isUserSender}
-													<span class="absolute -right-1.5 top-3 w-3 h-3 bg-pink-100 border-t border-r border-pink-300 transform rotate-45 pointer-events-none rounded-tr-xs"></span>
+													<span class="absolute -right-[7px] top-3.5 w-3 h-3 bg-pink-100 border-t-2 border-r-2 border-pink-300 transform rotate-45 pointer-events-none rounded-tr-xs"></span>
 												{:else}
-													<span class="absolute -left-1.5 top-3 w-3 h-3 bg-white border-b border-l border-pink-200 transform rotate-45 pointer-events-none rounded-bl-xs"></span>
+													<span class="absolute -left-[7px] top-3.5 w-3 h-3 bg-white border-b-2 border-l-2 border-pink-300 transform rotate-45 pointer-events-none rounded-bl-xs"></span>
 												{/if}
 
 												<div class="relative z-10">
@@ -2015,9 +2012,9 @@
 									{/if}
 								</div>
 								<div class="flex flex-col items-start space-y-1">
-									<!-- 3-dot Bubble with Cute Tail -->
-									<div class="bg-white border border-pink-200 px-3.5 py-2.5 rounded-2xl shadow-xs flex items-center space-x-1.5 relative">
-										<span class="absolute -left-1.5 top-3 w-3 h-3 bg-white border-b border-l border-pink-200 transform rotate-45 pointer-events-none rounded-bl-xs"></span>
+									<!-- 3-dot Bubble with Cute Tail & Crisp Border -->
+									<div class="bg-white border-2 border-pink-300 px-3.5 py-2.5 rounded-2xl shadow-xs flex items-center space-x-1.5 relative">
+										<span class="absolute -left-[7px] top-3.5 w-3 h-3 bg-white border-b-2 border-l-2 border-pink-300 transform rotate-45 pointer-events-none rounded-bl-xs"></span>
 										<div class="w-2 h-2 rounded-full bg-pink-500 animate-bounce relative z-10" style="animation-delay: 0ms"></div>
 										<div class="w-2 h-2 rounded-full bg-pink-500 animate-bounce relative z-10" style="animation-delay: 150ms"></div>
 										<div class="w-2 h-2 rounded-full bg-pink-500 animate-bounce relative z-10" style="animation-delay: 300ms"></div>
