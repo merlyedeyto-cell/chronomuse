@@ -1010,9 +1010,6 @@
 									</p>
 								</div>
 							</div>
-							<span class="px-2.5 py-1 bg-pink-100 text-pink-700 text-xs font-extrabold rounded-lg border border-pink-200 flex-shrink-0">
-								{profileData.user.relationship_status || 'Single'}
-							</span>
 						</div>
 
 						<!-- Row 2: Birthday -->
