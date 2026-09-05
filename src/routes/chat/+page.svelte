@@ -26,6 +26,11 @@
 	let isSending = $state(false);
 	let isUploadingImage = $state(false);
 	let viewingImageModalUrl = $state(null);
+	let viewingImageIndex = $state(-1);
+	let zoomScale = $state(1);
+	let touchStartX = 0;
+	let touchStartY = 0;
+	let touchDistStart = 0;
 	let sidebarOpen = $state(false);
 	let showEmojiPicker = $state(false);
 	let showClearModal = $state(false);
@@ -1245,6 +1250,127 @@
 		}
 	}
 
+	// Photo Gallery Viewer & Zoom functions
+	let chatImagesList = $derived(() => {
+		const list = [];
+		for (const msg of messages) {
+			const parsed = parseMessage(msg.message);
+			if (parsed.isImage && parsed.imageUrl) {
+				list.push({
+					id: msg.id,
+					url: parsed.imageUrl,
+					senderId: msg.sender_id,
+					time: msg.created_at
+				});
+			}
+		}
+		return list;
+	});
+
+	function openImageViewer(imageUrl) {
+		const imgs = chatImagesList();
+		const idx = imgs.findIndex(img => img.url === imageUrl);
+		if (idx !== -1) {
+			viewingImageIndex = idx;
+		} else {
+			viewingImageIndex = 0;
+		}
+		zoomScale = 1;
+	}
+
+	function closeImageViewer() {
+		viewingImageIndex = -1;
+		zoomScale = 1;
+	}
+
+	function prevImage() {
+		const imgs = chatImagesList();
+		if (imgs.length === 0) return;
+		if (viewingImageIndex > 0) {
+			viewingImageIndex--;
+			zoomScale = 1;
+		}
+	}
+
+	function nextImage() {
+		const imgs = chatImagesList();
+		if (imgs.length === 0) return;
+		if (viewingImageIndex < imgs.length - 1) {
+			viewingImageIndex++;
+			zoomScale = 1;
+		}
+	}
+
+	function handleViewerKeydown(e) {
+		if (viewingImageIndex === -1) return;
+		if (e.key === 'Escape') {
+			closeImageViewer();
+		} else if (e.key === 'ArrowLeft') {
+			prevImage();
+		} else if (e.key === 'ArrowRight') {
+			nextImage();
+		}
+	}
+
+	function handleViewerWheel(e) {
+		if (viewingImageIndex === -1) return;
+		if (e.deltaY < 0) {
+			zoomScale = Math.min(3.5, zoomScale + 0.25);
+		} else {
+			zoomScale = Math.max(1, zoomScale - 0.25);
+		}
+	}
+
+	function toggleZoom() {
+		if (zoomScale > 1) {
+			zoomScale = 1;
+		} else {
+			zoomScale = 1.8;
+		}
+	}
+
+	function handleViewerTouchStart(e) {
+		if (e.touches.length === 1) {
+			touchStartX = e.touches[0].clientX;
+			touchStartY = e.touches[0].clientY;
+		} else if (e.touches.length === 2) {
+			touchDistStart = Math.hypot(
+				e.touches[0].clientX - e.touches[1].clientX,
+				e.touches[0].clientY - e.touches[1].clientY
+			);
+		}
+	}
+
+	function handleViewerTouchMove(e) {
+		if (e.touches.length === 2 && touchDistStart > 0) {
+			const dist = Math.hypot(
+				e.touches[0].clientX - e.touches[1].clientX,
+				e.touches[0].clientY - e.touches[1].clientY
+			);
+			const factor = dist / touchDistStart;
+			zoomScale = Math.min(3.5, Math.max(1, zoomScale * factor));
+			touchDistStart = dist;
+		}
+	}
+
+	function handleViewerTouchEnd(e) {
+		if (e.changedTouches.length === 1 && zoomScale <= 1.05) {
+			const touchEndX = e.changedTouches[0].clientX;
+			const touchEndY = e.changedTouches[0].clientY;
+			const deltaX = touchEndX - touchStartX;
+			const deltaY = touchEndY - touchStartY;
+
+			if (Math.abs(deltaX) > 40 && Math.abs(deltaY) < 80) {
+				if (deltaX < 0) {
+					nextImage();
+				} else {
+					prevImage();
+				}
+			}
+		}
+		touchDistStart = 0;
+	}
+
 	async function clearConversation() {
 		if (!activeFriend || isClearing) return;
 		isClearing = true;
@@ -1997,10 +2123,10 @@
 													{#if parsed.isImage}
 														<div 
 															class="relative group/img rounded-xl overflow-hidden max-w-[200px] sm:max-w-[230px] border border-pink-300/80 shadow-2xs cursor-pointer active:scale-98 transition-all my-0.5"
-															onclick={(e) => { e.stopPropagation(); viewingImageModalUrl = parsed.imageUrl; }}
+															onclick={(e) => { e.stopPropagation(); openImageViewer(parsed.imageUrl); }}
 															role="button"
 															tabindex="0"
-															onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); viewingImageModalUrl = parsed.imageUrl; } }}
+															onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); openImageViewer(parsed.imageUrl); } }}
 															title="Click to view & download photo"
 														>
 															<img 
@@ -2225,54 +2351,144 @@
 	</div>
 {/if}
 
-<!-- Full-Screen Image Preview & Download Modal -->
-{#if viewingImageModalUrl}
+<!-- Full-Screen Image Gallery Viewer & Zoom Modal -->
+{#if viewingImageIndex >= 0 && chatImagesList()[viewingImageIndex]}
+	{@const currentImg = chatImagesList()[viewingImageIndex]}
+	{@const totalImgs = chatImagesList().length}
 	<div 
-		class="fixed inset-0 z-[100] bg-pink-100/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 animate-fade-in"
-		onclick={(e) => { if (e.target === e.currentTarget) viewingImageModalUrl = null; }}
-		onkeydown={(e) => { if (e.key === 'Escape') viewingImageModalUrl = null; }}
-		role="button"
+		class="fixed inset-0 z-[100] bg-pink-100/95 backdrop-blur-md flex flex-col justify-between p-3 sm:p-5 select-none animate-fade-in touch-none overflow-hidden"
+		onclick={(e) => { if (e.target === e.currentTarget) closeImageViewer(); }}
+		onkeydown={handleViewerKeydown}
+		role="dialog"
+		aria-modal="true"
 		tabindex="0"
 	>
 		<!-- Header -->
-		<div class="w-full max-w-4xl flex items-center justify-between z-10">
-			<span class="text-xs sm:text-sm font-bold text-pink-900 bg-white/90 px-3.5 py-1.5 rounded-full backdrop-blur-sm border border-pink-300 shadow-2xs">
-				Photo Preview
-			</span>
-			<button 
-				type="button"
-				onclick={() => viewingImageModalUrl = null}
-				class="p-2 text-pink-700 hover:text-pink-900 bg-white/90 hover:bg-white border border-pink-300 rounded-full transition-all backdrop-blur-sm cursor-pointer active:scale-95 shadow-2xs flex items-center justify-center"
-				title="Close Preview (Esc)"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-				</svg>
-			</button>
+		<div class="w-full max-w-5xl mx-auto flex items-center justify-between z-20 flex-shrink-0 pt-1">
+			<div class="flex items-center space-x-2">
+				<span class="text-xs sm:text-sm font-bold text-pink-900 bg-white/90 px-3.5 py-1.5 rounded-full backdrop-blur-sm border border-pink-300 shadow-2xs">
+					Photo {viewingImageIndex + 1} of {totalImgs}
+				</span>
+				{#if zoomScale > 1}
+					<span class="text-[11px] font-semibold text-pink-700 bg-white/80 px-2.5 py-1 rounded-full border border-pink-200">
+						{Math.round(zoomScale * 100)}%
+					</span>
+				{/if}
+			</div>
+
+			<div class="flex items-center space-x-1.5 sm:space-x-2">
+				<button 
+					type="button"
+					onclick={() => zoomScale = Math.max(1, zoomScale - 0.3)}
+					disabled={zoomScale <= 1}
+					class="p-2 text-pink-700 hover:text-pink-900 bg-white/90 hover:bg-white disabled:opacity-40 border border-pink-300 rounded-full transition-all backdrop-blur-sm cursor-pointer active:scale-95 shadow-2xs"
+					title="Zoom Out"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5h-6" />
+					</svg>
+				</button>
+				<button 
+					type="button"
+					onclick={() => zoomScale = Math.min(3.5, zoomScale + 0.3)}
+					disabled={zoomScale >= 3.5}
+					class="p-2 text-pink-700 hover:text-pink-900 bg-white/90 hover:bg-white disabled:opacity-40 border border-pink-300 rounded-full transition-all backdrop-blur-sm cursor-pointer active:scale-95 shadow-2xs"
+					title="Zoom In"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+					</svg>
+				</button>
+				<button 
+					type="button"
+					onclick={closeImageViewer}
+					class="p-2 text-pink-700 hover:text-pink-900 bg-white/90 hover:bg-white border border-pink-300 rounded-full transition-all backdrop-blur-sm cursor-pointer active:scale-95 shadow-2xs flex items-center justify-center"
+					title="Close Preview (Esc)"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
 		</div>
 
-		<!-- Main Image Preview Container -->
-		<div class="flex-grow flex items-center justify-center p-2 sm:p-4 w-full max-w-4xl overflow-hidden my-auto">
-			<img 
-				src={viewingImageModalUrl} 
-				alt="Full Preview" 
-				class="max-h-[75vh] max-w-full object-contain rounded-2xl border-2 border-pink-300 shadow-xl bg-white/40 animate-fade-in" 
-			/>
+		<!-- Main Image Preview & Controls -->
+		<div 
+			class="flex-grow flex items-center justify-center relative w-full max-w-5xl mx-auto overflow-hidden my-auto py-2"
+			ontouchstart={handleViewerTouchStart}
+			ontouchmove={handleViewerTouchMove}
+			ontouchend={handleViewerTouchEnd}
+			onwheel={handleViewerWheel}
+			ondblclick={toggleZoom}
+		>
+			<!-- Prev Button -->
+			{#if viewingImageIndex > 0}
+				<button 
+					type="button"
+					onclick={prevImage}
+					class="absolute left-2 sm:left-4 z-30 p-2.5 sm:p-3 bg-white/90 hover:bg-white text-pink-700 hover:text-pink-900 border-2 border-pink-300 rounded-full shadow-lg transition-all active:scale-90 cursor-pointer"
+					title="Previous Photo (Left Arrow)"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+					</svg>
+				</button>
+			{/if}
+
+			<!-- Image -->
+			<div class="w-full h-full flex items-center justify-center p-2 transition-transform duration-150 ease-out" style="transform: scale({zoomScale});">
+				<img 
+					src={currentImg.url} 
+					alt="Full Preview" 
+					class="max-h-[72vh] max-w-full object-contain rounded-2xl border-2 border-pink-300 shadow-xl bg-white/40 cursor-zoom-in"
+					title="Double click or pinch to zoom"
+				/>
+			</div>
+
+			<!-- Next Button -->
+			{#if viewingImageIndex < totalImgs - 1}
+				<button 
+					type="button"
+					onclick={nextImage}
+					class="absolute right-2 sm:right-4 z-30 p-2.5 sm:p-3 bg-white/90 hover:bg-white text-pink-700 hover:text-pink-900 border-2 border-pink-300 rounded-full shadow-lg transition-all active:scale-90 cursor-pointer"
+					title="Next Photo (Right Arrow)"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+					</svg>
+				</button>
+			{/if}
 		</div>
 
-		<!-- Download Action Button -->
-		<div class="w-full max-w-4xl flex items-center justify-center gap-3 z-10 pb-2">
-			<button 
-				type="button"
-				onclick={() => downloadChatImage(viewingImageModalUrl)}
-				class="px-5 py-2.5 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md shadow-pink-300 flex items-center space-x-2 active:scale-95 cursor-pointer border border-pink-300/40"
-				title="Download Photo"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-				</svg>
-				<span>Download Photo</span>
-			</button>
+		<!-- Bottom Action Bar -->
+		<div class="w-full max-w-5xl mx-auto flex flex-col items-center gap-2 z-20 flex-shrink-0 pb-1">
+			<div class="flex items-center gap-3">
+				<button 
+					type="button"
+					onclick={() => downloadChatImage(currentImg.url)}
+					class="px-5 py-2.5 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:from-pink-600 hover:to-rose-600 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md shadow-pink-300 flex items-center space-x-2 active:scale-95 cursor-pointer border border-pink-300/40"
+					title="Download Photo"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+					</svg>
+					<span>Download Photo</span>
+				</button>
+
+				{#if zoomScale > 1}
+					<button 
+						type="button"
+						onclick={() => zoomScale = 1}
+						class="px-3.5 py-2.5 bg-white/90 hover:bg-white text-pink-700 rounded-xl font-semibold text-xs transition-all border border-pink-300 shadow-2xs active:scale-95 cursor-pointer"
+					>
+						Reset Zoom
+					</button>
+				{/if}
+			</div>
+
+			<p class="text-[11px] text-pink-600/80 font-medium hidden sm:block">
+				Swipe left/right or use arrow keys to navigate • Scroll or double click to zoom
+			</p>
 		</div>
 	</div>
 {/if}
