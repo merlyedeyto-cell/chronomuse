@@ -2673,4 +2673,34 @@
 	.animate-message-pop {
 		animation: messagePop 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
 	}
+
+	:global(::-webkit-scrollbar) {
+		width: 8px;
+		height: 8px;
+	}
+	:global(::-webkit-scrollbar-track) {
+		background: rgba(255, 225, 240, 0.5);
+		border-radius: 9999px;
+	}
+	:global(::-webkit-scrollbar-thumb) {
+		background: linear-gradient(180deg, #f472b6, #ec4899);
+		border-radius: 9999px;
+		border: 1.5px solid rgba(255, 255, 255, 0.7);
+		box-shadow: 0 2px 6px rgba(236, 72, 153, 0.25);
+	}
+	:global(::-webkit-scrollbar-thumb:hover) {
+		background: linear-gradient(180deg, #ec4899, #db2777);
+	}
+	:global(::-webkit-scrollbar-corner) {
+		background: transparent;
+	}
+	:global(::-webkit-scrollbar-button) {
+		display: none;
+		width: 0;
+		height: 0;
+	}
+	:global(*) {
+		scrollbar-width: thin;
+		scrollbar-color: #f472b6 rgba(255, 225, 240, 0.5);
+	}
 </style>
