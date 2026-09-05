@@ -1435,7 +1435,7 @@
 		<!-- Left Panel: Friends & Search -->
 		<div class="w-full md:w-84 lg:w-96 flex-shrink-0 bg-white/95 backdrop-blur-md border-2 border-pink-300 rounded-2xl shadow-md flex flex-col overflow-hidden animate-fade-in-up" class:hidden={activeFriend !== null} class:md:flex={true} style="animation-delay: 0.05s">
 			<!-- Conversations Header -->
-			<div class="p-3.5 sm:p-4 bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bold text-sm sm:text-base flex items-center justify-between shadow-xs">
+			<div class="p-3.5 sm:p-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white font-bold text-sm sm:text-base flex items-center justify-between shadow-xs">
 				<div class="flex items-center space-x-2">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
@@ -1655,7 +1655,7 @@
 					</div>
 				{:else}
 					<!-- Active Chat Normal Header -->
-					<div class="p-3 sm:p-3.5 bg-gradient-to-r from-pink-400 to-rose-400 text-white flex items-center justify-between shadow-xs flex-shrink-0 sticky top-0 z-30">
+					<div class="p-3 sm:p-3.5 bg-gradient-to-r from-pink-500 to-pink-600 text-white flex items-center justify-between shadow-xs flex-shrink-0 sticky top-0 z-30">
 						<div class="flex items-center space-x-2 min-w-0">
 							<button
 								onclick={handleBackToChatList}
@@ -2070,10 +2070,12 @@
 						<button
 							type="button"
 							onclick={() => showEmojiPicker = !showEmojiPicker}
-							class="absolute right-2 p-1 text-pink-400 hover:text-pink-600 rounded-lg transition-colors"
+							class="absolute right-2 p-1 text-pink-400 hover:text-pink-600 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
 							title="Emojis"
 						>
-							<span class="text-base sm:text-lg leading-none">😊</span>
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
+							</svg>
 						</button>
 					</div>
 
@@ -2081,10 +2083,10 @@
 					<button
 						type="submit"
 						disabled={!newMessageText.trim() || isSending}
-						class="py-2 sm:py-2.5 px-3 sm:px-4 bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 text-white rounded-xl font-semibold text-xs sm:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xs flex items-center space-x-1.5 flex-shrink-0 active:scale-95 group"
+						class="py-2 sm:py-2.5 px-3.5 sm:px-4 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex items-center space-x-1.5 flex-shrink-0 active:scale-95 group cursor-pointer"
 					>
 						<span>Send</span>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 flex-shrink-0 group-hover:translate-x-0.5 transition-transform">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 flex-shrink-0 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform duration-200">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
 						</svg>
 					</button>
