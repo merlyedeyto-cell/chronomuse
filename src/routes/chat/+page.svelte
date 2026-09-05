@@ -1352,10 +1352,10 @@
 
 <div
 	style={activeFriend !== null ? `height: ${mobileViewportHeight}; top: ${mobileViewportTop};` : ''}
-	class="bg-gradient-to-br from-pink-50/80 via-pink-100/50 to-pink-200/40 flex flex-col font-sans animate-fade-in {activeFriend !== null ? 'fixed inset-x-0 bottom-auto z-40 w-full overflow-hidden overscroll-none md:static md:z-auto md:h-auto md:min-h-screen md:top-auto md:w-auto' : 'min-h-screen'}"
+	class="bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 flex flex-col font-sans animate-fade-in {activeFriend !== null ? 'fixed inset-x-0 bottom-auto z-40 w-full overflow-hidden overscroll-none md:static md:z-auto md:h-auto md:min-h-screen md:top-auto md:w-auto' : 'min-h-screen'}"
 >
 	<!-- Top Navigation (Hidden on mobile when chat is open, always visible on desktop) -->
-	<nav class="bg-white/90 backdrop-blur-md border-b border-pink-200 shadow-xs sticky top-0 z-50 animate-slide-down {activeFriend !== null ? 'hidden md:block' : 'block'}">
+	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down {activeFriend !== null ? 'hidden md:block' : 'block'}">
 		<div class="container mx-auto px-4 py-3 flex items-center justify-between">
 			<div class="flex items-center space-x-2.5">
 				<button
@@ -1416,7 +1416,7 @@
 	<div class="flex-grow flex flex-col md:flex-row overflow-hidden {activeFriend !== null ? 'p-0 w-full h-full max-w-full md:container md:mx-auto md:px-4 md:py-4 md:max-w-7xl md:gap-4 md:h-[calc(100vh-5rem)]' : 'container mx-auto px-2 sm:px-4 py-3 sm:py-4 max-w-7xl gap-3 sm:gap-4 h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5rem)]'}">
 		
 		<!-- Left Panel: Friends & Search -->
-		<div class="w-full md:w-84 lg:w-96 flex-shrink-0 bg-white/95 backdrop-blur-md border border-pink-200/90 rounded-2xl shadow-sm flex flex-col overflow-hidden animate-fade-in-up" class:hidden={activeFriend !== null} class:md:flex={true} style="animation-delay: 0.05s">
+		<div class="w-full md:w-84 lg:w-96 flex-shrink-0 bg-white/95 backdrop-blur-md border-2 border-pink-300 rounded-2xl shadow-md flex flex-col overflow-hidden animate-fade-in-up" class:hidden={activeFriend !== null} class:md:flex={true} style="animation-delay: 0.05s">
 			<!-- Conversations Header -->
 			<div class="p-3.5 sm:p-4 bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bold text-sm sm:text-base flex items-center justify-between shadow-xs">
 				<div class="flex items-center space-x-2">
@@ -1599,7 +1599,7 @@
 
 		<!-- Right Panel: Active Chat Stream -->
 		<div
-			class="flex-grow bg-white/95 backdrop-blur-md flex flex-col overflow-hidden relative animate-fade-in-up {activeFriend !== null ? 'h-full w-full rounded-none border-0 shadow-none md:h-full md:rounded-2xl md:border md:border-pink-200/90 md:shadow-sm' : 'border border-pink-200/90 rounded-2xl shadow-sm'}"
+			class="flex-grow bg-white/95 backdrop-blur-md flex flex-col overflow-hidden relative animate-fade-in-up {activeFriend !== null ? 'h-full w-full rounded-none border-0 shadow-none md:h-full md:rounded-2xl md:border-2 md:border-pink-300 md:shadow-md' : 'border-2 border-pink-300 rounded-2xl shadow-md'}"
 			class:hidden={activeFriend === null}
 			class:md:flex={true}
 			style="animation-delay: 0.1s"
