@@ -52,8 +52,12 @@
 		return currentUser ? JSON.parse(currentUser) : null;
 	}
 
+	let searchAbortController = null;
+
 	function handleSearchInput() {
 		if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+		if (searchAbortController) searchAbortController.abort();
+
 		const query = friendUsername.trim();
 		if (!query) {
 			searchResults = [];
@@ -70,6 +74,11 @@
 	async function performUserSearch(query) {
 		const user = getCurrentUser();
 		if (!user || !user.id || !query) return;
+		if (searchAbortController) {
+			searchAbortController.abort();
+		}
+		searchAbortController = new AbortController();
+
 		isSearching = true;
 		hasSearched = true;
 		errorMessage = '';
@@ -82,7 +91,8 @@
 				body: JSON.stringify({
 					user_id: user.id,
 					query: query
-				})
+				}),
+				signal: searchAbortController.signal
 			});
 			const data = await res.json();
 			if (data.success && data.data) {
@@ -91,6 +101,7 @@
 				searchResults = [];
 			}
 		} catch (err) {
+			if (err.name === 'AbortError') return;
 			console.error('Search error in modal:', err);
 			searchResults = [];
 		} finally {

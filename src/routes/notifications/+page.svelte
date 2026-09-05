@@ -37,23 +37,6 @@
 	let totalMemoriesCount = $derived(acceptedSharedMemories.length);
 	let totalSentCount = $derived(sentSharedMemories.length);
 
-	$effect(() => {
-		const storedUser = typeof window !== 'undefined' ? localStorage.getItem('chronomuse_user') : null;
-		if (storedUser) {
-			const parsed = JSON.parse(storedUser);
-			if (!user || Number(user.id) !== Number(parsed.id)) {
-				user = parsed;
-				notifications = {
-					shared_memories: [],
-					sent_shared_memories: [],
-					incoming_requests: [],
-					total_notifications_count: 0
-				};
-				fetchNotifications(false);
-			}
-		}
-	});
-
 	onMount(() => {
 		const storedUser = localStorage.getItem('chronomuse_user');
 		if (storedUser) {
@@ -134,6 +117,7 @@
 			if (data.success && data.data) {
 				notifications = data.data;
 				if (!hasLoadedOnce) {
+					hasLoadedOnce = true;
 					if (pendingSharedMemories.length > 0) {
 						activeTab = 'pending_memories';
 					} else if (acceptedSharedMemories.length > 0) {
@@ -148,7 +132,6 @@
 			console.error('Error fetching notifications:', err);
 		} finally {
 			isLoading = false;
-			hasLoadedOnce = true;
 		}
 	}
 

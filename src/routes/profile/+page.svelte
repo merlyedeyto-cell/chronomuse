@@ -9,7 +9,7 @@
 
 	let currentUser = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let targetUserId = $state(null);
-	let profileData = $state(null);
+	let profileData = $state(/** @type {any} */ (null));
 	let isLoading = $state(false);
 	let isSaving = $state(false);
 	let isUploadingAvatar = $state(false);
@@ -62,6 +62,7 @@
 
 	let loadedProfileId = null;
 	let fetchAbortController = null;
+	const profileCache = new Map();
 
 	async function loadProfile(targetId = null, isSilent = false) {
 		if (fetchAbortController) {
@@ -69,22 +70,29 @@
 		}
 		fetchAbortController = new AbortController();
 
-		if (!isSilent && !profileData) {
-			isLoading = true;
+		const stored = typeof window !== 'undefined' ? localStorage.getItem('chronomuse_user') : null;
+		if (!stored) {
+			goto('/');
+			return;
 		}
+		currentUser = JSON.parse(stored);
+
+		// Determine which profile to load
+		const urlParamId = $page.url.searchParams.get('id') || $page.url.searchParams.get('user_id');
+		const effectiveTargetId = targetId || urlParamId || currentUser.id;
+		targetUserId = effectiveTargetId;
+		const targetKey = String(effectiveTargetId);
+
+		// Instant Stale-While-Revalidate caching for zero-lag transitions
+		if (profileCache.has(targetKey)) {
+			profileData = profileCache.get(targetKey);
+			isLoading = false;
+		} else if (!isSilent) {
+			isLoading = true;
+			profileData = null;
+		}
+
 		try {
-			const stored = localStorage.getItem('chronomuse_user');
-			if (!stored) {
-				goto('/');
-				return;
-			}
-			currentUser = JSON.parse(stored);
-
-			// Determine which profile to load
-			const urlParamId = $page.url.searchParams.get('id') || $page.url.searchParams.get('user_id');
-			const effectiveTargetId = targetId || urlParamId || currentUser.id;
-			targetUserId = effectiveTargetId;
-
 			const res = await fetch(API_ENDPOINTS.getProfile, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -98,6 +106,7 @@
 			const data = await res.json();
 			if (data.success && data.data) {
 				profileData = data.data;
+				profileCache.set(targetKey, data.data);
 				if (profileData.is_self) {
 					editUsername = profileData.user.username || '';
 					editEmail = profileData.user.email || '';
@@ -108,7 +117,7 @@
 		} catch (err) {
 			if (err.name === 'AbortError') return;
 			console.error('Error loading profile:', err);
-			if (!isSilent) {
+			if (!isSilent && !profileCache.has(targetKey)) {
 				showNotification('Failed to load profile data', 'error');
 			}
 		} finally {
@@ -240,7 +249,12 @@
 	}
 
 	function openChatWithUser(user) {
-		const targetId = user.friend_id || user.id;
+		const targetId = user?.friend_id || user?.id;
+		if (!targetId) return;
+		if (currentUser && String(targetId) === String(currentUser.id)) {
+			showNotification('You cannot message yourself', 'error');
+			return;
+		}
 		goto(`/chat?friend_id=${targetId}&username=${encodeURIComponent(user.username)}`);
 	}
 

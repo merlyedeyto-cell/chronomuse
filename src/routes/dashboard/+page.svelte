@@ -1,5 +1,5 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
@@ -123,15 +123,15 @@
 			window.addEventListener('chronomuse_notification_change', checkNotifications);
 			window.addEventListener('chronomuse_memory_change', handleMemoryChange);
 		}
-	});
 
-	onDestroy(() => {
-		if (browser) {
-			window.removeEventListener('pinnedDatesChanged', handlePinnedChange);
-			window.removeEventListener('chronomuse_pinned_change', handlePinnedChange);
-			window.removeEventListener('chronomuse_notification_change', checkNotifications);
-			window.removeEventListener('chronomuse_memory_change', handleMemoryChange);
-		}
+		return () => {
+			if (browser) {
+				window.removeEventListener('pinnedDatesChanged', handlePinnedChange);
+				window.removeEventListener('chronomuse_pinned_change', handlePinnedChange);
+				window.removeEventListener('chronomuse_notification_change', checkNotifications);
+				window.removeEventListener('chronomuse_memory_change', handleMemoryChange);
+			}
+		};
 	});
 
 	function toggleSidebar() {

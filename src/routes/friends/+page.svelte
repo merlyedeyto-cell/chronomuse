@@ -52,9 +52,6 @@
 			if (user && user.id) {
 				fetchFriends(true);
 				fetchPendingRequests(true);
-				if (friendUsername.trim()) {
-					performUserSearch(friendUsername.trim(), true);
-				}
 			}
 		};
 
@@ -66,9 +63,6 @@
 			if (user && user.id) {
 				fetchFriends(true);
 				fetchPendingRequests(true);
-				if (friendUsername.trim()) {
-					performUserSearch(friendUsername.trim(), true);
-				}
 			}
 		}, 2500);
 
@@ -164,8 +158,12 @@
 		});
 	}
 
+	let searchAbortController = null;
+
 	function handleSearchInput() {
 		if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+		if (searchAbortController) searchAbortController.abort();
+
 		const query = friendUsername.trim();
 		if (!query) {
 			searchResults = [];
@@ -181,6 +179,11 @@
 
 	async function performUserSearch(query, isSilent = false) {
 		if (!user || !user.id || !query) return;
+		if (searchAbortController) {
+			searchAbortController.abort();
+		}
+		searchAbortController = new AbortController();
+
 		if (!isSilent && searchResults.length === 0) {
 			isSearchingUsers = true;
 		}
@@ -197,7 +200,8 @@
 				body: JSON.stringify({
 					user_id: user.id,
 					query: query
-				})
+				}),
+				signal: searchAbortController.signal
 			});
 			const data = await res.json();
 			if (data.success && data.data) {
@@ -206,6 +210,7 @@
 				searchResults = [];
 			}
 		} catch (err) {
+			if (err.name === 'AbortError') return;
 			console.error('Search users error:', err);
 			if (!isSilent) searchResults = [];
 		} finally {
@@ -458,6 +463,9 @@
 
 	function openChatWithFriend(friend) {
 		const targetId = friend.friend_id || friend.id;
+		if (user && String(targetId) === String(user.id)) {
+			return;
+		}
 		goto(`/chat?friend_id=${targetId}&username=${encodeURIComponent(friend.username)}`);
 	}
 

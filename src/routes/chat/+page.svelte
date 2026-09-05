@@ -1,5 +1,5 @@
 <script>
-	import { onMount, onDestroy, tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
@@ -143,22 +143,29 @@
 
 		if (friendIdParam || usernameParam) {
 			const fid = friendIdParam ? Number(friendIdParam) : null;
-			activeFriend = {
-				friend_id: fid,
-				id: fid,
-				username: usernameParam || 'User',
-				is_friend: friends.some(f => Number(f.friend_id) === fid)
-			};
-			if (friendIdParam) {
-				fetchMessages(Number(friendIdParam), true);
-				initTypingChannel(Number(friendIdParam));
-			}
+			if (fid && user?.id && Number(fid) === Number(user.id)) {
+				activeFriend = null;
+				if (typeof window !== 'undefined') {
+					history.replaceState({ chatOpen: false }, '', '/chat');
+				}
+			} else {
+				activeFriend = {
+					friend_id: fid,
+					id: fid,
+					username: usernameParam || 'User',
+					is_friend: friends.some(f => Number(f.friend_id) === fid)
+				};
+				if (friendIdParam) {
+					fetchMessages(Number(friendIdParam), true);
+					initTypingChannel(Number(friendIdParam));
+				}
 
-			// Ensure base history state is /chat so pressing back on mobile returns to chat list (Friends Chat)
-			if (typeof window !== 'undefined') {
-				const currentSearch = window.location.search;
-				history.replaceState({ chatOpen: false }, '', '/chat');
-				history.pushState({ chatOpen: true, friend_id: Number(friendIdParam) }, '', `/chat${currentSearch}`);
+				// Ensure base history state is /chat so pressing back on mobile returns to chat list (Friends Chat)
+				if (typeof window !== 'undefined') {
+					const currentSearch = window.location.search;
+					history.replaceState({ chatOpen: false }, '', '/chat');
+					history.pushState({ chatOpen: true, friend_id: Number(friendIdParam) }, '', `/chat${currentSearch}`);
+				}
 			}
 		} else {
 			if (typeof window !== 'undefined') {
@@ -275,26 +282,24 @@
 				document.documentElement.style.overflow = '';
 				document.body.style.overflow = '';
 			}
-		};
-	});
 
-	onDestroy(() => {
-		if (heartbeatInterval) clearInterval(heartbeatInterval);
-		if (pollInterval) clearInterval(pollInterval);
-		if (typingTimeout) clearTimeout(typingTimeout);
-		if (myTypingTimeout) clearTimeout(myTypingTimeout);
-		if (myTypingInterval) clearInterval(myTypingInterval);
-		if (typingChannel) {
-			supabase.removeChannel(typingChannel);
-		}
-		if (presenceChannel) {
-			presenceChannel.untrack();
-			supabase.removeChannel(presenceChannel);
-		}
-		// Mark user as offline on exit
-		if (user) {
-			updateServerActivity(false);
-		}
+			if (heartbeatInterval) clearInterval(heartbeatInterval);
+			if (pollInterval) clearInterval(pollInterval);
+			if (typingTimeout) clearTimeout(typingTimeout);
+			if (myTypingTimeout) clearTimeout(myTypingTimeout);
+			if (myTypingInterval) clearInterval(myTypingInterval);
+			if (typingChannel) {
+				supabase.removeChannel(typingChannel);
+			}
+			if (presenceChannel) {
+				presenceChannel.untrack();
+				supabase.removeChannel(presenceChannel);
+			}
+			// Mark user as offline on exit
+			if (user) {
+				updateServerActivity(false);
+			}
+		};
 	});
 
 	function initPresenceChannel() {
@@ -687,6 +692,7 @@
 	}
 
 	async function selectFriend(friend) {
+		if (user && Number(friend?.friend_id || friend?.id) === Number(user.id)) return;
 		stopMyTyping();
 		activeFriend = friend;
 		friend.unread_count = 0;

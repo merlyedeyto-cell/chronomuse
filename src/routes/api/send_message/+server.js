@@ -9,6 +9,10 @@ export async function POST({ request }) {
 			return json({ error: 'User ID, Friend ID, and non-empty message are required' }, { status: 400 });
 		}
 
+		if (String(user_id) === String(friend_id)) {
+			return json({ error: 'You cannot send messages to yourself' }, { status: 400 });
+		}
+
 		const { data: newMessage, error } = await supabase
 			.from('chronomuse_messages')
 			.insert([

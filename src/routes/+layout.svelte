@@ -1,9 +1,9 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import { supabase } from '$lib/supabaseClient';
 	import { page } from '$app/stores';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
-	import { playIncomingMessageSound, playNotificationSound } from '$lib/soundEffects.js';
+	import { playIncomingMessageSound, playNotificationSound, playClickSound } from '$lib/soundEffects.js';
 
 	let user = $state(null);
 	let globalMsgChannel = null;
@@ -363,18 +363,23 @@
 	onMount(() => {
 		syncUserStateAndListeners();
 
+		const handleGlobalClick = (e) => {
+			const target = e.target?.closest?.('button, a, input[type="submit"], input[type="button"], [role="button"], .cursor-pointer');
+			if (target) {
+				playClickSound();
+			}
+		};
+
+		window.addEventListener('click', handleGlobalClick, { capture: true, passive: true });
 		window.addEventListener('storage', syncUserStateAndListeners);
 		window.addEventListener('chronomuse_auth_change', syncUserStateAndListeners);
 
 		return () => {
+			window.removeEventListener('click', handleGlobalClick, { capture: true });
 			window.removeEventListener('storage', syncUserStateAndListeners);
 			window.removeEventListener('chronomuse_auth_change', syncUserStateAndListeners);
 			teardownListeners();
 		};
-	});
-
-	onDestroy(() => {
-		teardownListeners();
 	});
 </script>
 

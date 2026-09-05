@@ -1,5 +1,5 @@
 <script>
-	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -88,16 +88,16 @@
 
 	onMount(() => {
 		document.addEventListener('click', handleClickOutside);
-	});
 
-	onDestroy(() => {
-		document.removeEventListener('click', handleClickOutside);
-		if (longPressTimer) {
-			clearTimeout(longPressTimer);
-		}
-		if (closeTimer) {
-			clearTimeout(closeTimer);
-		}
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+			if (longPressTimer) {
+				clearTimeout(longPressTimer);
+			}
+			if (closeTimer) {
+				clearTimeout(closeTimer);
+			}
+		};
 	});
 
 	const monthNames = [
