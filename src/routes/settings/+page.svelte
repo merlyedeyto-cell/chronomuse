@@ -352,7 +352,7 @@
 	<Sidebar bind:isOpen={sidebarOpen} on:logout={handleLogout} />
 
 	<!-- Main Settings Container -->
-	<main class="flex-grow container mx-auto px-4 py-6 sm:py-8 max-w-3xl space-y-6">
+	<main class="flex-grow container mx-auto px-4 py-6 sm:py-8 max-w-2xl space-y-4">
 		<!-- Page Title Banner -->
 		<div class="flex items-center space-x-3.5 pb-3 border-b-2 border-pink-300">
 			<div class="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
@@ -371,31 +371,31 @@
 		<div class="space-y-4">
 			
 			<!-- ITEM 1: PRIVACY & ONLINE ACTIVE STATUS -->
-			<div class="bg-white/95 backdrop-blur-md rounded-3xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
+			<div class="bg-white rounded-2xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->
 				<button
 					type="button"
 					onclick={() => toggleTab('privacy')}
-					class="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-pink-50/60 transition-colors cursor-pointer"
+					class="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-pink-50/60 transition-colors cursor-pointer"
 				>
-					<div class="flex items-center space-x-3.5 min-w-0 pr-2">
-						<div class="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
+					<div class="flex items-center space-x-3 min-w-0 pr-2">
+						<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
 							</svg>
 						</div>
 						<div class="min-w-0">
-							<h3 class="text-sm sm:text-base font-black text-pink-950 truncate">Privacy & Active Online Status</h3>
-							<p class="text-xs text-pink-600 font-medium truncate">Hide/show active online status and account privacy controls</p>
+							<h3 class="text-xs sm:text-sm font-bold text-pink-950 truncate">Privacy & Active Online Status</h3>
+							<p class="text-[11px] text-pink-600 font-medium truncate">Hide/show active online status and account privacy controls</p>
 						</div>
 					</div>
 					
-					<div class="flex items-center space-x-3 flex-shrink-0">
-						<span class="text-xs font-extrabold px-2.5 py-1 rounded-full border {activeStatusEnabled ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-gray-100 text-gray-600 border-gray-300'}">
+					<div class="flex items-center space-x-2 flex-shrink-0">
+						<span class="text-xs font-bold px-2.5 py-1 rounded-lg border {activeStatusEnabled ? 'bg-pink-100 text-pink-700 border-pink-300' : 'bg-gray-100 text-gray-600 border-gray-300'}">
 							{activeStatusEnabled ? 'Active ON' : 'Active OFF'}
 						</span>
-						<div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center transition-transform duration-300 {activeTab === 'privacy' ? 'rotate-180 bg-pink-500 text-white' : ''}">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+						<div class="w-7 h-7 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center transition-transform duration-300 {activeTab === 'privacy' ? 'rotate-180 bg-pink-500 text-white' : ''}">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 							</svg>
 						</div>
@@ -464,31 +464,31 @@
 			</div>
 
 			<!-- ITEM 2: SOUND & TOUCH FEEDBACK -->
-			<div class="bg-white/95 backdrop-blur-md rounded-3xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
+			<div class="bg-white rounded-2xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->
 				<button
 					type="button"
 					onclick={() => toggleTab('audio')}
-					class="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-pink-50/60 transition-colors cursor-pointer"
+					class="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-pink-50/60 transition-colors cursor-pointer"
 				>
-					<div class="flex items-center space-x-3.5 min-w-0 pr-2">
-						<div class="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
+					<div class="flex items-center space-x-3 min-w-0 pr-2">
+						<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.287a5.25 5.25 0 010 7.426M12 5.25v13.5m0-13.5L7.5 9H4.5A1.5 1.5 0 003 10.5v3A1.5 1.5 0 004.5 15h3l4.5 3.75v-13.5z" />
 							</svg>
 						</div>
 						<div class="min-w-0">
-							<h3 class="text-sm sm:text-base font-black text-pink-950 truncate">Sound & Touch Feedback</h3>
-							<p class="text-xs text-pink-600 font-medium truncate">Control touch sound effects and interactive audio</p>
+							<h3 class="text-xs sm:text-sm font-bold text-pink-950 truncate">Sound & Touch Feedback</h3>
+							<p class="text-[11px] text-pink-600 font-medium truncate">Control touch sound effects and interactive audio</p>
 						</div>
 					</div>
 
-					<div class="flex items-center space-x-3 flex-shrink-0">
-						<span class="text-xs font-extrabold px-2.5 py-1 rounded-full border {soundEffectsEnabled ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-gray-100 text-gray-600 border-gray-300'}">
+					<div class="flex items-center space-x-2 flex-shrink-0">
+						<span class="text-xs font-bold px-2.5 py-1 rounded-lg border {soundEffectsEnabled ? 'bg-pink-100 text-pink-700 border-pink-300' : 'bg-gray-100 text-gray-600 border-gray-300'}">
 							{soundEffectsEnabled ? 'Sound ON' : 'Sound OFF'}
 						</span>
-						<div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center transition-transform duration-300 {activeTab === 'audio' ? 'rotate-180 bg-pink-500 text-white' : ''}">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+						<div class="w-7 h-7 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center transition-transform duration-300 {activeTab === 'audio' ? 'rotate-180 bg-pink-500 text-white' : ''}">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 							</svg>
 						</div>
@@ -529,31 +529,31 @@
 			</div>
 
 			<!-- ITEM 3: BLOCKED ACCOUNTS & USERS -->
-			<div class="bg-white/95 backdrop-blur-md rounded-3xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
+			<div class="bg-white rounded-2xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->
 				<button
 					type="button"
 					onclick={() => toggleTab('blocked')}
-					class="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-pink-50/60 transition-colors cursor-pointer"
+					class="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-pink-50/60 transition-colors cursor-pointer"
 				>
-					<div class="flex items-center space-x-3.5 min-w-0 pr-2">
-						<div class="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
+					<div class="flex items-center space-x-3 min-w-0 pr-2">
+						<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
 							</svg>
 						</div>
 						<div class="min-w-0">
-							<h3 class="text-sm sm:text-base font-black text-pink-950 truncate">Blocked Accounts Management</h3>
-							<p class="text-xs text-pink-600 font-medium truncate">Search and select users to block or toggle unblock status</p>
+							<h3 class="text-xs sm:text-sm font-bold text-pink-950 truncate">Blocked Accounts Management</h3>
+							<p class="text-[11px] text-pink-600 font-medium truncate">Search and select users to block or toggle unblock status</p>
 						</div>
 					</div>
 
-					<div class="flex items-center space-x-3 flex-shrink-0">
-						<span class="text-xs font-extrabold px-2.5 py-1 rounded-full border bg-pink-100 text-pink-700 border-pink-300">
+					<div class="flex items-center space-x-2 flex-shrink-0">
+						<span class="text-xs font-bold px-2.5 py-1 rounded-lg border bg-pink-100 text-pink-700 border-pink-300">
 							{blockedUsers.length} Blocked
 						</span>
-						<div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center transition-transform duration-300 {activeTab === 'blocked' ? 'rotate-180 bg-pink-500 text-white' : ''}">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+						<div class="w-7 h-7 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center transition-transform duration-300 {activeTab === 'blocked' ? 'rotate-180 bg-pink-500 text-white' : ''}">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 							</svg>
 						</div>
@@ -670,31 +670,31 @@
 			</div>
 
 			<!-- ITEM 4: PASSWORDS & EMAIL SECURITY -->
-			<div class="bg-white/95 backdrop-blur-md rounded-3xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
+			<div class="bg-white rounded-2xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->
 				<button
 					type="button"
 					onclick={() => toggleTab('security')}
-					class="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-pink-50/60 transition-colors cursor-pointer"
+					class="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-pink-50/60 transition-colors cursor-pointer"
 				>
-					<div class="flex items-center space-x-3.5 min-w-0 pr-2">
-						<div class="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
+					<div class="flex items-center space-x-3 min-w-0 pr-2">
+						<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
 							</svg>
 						</div>
 						<div class="min-w-0">
-							<h3 class="text-sm sm:text-base font-black text-pink-950 truncate">Password & Email Credentials</h3>
-							<p class="text-xs text-pink-600 font-medium truncate">Update username, email address, and security password</p>
+							<h3 class="text-xs sm:text-sm font-bold text-pink-950 truncate">Password & Email Credentials</h3>
+							<p class="text-[11px] text-pink-600 font-medium truncate">Update username, email address, and security password</p>
 						</div>
 					</div>
 
-					<div class="flex items-center space-x-3 flex-shrink-0">
-						<span class="text-xs font-extrabold px-2.5 py-1 rounded-full border bg-pink-100 text-pink-700 border-pink-300">
+					<div class="flex items-center space-x-2 flex-shrink-0">
+						<span class="text-xs font-bold px-2.5 py-1 rounded-lg border bg-pink-100 text-pink-700 border-pink-300">
 							Credentials
 						</span>
-						<div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center transition-transform duration-300 {activeTab === 'security' ? 'rotate-180 bg-pink-500 text-white' : ''}">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+						<div class="w-7 h-7 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center transition-transform duration-300 {activeTab === 'security' ? 'rotate-180 bg-pink-500 text-white' : ''}">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 							</svg>
 						</div>
