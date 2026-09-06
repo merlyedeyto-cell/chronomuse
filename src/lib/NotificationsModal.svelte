@@ -200,27 +200,23 @@
 	}
 
 	function getMusicName(url) {
-		if (!url) return 'Memory Music';
+		if (!url) return '';
 		try {
 			const cleanUrl = url.split('?')[0];
 			let filename = cleanUrl.split('/').pop();
 			filename = decodeURIComponent(filename);
 
-			if (/^music_\d+_[a-z0-9]+\.[a-z0-9]+$/i.test(filename)) {
-				return 'Memory Music';
-			}
-
-			filename = filename.replace(/^music_\d+_[a-z0-9]+_/, '');
-			filename = filename.replace(/^music_\d+_/, '');
-			filename = filename.replace(/^\d+_/, '');
+			filename = filename.replace(/^music_\d+_[a-z0-9]{6,8}_/i, '');
+			filename = filename.replace(/^music_\d+_/i, '');
+			filename = filename.replace(/^\d+_/i, '');
 
 			if (filename.includes('_')) {
 				filename = filename.replace(/_/g, ' ');
 			}
 
-			return filename || 'Memory Music';
+			return filename;
 		} catch (e) {
-			return 'Memory Music';
+			return url;
 		}
 	}
 
