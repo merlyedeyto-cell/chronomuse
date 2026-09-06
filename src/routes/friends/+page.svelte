@@ -57,6 +57,8 @@
 
 		window.addEventListener('chronomuse_friend_change', handleRealtimeUpdate);
 		window.addEventListener('chronomuse_notification_change', handleRealtimeUpdate);
+		window.addEventListener('chronomuse_profile_change', handleRealtimeUpdate);
+		window.addEventListener('chronomuse_note_change', handleRealtimeUpdate);
 
 		// Fast periodic polling to ensure zero delay across different tabs/browsers without flashing loading state
 		autoSyncInterval = setInterval(() => {
@@ -69,6 +71,8 @@
 		return () => {
 			window.removeEventListener('chronomuse_friend_change', handleRealtimeUpdate);
 			window.removeEventListener('chronomuse_notification_change', handleRealtimeUpdate);
+			window.removeEventListener('chronomuse_profile_change', handleRealtimeUpdate);
+			window.removeEventListener('chronomuse_note_change', handleRealtimeUpdate);
 			if (autoSyncInterval) clearInterval(autoSyncInterval);
 		};
 	});

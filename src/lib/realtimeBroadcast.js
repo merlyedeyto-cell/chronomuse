@@ -137,20 +137,32 @@ export function broadcastProfileEvent(userId, updatedFields = {}) {
 			timestamp: Date.now()
 		};
 
-		const channel = getSharedGlobalChannel();
-		if (channel) {
-			channel.send({
-				type: 'broadcast',
-				event: 'global_profile_event',
-				payload
-			});
-			if (updatedFields.note !== undefined) {
-				channel.send({
+		const sendPayloads = (ch) => {
+			try {
+				ch.send({
 					type: 'broadcast',
-					event: 'global_note_event',
-					payload: { user_id: userId, note: updatedFields.note }
+					event: 'global_profile_event',
+					payload
 				});
-			}
+				if (updatedFields.note !== undefined) {
+					ch.send({
+						type: 'broadcast',
+						event: 'global_note_event',
+						payload: { user_id: userId, note: updatedFields.note }
+					});
+				}
+			} catch (e) {}
+		};
+
+		const globalChannel = supabase.channel('chronomuse_global_events');
+		if (globalChannel.state === 'joined') {
+			sendPayloads(globalChannel);
+		} else {
+			globalChannel.subscribe((status) => {
+				if (status === 'SUBSCRIBED') {
+					sendPayloads(globalChannel);
+				}
+			});
 		}
 
 		if ('BroadcastChannel' in window) {

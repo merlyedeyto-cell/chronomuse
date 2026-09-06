@@ -364,6 +364,27 @@
 					window.dispatchEvent(new CustomEvent('chronomuse_pinned_change', { detail: payload }));
 				}
 			})
+			.on('postgres_changes', {
+				event: 'UPDATE',
+				schema: 'public',
+				table: 'chronomuse_users'
+			}, (payload) => {
+				if (typeof window !== 'undefined' && payload?.new) {
+					const updatedUser = payload.new;
+					window.dispatchEvent(new CustomEvent('chronomuse_profile_change', {
+						detail: {
+							user_id: updatedUser.id,
+							updated_fields: updatedUser,
+							note: updatedUser.note
+						}
+					}));
+					if (updatedUser.note !== undefined) {
+						window.dispatchEvent(new CustomEvent('chronomuse_note_change', {
+							detail: { user_id: updatedUser.id, note: updatedUser.note }
+						}));
+					}
+				}
+			})
 			.subscribe();
 	}
 

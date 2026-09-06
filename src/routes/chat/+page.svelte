@@ -250,6 +250,8 @@
 
 		window.addEventListener('chronomuse_new_message', handleRealtimeChatMessage);
 		window.addEventListener('chronomuse_friend_change', handleRealtimeChatMessage);
+		window.addEventListener('chronomuse_profile_change', handleRealtimeChatMessage);
+		window.addEventListener('chronomuse_note_change', handleRealtimeChatMessage);
 
 		// Handle mobile hardware & browser back button to return to chat list
 		const handlePopState = () => {
@@ -322,6 +324,8 @@
 			window.removeEventListener('popstate', handlePopState);
 			window.removeEventListener('chronomuse_new_message', handleRealtimeChatMessage);
 			window.removeEventListener('chronomuse_friend_change', handleRealtimeChatMessage);
+			window.removeEventListener('chronomuse_profile_change', handleRealtimeChatMessage);
+			window.removeEventListener('chronomuse_note_change', handleRealtimeChatMessage);
 			if (typeof window !== 'undefined') {
 				if (window.visualViewport) {
 					window.visualViewport.removeEventListener('resize', updateMobileViewport);

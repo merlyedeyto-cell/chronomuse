@@ -498,6 +498,15 @@
 		const effectiveTargetId = targetId || urlParamId || currentUser.id;
 		targetUserId = effectiveTargetId;
 		const targetKey = String(effectiveTargetId);
+
+		if (profileCache.has(targetKey) && !isSilent) {
+			const cached = profileCache.get(targetKey);
+			profileData = cached;
+			userNote = (cached?.user?.note !== null && cached?.user?.note !== undefined)
+				? cached.user.note
+				: (cached?.is_self && typeof window !== 'undefined' ? (localStorage.getItem(`chronomuse_note_${effectiveTargetId}`) || '') : '');
+			isLoading = false;
+		}
 		try {
 			const res = await fetch(API_ENDPOINTS.getProfile, {
 				method: 'POST',
@@ -522,7 +531,9 @@
 					gender: data.data.user.gender || cachedAbout.gender || null
 				};
 				profileData = { ...data.data, user: mergedUser };
-				userNote = data.data.user.note || (typeof window !== 'undefined' ? (localStorage.getItem(`chronomuse_note_${effectiveTargetId}`) || '') : '');
+				userNote = (data.data.user.note !== null && data.data.user.note !== undefined)
+					? data.data.user.note
+					: (data.data.is_self && typeof window !== 'undefined' ? (localStorage.getItem(`chronomuse_note_${effectiveTargetId}`) || '') : '');
 				profileCache.set(targetKey, profileData);
 
 				if (profileData.is_self) {
@@ -545,12 +556,25 @@
 	onMount(() => {
 		loadProfile();
 
+		const autoSyncTimer = setInterval(() => {
+			const activeId = targetUserId || $page.url.searchParams.get('id') || $page.url.searchParams.get('user_id') || currentUser?.id;
+			if (activeId) {
+				loadProfile(activeId, true);
+			}
+		}, 2000);
+
 		const handleRealtimeNoteChange = (e) => {
 			const detail = e?.detail;
 			if (detail && detail.user_id && profileData?.user) {
 				if (String(profileData.user.id) === String(detail.user_id)) {
 					userNote = detail.note || '';
-					profileData.user.note = detail.note || '';
+					profileData = {
+						...profileData,
+						user: {
+							...profileData.user,
+							note: detail.note || ''
+						}
+					};
 				}
 			}
 		};
@@ -570,7 +594,6 @@
 					if (updatedFields.note !== undefined) {
 						userNote = updatedFields.note || '';
 					}
-					loadProfile(profileData.user.id, true);
 				}
 			}
 		};
@@ -578,6 +601,7 @@
 		window.addEventListener('chronomuse_note_change', handleRealtimeNoteChange);
 		window.addEventListener('chronomuse_profile_change', handleRealtimeProfileChange);
 		return () => {
+			if (autoSyncTimer) clearInterval(autoSyncTimer);
 			window.removeEventListener('chronomuse_note_change', handleRealtimeNoteChange);
 			window.removeEventListener('chronomuse_profile_change', handleRealtimeProfileChange);
 		};
@@ -800,9 +824,57 @@
 	}
 
 	function viewUserProfile(/** @type {any} */ targetUser) {
+		if (!targetUser) return;
 		playClickSound();
-		const targetId = targetUser.friend_id || targetUser.id;
-		goto(`/profile?id=${targetId}`);
+		const targetId = targetUser.friend_id || targetUser.id || targetUser.user_id;
+		if (!targetId) return;
+
+		const targetKey = String(targetId);
+		targetUserId = targetId;
+
+		// 1. Instant optimistic UI switch (0ms latency!)
+		if (profileCache.has(targetKey)) {
+			const cached = profileCache.get(targetKey);
+			profileData = cached;
+			userNote = (cached?.user?.note !== null && cached?.user?.note !== undefined) ? cached.user.note : '';
+			isLoading = false;
+		} else {
+			const cachedAbout = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem(`chronomuse_about_${targetId}`) || '{}') : {};
+			const savedCover = typeof window !== 'undefined' ? (localStorage.getItem(`chronomuse_cover_${targetId}`) || null) : null;
+			profileData = {
+				user: {
+					id: targetId,
+					username: targetUser.username || 'User',
+					email: targetUser.email || '',
+					avatar_url: targetUser.avatar_url || null,
+					cover_url: savedCover || targetUser.cover_url || null,
+					note: targetUser.note !== undefined ? targetUser.note : '',
+					bio: targetUser.bio || cachedAbout.bio || null,
+					birthday: targetUser.birthday || cachedAbout.birthday || null,
+					relationship_status: targetUser.relationship_status || cachedAbout.relationship_status || null,
+					gender: targetUser.gender || cachedAbout.gender || null
+				},
+				is_self: String(targetId) === String(currentUser?.id),
+				is_friend: true,
+				total_friends: profileData?.friends?.length || 0,
+				total_memories: 0,
+				friends: [],
+				mutual_friends: [],
+				mutual_friends_count: 0
+			};
+			userNote = targetUser.note !== undefined ? targetUser.note : '';
+			isLoading = false;
+		}
+
+		if (typeof window !== 'undefined') {
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		}
+
+		// 2. Update URL
+		goto(`/profile?id=${targetId}`, { replaceState: false, keepFocus: true, noScroll: true });
+
+		// 3. Fetch full data silently in background
+		loadProfile(targetId, true);
 	}
 
 	function formatDate(/** @type {string} */ dateStr) {
@@ -848,18 +920,21 @@
 				})
 				.on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chronomuse_users' }, (payload) => {
 					const updated = payload.new;
-					if (updated && profileData?.user && String(updated.id) === String(profileData.user.id)) {
-						profileData = {
-							...profileData,
-							user: {
-								...profileData.user,
-								...updated
-							}
-						};
+					const currentId = targetUserId || profileData?.user?.id;
+					if (updated && currentId && String(updated.id) === String(currentId)) {
 						if (updated.note !== undefined) {
 							userNote = updated.note || '';
 						}
-						loadProfile(profileData.user.id, true);
+						if (profileData?.user) {
+							profileData = {
+								...profileData,
+								user: {
+									...profileData.user,
+									...updated
+								}
+							};
+						}
+						loadProfile(currentId, true);
 					}
 				})
 				.subscribe();
