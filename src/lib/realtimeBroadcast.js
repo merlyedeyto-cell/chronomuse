@@ -63,50 +63,51 @@ export function broadcastMemoryEvent(senderId, recipientId, eventType = 'shared_
 	if (typeof window === 'undefined') return;
 
 	try {
-		// 1. Send direct to recipient's or sender's private inbox channel
+		const payload = {
+			sender_id: senderId,
+			receiver_id: recipientId,
+			target_id: recipientId,
+			eventType,
+			memoryData,
+			timestamp: Date.now()
+		};
+
+		const sendPayload = (channel, eventName) => {
+			try {
+				channel.send({ type: 'broadcast', event: eventName, payload });
+			} catch (e) {}
+		};
+
 		if (recipientId) {
 			const targetChannel = supabase.channel(`chronomuse_user_inbox_${recipientId}`);
-			targetChannel.subscribe((status) => {
-				if (status === 'SUBSCRIBED') {
-					targetChannel.send({
-						type: 'broadcast',
-						event: 'notification',
-						payload: {
-							sender_id: senderId,
-							receiver_id: recipientId,
-							eventType,
-							memoryData,
-							timestamp: Date.now()
-						}
-					});
-				}
+			if (targetChannel.state === 'joined') {
+				sendPayload(targetChannel, 'notification');
+			} else {
+				targetChannel.subscribe((status) => {
+					if (status === 'SUBSCRIBED') sendPayload(targetChannel, 'notification');
+				});
+			}
+		}
+
+		const globalChannel = supabase.channel('chronomuse_global_events');
+		if (globalChannel.state === 'joined') {
+			sendPayload(globalChannel, 'global_memory_event');
+		} else {
+			globalChannel.subscribe((status) => {
+				if (status === 'SUBSCRIBED') sendPayload(globalChannel, 'global_memory_event');
 			});
 		}
 
-		// 2. Send to global realtime events channel
-		const globalChannel = supabase.channel('chronomuse_global_events');
-		globalChannel.subscribe((status) => {
-			if (status === 'SUBSCRIBED') {
-				globalChannel.send({
-					type: 'broadcast',
-					event: 'global_memory_event',
-					payload: {
-						sender_id: senderId,
-						target_id: recipientId,
-						eventType,
-						memoryData,
-						timestamp: Date.now()
-					}
-				});
-			}
-		});
+		if ('BroadcastChannel' in window) {
+			try {
+				const bc = new BroadcastChannel('chronomuse_realtime_bus');
+				bc.postMessage({ type: 'memory_change', detail: payload });
+				bc.close();
+			} catch (e) {}
+		}
 
-		window.dispatchEvent(new CustomEvent('chronomuse_notification_change', {
-			detail: { sender_id: senderId, target_id: recipientId, eventType, memoryData }
-		}));
-		window.dispatchEvent(new CustomEvent('chronomuse_memory_change', {
-			detail: { sender_id: senderId, target_id: recipientId, eventType, memoryData }
-		}));
+		window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload }));
+		window.dispatchEvent(new CustomEvent('chronomuse_memory_change', { detail: payload }));
 	} catch (err) {
 		console.error('Error broadcasting memory event:', err);
 	}

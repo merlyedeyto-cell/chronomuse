@@ -160,6 +160,10 @@
 		notifications.sent_shared_memories = (notifications.sent_shared_memories || []).filter(m => m.share_id !== item.share_id);
 		showCancelConfirmModal = false;
 
+		import('$lib/realtimeBroadcast.js').then(({ broadcastMemoryEvent }) => {
+			broadcastMemoryEvent(userId, item.recipient_id, 'shared_memory_cancelled', item.memory);
+		}).catch(() => {});
+
 		try {
 			const res = await fetch(API_ENDPOINTS.cancelSharedMemory, {
 				method: 'POST',
@@ -173,8 +177,12 @@
 			if (!data.success) {
 				notifications.sent_shared_memories = backupSent;
 			} else {
+				import('$lib/realtimeBroadcast.js').then(({ broadcastMemoryEvent }) => {
+					broadcastMemoryEvent(userId, item.recipient_id, 'shared_memory_cancelled', item.memory);
+				}).catch(() => {});
 				if (typeof window !== 'undefined') {
 					window.dispatchEvent(new Event('chronomuse_notification_change'));
+					window.dispatchEvent(new Event('chronomuse_memory_change'));
 				}
 			}
 		} catch (err) {
@@ -234,17 +242,19 @@
 		fetchNotifications();
 
 		const handleRealtimeNotifs = () => {
-			if (isOpen && userId) {
+			if (userId) {
 				fetchNotifications(true);
 			}
 		};
 
 		window.addEventListener('chronomuse_notification_change', handleRealtimeNotifs);
 		window.addEventListener('chronomuse_friend_change', handleRealtimeNotifs);
+		window.addEventListener('chronomuse_memory_change', handleRealtimeNotifs);
 
 		return () => {
 			window.removeEventListener('chronomuse_notification_change', handleRealtimeNotifs);
 			window.removeEventListener('chronomuse_friend_change', handleRealtimeNotifs);
+			window.removeEventListener('chronomuse_memory_change', handleRealtimeNotifs);
 		};
 	});
 
