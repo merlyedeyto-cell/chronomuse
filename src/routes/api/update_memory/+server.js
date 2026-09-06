@@ -125,29 +125,40 @@ export async function POST({ request }) {
 			const { data: owner } = await supabase.from('chronomuse_users').select('username').eq('id', updatedMemory.user_id).single();
 			const ownerUsername = owner ? owner.username : '';
 
-			if (ownerUsername) {
-				for (const recipientId of sharedWith) {
-					const { data: existingCopies } = await supabase
-						.from('chronomuse_memories')
-						.select('id')
-						.eq('user_id', recipientId)
-						.eq('date', updatedMemory.date)
-						.ilike('description', `%Shared by @${ownerUsername}%`);
+			for (const recipientId of sharedWith) {
+				// 1. Try matching recipient memories by Shared by tag
+				let { data: recipientCopies } = await supabase
+					.from('chronomuse_memories')
+					.select('id, description')
+					.eq('user_id', recipientId)
+					.eq('date', updatedMemory.date)
+					.ilike('description', '%Shared by%');
 
-					if (existingCopies && existingCopies.length > 0) {
-						for (const existingCopy of existingCopies) {
-							let copyUpdateData = { ...updateData };
-							if (copyUpdateData.description !== undefined) {
-								copyUpdateData.description = copyUpdateData.description
-									? `${copyUpdateData.description}\n\n(Shared by @${ownerUsername})`
-									: `(Shared by @${ownerUsername})`;
-							}
-							
-							await supabase
-								.from('chronomuse_memories')
-								.update(copyUpdateData)
-								.eq('id', existingCopy.id);
+				// 2. Fallback to all recipient memories on that date
+				if (!recipientCopies || recipientCopies.length === 0) {
+					const { data: dateCopies } = await supabase
+						.from('chronomuse_memories')
+						.select('id, description')
+						.eq('user_id', recipientId)
+						.eq('date', updatedMemory.date);
+					recipientCopies = dateCopies || [];
+				}
+
+				if (recipientCopies && recipientCopies.length > 0) {
+					for (const copyRecord of recipientCopies) {
+						let copyUpdateData = { ...updateData };
+						if (copyUpdateData.description !== undefined) {
+							const tagText = ownerUsername ? `(Shared by @${ownerUsername})` : '(Shared Memory)';
+							const baseDesc = copyUpdateData.description
+								? copyUpdateData.description.replace(/\(Shared by @[^)]+\)/gi, '').trim()
+								: '';
+							copyUpdateData.description = baseDesc ? `${baseDesc}\n\n${tagText}` : tagText;
 						}
+
+						await supabase
+							.from('chronomuse_memories')
+							.update(copyUpdateData)
+							.eq('id', copyRecord.id);
 					}
 				}
 			}

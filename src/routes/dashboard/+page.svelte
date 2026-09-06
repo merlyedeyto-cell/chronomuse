@@ -125,16 +125,25 @@
 			if (pinnedMemoryCardRef) pinnedMemoryCardRef.loadPinnedMemories(true);
 		};
 
+		let syncInterval;
 		// Listen for pinned dates and memory changes
 		if (browser) {
 			window.addEventListener('pinnedDatesChanged', handlePinnedChange);
 			window.addEventListener('chronomuse_pinned_change', handlePinnedChange);
 			window.addEventListener('chronomuse_notification_change', checkNotifications);
 			window.addEventListener('chronomuse_memory_change', handleMemoryChange);
+
+			// Fast auto-sync interval to ensure instant memory updates across devices
+			syncInterval = setInterval(() => {
+				if (selectedDate) {
+					loadMemoriesForDate(selectedDate);
+				}
+			}, 2500);
 		}
 
 		return () => {
 			if (browser) {
+				if (syncInterval) clearInterval(syncInterval);
 				window.removeEventListener('pinnedDatesChanged', handlePinnedChange);
 				window.removeEventListener('chronomuse_pinned_change', handlePinnedChange);
 				window.removeEventListener('chronomuse_notification_change', checkNotifications);
