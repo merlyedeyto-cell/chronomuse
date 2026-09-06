@@ -467,7 +467,7 @@
 
 					<div class="flex items-center space-x-2 flex-shrink-0">
 						<span class="text-xs font-bold px-2.5 py-1 rounded-lg border {pwaStatus.isStandalone || pwaStatus.isAppInstalled ? 'bg-green-100 text-green-700 border-green-300' : 'bg-pink-500 text-white border-pink-600'}">
-							{pwaStatus.isStandalone ? 'Installed' : pwaStatus.isAppInstalled ? 'Open App' : 'Install App'}
+							{pwaStatus.isStandalone || pwaStatus.isAppInstalled ? 'Open App' : 'Install App'}
 						</span>
 						<div class="w-7 h-7 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center transition-transform duration-300 {activeTab === 'install' ? 'rotate-180 bg-pink-500 text-white' : ''}">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
@@ -491,14 +491,7 @@
 								</div>
 							</div>
 
-							{#if pwaStatus.isStandalone}
-								<div class="p-3 bg-green-50 rounded-xl border border-green-200 text-xs font-semibold text-green-800 flex items-center space-x-2">
-									<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-green-600 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-										<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-									</svg>
-									<span>ChronoMuse is already installed on this device! You are running the standalone app.</span>
-								</div>
-							{:else if pwaStatus.isAppInstalled}
+							{#if pwaStatus.isStandalone || pwaStatus.isAppInstalled}
 								<button
 									type="button"
 									onclick={handleInstallAppFromSettings}
