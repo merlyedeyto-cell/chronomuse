@@ -741,6 +741,7 @@
 				on:deleteMemory={handleDeleteMemory}
 				on:updateMemory={handleUpdateMemory}
 				on:updateMemoryWithFiles={handleUpdateMemoryWithFiles}
+				on:refresh={() => loadMemoriesForDate(selectedDate)}
 			/>
 		{/if}
 

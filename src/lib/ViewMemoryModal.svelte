@@ -89,11 +89,13 @@
 		const handleRealtimeChange = (e) => {
 			if (e && e.detail && e.detail.memoryData) {
 				const updated = e.detail.memoryData;
-				const memIndex = memories.findIndex(m => m.id === updated.id);
+				const memIndex = memories.findIndex(m => m.id === updated.id || (m.date === updated.date && m.description?.includes('Shared by')));
 				if (memIndex !== -1) {
 					memories[memIndex] = {
 						...memories[memIndex],
-						...updated
+						...updated,
+						id: memories[memIndex].id,
+						user_id: memories[memIndex].user_id
 					};
 				}
 			}

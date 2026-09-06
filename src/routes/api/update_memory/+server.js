@@ -127,25 +127,27 @@ export async function POST({ request }) {
 
 			if (ownerUsername) {
 				for (const recipientId of sharedWith) {
-					const { data: existingCopy } = await supabase
+					const { data: existingCopies } = await supabase
 						.from('chronomuse_memories')
 						.select('id')
 						.eq('user_id', recipientId)
 						.eq('date', updatedMemory.date)
-						.ilike('description', `%Shared by @${ownerUsername}%`)
-						.limit(1)
-						.maybeSingle();
+						.ilike('description', `%Shared by @${ownerUsername}%`);
 
-					if (existingCopy) {
-						let copyUpdateData = { ...updateData };
-						if (copyUpdateData.description !== undefined) {
-							copyUpdateData.description = copyUpdateData.description ? `${copyUpdateData.description}\n\n(Shared by @${ownerUsername})` : `(Shared by @${ownerUsername})`;
+					if (existingCopies && existingCopies.length > 0) {
+						for (const existingCopy of existingCopies) {
+							let copyUpdateData = { ...updateData };
+							if (copyUpdateData.description !== undefined) {
+								copyUpdateData.description = copyUpdateData.description
+									? `${copyUpdateData.description}\n\n(Shared by @${ownerUsername})`
+									: `(Shared by @${ownerUsername})`;
+							}
+							
+							await supabase
+								.from('chronomuse_memories')
+								.update(copyUpdateData)
+								.eq('id', existingCopy.id);
 						}
-						
-						await supabase
-							.from('chronomuse_memories')
-							.update(copyUpdateData)
-							.eq('id', existingCopy.id);
 					}
 				}
 			}
