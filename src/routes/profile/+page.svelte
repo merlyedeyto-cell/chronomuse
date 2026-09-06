@@ -28,7 +28,7 @@
 					username: u.username || 'User',
 					email: u.email || '',
 					avatar_url: u.avatar_url || null,
-					cover_url: savedCover || u.cover_url || null,
+					cover_url: u.cover_url || savedCover || null,
 					note: u.note !== undefined ? u.note : savedNote,
 					bio: u.bio || cachedAbout.bio || null,
 					birthday: u.birthday || cachedAbout.birthday || null,
@@ -223,6 +223,12 @@
 
 				if (typeof window !== 'undefined' && currentUser?.id) {
 					localStorage.setItem(`chronomuse_cover_${currentUser.id}`, finalCoverUrl);
+					const updatedStored = { ...currentUser, cover_url: finalCoverUrl };
+					try {
+						localStorage.setItem('chronomuse_user', JSON.stringify(updatedStored));
+					} catch (e) {}
+					currentUser = updatedStored;
+					window.dispatchEvent(new Event('chronomuse_auth_change'));
 				}
 
 				// Persist cover_url to database table
@@ -563,11 +569,12 @@
 				const savedCover = typeof window !== 'undefined' ? (localStorage.getItem(`chronomuse_cover_${effectiveTargetId}`) || null) : null;
 				const mergedUser = {
 					...data.data.user,
-					cover_url: savedCover || data.data.user.cover_url || null,
-					bio: data.data.user.bio || cachedAbout.bio || null,
-					birthday: data.data.user.birthday || cachedAbout.birthday || null,
-					relationship_status: data.data.user.relationship_status || cachedAbout.relationship_status || null,
-					gender: data.data.user.gender || cachedAbout.gender || null
+					avatar_url: data.data.user.avatar_url || (data.data.is_self ? currentUser?.avatar_url : null),
+					cover_url: data.data.user.cover_url !== undefined && data.data.user.cover_url !== null ? data.data.user.cover_url : (savedCover || null),
+					bio: data.data.user.bio !== undefined && data.data.user.bio !== null ? data.data.user.bio : (cachedAbout.bio || null),
+					birthday: data.data.user.birthday !== undefined && data.data.user.birthday !== null ? data.data.user.birthday : (cachedAbout.birthday || null),
+					relationship_status: data.data.user.relationship_status !== undefined && data.data.user.relationship_status !== null ? data.data.user.relationship_status : (cachedAbout.relationship_status || null),
+					gender: data.data.user.gender !== undefined && data.data.user.gender !== null ? data.data.user.gender : (cachedAbout.gender || null)
 				};
 				profileData = { ...data.data, user: mergedUser, is_fetching_details: false };
 				userNote = (data.data.user.note !== null && data.data.user.note !== undefined)
@@ -576,6 +583,26 @@
 				profileCache.set(targetKey, profileData);
 
 				if (profileData.is_self) {
+					const updatedStored = { ...currentUser, ...mergedUser };
+					try {
+						localStorage.setItem('chronomuse_user', JSON.stringify(updatedStored));
+						if (mergedUser.cover_url) {
+							localStorage.setItem(`chronomuse_cover_${mergedUser.id}`, mergedUser.cover_url);
+						}
+						localStorage.setItem(`chronomuse_about_${mergedUser.id}`, JSON.stringify({
+							bio: mergedUser.bio || '',
+							birthday: mergedUser.birthday || '',
+							relationship_status: mergedUser.relationship_status || 'Single',
+							gender: mergedUser.gender || 'Prefer not to say'
+						}));
+						if (mergedUser.note !== undefined && mergedUser.note !== null) {
+							localStorage.setItem(`chronomuse_note_${mergedUser.id}`, mergedUser.note);
+						}
+						if (typeof window !== 'undefined') {
+							window.dispatchEvent(new Event('chronomuse_auth_change'));
+						}
+					} catch (e) {}
+					currentUser = updatedStored;
 					fetchUserMoodSummary();
 				}
 			} else {
