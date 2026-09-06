@@ -1918,7 +1918,7 @@
 			</div>
 
 			<!-- Friends List -->
-			<div class="flex-grow overflow-y-auto divide-y divide-pink-50">
+			<div class="flex-grow overflow-y-auto p-2.5 sm:p-3 space-y-2.5">
 				{#if isLoadingChatList && friends.length === 0 && requests.length === 0}
 					<div class="p-8 text-center text-pink-400 text-sm flex flex-col items-center">
 						<div class="animate-spin w-7 h-7 border-3 border-pink-300 border-t-pink-500 rounded-full mb-2"></div>
@@ -1950,7 +1950,7 @@
 						{@const isUnread = friend.unread_count > 0}
 						<button
 							onclick={() => selectFriend(friend)}
-							class="w-full p-3 sm:p-3.5 flex items-center space-x-3 transition-all text-left relative group {isSelected ? 'bg-gradient-to-r from-pink-100/90 to-pink-50/70 border-l-4 border-pink-500 shadow-2xs' : 'hover:bg-pink-50/60'}"
+							class="w-full p-3 sm:p-3.5 flex items-center space-x-3 text-left relative group rounded-2xl border-2 transition-all cursor-pointer shadow-xs hover:shadow-md active:scale-[0.99] {isSelected ? 'bg-gradient-to-r from-pink-100/95 via-pink-50 to-white border-pink-400 shadow-md ring-2 ring-pink-300/60' : 'bg-white/90 hover:bg-pink-50/80 border-pink-200/90 hover:border-pink-300'}"
 						>
 							<div class="relative flex-shrink-0">
 								<div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-pink-100 to-pink-200 text-pink-700 border border-pink-200/90 flex items-center justify-center font-bold text-sm sm:text-base shadow-2xs group-hover:scale-105 transition-transform overflow-hidden">
