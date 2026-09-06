@@ -115,6 +115,36 @@ export async function POST({ request }) {
 			
 		const sharedWith = sharedRows ? sharedRows.map(r => r.recipient_id) : [];
 
+		if (sharedWith.length > 0) {
+			const { data: owner } = await supabase.from('chronomuse_users').select('username').eq('id', updatedMemory.user_id).single();
+			const ownerUsername = owner ? owner.username : '';
+
+			if (ownerUsername) {
+				for (const recipientId of sharedWith) {
+					const { data: existingCopy } = await supabase
+						.from('chronomuse_memories')
+						.select('id')
+						.eq('user_id', recipientId)
+						.eq('date', updatedMemory.date)
+						.ilike('description', `%Shared by @${ownerUsername}%`)
+						.limit(1)
+						.maybeSingle();
+
+					if (existingCopy) {
+						let copyUpdateData = { ...updateData };
+						if (copyUpdateData.description !== undefined) {
+							copyUpdateData.description = copyUpdateData.description ? `${copyUpdateData.description}\n\n(Shared by @${ownerUsername})` : `(Shared by @${ownerUsername})`;
+						}
+						
+						await supabase
+							.from('chronomuse_memories')
+							.update(copyUpdateData)
+							.eq('id', existingCopy.id);
+					}
+				}
+			}
+		}
+
 		return json({
 			success: true,
 			data: updatedMemory,
