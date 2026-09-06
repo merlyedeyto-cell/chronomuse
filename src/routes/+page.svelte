@@ -68,7 +68,7 @@
 <TopBar on:navigate={handleNavigate}>
 	<div class="bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 overflow-x-hidden">
 		<!-- Login / Home Section - Dedicated Full Viewport Section -->
-		<section id="login-section" class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-12 px-4 transition-all duration-500" class:scale-105={isLoginHighlight}>
+		<section id="login-section" class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-12 px-2 sm:px-4 transition-all duration-500" class:scale-105={isLoginHighlight}>
 			<div class="transition-all duration-500" class:ring-4={isLoginHighlight} class:ring-pink-400={isLoginHighlight} class:rounded-2xl={isLoginHighlight}>
 				<LoginCard on:login={handleLogin} />
 			</div>

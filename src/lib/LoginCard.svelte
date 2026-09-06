@@ -84,10 +84,10 @@
 </script>
 
 <div
-	class="max-w-md w-full transition-all duration-300"
+	class="max-w-md w-full mx-auto px-2 sm:px-0 transition-all duration-300"
 	class:scale-105={isClicked}
 >
-	<div class="bg-white/85 backdrop-blur-md rounded-2xl shadow-xl p-5 sm:p-6 border-2 border-pink-300 transition-all duration-300 hover:shadow-2xl">
+	<div class="bg-white/85 backdrop-blur-md rounded-2xl shadow-xl p-6 sm:p-6 border-2 border-pink-300 transition-all duration-300 hover:shadow-2xl">
 		<!-- Header -->
 		<div class="text-center mb-5">
 			<img src="/logo.png" alt="ChronoMuse" class="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-2 rounded-xl object-contain shadow-sm border border-pink-200 hover:scale-105 transition-transform duration-300" />
@@ -208,7 +208,7 @@
 
 				{#if pwaStatus.isWebview}
 					<p class="text-[10.5px] text-pink-700 font-medium leading-tight text-center bg-pink-50 p-2 rounded-lg border border-pink-200">
-						📱 Open in your browser to install the app for best experience!
+						Open in your browser to install the app for best experience!
 					</p>
 				{/if}
 
