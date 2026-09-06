@@ -178,10 +178,12 @@
 			© 2026 CHRONOMUSE. All rights reserved. Developed by Merlye Deyto
 		</p>
 	</div>
+</div>
 
-	<!-- Install ChronoMuse Ad Banner (below credits, dismissable) -->
-	{#if showInstallBanner && !pwaStatus.isStandalone}
-		<div class="mt-4 relative bg-white/90 backdrop-blur-md rounded-2xl border-2 border-pink-400 shadow-lg overflow-hidden animate-fade-in-up">
+<!-- Install ChronoMuse Banner (fixed bottom, doesn't affect login card position) -->
+{#if showInstallBanner && !pwaStatus.isStandalone}
+	<div class="fixed bottom-0 left-0 right-0 z-50 p-3 flex justify-center pointer-events-none">
+		<div class="max-w-md w-full relative bg-white/95 backdrop-blur-md rounded-2xl border-2 border-pink-400 shadow-2xl overflow-hidden animate-fade-in-up pointer-events-auto">
 			<!-- Close (X) Button -->
 			<button
 				type="button"
@@ -194,10 +196,10 @@
 				</svg>
 			</button>
 
-			<div class="p-4 pt-3 space-y-2.5">
+			<div class="p-3.5 pt-3 space-y-2">
 				<!-- App Info Row -->
 				<div class="flex items-center space-x-3">
-					<img src="/logo.png" alt="ChronoMuse" class="w-11 h-11 rounded-xl object-contain border border-pink-200 shadow-sm flex-shrink-0" />
+					<img src="/logo.png" alt="ChronoMuse" class="w-10 h-10 rounded-xl object-contain border border-pink-200 shadow-sm flex-shrink-0" />
 					<div class="min-w-0 flex-1 pr-5">
 						<h4 class="text-xs sm:text-sm font-extrabold text-pink-900 leading-tight">ChronoMuse</h4>
 						<p class="text-[10.5px] text-pink-600 font-medium leading-tight">Memory Calendar & Mood Tracker</p>
@@ -228,7 +230,7 @@
 					</div>
 				{/if}
 			</div>
-
 		</div>
-	{/if}
-</div>
+	</div>
+{/if}
+
