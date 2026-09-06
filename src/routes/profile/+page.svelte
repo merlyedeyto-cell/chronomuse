@@ -19,6 +19,17 @@
 			if (!stored) return null;
 			const u = JSON.parse(stored);
 			if (!u || !u.id) return null;
+
+			const urlParams = new URLSearchParams(window.location.search);
+			const paramId = urlParams.get('id') || urlParams.get('user_id');
+			const effectiveId = paramId || u.id;
+
+			const storedCache = localStorage.getItem(`chronomuse_profile_cache_${effectiveId}`);
+			if (storedCache) {
+				const parsed = JSON.parse(storedCache);
+				if (parsed && parsed.user) return parsed;
+			}
+
 			const cachedAbout = JSON.parse(localStorage.getItem(`chronomuse_about_${u.id}`) || '{}');
 			const savedCover = localStorage.getItem(`chronomuse_cover_${u.id}`) || null;
 			const savedNote = localStorage.getItem(`chronomuse_note_${u.id}`) || '';
@@ -30,15 +41,16 @@
 					avatar_url: u.avatar_url || null,
 					cover_url: u.cover_url || savedCover || null,
 					note: u.note !== undefined ? u.note : savedNote,
-					bio: u.bio || cachedAbout.bio || null,
-					birthday: u.birthday || cachedAbout.birthday || null,
-					relationship_status: u.relationship_status || cachedAbout.relationship_status || null,
-					gender: u.gender || cachedAbout.gender || null
+					bio: u.bio !== undefined && u.bio !== null ? u.bio : (cachedAbout.bio || null),
+					birthday: u.birthday !== undefined && u.birthday !== null ? u.birthday : (cachedAbout.birthday || null),
+					relationship_status: u.relationship_status !== undefined && u.relationship_status !== null ? u.relationship_status : (cachedAbout.relationship_status || null),
+					gender: u.gender !== undefined && u.gender !== null ? u.gender : (cachedAbout.gender || null)
 				},
-				is_self: true,
+				is_self: String(effectiveId) === String(u.id),
 				is_friend: false,
-				total_friends: 0,
-				total_memories: 0,
+				is_fetching_details: true,
+				total_friends: null,
+				total_memories: null,
 				friends: [],
 				mutual_friends: [],
 				mutual_friends_count: 0
@@ -543,8 +555,18 @@
 		targetUserId = effectiveTargetId;
 		const targetKey = String(effectiveTargetId);
 
-		if (profileCache.has(targetKey) && !isSilent) {
-			const cached = profileCache.get(targetKey);
+		let cached = profileCache.get(targetKey);
+		if (!cached && typeof window !== 'undefined') {
+			try {
+				const storedCache = localStorage.getItem(`chronomuse_profile_cache_${effectiveTargetId}`);
+				if (storedCache) {
+					cached = JSON.parse(storedCache);
+					profileCache.set(targetKey, cached);
+				}
+			} catch (e) {}
+		}
+
+		if (cached && !isSilent) {
 			profileData = cached;
 			userNote = (cached?.user?.note !== null && cached?.user?.note !== undefined)
 				? cached.user.note
@@ -581,6 +603,11 @@
 					? data.data.user.note
 					: (data.data.is_self && typeof window !== 'undefined' ? (localStorage.getItem(`chronomuse_note_${effectiveTargetId}`) || '') : '');
 				profileCache.set(targetKey, profileData);
+				if (typeof window !== 'undefined') {
+					try {
+						localStorage.setItem(`chronomuse_profile_cache_${effectiveTargetId}`, JSON.stringify(profileData));
+					} catch (e) {}
+				}
 
 				if (profileData.is_self) {
 					const updatedStored = { ...currentUser, ...mergedUser };
@@ -903,9 +930,18 @@
 		const targetKey = String(targetId);
 		targetUserId = targetId;
 
-		// 1. Instant optimistic UI switch (0ms latency!)
-		if (profileCache.has(targetKey)) {
-			const cached = profileCache.get(targetKey);
+		let cached = profileCache.get(targetKey);
+		if (!cached && typeof window !== 'undefined') {
+			try {
+				const storedCache = localStorage.getItem(`chronomuse_profile_cache_${targetId}`);
+				if (storedCache) {
+					cached = JSON.parse(storedCache);
+					profileCache.set(targetKey, cached);
+				}
+			} catch (e) {}
+		}
+
+		if (cached) {
 			profileData = cached;
 			userNote = (cached?.user?.note !== null && cached?.user?.note !== undefined) ? cached.user.note : '';
 			isLoading = false;
@@ -918,7 +954,7 @@
 					username: targetUser.username || 'User',
 					email: targetUser.email || '',
 					avatar_url: targetUser.avatar_url || null,
-					cover_url: savedCover || targetUser.cover_url || null,
+					cover_url: targetUser.cover_url || savedCover || null,
 					note: targetUser.note !== undefined ? targetUser.note : '',
 					bio: targetUser.bio || cachedAbout.bio || null,
 					birthday: targetUser.birthday || cachedAbout.birthday || null,
@@ -928,11 +964,11 @@
 				is_self: String(targetId) === String(currentUser?.id),
 				is_friend: true,
 				is_fetching_details: true,
-				total_friends: targetUser.total_friends || 0,
-				total_memories: targetUser.total_memories || 0,
+				total_friends: targetUser.total_friends !== undefined ? targetUser.total_friends : null,
+				total_memories: targetUser.total_memories !== undefined ? targetUser.total_memories : null,
 				friends: targetUser.friends || [],
 				mutual_friends: targetUser.mutual_friends || [],
-				mutual_friends_count: targetUser.mutual_friends_count || 0
+				mutual_friends_count: targetUser.mutual_friends_count !== undefined ? targetUser.mutual_friends_count : 0
 			};
 			userNote = targetUser.note !== undefined ? targetUser.note : '';
 			isLoading = false;
@@ -1372,9 +1408,9 @@
 
 								<!-- Subtitle line: "X friends • Y memories" -->
 								<p class="text-xs sm:text-sm text-pink-600 font-semibold mt-0.5 flex items-center space-x-1.5">
-									<span>{profileData.total_friends} {profileData.total_friends === 1 ? 'friend' : 'friends'}</span>
+									<span>{profileData.total_friends !== null && profileData.total_friends !== undefined ? `${profileData.total_friends} ${profileData.total_friends === 1 ? 'friend' : 'friends'}` : '-- friends'}</span>
 									<span class="text-pink-400">•</span>
-									<span>{profileData.total_memories || 0} {profileData.total_memories === 1 ? 'memory' : 'memories'}</span>
+									<span>{profileData.total_memories !== null && profileData.total_memories !== undefined ? `${profileData.total_memories} ${profileData.total_memories === 1 ? 'memory' : 'memories'}` : '-- memories'}</span>
 								</p>
 							</div>
 
@@ -1465,7 +1501,7 @@
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-100">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
 							</svg>
-							<span>{profileData.total_friends} Friends</span>
+							<span>{profileData.total_friends !== null && profileData.total_friends !== undefined ? `${profileData.total_friends} Friends` : '-- Friends'}</span>
 						</button>
 
 						{#if !profileData.is_self}
@@ -1476,7 +1512,7 @@
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-600">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a5.97 5.97 0 00-.942 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
 								</svg>
-								<span>{profileData.mutual_friends_count} Mutual</span>
+								<span>{profileData.mutual_friends_count !== null && profileData.mutual_friends_count !== undefined ? `${profileData.mutual_friends_count} Mutual` : '-- Mutual'}</span>
 							</button>
 						{/if}
 
@@ -1517,7 +1553,7 @@
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 flex-shrink-0">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
 					</svg>
-					<span class="truncate">Friends ({profileData.total_friends})</span>
+					<span class="truncate">Friends {profileData.total_friends !== null && profileData.total_friends !== undefined ? `(${profileData.total_friends})` : ''}</span>
 				</button>
 
 				{#if !profileData.is_self && profileData.mutual_friends?.length > 0}
@@ -1653,7 +1689,7 @@
 							<h3 class="text-base font-bold text-pink-950">
 								{profileData.is_self ? 'My Friends' : `@${profileData.user.username}'s Friends`}
 							</h3>
-							<p class="text-xs text-pink-600">{profileData.total_friends} total connection{profileData.total_friends === 1 ? '' : 's'}</p>
+							<p class="text-xs text-pink-600">{profileData.total_friends !== null && profileData.total_friends !== undefined ? `${profileData.total_friends} total connection${profileData.total_friends === 1 ? '' : 's'}` : 'Loading connections...'}</p>
 						</div>
 
 						<!-- Search Friends -->
