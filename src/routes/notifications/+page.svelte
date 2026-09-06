@@ -222,6 +222,17 @@
 		return url;
 	}
 
+	function getMusicName(url) {
+		if (!url) return 'Memory Music';
+		try {
+			const cleanUrl = url.split('?')[0];
+			const filename = cleanUrl.split('/').pop();
+			return decodeURIComponent(filename) || 'Memory Music';
+		} catch (e) {
+			return 'Memory Music';
+		}
+	}
+
 	function getMoodColor(mood) {
 		const colors = {
 			'Happy': 'bg-yellow-100 text-yellow-700 border-yellow-300',
@@ -987,13 +998,13 @@
 							<!-- Music Audio Player Attachment -->
 							{#if selectedMemoryToView.memory.music}
 								<div class="rounded-lg overflow-hidden border border-pink-200 bg-gradient-to-r from-pink-50 to-pink-100 p-2.5">
-									<div class="flex items-center space-x-1.5 mb-1.5">
-										<div class="w-6 h-6 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center">
+									<div class="flex items-center space-x-1.5 mb-1.5 min-w-0">
+										<div class="w-6 h-6 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center shrink-0">
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5 text-white">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
 											</svg>
 										</div>
-										<span class="text-[11px] font-semibold text-pink-600">Memory Music</span>
+										<span class="text-[11px] font-semibold text-pink-600 truncate" title={getMusicName(selectedMemoryToView.memory.music)}>{getMusicName(selectedMemoryToView.memory.music)}</span>
 									</div>
 									<div class="custom-audio-player">
 										<audio src={getMusicUrl(selectedMemoryToView.memory.music)} controls preload="metadata" class="w-full" crossorigin="anonymous"></audio>

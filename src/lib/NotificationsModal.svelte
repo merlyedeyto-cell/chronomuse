@@ -199,6 +199,17 @@
 		return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 	}
 
+	function getMusicName(url) {
+		if (!url) return 'Memory Music';
+		try {
+			const cleanUrl = url.split('?')[0];
+			const filename = cleanUrl.split('/').pop();
+			return decodeURIComponent(filename) || 'Memory Music';
+		} catch (e) {
+			return 'Memory Music';
+		}
+	}
+
 	function formatTimeAgo(dateStr) {
 		if (!dateStr) return '';
 		const d = new Date(dateStr);
@@ -422,7 +433,7 @@
 												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-pink-500 flex-shrink-0">
 													<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66a.75.75 0 00.564-.724V6.553zm0 0a2.25 2.25 0 00-1.632-2.163l-6.75-1.928A2.25 2.25 0 004.5 4.5v11.25a2.25 2.25 0 001.632 2.163l1.32.377a1.803 1.803 0 00.99-3.467l-2.31-.66A.75.75 0 015.25 13.5V6.75" />
 												</svg>
-												<span class="truncate">{item.memory.music}</span>
+												<span class="truncate" title={getMusicName(item.memory.music)}>{getMusicName(item.memory.music)}</span>
 											</div>
 										{/if}
 									</div>
