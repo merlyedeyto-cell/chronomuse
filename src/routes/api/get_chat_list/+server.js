@@ -92,6 +92,25 @@ export async function POST({ request }) {
 			});
 		} catch (e) {}
 
+		// Fetch pending friend requests
+		let pendingRequestsSet = new Map();
+		try {
+			const { data: reqs } = await supabase
+				.from('chronomuse_friend_requests')
+				.select('sender_id, receiver_id')
+				.eq('status', 'pending')
+				.or(`sender_id.eq.${user_id},receiver_id.eq.${user_id}`);
+
+			(reqs || []).forEach(r => {
+				if (String(r.sender_id) === String(user_id)) {
+					pendingRequestsSet.set(String(r.receiver_id), String(user_id));
+				}
+				if (String(r.receiver_id) === String(user_id)) {
+					pendingRequestsSet.set(String(r.sender_id), String(r.sender_id));
+				}
+			});
+		} catch (e) {}
+
 		// 4. For each partner, fetch last message and unread count
 		const conversations = await Promise.all(
 			partnerUsers.map(async partner => {
@@ -130,7 +149,9 @@ export async function POST({ request }) {
 					is_friend: isFriend,
 					is_request: !isFriend,
 					is_blocked_by_me: blockedSetByMe.has(String(partner.id)),
-					is_blocking_me: blockedSetByThem.has(String(partner.id))
+					is_blocking_me: blockedSetByThem.has(String(partner.id)),
+					has_pending_request: pendingRequestsSet.has(String(partner.id)),
+					pending_request_sender_id: pendingRequestsSet.get(String(partner.id)) || null
 				};
 			})
 		);

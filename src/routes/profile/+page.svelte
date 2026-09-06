@@ -30,6 +30,10 @@
 				if (parsed && parsed.user) return parsed;
 			}
 
+			if (String(effectiveId) !== String(u.id)) {
+				return null;
+			}
+
 			const cachedAbout = JSON.parse(localStorage.getItem(`chronomuse_about_${u.id}`) || '{}');
 			const savedCover = localStorage.getItem(`chronomuse_cover_${u.id}`) || null;
 			const savedNote = localStorage.getItem(`chronomuse_note_${u.id}`) || '';
