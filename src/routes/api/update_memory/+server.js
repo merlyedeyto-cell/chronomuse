@@ -145,6 +145,48 @@ export async function POST({ request }) {
 			}
 		}
 
+		// Broadcast realtime event for instantaneous updates across all connected clients
+		try {
+			const globalChannel = supabase.channel('chronomuse_global_events');
+			globalChannel.subscribe((status) => {
+				if (status === 'SUBSCRIBED') {
+					globalChannel.send({
+						type: 'broadcast',
+						event: 'global_memory_event',
+						payload: {
+							memory_id: memoryId,
+							user_id: updatedMemory.user_id,
+							sender_id: updatedMemory.user_id,
+							shared_with: sharedWith,
+							eventType: 'shared_memory_update',
+							memoryData: updatedMemory
+						}
+					});
+				}
+			});
+
+			for (const recipientId of sharedWith) {
+				const userChannel = supabase.channel(`chronomuse_user_inbox_${recipientId}`);
+				userChannel.subscribe((status) => {
+					if (status === 'SUBSCRIBED') {
+						userChannel.send({
+							type: 'broadcast',
+							event: 'notification',
+							payload: {
+								eventType: 'shared_memory_update',
+								sender_id: updatedMemory.user_id,
+								target_id: recipientId,
+								receiver_id: recipientId,
+								memoryData: updatedMemory
+							}
+						});
+					}
+				});
+			}
+		} catch (e) {
+			console.error('Realtime update broadcast error:', e);
+		}
+
 		return json({
 			success: true,
 			data: updatedMemory,

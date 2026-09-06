@@ -140,11 +140,13 @@
 				const current = getActiveLoggedInUser();
 				if (!current?.id) return;
 				const sId = payload?.payload?.sender_id;
-				const tId = payload?.payload?.target_id;
+				const tId = payload?.payload?.target_id || payload?.payload?.receiver_id;
+				const rId = payload?.payload?.receiver_id;
+				const sharedWith = payload?.payload?.shared_with || [];
 				const myId = Number(current.id);
 
-				if (Number(sId) === myId || Number(tId) === myId) {
-					if (payload?.payload?.eventType === 'shared_memory_incoming' && Number(tId) === myId) {
+				if (Number(sId) === myId || Number(tId) === myId || Number(rId) === myId || sharedWith.map(Number).includes(myId)) {
+					if (payload?.payload?.eventType === 'shared_memory_incoming' && (Number(tId) === myId || Number(rId) === myId)) {
 						playNotificationSound(myId);
 					}
 					checkNotificationsCount();
@@ -224,6 +226,7 @@
 				checkNotificationsCount();
 				if (typeof window !== 'undefined') {
 					window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload }));
+					window.dispatchEvent(new CustomEvent('chronomuse_memory_change', { detail: payload }));
 				}
 			})
 			.on('postgres_changes', {

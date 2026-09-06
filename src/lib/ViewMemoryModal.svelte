@@ -85,6 +85,25 @@
 		// Prevent body scroll when modal is open
 		document.body.style.overflow = 'hidden';
 		fetchFriends();
+
+		const handleRealtimeChange = (e) => {
+			if (e && e.detail && e.detail.memoryData) {
+				const updated = e.detail.memoryData;
+				const memIndex = memories.findIndex(m => m.id === updated.id);
+				if (memIndex !== -1) {
+					memories[memIndex] = {
+						...memories[memIndex],
+						...updated
+					};
+				}
+			}
+			dispatch('refresh');
+		};
+
+		window.addEventListener('chronomuse_memory_change', handleRealtimeChange);
+		return () => {
+			window.removeEventListener('chronomuse_memory_change', handleRealtimeChange);
+		};
 	});
 
 	function fetchFriends() {
