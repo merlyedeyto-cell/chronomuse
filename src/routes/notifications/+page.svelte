@@ -289,7 +289,7 @@
 				broadcastFriendEvent(user.id, targetSenderId, action === 'accept' ? 'accept_request' : 'decline_request');
 			} else {
 				notifications.incoming_requests = backupReqs;
-				alert('Error: ' + (data.error || 'Failed to respond'));
+				showNotification('Error: ' + (data.error || 'Failed to respond'), 'error');
 			}
 		} catch (err) {
 			notifications.incoming_requests = backupReqs;
@@ -342,7 +342,7 @@
 				broadcastMemoryEvent(user.id, item.sender_id, action === 'accept' ? 'shared_memory_accepted' : 'shared_memory_declined', item.memory);
 			} else {
 				notifications.shared_memories = backupMemories;
-				alert('Error: ' + (data.error || 'Failed to process request'));
+				showNotification('Error: ' + (data.error || 'Failed to process request'), 'error');
 			}
 		} catch (err) {
 			notifications.shared_memories = backupMemories;
@@ -386,7 +386,7 @@
 				broadcastMemoryEvent(user.id, itemToCancel.recipient_id, 'shared_memory_cancelled', itemToCancel.memory);
 			} else {
 				notifications.sent_shared_memories = backupSent;
-				alert('Error: ' + (data.error || 'Failed to cancel share'));
+				showNotification('Error: ' + (data.error || 'Failed to cancel share'), 'error');
 			}
 		} catch (err) {
 			notifications.sent_shared_memories = backupSent;

@@ -17,6 +17,17 @@
 	let newPassword = $state('');
 	let confirmPassword = $state('');
 
+	let messageText = $state('');
+	let messageType = $state('error');
+
+	function setMessage(msg, type = 'error') {
+		messageText = msg;
+		messageType = type;
+		setTimeout(() => {
+			messageText = '';
+		}, 4000);
+	}
+
 	$effect(() => {
 		isOpen = open;
 		if (isOpen) {
@@ -69,7 +80,7 @@
 
 	function handleSave() {
 		if (newPassword && newPassword !== confirmPassword) {
-			alert('Passwords do not match!');
+			setMessage('Passwords do not match!', 'error');
 			return;
 		}
 
@@ -92,14 +103,14 @@
 		.then(data => {
 			isSaving = false;
 			if (data.error) {
-				alert(data.error);
+				setMessage(data.error, 'error');
 			} else {
 				// Update localStorage with new user data
 				const updatedUser = { ...user, username: username, email: email };
 				localStorage.setItem('chronomuse_user', JSON.stringify(updatedUser));
 				user = updatedUser;
 				
-				alert('Profile updated successfully!');
+				setMessage('Profile updated successfully!', 'success');
 				isEditing = false;
 				resetForm();
 				dispatch('profileUpdated', updatedUser);
@@ -107,7 +118,7 @@
 		})
 		.catch(error => {
 			isSaving = false;
-			alert('An error occurred. Please try again.');
+			setMessage('An error occurred. Please try again.', 'error');
 			console.error('Update profile error:', error);
 		});
 	}
@@ -151,6 +162,12 @@
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 				</svg>
 			</button>
+
+			{#if messageText}
+				<div class="mb-4 p-3 rounded-xl text-xs font-bold transition-all border {messageType === 'error' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}">
+					{messageText}
+				</div>
+			{/if}
 
 			<!-- Header -->
 			<div class="text-center mb-5">

@@ -99,12 +99,11 @@
 				editingId = null;
 				editingTitle = '';
 			} else {
-				alert('Error updating title');
+				console.error('Error updating title:', data.error);
 			}
 		})
 		.catch(error => {
 			console.error('Error updating title:', error);
-			alert('Error updating title');
 		});
 	}
 

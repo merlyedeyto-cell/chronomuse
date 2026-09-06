@@ -26,6 +26,15 @@
 	let showToast = $state(false);
 	let toastMessage = $state('');
 	let toastType = $state('success');
+	let showNotificationModalPopup = $state(false);
+	let notificationModalMessage = $state('');
+	let notificationModalType = $state('success');
+
+	function showNotificationModal(msg, type = 'success') {
+		notificationModalMessage = msg;
+		notificationModalType = type;
+		showNotificationModalPopup = true;
+	}
 	let showDeletePinnedModal = $state(false);
 	let pinnedDateToDelete = $state(null);
 	let showViewMemoryModalWrapper = $state(false);
@@ -223,9 +232,9 @@
 			
 			if (data.success) {
 				if (isPinned) {
-					alert('Date unpinned successfully!');
+					showNotificationModal('Date unpinned successfully!');
 				} else {
-					alert('Date pinned successfully!');
+					showNotificationModal('Date pinned successfully!');
 				}
 				// Refresh pinned dates
 				await loadPinnedDates();
@@ -234,11 +243,11 @@
 					pinnedMemoryCardRef.loadPinnedMemories();
 				}
 			} else {
-				alert('Error: ' + (data.error || 'Failed to update pin'));
+				showNotificationModal('Error: ' + (data.error || 'Failed to update pin'), 'error');
 			}
 		} catch (error) {
 			console.error('Error updating pin:', error);
-			alert('Error updating pin. Please try again.');
+			showNotificationModal('Error updating pin. Please try again.', 'error');
 		}
 	}
 
@@ -329,17 +338,17 @@
 					}
 				}
 
-				alert('Memory saved successfully!');
+				showNotificationModal('Memory saved successfully!');
 				resetAddMemoryForm = true; // Trigger form reset
 				showAddMemory = false;
 				// Refresh memories data for this date
 				await loadMemoriesForDate(selectedDate);
 			} else {
-				alert('Error saving memory: ' + (data.error || 'Unknown error'));
+				showNotificationModal('Error saving memory: ' + (data.error || 'Unknown error'), 'error');
 			}
 		} catch (error) {
 			console.error('Error saving memory:', error);
-			alert('Error saving memory. Please try again.');
+			showNotificationModal('Error saving memory. Please try again.', 'error');
 		}
 	}
 
@@ -442,11 +451,11 @@
 				}
 				closeDeletePinnedModal();
 			} else {
-				alert('Error: ' + (data.error || 'Failed to delete'));
+				showNotificationModal('Error: ' + (data.error || 'Failed to delete'), 'error');
 			}
 		} catch (error) {
 			console.error('Error deleting pinned date:', error);
-			alert('Error deleting pinned date');
+			showNotificationModal('Error deleting pinned date', 'error');
 		}
 	}
 
@@ -481,13 +490,13 @@
 					window.dispatchEvent(new CustomEvent('chronomuse_memory_change'));
 					window.dispatchEvent(new CustomEvent('chronomuse_pinned_change'));
 				}
-				alert('Memory deleted successfully!');
+				showNotificationModal('Memory deleted successfully!');
 			} else {
-				alert('Error deleting memory: ' + (data.error || 'Unknown error'));
+				showNotificationModal('Error deleting memory: ' + (data.error || 'Unknown error'), 'error');
 			}
 		} catch (error) {
 			console.error('Error deleting memory:', error);
-			alert('Error deleting memory. Please try again.');
+			showNotificationModal('Error deleting memory. Please try again.', 'error');
 		}
 	}
 
@@ -525,13 +534,13 @@
 					};
 					memoriesData[selectedDate] = memoriesForDate;
 				}
-				alert('Memory updated successfully!');
+				showNotificationModal('Memory updated successfully!');
 			} else {
-				alert('Error updating memory: ' + (data.error || 'Unknown error'));
+				showNotificationModal('Error updating memory: ' + (data.error || 'Unknown error'), 'error');
 			}
 		} catch (error) {
 			console.error('Error updating memory:', error);
-			alert('Error updating memory. Please try again.');
+			showNotificationModal('Error updating memory. Please try again.', 'error');
 		}
 	}
 
@@ -556,13 +565,13 @@
 					};
 					memoriesData[selectedDate] = memoriesForDate;
 				}
-				alert('Memory updated successfully!');
+				showNotificationModal('Memory updated successfully!');
 			} else {
-				alert('Error updating memory: ' + (data.error || 'Unknown error'));
+				showNotificationModal('Error updating memory: ' + (data.error || 'Unknown error'), 'error');
 			}
 		} catch (error) {
 			console.error('Error updating memory:', error);
-			alert('Error updating memory. Please try again.');
+			showNotificationModal('Error updating memory. Please try again.', 'error');
 		}
 	}
 
@@ -784,6 +793,45 @@
 						</svg>
 					{/if}
 					<span class="text-sm font-semibold">{toastMessage}</span>
+				</div>
+			</div>
+		{/if}
+
+		<!-- Custom Success / Alert Notification Modal -->
+		{#if showNotificationModalPopup}
+			<div
+				class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[100] flex items-center justify-center p-4 animate-fade-in"
+				onclick={(e) => { if (e.target === e.currentTarget) showNotificationModalPopup = false; }}
+			>
+				<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-6 max-w-xs sm:max-w-sm w-full text-center space-y-4 animate-modal-content">
+					<div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-inner {notificationModalType === 'error' ? 'bg-rose-100 text-rose-600 border border-rose-200' : 'bg-emerald-100 text-emerald-600 border border-emerald-200'}">
+						{#if notificationModalType === 'error'}
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zM12 15.75h.007v.008H12v-.008z" />
+							</svg>
+						{:else}
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+							</svg>
+						{/if}
+					</div>
+					
+					<div class="space-y-1">
+						<h3 class="text-base sm:text-lg font-black text-pink-950">
+							{notificationModalType === 'error' ? 'Notice' : 'Success!'}
+						</h3>
+						<p class="text-xs sm:text-sm font-bold text-pink-700 leading-relaxed">
+							{notificationModalMessage}
+						</p>
+					</div>
+
+					<button
+						type="button"
+						onclick={() => showNotificationModalPopup = false}
+						class="w-full py-2.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white rounded-2xl font-bold text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer"
+					>
+						OK
+					</button>
 				</div>
 			</div>
 		{/if}

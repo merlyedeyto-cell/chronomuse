@@ -186,7 +186,7 @@
 					shareSuccessMsg = '';
 				}, 1500);
 			} else {
-				alert(data.error || 'Failed to share memory');
+				shareSuccessMsg = data.error || 'Failed to share memory';
 			}
 		} catch (err) {
 			console.error('Error sharing memory:', err);

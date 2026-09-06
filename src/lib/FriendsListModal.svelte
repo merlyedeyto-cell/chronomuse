@@ -13,6 +13,7 @@
 	let isRemoving = $state(false);
 	let showConfirmDelete = $state(false);
 	let friendToRemove = $state(null);
+	let errorMessage = $state('');
 
 	$effect(() => {
 		isOpen = open;
@@ -108,7 +109,7 @@
 		.then(data => {
 			isRemoving = false;
 			if (data.error) {
-				alert(data.error);
+				errorMessage = data.error;
 			} else {
 				// Remove from the list
 				friends = friends.filter(f => f.friend_id !== friendToRemove.friend_id);
@@ -119,7 +120,7 @@
 		.catch(error => {
 			isRemoving = false;
 			console.error('Remove friend error:', error);
-			alert('An error occurred. Please try again.');
+			errorMessage = 'An error occurred. Please try again.';
 		});
 	}
 </script>

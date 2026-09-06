@@ -13,8 +13,19 @@
 	let allConversations = $state([]);
 	let searchQuery = $state('');
 	let chatListFilter = $state('all'); // 'all' | 'unread' | 'requests'
-	let unreadFriendsCount = $derived(friends.filter(f => (f.unread_count || 0) > 0).length);
-	let unreadRequestsCount = $derived(requests.filter(r => (r.unread_count || 0) > 0).length);
+	let unreadFriendsCount = $derived(friends.reduce((sum, f) => sum + (f.unread_count || 0), 0));
+	let unreadRequestsCount = $derived(requests.reduce((sum, f) => sum + (f.unread_count || 0), 0));
+	let unreadTotal = $derived(unreadFriendsCount + unreadRequestsCount);
+
+	let showNotificationModalPopup = $state(false);
+	let notificationModalMessage = $state('');
+	let notificationModalType = $state('success');
+
+	function showNotificationModal(msg, type = 'success') {
+		notificationModalMessage = msg;
+		notificationModalType = type;
+		showNotificationModalPopup = true;
+	}
 	let isSendingFriendRequest = $state(false);
 	let activeFriend = $state(null);
 	let messages = $state([]);
@@ -89,7 +100,6 @@
 	let myTypingTimeout = null;
 	let myTypingInterval = null;
 	let typingChannel = null;
-	let unreadTotal = $derived(unreadFriendsCount + unreadRequestsCount);
 
 	// Presence & Active state
 	let presenceChannel = null;
@@ -685,9 +695,9 @@
 			});
 			const data = await res.json();
 			if (data.error) {
-				alert(data.error);
+				showNotificationModal(data.error, 'error');
 			} else {
-				alert(data.message || `Friend request sent to @${target.username}!`);
+				showNotificationModal(data.message || `Friend request sent to @${target.username}!`);
 				fetchChatList();
 			}
 		} catch (err) {
@@ -964,7 +974,7 @@
 
 				fetchChatList();
 			} else if (data.error) {
-				alert(data.error);
+				showNotificationModal(data.error, 'error');
 			}
 		} catch (err) {
 			console.error('Error toggling block user:', err);
@@ -1124,7 +1134,7 @@
 			.map(m => m.id);
 
 		if (validIds.length === 0) {
-			alert('You can only unsend messages that you sent.');
+			showNotificationModal('You can only unsend messages that you sent.', 'error');
 			return;
 		}
 
@@ -1327,7 +1337,7 @@
 
 				if (uploadError) {
 					console.error('Image upload failed:', file.name, uploadError.message);
-					alert('Image upload failed: ' + uploadError.message);
+					showNotificationModal('Image upload failed: ' + uploadError.message, 'error');
 					continue;
 				}
 
@@ -1338,7 +1348,7 @@
 			}
 		} catch (err) {
 			console.error('Error uploading chat image:', err);
-			alert('Failed to upload image. Please try again.');
+			showNotificationModal('Failed to upload image. Please try again.', 'error');
 		} finally {
 			isUploadingImage = false;
 			if (imageInput) imageInput.value = '';
@@ -2844,6 +2854,45 @@
 			<p class="text-[11px] text-pink-600/80 font-medium hidden sm:block">
 				Swipe left/right or use arrow keys to navigate • Scroll or double click to zoom
 			</p>
+		</div>
+	</div>
+{/if}
+
+<!-- Custom Success / Alert Notification Modal -->
+{#if showNotificationModalPopup}
+	<div
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[100] flex items-center justify-center p-4 animate-fade-in"
+		onclick={(e) => { if (e.target === e.currentTarget) showNotificationModalPopup = false; }}
+	>
+		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-6 max-w-xs sm:max-w-sm w-full text-center space-y-4 animate-modal-content">
+			<div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-inner {notificationModalType === 'error' ? 'bg-rose-100 text-rose-600 border border-rose-200' : 'bg-emerald-100 text-emerald-600 border border-emerald-200'}">
+				{#if notificationModalType === 'error'}
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zM12 15.75h.007v.008H12v-.008z" />
+					</svg>
+				{:else}
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+					</svg>
+				{/if}
+			</div>
+			
+			<div class="space-y-1">
+				<h3 class="text-base sm:text-lg font-black text-pink-950">
+					{notificationModalType === 'error' ? 'Notice' : 'Success!'}
+				</h3>
+				<p class="text-xs sm:text-sm font-bold text-pink-700 leading-relaxed">
+					{notificationModalMessage}
+				</p>
+			</div>
+
+			<button
+				type="button"
+				onclick={() => showNotificationModalPopup = false}
+				class="w-full py-2.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white rounded-2xl font-bold text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer"
+			>
+				OK
+			</button>
 		</div>
 	</div>
 {/if}
