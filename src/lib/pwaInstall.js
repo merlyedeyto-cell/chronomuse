@@ -59,6 +59,10 @@ export function initPWAInstall() {
 		deferredPrompt = null;
 		isPromptReady = false;
 		notifyListeners();
+		// Auto-open the installed app in standalone mode
+		setTimeout(() => {
+			window.location.href = window.location.origin + '/';
+		}, 500);
 	});
 }
 
