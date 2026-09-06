@@ -107,9 +107,18 @@ export async function POST({ request }) {
 			return json({ error: 'Database update error: ' + error.message }, { status: 500 });
 		}
 
+		// Fetch shared recipients to notify them
+		const { data: sharedRows } = await supabase
+			.from('chronomuse_shared_memories')
+			.select('recipient_id')
+			.eq('memory_id', memoryId);
+			
+		const sharedWith = sharedRows ? sharedRows.map(r => r.recipient_id) : [];
+
 		return json({
 			success: true,
 			data: updatedMemory,
+			shared_with: sharedWith,
 			message: 'Memory updated successfully'
 		});
 	} catch (err) {

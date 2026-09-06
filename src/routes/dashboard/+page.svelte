@@ -534,6 +534,13 @@
 					};
 					memoriesData[selectedDate] = memoriesForDate;
 				}
+				
+				if (data.shared_with && data.shared_with.length > 0) {
+					for (const fid of data.shared_with) {
+						broadcastMemoryEvent(user.id, fid, 'shared_memory_update', data.data);
+					}
+				}
+
 				showNotificationModal('Memory updated successfully!');
 			} else {
 				showNotificationModal('Error updating memory: ' + (data.error || 'Unknown error'), 'error');
@@ -565,6 +572,13 @@
 					};
 					memoriesData[selectedDate] = memoriesForDate;
 				}
+
+				if (data.shared_with && data.shared_with.length > 0) {
+					for (const fid of data.shared_with) {
+						broadcastMemoryEvent(user.id, fid, 'shared_memory_update', data.data);
+					}
+				}
+
 				showNotificationModal('Memory updated successfully!');
 			} else {
 				showNotificationModal('Error updating memory: ' + (data.error || 'Unknown error'), 'error');
