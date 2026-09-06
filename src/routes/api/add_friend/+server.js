@@ -66,10 +66,10 @@ export async function POST({ request }) {
 			if (existingRequest.status === 'pending') {
 				return json({ error: `Friend request to @${targetUser.username} is already pending` }, { status: 400 });
 			}
-			if (existingRequest.status === 'accepted') {
+			if (existingRequest.status === 'accepted' && existingFriend) {
 				return json({ error: `You are already friends with @${targetUser.username}` }, { status: 400 });
 			}
-			if (existingRequest.status === 'declined') {
+			if (existingRequest.status === 'declined' || (existingRequest.status === 'accepted' && !existingFriend)) {
 				// Re-open request
 				const { error: updateError } = await supabase
 					.from('chronomuse_friend_requests')

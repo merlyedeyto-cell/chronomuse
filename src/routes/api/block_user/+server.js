@@ -55,12 +55,17 @@ export async function POST({ request }) {
 			console.error('Block DB error:', error);
 		}
 
-		// Also remove any active friendship when blocked
+		// Also remove any active friendship and friend requests when blocked
 		try {
 			await supabase
 				.from('chronomuse_friends')
 				.delete()
 				.or(`and(user_id.eq.${user_id},friend_id.eq.${target_id}),and(user_id.eq.${target_id},friend_id.eq.${user_id})`);
+				
+			await supabase
+				.from('chronomuse_friend_requests')
+				.delete()
+				.or(`and(sender_id.eq.${user_id},receiver_id.eq.${target_id}),and(sender_id.eq.${target_id},receiver_id.eq.${user_id})`);
 		} catch (e) {}
 
 		return json({ success: true, message: 'User blocked successfully' });

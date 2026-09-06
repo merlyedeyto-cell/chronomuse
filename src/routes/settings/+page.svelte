@@ -467,7 +467,7 @@
 
 					<div class="flex items-center space-x-2 flex-shrink-0">
 						<span class="text-xs font-bold px-2.5 py-1 rounded-lg border {pwaStatus.isStandalone || pwaStatus.isAppInstalled ? 'bg-green-100 text-green-700 border-green-300' : 'bg-pink-500 text-white border-pink-600'}">
-							{pwaStatus.isStandalone || pwaStatus.isAppInstalled ? 'Open App' : 'Install App'}
+							{pwaStatus.isStandalone ? 'Installed' : pwaStatus.isAppInstalled ? 'Open App' : 'Install App'}
 						</span>
 						<div class="w-7 h-7 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center transition-transform duration-300 {activeTab === 'install' ? 'rotate-180 bg-pink-500 text-white' : ''}">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
@@ -491,7 +491,16 @@
 								</div>
 							</div>
 
-							{#if pwaStatus.isStandalone || pwaStatus.isAppInstalled}
+							{#if pwaStatus.isStandalone}
+								<div
+									class="w-full sm:w-auto px-5 py-2.5 bg-green-50 text-green-700 border border-green-200 font-bold text-xs sm:text-sm rounded-xl flex items-center justify-center space-x-2"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+									</svg>
+									<span>App is Already Installed</span>
+								</div>
+							{:else if pwaStatus.isAppInstalled}
 								<button
 									type="button"
 									onclick={handleInstallAppFromSettings}
