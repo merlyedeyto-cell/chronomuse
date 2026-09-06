@@ -493,9 +493,11 @@
 		goto('/');
 	}
 
-	async function fetchUserMoodSummary() {
+	async function fetchUserMoodSummary(isSilent = false) {
 		if (typeof window === 'undefined' || !currentUser?.id) return;
-		isLoadingMoods = true;
+		if (!isSilent && totalMoodLogs === 0) {
+			isLoadingMoods = true;
+		}
 		try {
 			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${currentUser.id}&period=all`);
 			const data = await res.json();
@@ -634,7 +636,7 @@
 						}
 					} catch (e) {}
 					currentUser = updatedStored;
-					fetchUserMoodSummary();
+					fetchUserMoodSummary(isSilent);
 				}
 			} else {
 				if (data.error && data.error.toLowerCase().includes('not found')) {
@@ -1854,8 +1856,10 @@
 						</div>
 					{:else if totalMoodLogs === 0}
 						<div class="p-6 sm:p-8 bg-gradient-to-br from-pink-50 via-rose-50/50 to-white border-2 border-pink-200 rounded-2xl text-center space-y-4 shadow-2xs">
-							<div class="w-16 h-16 rounded-2xl bg-pink-100 text-pink-500 flex items-center justify-center font-bold text-3xl mx-auto shadow-inner">
-								✨
+							<div class="w-14 h-14 rounded-2xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center mx-auto shadow-inner">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-7 h-7">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m-9-6l3-3 3 3 4.5-4.5" />
+								</svg>
 							</div>
 							<div class="space-y-1.5 max-w-md mx-auto">
 								<h4 class="text-base sm:text-lg font-black text-pink-950">No Mood Logs Yet</h4>
@@ -1879,8 +1883,10 @@
 							
 							<div class="flex items-center justify-between gap-3">
 								<div class="flex items-center space-x-3 min-w-0">
-									<div class="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 border border-pink-300 flex items-center justify-center font-bold text-xl flex-shrink-0 shadow-2xs">
-										{getMoodEmoji(dominantMood)}
+									<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-600 text-white border border-pink-400 flex items-center justify-center font-bold flex-shrink-0 shadow-2xs">
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+										</svg>
 									</div>
 									<div class="min-w-0">
 										<p class="text-[11px] font-black uppercase tracking-wider text-pink-600">Dominant Mood</p>
