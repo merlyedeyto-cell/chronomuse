@@ -11,6 +11,8 @@
 	let currentYear = $state(currentDate.getFullYear());
 	let showMonthMenu = $state(false);
 	let showYearMenu = $state(false);
+	let yearInput = $state('');
+	let filteredYears = $derived(yearInput.trim() ? years.filter(y => String(y).includes(yearInput.trim())) : years);
 	let highlightedDateStr = $state('');
 	let highlightTimeout;
 
@@ -150,7 +152,25 @@
 	function selectYear(year) {
 		currentYear = year;
 		showYearMenu = false;
+		yearInput = '';
 		dispatch('monthChanged', { month: currentMonth, year: currentYear });
+	}
+
+	function toggleYearMenu() {
+		showYearMenu = !showYearMenu;
+		if (showYearMenu) {
+			showMonthMenu = false;
+			yearInput = '';
+		}
+	}
+
+	function submitYearInput() {
+		const parsed = parseInt(yearInput, 10);
+		if (!isNaN(parsed) && parsed >= 1900 && parsed <= 2100) {
+			selectYear(parsed);
+		} else if (filteredYears.length > 0) {
+			selectYear(filteredYears[0]);
+		}
 	}
 
 	function jumpToToday() {
@@ -287,7 +307,7 @@
 			<!-- Custom Year Selector Button -->
 			<button
 				type="button"
-				onclick={() => { showYearMenu = !showYearMenu; showMonthMenu = false; }}
+				onclick={toggleYearMenu}
 				class="pl-3 pr-2.5 py-1.5 bg-pink-100/90 hover:bg-pink-200 text-pink-700 font-black text-xs sm:text-sm rounded-xl border border-pink-300 shadow-2xs transition-all duration-200 cursor-pointer active:scale-95 flex items-center space-x-1"
 			>
 				<span>{currentYear}</span>
@@ -518,8 +538,29 @@
 				</button>
 			</div>
 
-			<div class="grid grid-cols-3 gap-2 max-h-72 overflow-y-auto p-1">
-				{#each years as year}
+			<div class="flex items-center space-x-2 pt-1">
+				<div class="relative flex-1">
+					<input
+						type="number"
+						min="1900"
+						max="2100"
+						placeholder="Type year e.g. 2026..."
+						bind:value={yearInput}
+						onkeydown={(e) => { if (e.key === 'Enter') submitYearInput(); }}
+						class="w-full py-2 px-3 bg-pink-50/80 border border-pink-200 rounded-2xl text-xs sm:text-sm font-bold text-pink-900 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all placeholder:text-pink-300"
+					/>
+				</div>
+				<button
+					type="button"
+					onclick={submitYearInput}
+					class="py-2 px-4 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white rounded-2xl text-xs font-bold shadow-sm transition-all cursor-pointer whitespace-nowrap active:scale-95"
+				>
+					Go
+				</button>
+			</div>
+
+			<div class="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto p-1">
+				{#each filteredYears as year}
 					<button
 						type="button"
 						onclick={() => selectYear(year)}
@@ -527,6 +568,10 @@
 					>
 						<span>{year}</span>
 					</button>
+				{:else}
+					<div class="col-span-3 py-4 text-center text-xs text-pink-400 font-medium">
+						No year found. Click "Go" to use {yearInput}.
+					</div>
 				{/each}
 			</div>
 		</div>
