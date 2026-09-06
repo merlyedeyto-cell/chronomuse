@@ -97,11 +97,36 @@ export async function promptPWAInstall() {
 	}
 
 	if (isWebview()) {
-		return {
-			success: false,
-			needManualGuide: true,
-			guide: 'Tap the menu (⋮ or ⋯) and select "Open in Chrome" or "Open in Browser" to install.'
-		};
+		// Try to open in system browser so they can install from there
+		try {
+			const url = window.location.href;
+			const ua = navigator.userAgent || '';
+
+			// Android: use intent scheme to open in Chrome
+			if (/android/i.test(ua)) {
+				const intentUrl = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end;';
+				window.location.href = intentUrl;
+				return {
+					success: false,
+					needManualGuide: true,
+					guide: 'Opening in Chrome... If it doesn\'t open, tap the menu (⋮) and select "Open in Chrome".'
+				};
+			}
+
+			// iOS / other: try window.open
+			window.open(url, '_system') || window.open(url, '_blank');
+			return {
+				success: false,
+				needManualGuide: true,
+				guide: 'Opening in your browser... Install from there for the best experience.'
+			};
+		} catch (e) {
+			return {
+				success: false,
+				needManualGuide: true,
+				guide: 'Tap the menu (⋮ or ⋯) and select "Open in Chrome" or "Open in Browser" to install.'
+			};
+		}
 	}
 
 	return {
