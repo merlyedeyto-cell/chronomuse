@@ -44,8 +44,14 @@ export async function POST({ request }) {
 
 		// Handle Music Upload
 		if (musicFile && musicFile.size > 0) {
-			const fileExt = musicFile.name.split('.').pop();
-			const fileName = `music_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+			const rawName = musicFile.name;
+			const lastDotIndex = rawName.lastIndexOf('.');
+			const baseName = lastDotIndex !== -1 ? rawName.substring(0, lastDotIndex) : rawName;
+			const fileExt = lastDotIndex !== -1 ? rawName.substring(lastDotIndex + 1) : 'mp3';
+			
+			// Clean base name for URL safety while preserving human readability
+			const safeBaseName = baseName.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_');
+			const fileName = `${Date.now()}_${safeBaseName || 'music'}.${fileExt}`;
 			const filePath = `${userId}/${fileName}`;
 
 			const { error: uploadError } = await supabase.storage

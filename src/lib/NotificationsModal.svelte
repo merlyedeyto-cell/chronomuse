@@ -203,8 +203,22 @@
 		if (!url) return 'Memory Music';
 		try {
 			const cleanUrl = url.split('?')[0];
-			const filename = cleanUrl.split('/').pop();
-			return decodeURIComponent(filename) || 'Memory Music';
+			let filename = cleanUrl.split('/').pop();
+			filename = decodeURIComponent(filename);
+
+			if (/^music_\d+_[a-z0-9]+\.[a-z0-9]+$/i.test(filename)) {
+				return 'Memory Music';
+			}
+
+			filename = filename.replace(/^music_\d+_[a-z0-9]+_/, '');
+			filename = filename.replace(/^music_\d+_/, '');
+			filename = filename.replace(/^\d+_/, '');
+
+			if (filename.includes('_')) {
+				filename = filename.replace(/_/g, ' ');
+			}
+
+			return filename || 'Memory Music';
 		} catch (e) {
 			return 'Memory Music';
 		}
