@@ -9,6 +9,8 @@
 	let selectedDate = $state(null);
 	let currentMonth = $state(currentDate.getMonth());
 	let currentYear = $state(currentDate.getFullYear());
+	let showMonthMenu = $state(false);
+	let showYearMenu = $state(false);
 	let highlightedDateStr = $state('');
 	let highlightTimeout;
 
@@ -139,6 +141,18 @@
 		dispatch('monthChanged', { month: currentMonth, year: currentYear });
 	}
 
+	function selectMonth(index) {
+		currentMonth = index;
+		showMonthMenu = false;
+		dispatch('monthChanged', { month: currentMonth, year: currentYear });
+	}
+
+	function selectYear(year) {
+		currentYear = year;
+		showYearMenu = false;
+		dispatch('monthChanged', { month: currentMonth, year: currentYear });
+	}
+
 	function jumpToToday() {
 		const today = new Date();
 		currentMonth = today.getMonth();
@@ -257,38 +271,30 @@
 			</svg>
 		</button>
 
-		<div class="text-center flex items-center justify-center space-x-1.5">
-			<!-- Month Dropdown -->
-			<div class="relative inline-flex items-center">
-				<select
-					bind:value={currentMonth}
-					onchange={() => dispatch('monthChanged', { month: currentMonth, year: currentYear })}
-					class="appearance-none pl-2.5 pr-6 py-1 bg-pink-100/80 hover:bg-pink-200/90 text-pink-600 font-bold text-xs sm:text-sm rounded-lg border border-pink-300/80 shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-400"
-				>
-					{#each monthNames as month, i}
-						<option value={i} class="bg-white text-pink-700 font-semibold py-1">{month}</option>
-					{/each}
-				</select>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-pink-500 absolute right-2 pointer-events-none">
+		<div class="text-center flex items-center justify-center space-x-2 relative z-20">
+			<!-- Custom Month Selector Button -->
+			<button
+				type="button"
+				onclick={() => { showMonthMenu = !showMonthMenu; showYearMenu = false; }}
+				class="pl-3 pr-2.5 py-1.5 bg-pink-100/90 hover:bg-pink-200 text-pink-700 font-black text-xs sm:text-sm rounded-xl border border-pink-300 shadow-2xs transition-all duration-200 cursor-pointer active:scale-95 flex items-center space-x-1"
+			>
+				<span>{monthNames[currentMonth]}</span>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-pink-500 transition-transform duration-200 {showMonthMenu ? 'rotate-180' : ''}">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 				</svg>
-			</div>
+			</button>
 
-			<!-- Year Dropdown -->
-			<div class="relative inline-flex items-center">
-				<select
-					bind:value={currentYear}
-					onchange={() => dispatch('monthChanged', { month: currentMonth, year: currentYear })}
-					class="appearance-none pl-2.5 pr-6 py-1 bg-pink-100/80 hover:bg-pink-200/90 text-pink-600 font-bold text-xs sm:text-sm rounded-lg border border-pink-300/80 shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-400"
-				>
-					{#each years as year}
-						<option value={year} class="bg-white text-pink-700 font-semibold py-1">{year}</option>
-					{/each}
-				</select>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-pink-500 absolute right-2 pointer-events-none">
+			<!-- Custom Year Selector Button -->
+			<button
+				type="button"
+				onclick={() => { showYearMenu = !showYearMenu; showMonthMenu = false; }}
+				class="pl-3 pr-2.5 py-1.5 bg-pink-100/90 hover:bg-pink-200 text-pink-700 font-black text-xs sm:text-sm rounded-xl border border-pink-300 shadow-2xs transition-all duration-200 cursor-pointer active:scale-95 flex items-center space-x-1"
+			>
+				<span>{currentYear}</span>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-pink-500 transition-transform duration-200 {showYearMenu ? 'rotate-180' : ''}">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 				</svg>
-			</div>
+			</button>
 		</div>
 
 		<button
@@ -441,6 +447,87 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Custom Glassmorphic Month Selection Modal -->
+{#if showMonthMenu}
+	<div
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
+		onclick={(e) => { if (e.target === e.currentTarget) showMonthMenu = false; }}
+	>
+		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-5 max-w-xs sm:max-w-sm w-full space-y-4 animate-modal-content">
+			<div class="flex items-center justify-between border-b border-pink-100 pb-2.5">
+				<div class="flex items-center space-x-2">
+					<span class="text-lg">🗓️</span>
+					<h3 class="text-base font-black text-pink-950">Select Month</h3>
+				</div>
+				<button
+					type="button"
+					onclick={() => showMonthMenu = false}
+					class="p-1 text-pink-400 hover:text-pink-600 rounded-lg transition-colors cursor-pointer"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+
+			<div class="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto p-1">
+				{#each monthNames as month, i}
+					<button
+						type="button"
+						onclick={() => selectMonth(i)}
+						class="py-2.5 px-3 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-between border {currentMonth === i ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white border-pink-600 shadow-md scale-[1.02]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-800 border-pink-200/80'}"
+					>
+						<span>{month}</span>
+						{#if currentMonth === i}
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-3.5 h-3.5 text-white">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+							</svg>
+						{/if}
+					</button>
+				{/each}
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Custom Glassmorphic Year Selection Modal -->
+{#if showYearMenu}
+	<div
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
+		onclick={(e) => { if (e.target === e.currentTarget) showYearMenu = false; }}
+	>
+		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-5 max-w-xs sm:max-w-sm w-full space-y-4 animate-modal-content">
+			<div class="flex items-center justify-between border-b border-pink-100 pb-2.5">
+				<div class="flex items-center space-x-2">
+					<span class="text-lg">📅</span>
+					<h3 class="text-base font-black text-pink-950">Select Year</h3>
+				</div>
+				<button
+					type="button"
+					onclick={() => showYearMenu = false}
+					class="p-1 text-pink-400 hover:text-pink-600 rounded-lg transition-colors cursor-pointer"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+
+			<div class="grid grid-cols-3 gap-2 max-h-72 overflow-y-auto p-1">
+				{#each years as year}
+					<button
+						type="button"
+						onclick={() => selectYear(year)}
+						class="py-2.5 px-2 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-center border {currentYear === year ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white border-pink-600 shadow-md scale-105' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-800 border-pink-200/80'}"
+					>
+						<span>{year}</span>
+					</button>
+				{/each}
+			</div>
+		</div>
+	</div>
+{/if}
 
 <style>
 	@keyframes subtle-glow {
