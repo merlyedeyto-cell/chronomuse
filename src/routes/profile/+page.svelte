@@ -530,7 +530,7 @@
 					relationship_status: data.data.user.relationship_status || cachedAbout.relationship_status || null,
 					gender: data.data.user.gender || cachedAbout.gender || null
 				};
-				profileData = { ...data.data, user: mergedUser };
+				profileData = { ...data.data, user: mergedUser, is_fetching_details: false };
 				userNote = (data.data.user.note !== null && data.data.user.note !== undefined)
 					? data.data.user.note
 					: (data.data.is_self && typeof window !== 'undefined' ? (localStorage.getItem(`chronomuse_note_${effectiveTargetId}`) || '') : '');
@@ -856,11 +856,12 @@
 				},
 				is_self: String(targetId) === String(currentUser?.id),
 				is_friend: true,
-				total_friends: profileData?.friends?.length || 0,
-				total_memories: 0,
-				friends: [],
-				mutual_friends: [],
-				mutual_friends_count: 0
+				is_fetching_details: true,
+				total_friends: targetUser.total_friends || 0,
+				total_memories: targetUser.total_memories || 0,
+				friends: targetUser.friends || [],
+				mutual_friends: targetUser.mutual_friends || [],
+				mutual_friends_count: targetUser.mutual_friends_count || 0
 			};
 			userNote = targetUser.note !== undefined ? targetUser.note : '';
 			isLoading = false;
@@ -1117,17 +1118,15 @@
 
 	<!-- Main Profile Container -->
 	<main class="flex-grow container mx-auto px-4 py-6 sm:py-8 max-w-3xl space-y-6">
-		{#if !profileData}
-			{#if isLoading}
-				<div class="flex flex-col items-center justify-center py-24 space-y-3">
-					<div class="w-10 h-10 border-4 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
-					<p class="text-sm font-semibold text-pink-600 animate-pulse">Loading profile...</p>
-				</div>
-			{:else}
-				<div class="flex flex-col items-center justify-center py-24 space-y-3">
-					<p class="text-sm font-semibold text-pink-600">Profile not found.</p>
-				</div>
-			{/if}
+		{#if !profileData && isLoading}
+			<div class="flex flex-col items-center justify-center py-24 space-y-3">
+				<div class="w-10 h-10 border-4 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
+				<p class="text-sm font-semibold text-pink-600 animate-pulse">Loading profile...</p>
+			</div>
+		{:else if !profileData}
+			<div class="flex flex-col items-center justify-center py-24 space-y-3">
+				<p class="text-sm font-semibold text-pink-600">Profile not found.</p>
+			</div>
 		{:else if profileData.is_blocked_by_me || profileData.is_blocking_me}
 			<!-- Blocked Profile View Screen -->
 			<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-xl overflow-hidden animate-fade-in-up p-8 sm:p-12 text-center space-y-6 max-w-2xl mx-auto my-8">
@@ -1600,7 +1599,12 @@
 						</div>
 					</div>
 
-					{#if filteredFriends.length === 0}
+					{#if profileData?.is_fetching_details && (!profileData?.friends || profileData.friends.length === 0)}
+						<div class="space-y-3 py-4">
+							<div class="h-16 bg-pink-100/60 rounded-2xl animate-pulse"></div>
+							<div class="h-16 bg-pink-100/60 rounded-2xl animate-pulse"></div>
+						</div>
+					{:else if filteredFriends.length === 0}
 						<div class="text-center py-12 border-2 border-dashed border-pink-200 rounded-2xl">
 							<p class="text-xs font-semibold text-pink-600">
 								{friendsSearch ? 'No friends matched your search.' : 'No friends yet.'}
