@@ -84,7 +84,7 @@
 </script>
 
 <div
-	class="max-w-md w-full mx-auto px-2 sm:px-0 transition-all duration-300"
+	class="w-full sm:max-w-md mx-auto px-0 sm:px-0 transition-all duration-300"
 	class:scale-105={isClicked}
 >
 	<div class="bg-white/85 backdrop-blur-md rounded-2xl shadow-xl p-6 sm:p-6 border-2 border-pink-300 transition-all duration-300 hover:shadow-2xl">
