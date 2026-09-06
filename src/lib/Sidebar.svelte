@@ -48,6 +48,9 @@
 
 	function handleProfile() {
 		closeSidebar();
+		if (typeof window !== 'undefined') {
+			window.dispatchEvent(new CustomEvent('chronomuse_go_self_profile'));
+		}
 		goto('/profile');
 	}
 

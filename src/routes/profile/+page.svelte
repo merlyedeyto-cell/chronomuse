@@ -903,11 +903,23 @@
 		loadProfile();
 
 		unsubscribePage = page.subscribe(($p) => {
-			const newId = $p.url.searchParams.get('id') || $p.url.searchParams.get('user_id');
-			if (newId && String(newId) !== String(targetUserId)) {
-				loadProfile(newId);
+			const rawParamId = $p.url.searchParams.get('id') || $p.url.searchParams.get('user_id');
+			const effectiveId = rawParamId || currentUser?.id;
+			if (effectiveId && String(effectiveId) !== String(targetUserId)) {
+				if (currentUser?.id && String(effectiveId) === String(currentUser.id)) {
+					viewUserProfile(currentUser);
+				} else {
+					loadProfile(effectiveId);
+				}
 			}
 		});
+
+		const handleGoSelfProfile = () => {
+			if (currentUser?.id) {
+				viewUserProfile(currentUser);
+			}
+		};
+		window.addEventListener('chronomuse_go_self_profile', handleGoSelfProfile);
 
 		try {
 			realtimeChannel = supabase
