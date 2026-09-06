@@ -499,17 +499,17 @@
 		try {
 			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${currentUser.id}&period=all`);
 			const data = await res.json();
-			const moods = data.success && data.data ? data.data : [];
+			const moods = data.success && Array.isArray(data.data) ? data.data : [];
 
 			const stats = /** @type {Record<string, number>} */ ({ happy: 0, excited: 0, grateful: 0, calm: 0, love: 0, neutral: 0, sad: 0, anxious: 0, lonely: 0, angry: 0 });
 			let total = 0;
 
 			moods.forEach((/** @type {any} */ m) => {
-				const tag = (m.mood_tag || 'happy').toLowerCase();
+				const tag = (m.mood_tag || 'happy').toLowerCase().trim();
 				if (stats[tag] !== undefined) {
 					stats[tag]++;
 				} else {
-					stats.neutral++;
+					stats.neutral = (stats.neutral || 0) + 1;
 				}
 				total++;
 			});
@@ -517,15 +517,19 @@
 			moodSummary = stats;
 			totalMoodLogs = total;
 
-			let maxCount = -1;
-			let topTag = 'Happy';
-			Object.entries(stats).forEach(([tag, count]) => {
-				if (count > maxCount) {
-					maxCount = count;
-					topTag = tag.charAt(0).toUpperCase() + tag.slice(1);
-				}
-			});
-			dominantMood = topTag;
+			if (total > 0) {
+				let maxCount = 0;
+				let topTag = 'Happy';
+				Object.entries(stats).forEach(([tag, count]) => {
+					if (count > maxCount) {
+						maxCount = count;
+						topTag = tag.charAt(0).toUpperCase() + tag.slice(1);
+					}
+				});
+				dominantMood = maxCount > 0 ? topTag : (moods[0]?.mood_tag ? (moods[0].mood_tag.charAt(0).toUpperCase() + moods[0].mood_tag.slice(1)) : 'Happy');
+			} else {
+				dominantMood = '';
+			}
 		} catch (e) {
 			console.error('Error fetching mood summary:', e);
 		} finally {
@@ -1847,6 +1851,27 @@
 						<div class="py-8 flex flex-col items-center justify-center space-y-2">
 							<div class="w-7 h-7 border-3 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
 							<p class="text-xs font-semibold text-pink-600">Analyzing mood insights...</p>
+						</div>
+					{:else if totalMoodLogs === 0}
+						<div class="p-6 sm:p-8 bg-gradient-to-br from-pink-50 via-rose-50/50 to-white border-2 border-pink-200 rounded-2xl text-center space-y-4 shadow-2xs">
+							<div class="w-16 h-16 rounded-2xl bg-pink-100 text-pink-500 flex items-center justify-center font-bold text-3xl mx-auto shadow-inner">
+								✨
+							</div>
+							<div class="space-y-1.5 max-w-md mx-auto">
+								<h4 class="text-base sm:text-lg font-black text-pink-950">No Mood Logs Yet</h4>
+								<p class="text-xs sm:text-sm text-pink-600 font-medium leading-relaxed">
+									Log your daily memories and emotions to unlock personalized mood reflections and insights!
+								</p>
+							</div>
+							<button
+								onclick={() => goto('/mood-graph')}
+								class="px-5 py-2.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all cursor-pointer inline-flex items-center space-x-2"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+								</svg>
+								<span>Log Mood & View Graph</span>
+							</button>
 						</div>
 					{:else}
 						<!-- Compact Dominant Mood & System Feedback Card -->
