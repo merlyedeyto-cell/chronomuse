@@ -182,8 +182,8 @@
 
 <!-- Install ChronoMuse Banner (fixed bottom, doesn't affect login card position) -->
 {#if showInstallBanner && !pwaStatus.isStandalone}
-	<div class="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 p-3 flex justify-center pointer-events-none">
-		<div class="max-w-md w-full relative bg-white/95 backdrop-blur-md rounded-2xl border-2 border-pink-400 shadow-2xl overflow-hidden animate-fade-in-up pointer-events-auto">
+	<div class="fixed bottom-4 left-0 right-0 md:bottom-auto md:top-4 md:left-auto md:right-4 z-50 p-3 md:p-0 flex justify-center md:justify-end pointer-events-none">
+		<div class="max-w-md md:max-w-xs w-full relative bg-white/95 backdrop-blur-md rounded-2xl border-2 border-pink-400 shadow-2xl overflow-hidden animate-fade-in-up pointer-events-auto">
 			<!-- Close (X) Button -->
 			<button
 				type="button"
@@ -226,7 +226,7 @@
 
 				{#if installGuideMessage}
 					<div class="p-2 bg-pink-50 rounded-lg border border-pink-300 text-[10.5px] font-semibold text-pink-800 text-center animate-fade-in">
-						💡 {installGuideMessage}
+						{installGuideMessage}
 					</div>
 				{/if}
 			</div>
