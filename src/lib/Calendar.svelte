@@ -493,16 +493,16 @@
 				</button>
 			</div>
 
-			<div class="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto p-1">
+			<div class="grid grid-cols-2 gap-1.5 p-1">
 				{#each monthNames as month, i}
 					<button
 						type="button"
 						onclick={() => selectMonth(i)}
-						class="py-2.5 px-3 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-between border {currentMonth === i ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white border-pink-600 shadow-md scale-[1.02]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-800 border-pink-200/80'}"
+						class="py-2 px-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-between border {currentMonth === i ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white border-pink-600 shadow-md scale-[1.02]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-800 border-pink-200/80'}"
 					>
 						<span>{month}</span>
 						{#if currentMonth === i}
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-3.5 h-3.5 text-white">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-3.5 h-3.5 text-white flex-shrink-0 ml-1">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 							</svg>
 						{/if}
