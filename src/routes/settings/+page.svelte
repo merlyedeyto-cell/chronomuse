@@ -5,7 +5,7 @@
 	import { supabase } from '$lib/supabaseClient';
 	import { isSoundEnabled, setSoundEnabled, playClickSound } from '$lib/soundEffects.js';
 	import Sidebar from '$lib/Sidebar.svelte';
-	import { initPWAInstall, subscribePWAStatus, promptPWAInstall } from '$lib/pwaInstall.js';
+	import { initPWAInstall, subscribePWAStatus, promptPWAInstall, openInstalledApp } from '$lib/pwaInstall.js';
 
 	let currentUser = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let sidebarOpen = $state(false);
@@ -327,6 +327,11 @@
 
 	async function handleInstallAppFromSettings() {
 		playClickSound();
+		// If app is already installed, open it
+		if (pwaStatus.isAppInstalled) {
+			openInstalledApp();
+			return;
+		}
 		installGuideMessage = '';
 		const result = await promptPWAInstall();
 		if (result.needManualGuide) {
@@ -461,8 +466,8 @@
 					</div>
 
 					<div class="flex items-center space-x-2 flex-shrink-0">
-						<span class="text-xs font-bold px-2.5 py-1 rounded-lg border {pwaStatus.isStandalone ? 'bg-green-100 text-green-700 border-green-300' : 'bg-pink-500 text-white border-pink-600'}">
-							{pwaStatus.isStandalone ? 'Installed' : 'Install App'}
+						<span class="text-xs font-bold px-2.5 py-1 rounded-lg border {pwaStatus.isStandalone || pwaStatus.isAppInstalled ? 'bg-green-100 text-green-700 border-green-300' : 'bg-pink-500 text-white border-pink-600'}">
+							{pwaStatus.isStandalone ? 'Installed' : pwaStatus.isAppInstalled ? 'Open App' : 'Install App'}
 						</span>
 						<div class="w-7 h-7 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center transition-transform duration-300 {activeTab === 'install' ? 'rotate-180 bg-pink-500 text-white' : ''}">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
@@ -493,6 +498,17 @@
 									</svg>
 									<span>ChronoMuse is already installed on this device! You are running the standalone app.</span>
 								</div>
+							{:else if pwaStatus.isAppInstalled}
+								<button
+									type="button"
+									onclick={handleInstallAppFromSettings}
+									class="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-xs sm:text-sm rounded-xl hover:from-green-600 hover:to-emerald-700 shadow-md active:scale-95 transition-all flex items-center justify-center space-x-2"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+									</svg>
+									<span>Open ChronoMuse App</span>
+								</button>
 							{:else}
 								<button
 									type="button"
@@ -508,7 +524,7 @@
 
 							{#if installGuideMessage}
 								<div class="p-3 bg-white rounded-xl border border-pink-300 text-xs font-semibold text-pink-800 text-center animate-fade-in shadow-2xs">
-									💡 {installGuideMessage}
+									{installGuideMessage}
 								</div>
 							{/if}
 						</div>
