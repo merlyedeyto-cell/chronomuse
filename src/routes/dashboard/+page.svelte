@@ -150,7 +150,7 @@
 	async function loadPinnedDates() {
 		if (!user || !user.id) return;
 		try {
-			const response = await fetch(`${API_ENDPOINTS.getPinnedMemories}?user_id=${user.id}`);
+			const response = await fetch(`${API_ENDPOINTS.getPinnedMemories}?user_id=${user.id}`, { cache: 'no-store' });
 			const data = await response.json();
 
 			if (data.success && data.data) {
@@ -192,7 +192,7 @@
 	async function loadMemoriesForMonth(month, year) {
 		if (!user || !user.id) return;
 		try {
-			const response = await fetch(`${API_ENDPOINTS.getMemoriesForMonth}?year=${year}&month=${month + 1}&user_id=${user.id}`);
+			const response = await fetch(`${API_ENDPOINTS.getMemoriesForMonth}?year=${year}&month=${month + 1}&user_id=${user.id}`, { cache: 'no-store' });
 			const data = await response.json();
 
 			if (data.success && data.data) {
@@ -593,7 +593,7 @@
 		if (!date) return;
 
 		try {
-			const response = await fetch(`${API_ENDPOINTS.getMemoriesByDate}?date=${date}&user_id=${user.id}`);
+			const response = await fetch(`${API_ENDPOINTS.getMemoriesByDate}?date=${date}&user_id=${user.id}`, { cache: 'no-store' });
 			const data = await response.json();
 
 			if (data.success && data.data) {

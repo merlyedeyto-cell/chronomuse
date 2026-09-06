@@ -32,7 +32,7 @@
 		if (!isSilent && pinnedMemories.length === 0) {
 			isLoading = true;
 		}
-		fetch(`${API_ENDPOINTS.getPinnedMemories}?user_id=${userId}`)
+		fetch(`${API_ENDPOINTS.getPinnedMemories}?user_id=${userId}`, { cache: 'no-store' })
 			.then(response => response.json())
 			.then(data => {
 				isLoading = false;
