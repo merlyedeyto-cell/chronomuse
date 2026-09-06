@@ -51,7 +51,6 @@
 		userNote = trimmed;
 		if (profileData?.user) {
 			profileData.user.note = trimmed;
-			profileData.user.bio = trimmed;
 		}
 		if (typeof window !== 'undefined') {
 			if (trimmed) {
@@ -68,9 +67,21 @@
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({
 						user_id: currentUser.id,
-						note: trimmed,
-						bio: trimmed
+						note: trimmed
 					})
+				});
+			} catch (e) {}
+
+			try {
+				const globalChannel = supabase.channel('chronomuse_global_events');
+				globalChannel.subscribe((status) => {
+					if (status === 'SUBSCRIBED') {
+						globalChannel.send({
+							type: 'broadcast',
+							event: 'global_note_event',
+							payload: { user_id: currentUser.id, note: trimmed }
+						});
+					}
 				});
 			} catch (e) {}
 		}
@@ -87,7 +98,6 @@
 		noteInputText = '';
 		if (profileData?.user) {
 			profileData.user.note = '';
-			profileData.user.bio = '';
 		}
 		if (typeof window !== 'undefined') {
 			localStorage.removeItem(`chronomuse_note_${effectiveId}`);
@@ -99,9 +109,21 @@
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({
 						user_id: currentUser.id,
-						note: '',
-						bio: ''
+						note: ''
 					})
+				});
+			} catch (e) {}
+
+			try {
+				const globalChannel = supabase.channel('chronomuse_global_events');
+				globalChannel.subscribe((status) => {
+					if (status === 'SUBSCRIBED') {
+						globalChannel.send({
+							type: 'broadcast',
+							event: 'global_note_event',
+							payload: { user_id: currentUser.id, note: '' }
+						});
+					}
 				});
 			} catch (e) {}
 		}
@@ -492,7 +514,7 @@
 					gender: data.data.user.gender || cachedAbout.gender || null
 				};
 				profileData = { ...data.data, user: mergedUser };
-				userNote = data.data.user.note || data.data.user.bio || (typeof window !== 'undefined' ? (localStorage.getItem(`chronomuse_note_${effectiveTargetId}`) || '') : '');
+				userNote = data.data.user.note || (typeof window !== 'undefined' ? (localStorage.getItem(`chronomuse_note_${effectiveTargetId}`) || '') : '');
 				profileCache.set(targetKey, profileData);
 
 				if (profileData.is_self) {
@@ -511,6 +533,25 @@
 			isLoading = false;
 		}
 	}
+
+	onMount(() => {
+		loadProfile();
+
+		const handleRealtimeNoteChange = (e) => {
+			const detail = e?.detail;
+			if (detail && detail.user_id && profileData?.user) {
+				if (String(profileData.user.id) === String(detail.user_id)) {
+					userNote = detail.note || '';
+					profileData.user.note = detail.note || '';
+				}
+			}
+		};
+
+		window.addEventListener('chronomuse_note_change', handleRealtimeNoteChange);
+		return () => {
+			window.removeEventListener('chronomuse_note_change', handleRealtimeNoteChange);
+		};
+	});
 
 	function triggerAvatarUpload() {
 		if (avatarInput) {

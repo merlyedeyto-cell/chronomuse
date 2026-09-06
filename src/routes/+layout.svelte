@@ -154,6 +154,11 @@
 					}
 				}
 			})
+			.on('broadcast', { event: 'global_note_event' }, (payload) => {
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_note_change', { detail: payload?.payload }));
+				}
+			})
 			.subscribe();
 
 		// Listen strictly for this specific logged-in user's inbox

@@ -152,7 +152,7 @@ export async function POST({ request }) {
 					email: targetUser.email,
 					avatar_url: targetUser.avatar_url || null,
 					cover_url: targetUser.cover_url || null,
-					note: targetUser.note || targetUser.bio || null,
+					note: targetUser.note || null,
 					bio: targetUser.bio || null,
 					birthday: targetUser.birthday || null,
 					relationship_status: targetUser.relationship_status || null,
