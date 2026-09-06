@@ -12,7 +12,8 @@ function notifyListeners() {
 		isWebview: isWebview(),
 		isMobile: isMobile(),
 		isIOS: isIOS(),
-		isStandalone: isStandalone()
+		isStandalone: isStandalone(),
+		isAppInstalled: isAppInstalled()
 	}));
 }
 
@@ -58,6 +59,8 @@ export function initPWAInstall() {
 	window.addEventListener('appinstalled', () => {
 		deferredPrompt = null;
 		isPromptReady = false;
+		// Mark app as installed in localStorage
+		try { localStorage.setItem('chronomuse_pwa_installed', 'true'); } catch(e) {}
 		notifyListeners();
 		// Auto-open the installed app in standalone mode
 		setTimeout(() => {
@@ -73,9 +76,20 @@ export function subscribePWAStatus(callback) {
 		isWebview: isWebview(),
 		isMobile: isMobile(),
 		isIOS: isIOS(),
-		isStandalone: isStandalone()
+		isStandalone: isStandalone(),
+		isAppInstalled: isAppInstalled()
 	});
 	return () => listeners.delete(callback);
+}
+
+export function isAppInstalled() {
+	if (typeof window === 'undefined') return false;
+	try { return localStorage.getItem('chronomuse_pwa_installed') === 'true'; } catch(e) { return false; }
+}
+
+export function openInstalledApp() {
+	// Open the app in standalone mode
+	window.location.href = window.location.origin + '/';
 }
 
 export async function promptPWAInstall() {
