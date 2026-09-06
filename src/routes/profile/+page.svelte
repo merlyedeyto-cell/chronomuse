@@ -155,50 +155,72 @@
 
 		try {
 			const reader = new FileReader();
-			reader.onload = (readerEvent) => {
-				const coverUrl = readerEvent.target?.result;
-				if (coverUrl && profileData?.user) {
-					profileData.user.cover_url = coverUrl;
-					if (typeof window !== 'undefined' && currentUser?.id) {
-						localStorage.setItem(`chronomuse_cover_${currentUser.id}`, coverUrl.toString());
-					}
-				}
-			};
+			const dataUrlPromise = new Promise((resolve) => {
+				reader.onload = (readerEvent) => {
+					resolve(readerEvent.target?.result?.toString() || '');
+				};
+			});
 			reader.readAsDataURL(file);
+			const dataUrl = await dataUrlPromise;
 
-			const fileExt = file.name.split('.').pop();
+			const fileExt = file.name.split('.').pop() || 'jpg';
 			const filePath = `covers/${currentUser.id}_${Date.now()}.${fileExt}`;
 
+			let finalCoverUrl = null;
+
+			// Try avatars bucket first
 			const { error: uploadError } = await supabase.storage
 				.from('avatars')
 				.upload(filePath, file, { upsert: true });
 
 			if (!uploadError) {
-				const { data } = supabase.storage
-					.from('avatars')
-					.getPublicUrl(filePath);
+				const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+				finalCoverUrl = data?.publicUrl;
+			} else {
+				// Fallback to memories bucket
+				const { error: memError } = await supabase.storage
+					.from('memories')
+					.upload(filePath, file, { upsert: true });
 
-				if (data?.publicUrl && profileData?.user) {
-					profileData.user.cover_url = data.publicUrl;
-					if (typeof window !== 'undefined' && currentUser?.id) {
-						localStorage.setItem(`chronomuse_cover_${currentUser.id}`, data.publicUrl);
-					}
-					// Persist cover_url to database table
-					try {
-						await fetch(API_ENDPOINTS.updateProfile, {
-							method: 'POST',
-							headers: { 'Content-Type': 'application/json' },
-							body: JSON.stringify({
-								user_id: currentUser.id,
-								cover_url: data.publicUrl
-							})
-						});
-					} catch (dbErr) {}
+				if (!memError) {
+					const { data } = supabase.storage.from('memories').getPublicUrl(filePath);
+					finalCoverUrl = data?.publicUrl;
 				}
+			}
+
+			if (!finalCoverUrl) {
+				finalCoverUrl = dataUrl;
+			}
+
+			if (finalCoverUrl && profileData?.user) {
+				profileData = {
+					...profileData,
+					user: {
+						...profileData.user,
+						cover_url: finalCoverUrl
+					}
+				};
+
+				if (typeof window !== 'undefined' && currentUser?.id) {
+					localStorage.setItem(`chronomuse_cover_${currentUser.id}`, finalCoverUrl);
+				}
+
+				// Persist cover_url to database table
+				try {
+					await fetch(API_ENDPOINTS.updateProfile, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							user_id: currentUser.id,
+							cover_url: finalCoverUrl
+						})
+					});
+				} catch (dbErr) {}
 			}
 			showNotification('Cover photo updated successfully!');
 		} catch (err) {
 			console.error('Error uploading cover photo:', err);
+			showNotification('Failed to upload cover photo', 'error');
 		} finally {
 			isUploadingCover = false;
 		}
