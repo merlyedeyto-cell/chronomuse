@@ -11,7 +11,45 @@
 
 	let currentUser = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let targetUserId = $state(null);
-	let profileData = $state(/** @type {any} */ (null));
+
+	function getInitialProfileData() {
+		if (typeof window === 'undefined') return null;
+		try {
+			const stored = localStorage.getItem('chronomuse_user');
+			if (!stored) return null;
+			const u = JSON.parse(stored);
+			if (!u || !u.id) return null;
+			const cachedAbout = JSON.parse(localStorage.getItem(`chronomuse_about_${u.id}`) || '{}');
+			const savedCover = localStorage.getItem(`chronomuse_cover_${u.id}`) || null;
+			const savedNote = localStorage.getItem(`chronomuse_note_${u.id}`) || '';
+			return {
+				user: {
+					id: u.id,
+					username: u.username || 'User',
+					email: u.email || '',
+					avatar_url: u.avatar_url || null,
+					cover_url: savedCover || u.cover_url || null,
+					note: u.note !== undefined ? u.note : savedNote,
+					bio: u.bio || cachedAbout.bio || null,
+					birthday: u.birthday || cachedAbout.birthday || null,
+					relationship_status: u.relationship_status || cachedAbout.relationship_status || null,
+					gender: u.gender || cachedAbout.gender || null
+				},
+				is_self: true,
+				is_friend: false,
+				total_friends: 0,
+				total_memories: 0,
+				friends: [],
+				mutual_friends: [],
+				mutual_friends_count: 0
+			};
+		} catch (e) {
+			return null;
+		}
+	}
+
+	let profileData = $state(getInitialProfileData());
+	let isProfileNotFound = $state(false);
 	let isLoading = $state(false);
 	let isSaving = $state(false);
 	let isUploadingAvatar = $state(false);
@@ -520,6 +558,7 @@
 
 			const data = await res.json();
 			if (data.success && data.data) {
+				isProfileNotFound = false;
 				const cachedAbout = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem(`chronomuse_about_${effectiveTargetId}`) || '{}') : {};
 				const savedCover = typeof window !== 'undefined' ? (localStorage.getItem(`chronomuse_cover_${effectiveTargetId}`) || null) : null;
 				const mergedUser = {
@@ -539,8 +578,13 @@
 				if (profileData.is_self) {
 					fetchUserMoodSummary();
 				}
-			} else if (!isSilent) {
-				showNotification(data.error || 'Failed to load profile', 'error');
+			} else {
+				if (data.error && data.error.toLowerCase().includes('not found')) {
+					isProfileNotFound = true;
+				}
+				if (!isSilent) {
+					showNotification(data.error || 'Failed to load profile', 'error');
+				}
 			}
 		} catch (err) {
 			if (/** @type {any} */ (err)?.name === 'AbortError') return;
