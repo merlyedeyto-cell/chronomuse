@@ -108,8 +108,8 @@
 	];
 
 	const currentRealYear = new Date().getFullYear();
-	const maxYear = Math.max(2030, currentRealYear + 5);
-	const years = Array.from({ length: maxYear - 1900 + 1 }, (_, i) => 1900 + i);
+	const maxYear = Math.max(2035, currentRealYear + 5);
+	const years = Array.from({ length: maxYear - 1950 + 1 }, (_, i) => maxYear - i);
 
 	const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -448,16 +448,18 @@
 	{/if}
 </div>
 
-<!-- Custom Glassmorphic Month Selection Modal -->
+<!-- Custom Month Selection Popup -->
 {#if showMonthMenu}
 	<div
-		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
+		class="fixed inset-0 bg-transparent z-50 flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) showMonthMenu = false; }}
 	>
 		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-5 max-w-xs sm:max-w-sm w-full space-y-4 animate-modal-content">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2.5">
 				<div class="flex items-center space-x-2">
-					<span class="text-lg">🗓️</span>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-pink-600">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+					</svg>
 					<h3 class="text-base font-black text-pink-950">Select Month</h3>
 				</div>
 				<button
@@ -491,16 +493,18 @@
 	</div>
 {/if}
 
-<!-- Custom Glassmorphic Year Selection Modal -->
+<!-- Custom Glassmorphic Year Selection Popup -->
 {#if showYearMenu}
 	<div
-		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
+		class="fixed inset-0 bg-transparent z-50 flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) showYearMenu = false; }}
 	>
 		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-5 max-w-xs sm:max-w-sm w-full space-y-4 animate-modal-content">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2.5">
 				<div class="flex items-center space-x-2">
-					<span class="text-lg">📅</span>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-pink-600">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+					</svg>
 					<h3 class="text-base font-black text-pink-950">Select Year</h3>
 				</div>
 				<button
