@@ -3,10 +3,16 @@
   "short_name": "Chronomuse",
   "description": "Your personal memory calendar & mood tracker app",
   "start_url": "/",
+  "id": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffe1f0",
   "theme_color": "#ff4fae",
   "orientation": "portrait",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "handle_links": "preferred",
   "icons": [
     {
       "src": "/logo.png",

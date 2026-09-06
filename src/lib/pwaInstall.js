@@ -88,8 +88,17 @@ export function isAppInstalled() {
 }
 
 export function openInstalledApp() {
-	// Open the app in standalone mode
-	window.location.href = window.location.origin + '/';
+	// Use window.open to trigger Chrome's launch_handler
+	// This tells Chrome to open the installed PWA instead of a browser tab
+	const appUrl = window.location.origin + '/?source=open-app';
+	
+	// Try window.open first - Chrome with launch_handler will intercept and open the PWA
+	const opened = window.open(appUrl, '_blank');
+	
+	// If popup was blocked or failed, fallback to navigation
+	if (!opened) {
+		window.location.href = appUrl;
+	}
 }
 
 export async function promptPWAInstall() {
