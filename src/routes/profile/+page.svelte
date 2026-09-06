@@ -825,6 +825,7 @@
 
 	let unsubscribePage = $state(/** @type {any} */ (null));
 	let realtimeChannel = $state(/** @type {any} */ (null));
+	let bcBus = /** @type {any} */ (null);
 
 	onMount(() => {
 		loadProfile();
@@ -845,8 +846,51 @@
 				.on('postgres_changes', { event: '*', schema: 'public', table: 'friends' }, () => {
 					loadProfile(targetUserId, true);
 				})
+				.on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chronomuse_users' }, (payload) => {
+					const updated = payload.new;
+					if (updated && profileData?.user && String(updated.id) === String(profileData.user.id)) {
+						profileData = {
+							...profileData,
+							user: {
+								...profileData.user,
+								...updated
+							}
+						};
+						if (updated.note !== undefined) {
+							userNote = updated.note || '';
+						}
+						loadProfile(profileData.user.id, true);
+					}
+				})
 				.subscribe();
 		} catch (e) {}
+
+		if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+			try {
+				bcBus = new BroadcastChannel('chronomuse_realtime_bus');
+				bcBus.onmessage = (msg) => {
+					if (msg.data?.type === 'profile_change' || msg.data?.type === 'note_change') {
+						const detail = msg.data.detail;
+						if (detail && detail.user_id && profileData?.user && String(detail.user_id) === String(profileData.user.id)) {
+							if (detail.updated_fields) {
+								profileData = {
+									...profileData,
+									user: {
+										...profileData.user,
+										...detail.updated_fields
+									}
+								};
+							}
+							if (detail.note !== undefined) {
+								userNote = detail.note || '';
+								if (profileData?.user) profileData.user.note = detail.note || '';
+							}
+							loadProfile(profileData.user.id, true);
+						}
+					}
+				};
+			} catch (e) {}
+		}
 	});
 
 	onDestroy(() => {
@@ -854,6 +898,11 @@
 		if (realtimeChannel) {
 			try {
 				supabase.removeChannel(realtimeChannel);
+			} catch (e) {}
+		}
+		if (bcBus) {
+			try {
+				bcBus.close();
 			} catch (e) {}
 		}
 	});
@@ -1042,31 +1091,27 @@
 
 					<!-- Edit Cover Photo Upload Button -->
 					{#if profileData.is_self}
-						<input
-							type="file"
-							accept="image/*"
-							bind:this={coverInput}
-							onchange={handleCoverChange}
-							class="hidden"
-						/>
-						<button
-							type="button"
-							onclick={triggerCoverUpload}
-							disabled={isUploadingCover}
-							class="absolute bottom-3 right-3 sm:top-3.5 sm:right-3.5 sm:bottom-auto px-3 py-1.5 bg-white/80 hover:bg-white/95 backdrop-blur-md text-pink-700 text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
+						<label
+							class="absolute bottom-3 right-3 sm:top-3.5 sm:right-3.5 sm:bottom-auto px-3.5 py-2 bg-white/90 hover:bg-white backdrop-blur-md text-pink-700 text-xs font-extrabold rounded-xl shadow-lg border border-pink-200 transition-all active:scale-95 cursor-pointer flex items-center space-x-1.5 z-30 pointer-events-auto"
 							title="Upload Cover Photo"
 						>
+							<input
+								type="file"
+								accept="image/*"
+								onchange={handleCoverChange}
+								class="hidden"
+							/>
 							{#if isUploadingCover}
 								<div class="w-3.5 h-3.5 border-2 border-pink-600 border-t-transparent rounded-full animate-spin"></div>
 								<span>Uploading...</span>
 							{:else}
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-600">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316A2.31 2.31 0 0014.71 3.75h-5.42a2.31 2.31 0 00-1.64 1.055l-.823 1.316z" />
+									<path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.64-1.055l-.822-1.316A2.31 2.31 0 0014.71 3.75h-5.42a2.31 2.31 0 00-1.64 1.055l-.823 1.316z" />
 									<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
 								</svg>
 								<span>Edit Cover</span>
 							{/if}
-						</button>
+						</label>
 					{/if}
 				</div>
 
@@ -1123,20 +1168,16 @@
 
 								<!-- Avatar Camera Upload Button -->
 								{#if profileData.is_self}
-									<input
-										type="file"
-										accept="image/*"
-										bind:this={avatarInput}
-										onchange={handleAvatarChange}
-										class="hidden"
-									/>
-									<button
-										type="button"
-										onclick={triggerAvatarUpload}
-										disabled={isUploadingAvatar}
-										class="absolute bottom-1 right-1 p-2 bg-pink-600 hover:bg-pink-700 text-white rounded-full border-2 border-white shadow-md transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+									<label
+										class="absolute bottom-1 right-1 p-2 bg-pink-600 hover:bg-pink-700 text-white rounded-full border-2 border-white shadow-md transition-all active:scale-95 cursor-pointer z-30 pointer-events-auto flex items-center justify-center"
 										title="Upload Profile Picture"
 									>
+										<input
+											type="file"
+											accept="image/*"
+											onchange={handleAvatarChange}
+											class="hidden"
+										/>
 										{#if isUploadingAvatar}
 											<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
 										{:else}
@@ -1145,7 +1186,7 @@
 												<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
 											</svg>
 										{/if}
-									</button>
+									</label>
 								{/if}
 							</div>
 

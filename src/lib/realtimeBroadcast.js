@@ -112,6 +112,17 @@ export function broadcastMemoryEvent(senderId, recipientId, eventType = 'shared_
 	}
 }
 
+let sharedGlobalChannel = null;
+
+function getSharedGlobalChannel() {
+	if (typeof window === 'undefined') return null;
+	if (!sharedGlobalChannel) {
+		sharedGlobalChannel = supabase.channel('chronomuse_global_events');
+		sharedGlobalChannel.subscribe();
+	}
+	return sharedGlobalChannel;
+}
+
 /**
  * Broadcasts profile changes (note, bio, avatar, cover photo, info) in real time
  */
@@ -119,26 +130,51 @@ export function broadcastProfileEvent(userId, updatedFields = {}) {
 	if (typeof window === 'undefined' || !userId) return;
 
 	try {
-		const globalChannel = supabase.channel('chronomuse_global_events');
-		globalChannel.subscribe((status) => {
-			if (status === 'SUBSCRIBED') {
-				globalChannel.send({
+		const payload = {
+			user_id: userId,
+			updated_fields: updatedFields,
+			note: updatedFields.note !== undefined ? updatedFields.note : undefined,
+			timestamp: Date.now()
+		};
+
+		const channel = getSharedGlobalChannel();
+		if (channel) {
+			channel.send({
+				type: 'broadcast',
+				event: 'global_profile_event',
+				payload
+			});
+			if (updatedFields.note !== undefined) {
+				channel.send({
 					type: 'broadcast',
-					event: 'global_profile_event',
-					payload: {
-						user_id: userId,
-						updated_fields: updatedFields,
-						timestamp: Date.now()
-					}
+					event: 'global_note_event',
+					payload: { user_id: userId, note: updatedFields.note }
 				});
 			}
-		});
+		}
+
+		if ('BroadcastChannel' in window) {
+			try {
+				const bc = new BroadcastChannel('chronomuse_realtime_bus');
+				bc.postMessage({ type: 'profile_change', detail: payload });
+				if (updatedFields.note !== undefined) {
+					bc.postMessage({ type: 'note_change', detail: { user_id: userId, note: updatedFields.note } });
+				}
+				bc.close();
+			} catch (e) {}
+		}
 
 		window.dispatchEvent(new CustomEvent('chronomuse_profile_change', {
-			detail: { user_id: userId, updated_fields: updatedFields }
+			detail: payload
 		}));
+		if (updatedFields.note !== undefined) {
+			window.dispatchEvent(new CustomEvent('chronomuse_note_change', {
+				detail: { user_id: userId, note: updatedFields.note }
+			}));
+		}
 	} catch (err) {
 		console.error('Error broadcasting profile event:', err);
 	}
 }
+
 
