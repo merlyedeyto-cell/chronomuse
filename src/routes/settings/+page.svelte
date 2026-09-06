@@ -15,7 +15,7 @@
 	let activeTab = $state(''); // '' | 'install' | 'privacy' | 'audio' | 'blocked' | 'security'
 
 	// PWA Install State
-	let pwaStatus = $state({ isPromptReady: false, isWebview: false, isMobile: false, isIOS: false, isStandalone: false });
+	let pwaStatus = $state({ isPromptReady: false, isWebview: false, isMobile: false, isIOS: false, isStandalone: false, isAppInstalled: false });
 	let installGuideMessage = $state('');
 
 	// Toggle Preferences

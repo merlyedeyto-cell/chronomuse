@@ -84,6 +84,11 @@ export function subscribePWAStatus(callback) {
 
 export function isAppInstalled() {
 	if (typeof window === 'undefined') return false;
+	// If running in standalone, the app is definitely installed — also set the flag for Chrome detection
+	if (isStandalone()) {
+		try { localStorage.setItem('chronomuse_pwa_installed', 'true'); } catch(e) {}
+		return true;
+	}
 	try { return localStorage.getItem('chronomuse_pwa_installed') === 'true'; } catch(e) { return false; }
 }
 
