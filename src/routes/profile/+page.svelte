@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
-	import { broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
+	import { broadcastFriendEvent, broadcastProfileEvent } from '$lib/realtimeBroadcast.js';
 	import { isSoundEnabled, setSoundEnabled, playClickSound } from '$lib/soundEffects.js';
 	import Sidebar from '$lib/Sidebar.svelte';
 	import EditProfileModal from '$lib/EditProfileModal.svelte';
@@ -73,16 +73,7 @@
 			} catch (e) {}
 
 			try {
-				const globalChannel = supabase.channel('chronomuse_global_events');
-				globalChannel.subscribe((status) => {
-					if (status === 'SUBSCRIBED') {
-						globalChannel.send({
-							type: 'broadcast',
-							event: 'global_note_event',
-							payload: { user_id: currentUser.id, note: trimmed }
-						});
-					}
-				});
+				broadcastProfileEvent(currentUser.id, { note: trimmed });
 			} catch (e) {}
 		}
 
@@ -115,16 +106,7 @@
 			} catch (e) {}
 
 			try {
-				const globalChannel = supabase.channel('chronomuse_global_events');
-				globalChannel.subscribe((status) => {
-					if (status === 'SUBSCRIBED') {
-						globalChannel.send({
-							type: 'broadcast',
-							event: 'global_note_event',
-							payload: { user_id: currentUser.id, note: '' }
-						});
-					}
-				});
+				broadcastProfileEvent(currentUser.id, { note: '' });
 			} catch (e) {}
 		}
 		showNoteModal = false;
@@ -216,6 +198,8 @@
 						})
 					});
 				} catch (dbErr) {}
+
+				broadcastProfileEvent(currentUser.id, { cover_url: finalCoverUrl });
 			}
 			showNotification('Cover photo updated successfully!');
 		} catch (err) {
@@ -304,6 +288,8 @@
 			if (profileData && profileData.user) {
 				profileData.user = { ...profileData.user, ...updatedAboutData };
 			}
+
+			broadcastProfileEvent(currentUser.id, updatedAboutData);
 
 			showNotification('Profile info updated successfully!');
 			showEditProfileModal = false;
@@ -569,9 +555,31 @@
 			}
 		};
 
+		const handleRealtimeProfileChange = (e) => {
+			const detail = e?.detail;
+			if (detail && detail.user_id && profileData?.user) {
+				if (String(profileData.user.id) === String(detail.user_id)) {
+					const updatedFields = detail.updated_fields || {};
+					profileData = {
+						...profileData,
+						user: {
+							...profileData.user,
+							...updatedFields
+						}
+					};
+					if (updatedFields.note !== undefined) {
+						userNote = updatedFields.note || '';
+					}
+					loadProfile(profileData.user.id, true);
+				}
+			}
+		};
+
 		window.addEventListener('chronomuse_note_change', handleRealtimeNoteChange);
+		window.addEventListener('chronomuse_profile_change', handleRealtimeProfileChange);
 		return () => {
 			window.removeEventListener('chronomuse_note_change', handleRealtimeNoteChange);
+			window.removeEventListener('chronomuse_profile_change', handleRealtimeProfileChange);
 		};
 	});
 
@@ -654,6 +662,8 @@
 				if (profileData && profileData.user) {
 					profileData.user.avatar_url = avatarUrl;
 				}
+
+				broadcastProfileEvent(currentUser.id, { avatar_url: avatarUrl, ...(updateData.user || {}) });
 
 				if (typeof window !== 'undefined') {
 					window.dispatchEvent(new Event('chronomuse_auth_change'));

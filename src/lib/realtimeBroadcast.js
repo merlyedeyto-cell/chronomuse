@@ -101,7 +101,6 @@ export function broadcastMemoryEvent(senderId, recipientId, eventType = 'shared_
 			}
 		});
 
-		// 3. Dispatch local window events for immediate same-window reactivity
 		window.dispatchEvent(new CustomEvent('chronomuse_notification_change', {
 			detail: { sender_id: senderId, target_id: recipientId, eventType, memoryData }
 		}));
@@ -112,3 +111,34 @@ export function broadcastMemoryEvent(senderId, recipientId, eventType = 'shared_
 		console.error('Error broadcasting memory event:', err);
 	}
 }
+
+/**
+ * Broadcasts profile changes (note, bio, avatar, cover photo, info) in real time
+ */
+export function broadcastProfileEvent(userId, updatedFields = {}) {
+	if (typeof window === 'undefined' || !userId) return;
+
+	try {
+		const globalChannel = supabase.channel('chronomuse_global_events');
+		globalChannel.subscribe((status) => {
+			if (status === 'SUBSCRIBED') {
+				globalChannel.send({
+					type: 'broadcast',
+					event: 'global_profile_event',
+					payload: {
+						user_id: userId,
+						updated_fields: updatedFields,
+						timestamp: Date.now()
+					}
+				});
+			}
+		});
+
+		window.dispatchEvent(new CustomEvent('chronomuse_profile_change', {
+			detail: { user_id: userId, updated_fields: updatedFields }
+		}));
+	} catch (err) {
+		console.error('Error broadcasting profile event:', err);
+	}
+}
+

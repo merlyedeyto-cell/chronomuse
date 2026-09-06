@@ -157,6 +157,14 @@
 			.on('broadcast', { event: 'global_note_event' }, (payload) => {
 				if (typeof window !== 'undefined') {
 					window.dispatchEvent(new CustomEvent('chronomuse_note_change', { detail: payload?.payload }));
+					window.dispatchEvent(new CustomEvent('chronomuse_profile_change', {
+						detail: { user_id: payload?.payload?.user_id, updated_fields: { note: payload?.payload?.note } }
+					}));
+				}
+			})
+			.on('broadcast', { event: 'global_profile_event' }, (payload) => {
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_profile_change', { detail: payload?.payload }));
 				}
 			})
 			.subscribe();
