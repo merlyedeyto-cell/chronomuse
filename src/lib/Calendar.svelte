@@ -12,7 +12,8 @@
 	let showMonthMenu = $state(false);
 	let showYearMenu = $state(false);
 	let yearInput = $state('');
-	let filteredYears = $derived(yearInput.trim() ? years.filter(y => String(y).includes(yearInput.trim())) : years);
+	let yearSearchTerm = $derived(String(yearInput ?? '').trim());
+	let filteredYears = $derived(yearSearchTerm ? years.filter(y => String(y).includes(yearSearchTerm)) : years);
 	let highlightedDateStr = $state('');
 	let highlightTimeout;
 
@@ -165,7 +166,8 @@
 	}
 
 	function submitYearInput() {
-		const parsed = parseInt(yearInput, 10);
+		const strVal = String(yearInput ?? '').trim();
+		const parsed = parseInt(strVal, 10);
 		if (!isNaN(parsed) && parsed >= 1900 && parsed <= 2100) {
 			selectYear(parsed);
 		} else if (filteredYears.length > 0) {
