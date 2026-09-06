@@ -182,7 +182,7 @@
 
 <!-- Install ChronoMuse Banner (fixed bottom, doesn't affect login card position) -->
 {#if showInstallBanner && !pwaStatus.isStandalone}
-	<div class="fixed bottom-4 left-0 right-0 md:bottom-auto md:top-4 md:left-auto md:right-4 z-50 p-3 md:p-0 flex justify-center md:justify-end pointer-events-none">
+	<div class="fixed bottom-4 left-0 right-0 md:bottom-auto md:top-20 md:left-auto md:right-4 z-50 p-3 md:p-0 flex justify-center md:justify-end pointer-events-none">
 		<div class="max-w-md md:max-w-xs w-full relative bg-white/95 backdrop-blur-md rounded-2xl border-2 border-pink-400 shadow-2xl overflow-hidden animate-fade-in-up pointer-events-auto">
 			<!-- Close (X) Button -->
 			<button
