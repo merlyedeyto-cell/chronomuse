@@ -38,6 +38,7 @@ export const API_ENDPOINTS = {
 	getFriendsList: `${API_BASE_URL}/get_friends_list`,
 	searchUsers: `${API_BASE_URL}/search_users`,
 	addFriend: `${API_BASE_URL}/add_friend`,
+	sendFriendRequest: `${API_BASE_URL}/add_friend`,
 	removeFriend: `${API_BASE_URL}/remove_friend`,
 	getFriendRequests: `${API_BASE_URL}/get_friend_requests`,
 	getFriendRequestsCount: `${API_BASE_URL}/get_friend_requests_count`,

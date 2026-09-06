@@ -2,6 +2,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
+	import { initPWAInstall, subscribePWAStatus, promptPWAInstall } from '$lib/pwaInstall.js';
 
 	const dispatch = createEventDispatcher();
 
@@ -12,6 +13,10 @@
 	let isVisible = $state(true);
 	let isLoading = $state(false);
 	let errorMessage = $state('');
+
+	let pwaStatus = $state({ isPromptReady: false, isWebview: false, isMobile: false, isIOS: false, isStandalone: false });
+	let installGuideMessage = $state('');
+	let showInstallBanner = $state(true);
 
 	function handleSubmit() {
 		isLoading = true;
@@ -60,8 +65,21 @@
 		showPassword = !showPassword;
 	}
 
+	async function handleInstallApp() {
+		installGuideMessage = '';
+		const result = await promptPWAInstall();
+		if (result.needManualGuide) {
+			installGuideMessage = result.guide;
+		}
+	}
+
 	onMount(() => {
 		isVisible = true;
+		initPWAInstall();
+		const unsub = subscribePWAStatus((/** @type {any} */ st) => {
+			pwaStatus = st;
+		});
+		return () => unsub();
 	});
 </script>
 
@@ -160,4 +178,71 @@
 			© 2026 CHRONOMUSE. All rights reserved. Developed by Merlye Deyto
 		</p>
 	</div>
+
+	<!-- Install ChronoMuse Ad Banner (below credits, dismissable) -->
+	{#if showInstallBanner && !pwaStatus.isStandalone}
+		<div class="mt-4 relative bg-white/90 backdrop-blur-md rounded-2xl border-2 border-pink-400 shadow-lg overflow-hidden animate-fade-in-up">
+			<!-- Close (X) Button -->
+			<button
+				type="button"
+				onclick={() => showInstallBanner = false}
+				class="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-pink-200/80 hover:bg-pink-300 text-pink-700 hover:text-pink-900 transition-all duration-200 z-10"
+				aria-label="Close install banner"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+
+			<div class="p-4 pt-3 space-y-2.5">
+				<!-- App Info Row -->
+				<div class="flex items-center space-x-3">
+					<img src="/logo.png" alt="ChronoMuse" class="w-11 h-11 rounded-xl object-contain border border-pink-200 shadow-sm flex-shrink-0" />
+					<div class="min-w-0 flex-1 pr-5">
+						<h4 class="text-xs sm:text-sm font-extrabold text-pink-900 leading-tight">ChronoMuse</h4>
+						<p class="text-[10.5px] text-pink-600 font-medium leading-tight">Memory Calendar & Mood Tracker</p>
+						<div class="flex items-center space-x-1 mt-0.5">
+							<div class="flex text-pink-400">
+								{#each [1,2,3,4,5] as _}
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-2.5 h-2.5">
+										<path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd" />
+									</svg>
+								{/each}
+							</div>
+							<span class="text-[9px] text-pink-500 font-semibold">FREE</span>
+						</div>
+					</div>
+				</div>
+
+				{#if pwaStatus.isWebview}
+					<p class="text-[10.5px] text-pink-700 font-medium leading-tight text-center bg-pink-50 p-2 rounded-lg border border-pink-200">
+						📱 Open in your browser to install the app for best experience!
+					</p>
+				{/if}
+
+				<!-- Install Button -->
+				<button
+					type="button"
+					onclick={handleInstallApp}
+					class="w-full py-2 px-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl font-bold text-xs hover:from-pink-600 hover:to-pink-700 shadow-md active:scale-95 transition-all duration-200 flex items-center justify-center space-x-1.5"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+					</svg>
+					<span>INSTALL</span>
+				</button>
+
+				{#if installGuideMessage}
+					<div class="p-2 bg-pink-50 rounded-lg border border-pink-300 text-[10.5px] font-semibold text-pink-800 text-center animate-fade-in">
+						💡 {installGuideMessage}
+					</div>
+				{/if}
+			</div>
+
+			<!-- Ad label -->
+			<div class="bg-pink-50 border-t border-pink-200 px-4 py-1 text-center">
+				<span class="text-[9px] text-pink-400 font-semibold uppercase tracking-wider">Ad · Chronomuse App</span>
+			</div>
+		</div>
+	{/if}
 </div>

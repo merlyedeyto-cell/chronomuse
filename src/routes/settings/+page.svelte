@@ -5,13 +5,18 @@
 	import { supabase } from '$lib/supabaseClient';
 	import { isSoundEnabled, setSoundEnabled, playClickSound } from '$lib/soundEffects.js';
 	import Sidebar from '$lib/Sidebar.svelte';
+	import { initPWAInstall, subscribePWAStatus, promptPWAInstall } from '$lib/pwaInstall.js';
 
 	let currentUser = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let sidebarOpen = $state(false);
 
 	// Accordion state: All cards listed down as compact rows by default ('').
 	// Only ONE card can be open at a time; opening a new card automatically closes the previous one.
-	let activeTab = $state(''); // '' | 'privacy' | 'audio' | 'blocked' | 'security'
+	let activeTab = $state(''); // '' | 'install' | 'privacy' | 'audio' | 'blocked' | 'security'
+
+	// PWA Install State
+	let pwaStatus = $state({ isPromptReady: false, isWebview: false, isMobile: false, isIOS: false, isStandalone: false });
+	let installGuideMessage = $state('');
 
 	// Toggle Preferences
 	let activeStatusEnabled = $state(true);
@@ -320,6 +325,15 @@
 		goto('/');
 	}
 
+	async function handleInstallAppFromSettings() {
+		playClickSound();
+		installGuideMessage = '';
+		const result = await promptPWAInstall();
+		if (result.needManualGuide) {
+			installGuideMessage = result.guide;
+		}
+	}
+
 	onMount(() => {
 		const stored = localStorage.getItem('chronomuse_user');
 		if (!stored) {
@@ -337,6 +351,12 @@
 			privateAccountEnabled = privateSaved === 'true';
 		}
 		loadBlockedUsers();
+
+		initPWAInstall();
+		const unsubPwa = subscribePWAStatus((/** @type {any} */ st) => {
+			pwaStatus = st;
+		});
+		return () => unsubPwa();
 	});
 </script>
 
@@ -418,6 +438,85 @@
 		<!-- SINGLE-EXPANSION ACCORDION LIST -->
 		<div class="space-y-4">
 			
+			<!-- ITEM 0: INSTALL CHRONOMUSE APP -->
+			<div class="bg-gradient-to-r from-pink-500/10 via-white to-pink-500/10 rounded-2xl border-2 border-pink-400 shadow-md overflow-hidden transition-all duration-300">
+				<!-- List Header Row (Clickable) -->
+				<button
+					type="button"
+					onclick={() => toggleTab('install')}
+					class="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-pink-100/50 transition-colors cursor-pointer"
+				>
+					<div class="flex items-center space-x-3 min-w-0 pr-2">
+						<div class="w-9 h-9 rounded-xl bg-pink-500 text-white border border-pink-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+							</svg>
+						</div>
+						<div class="min-w-0">
+							<h3 class="text-xs sm:text-sm font-bold text-pink-950 truncate flex items-center gap-1.5">
+								<span>Install ChronoMuse App</span>
+								<span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-pink-500 text-white rounded-full">App</span>
+							</h3>
+							<p class="text-[11px] text-pink-600 font-medium truncate">Download app to home screen for native mobile experience</p>
+						</div>
+					</div>
+
+					<div class="flex items-center space-x-2 flex-shrink-0">
+						<span class="text-xs font-bold px-2.5 py-1 rounded-lg border {pwaStatus.isStandalone ? 'bg-green-100 text-green-700 border-green-300' : 'bg-pink-500 text-white border-pink-600'}">
+							{pwaStatus.isStandalone ? 'Installed ✨' : 'Install App'}
+						</span>
+						<div class="w-7 h-7 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center transition-transform duration-300 {activeTab === 'install' ? 'rotate-180 bg-pink-500 text-white' : ''}">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+							</svg>
+						</div>
+					</div>
+				</button>
+
+				<!-- Expanded Content Section -->
+				{#if activeTab === 'install'}
+					<div class="px-5 pb-6 sm:px-6 space-y-4 border-t border-pink-200 pt-4 bg-pink-50/40">
+						<div class="max-w-xl space-y-3">
+							<div class="flex items-start space-x-3 bg-white p-3.5 rounded-xl border border-pink-200 shadow-2xs">
+								<img src="/logo.png" alt="ChronoMuse" class="w-12 h-12 rounded-xl object-contain border border-pink-200 shadow-sm flex-shrink-0" />
+								<div>
+									<h4 class="text-xs sm:text-sm font-bold text-pink-900">ChronoMuse Mobile App</h4>
+									<p class="text-xs text-pink-600 font-medium leading-relaxed">
+										Install ChronoMuse on your smartphone or PC. Get faster load times, fullscreen calendar mode, and quick home screen access!
+									</p>
+								</div>
+							</div>
+
+							{#if pwaStatus.isStandalone}
+								<div class="p-3 bg-green-50 rounded-xl border border-green-200 text-xs font-semibold text-green-800 flex items-center space-x-2">
+									<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-green-600 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+										<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+									</svg>
+									<span>ChronoMuse is already installed on this device! You are running the standalone app.</span>
+								</div>
+							{:else}
+								<button
+									type="button"
+									onclick={handleInstallAppFromSettings}
+									class="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-pink-500 to-pink-600 text-white font-bold text-xs sm:text-sm rounded-xl hover:from-pink-600 hover:to-pink-700 shadow-md active:scale-95 transition-all flex items-center justify-center space-x-2"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+									</svg>
+									<span>Install ChronoMuse App</span>
+								</button>
+							{/if}
+
+							{#if installGuideMessage}
+								<div class="p-3 bg-white rounded-xl border border-pink-300 text-xs font-semibold text-pink-800 text-center animate-fade-in shadow-2xs">
+									💡 {installGuideMessage}
+								</div>
+							{/if}
+						</div>
+					</div>
+				{/if}
+			</div>
+
 			<!-- ITEM 1: PRIVACY & ONLINE ACTIVE STATUS -->
 			<div class="bg-white rounded-2xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->

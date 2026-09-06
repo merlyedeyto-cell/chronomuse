@@ -3,24 +3,44 @@ import { supabase } from '$lib/supabaseClient';
 
 export async function POST({ request }) {
 	try {
-		const { user_id, friend_username } = await request.json();
+		const body = await request.json();
+		const senderId = body.user_id || body.sender_id;
+		const receiverId = body.receiver_id || body.target_id || body.friend_id;
+		const friendUsernameInput = body.friend_username ? String(body.friend_username).trim().replace(/^@/, '') : null;
 
-		if (!user_id || !friend_username) {
-			return json({ error: 'User ID and Friend Username are required' }, { status: 400 });
+		if (!senderId || (!receiverId && !friendUsernameInput)) {
+			return json({ error: 'User ID and Target User or Friend Username are required' }, { status: 400 });
 		}
 
-		// Find target user by username (case-insensitive)
-		const { data: targetUser, error: userError } = await supabase
-			.from('chronomuse_users')
-			.select('id, username')
-			.ilike('username', friend_username.trim())
-			.maybeSingle();
+		let targetUser = null;
+		let userError = null;
+
+		if (receiverId) {
+			const res = await supabase
+				.from('chronomuse_users')
+				.select('id, username')
+				.eq('id', receiverId)
+				.maybeSingle();
+			targetUser = res.data;
+			userError = res.error;
+		} else if (friendUsernameInput) {
+			const res = await supabase
+				.from('chronomuse_users')
+				.select('id, username')
+				.ilike('username', friendUsernameInput)
+				.maybeSingle();
+			targetUser = res.data;
+			userError = res.error;
+		}
 
 		if (userError || !targetUser) {
-			return json({ error: `User "@${friend_username}" not found` }, { status: 404 });
+			const displayTarget = friendUsernameInput ? `@${friendUsernameInput}` : `User #${receiverId}`;
+			return json({ error: `${displayTarget} not found` }, { status: 404 });
 		}
 
-		if (targetUser.id === user_id) {
+		const user_id = senderId;
+
+		if (String(targetUser.id) === String(user_id)) {
 			return json({ error: 'You cannot add yourself as a friend' }, { status: 400 });
 		}
 
