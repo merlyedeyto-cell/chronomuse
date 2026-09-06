@@ -50,6 +50,8 @@
 	let pollInterval;
 	let chatContainer;
 	let imageInput;
+	let emojiPickerRef;
+	let emojiButtonRef;
 
 	// Multi-select & Long-press state
 	let isSelectionMode = $state(false);
@@ -288,8 +290,17 @@
 			}
 		};
 
+		const handleWindowClick = (e) => {
+			if (showEmojiPicker) {
+				if (emojiPickerRef && !emojiPickerRef.contains(e.target) && emojiButtonRef && !emojiButtonRef.contains(e.target)) {
+					showEmojiPicker = false;
+				}
+			}
+		};
+
 		window.addEventListener('mousemove', onWindowMouseMove);
 		window.addEventListener('mouseup', onWindowMouseUp);
+		window.addEventListener('click', handleWindowClick);
 
 		if (typeof window !== 'undefined') {
 			if (window.visualViewport) {
@@ -307,6 +318,7 @@
 			window.removeEventListener('blur', handleBlur);
 			window.removeEventListener('mousemove', onWindowMouseMove);
 			window.removeEventListener('mouseup', onWindowMouseUp);
+			window.removeEventListener('click', handleWindowClick);
 			window.removeEventListener('popstate', handlePopState);
 			window.removeEventListener('chronomuse_new_message', handleRealtimeChatMessage);
 			window.removeEventListener('chronomuse_friend_change', handleRealtimeChatMessage);
@@ -509,7 +521,7 @@
 					const incoming = payload.payload;
 					if (!messages.some(m => m.id === incoming.id || (m.message === incoming.message && m.sender_id === incoming.sender_id))) {
 						messages = [...messages, incoming];
-						playIncomingMessageSound();
+						playIncomingMessageSound(user?.id);
 						await tick();
 						scrollToBottom(true);
 						broadcastSeen();
@@ -826,7 +838,7 @@
 
 					if (newIncoming.length > 0) {
 						if (newIncoming.some(sm => sm.sender_id !== user.id)) {
-							playIncomingMessageSound();
+							playIncomingMessageSound(user?.id);
 						}
 						if (isAtBottom) {
 							await tick();
@@ -2484,7 +2496,7 @@
 
 				<!-- Emoji Picker Dropup -->
 				{#if showEmojiPicker}
-					<div class="absolute bottom-16 right-4 sm:right-14 p-3 bg-white border border-pink-200 rounded-2xl shadow-xl z-30 max-w-[240px] animate-fade-in-up">
+					<div bind:this={emojiPickerRef} class="absolute bottom-16 right-4 sm:right-14 p-3 bg-white border border-pink-200 rounded-2xl shadow-xl z-30 max-w-[240px] animate-fade-in-up">
 						<div class="grid grid-cols-7 gap-1">
 							{#each emojis as emoji}
 								<button
@@ -2555,6 +2567,7 @@
 							<!-- Emoji Picker Toggle Button -->
 							<button
 								type="button"
+								bind:this={emojiButtonRef}
 								onclick={() => showEmojiPicker = !showEmojiPicker}
 								class="absolute right-2 p-1 text-pink-400 hover:text-pink-600 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
 								title="Emojis"

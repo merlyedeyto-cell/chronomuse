@@ -468,15 +468,6 @@
 		const effectiveTargetId = targetId || urlParamId || currentUser.id;
 		targetUserId = effectiveTargetId;
 		const targetKey = String(effectiveTargetId);
-
-		if (profileCache.has(targetKey)) {
-			profileData = profileCache.get(targetKey);
-			isLoading = false;
-		} else if (!isSilent) {
-			isLoading = true;
-			profileData = null;
-		}
-
 		try {
 			const res = await fetch(API_ENDPOINTS.getProfile, {
 				method: 'POST',
@@ -501,7 +492,7 @@
 					gender: data.data.user.gender || cachedAbout.gender || null
 				};
 				profileData = { ...data.data, user: mergedUser };
-				userNote = typeof window !== 'undefined' ? (localStorage.getItem(`chronomuse_note_${effectiveTargetId}`) || '') : '';
+				userNote = data.data.user.note || data.data.user.bio || (typeof window !== 'undefined' ? (localStorage.getItem(`chronomuse_note_${effectiveTargetId}`) || '') : '');
 				profileCache.set(targetKey, profileData);
 
 				if (profileData.is_self) {
@@ -540,22 +531,46 @@
 		playClickSound();
 
 		try {
-			const fileExt = file.name.split('.').pop();
+			let dataUrl = '';
+			const reader = new FileReader();
+			const readerPromise = new Promise((resolve) => {
+				reader.onload = (readerEvent) => {
+					dataUrl = readerEvent.target?.result?.toString() || '';
+					resolve(dataUrl);
+				};
+			});
+			reader.readAsDataURL(file);
+
+			const fileExt = file.name.split('.').pop() || 'jpg';
 			const filePath = `avatars/${currentUser.id}_${Date.now()}.${fileExt}`;
 
+			let avatarUrl = null;
+
+			// Try avatars bucket first
 			const { error: uploadError } = await supabase.storage
 				.from('avatars')
 				.upload(filePath, file, { upsert: true });
 
-			if (uploadError) {
-				throw uploadError;
+			if (!uploadError) {
+				const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+				avatarUrl = data?.publicUrl;
+			} else {
+				// Fallback to memories bucket
+				const { error: memError } = await supabase.storage
+					.from('memories')
+					.upload(filePath, file, { upsert: true });
+
+				if (!memError) {
+					const { data } = supabase.storage.from('memories').getPublicUrl(filePath);
+					avatarUrl = data?.publicUrl;
+				}
 			}
 
-			const { data } = supabase.storage
-				.from('avatars')
-				.getPublicUrl(filePath);
+			await readerPromise;
 
-			const avatarUrl = data.publicUrl;
+			if (!avatarUrl) {
+				avatarUrl = dataUrl;
+			}
 
 			const updateRes = await fetch(API_ENDPOINTS.updateProfile, {
 				method: 'POST',
@@ -568,8 +583,8 @@
 
 			const updateData = await updateRes.json();
 
-			if (updateData.success && updateData.user) {
-				const updatedStoredUser = { ...currentUser, ...updateData.user };
+			if (updateData.success || avatarUrl) {
+				const updatedStoredUser = { ...currentUser, avatar_url: avatarUrl, ...(updateData.user || {}) };
 				localStorage.setItem('chronomuse_user', JSON.stringify(updatedStoredUser));
 				currentUser = updatedStoredUser;
 

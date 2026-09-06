@@ -128,15 +128,17 @@ export async function POST({ request }) {
 			.from('chronomuse_users')
 			.update(updateData)
 			.eq('id', user_id)
-			.select('id, username, email, avatar_url, bio, birthday, relationship_status, gender')
+			.select('id, username, email, avatar_url, cover_url, note, bio, birthday, relationship_status, gender')
 			.single();
 
 		if (updateError) {
-			// If column bio/birthday/avatar_url does not exist yet in table, fallback without new fields
+			// If column bio/birthday/avatar_url/cover_url/note does not exist yet in table, fallback without new fields
 			delete updateData.bio;
 			delete updateData.birthday;
 			delete updateData.relationship_status;
 			delete updateData.gender;
+			delete updateData.cover_url;
+			delete updateData.note;
 
 			let { data: fallbackUser, error: fallbackError } = await supabase
 				.from('chronomuse_users')
@@ -151,6 +153,8 @@ export async function POST({ request }) {
 			updatedUser = {
 				...fallbackUser,
 				avatar_url: avatar_url || null,
+				cover_url: cover_url || null,
+				note: note !== undefined ? note : null,
 				bio: bio !== undefined ? bio : null,
 				birthday: birthday !== undefined ? birthday : null,
 				relationship_status: relationship_status !== undefined ? relationship_status : null,

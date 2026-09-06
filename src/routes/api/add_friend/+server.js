@@ -38,12 +38,16 @@ export async function POST({ request }) {
 				.maybeSingle()
 		]);
 
+		if (existingFriend) {
+			return json({ error: `You are already friends with @${targetUser.username}` }, { status: 400 });
+		}
+
 		if (existingRequest) {
 			if (existingRequest.status === 'pending') {
-				return json({ error: 'Friend request already pending' }, { status: 400 });
+				return json({ error: `Friend request to @${targetUser.username} is already pending` }, { status: 400 });
 			}
 			if (existingRequest.status === 'accepted') {
-				return json({ error: `You are already friends with ${targetUser.username}` }, { status: 400 });
+				return json({ error: `You are already friends with @${targetUser.username}` }, { status: 400 });
 			}
 			if (existingRequest.status === 'declined') {
 				// Re-open request
@@ -56,6 +60,10 @@ export async function POST({ request }) {
 						updated_at: new Date()
 					})
 					.eq('id', existingRequest.id);
+
+				if (updateError) {
+					return json({ error: 'Failed to update friend request: ' + updateError.message }, { status: 500 });
+				}
 
 				// Broadcast friend request event to recipient inbox & global channel
 				try {
@@ -81,7 +89,7 @@ export async function POST({ request }) {
 					});
 				} catch (e) {}
 
-				return json({ success: true, request_id: existingRequest.id, message: `Friend request sent to ${targetUser.username}!` });
+				return json({ success: true, request_id: existingRequest.id, message: `Friend request sent to @${targetUser.username}!` });
 			}
 		}
 
@@ -96,10 +104,13 @@ export async function POST({ request }) {
 				}
 			])
 			.select('id')
-			.single();
+			.maybeSingle();
 
 		if (insertError) {
-			return json({ error: insertError.message }, { status: 500 });
+			if (insertError.message?.includes('already exists') || insertError.code === '23505') {
+				return json({ error: `Friend request to @${targetUser.username} is already pending` }, { status: 400 });
+			}
+			return json({ error: 'Database error: ' + insertError.message }, { status: 500 });
 		}
 
 		// Broadcast friend request event to recipient inbox & global channel
