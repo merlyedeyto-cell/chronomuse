@@ -201,16 +201,6 @@
 					<div class="min-w-0 flex-1 pr-5">
 						<h4 class="text-xs sm:text-sm font-extrabold text-pink-900 leading-tight">ChronoMuse</h4>
 						<p class="text-[10.5px] text-pink-600 font-medium leading-tight">Memory Calendar & Mood Tracker</p>
-						<div class="flex items-center space-x-1 mt-0.5">
-							<div class="flex text-pink-400">
-								{#each [1,2,3,4,5] as _}
-									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-2.5 h-2.5">
-										<path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd" />
-									</svg>
-								{/each}
-							</div>
-							<span class="text-[9px] text-pink-500 font-semibold">FREE</span>
-						</div>
 					</div>
 				</div>
 
@@ -239,10 +229,6 @@
 				{/if}
 			</div>
 
-			<!-- Ad label -->
-			<div class="bg-pink-50 border-t border-pink-200 px-4 py-1 text-center">
-				<span class="text-[9px] text-pink-400 font-semibold uppercase tracking-wider">Ad · Chronomuse App</span>
-			</div>
 		</div>
 	{/if}
 </div>

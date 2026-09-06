@@ -455,7 +455,6 @@
 						<div class="min-w-0">
 							<h3 class="text-xs sm:text-sm font-bold text-pink-950 truncate flex items-center gap-1.5">
 								<span>Install ChronoMuse App</span>
-								<span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-pink-500 text-white rounded-full">App</span>
 							</h3>
 							<p class="text-[11px] text-pink-600 font-medium truncate">Download app to home screen for native mobile experience</p>
 						</div>
@@ -463,7 +462,7 @@
 
 					<div class="flex items-center space-x-2 flex-shrink-0">
 						<span class="text-xs font-bold px-2.5 py-1 rounded-lg border {pwaStatus.isStandalone ? 'bg-green-100 text-green-700 border-green-300' : 'bg-pink-500 text-white border-pink-600'}">
-							{pwaStatus.isStandalone ? 'Installed ✨' : 'Install App'}
+							{pwaStatus.isStandalone ? 'Installed' : 'Install App'}
 						</span>
 						<div class="w-7 h-7 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center transition-transform duration-300 {activeTab === 'install' ? 'rotate-180 bg-pink-500 text-white' : ''}">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
