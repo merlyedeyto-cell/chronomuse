@@ -99,15 +99,14 @@ export async function POST({ request }) {
 			const senderName = senderInfo.username || 'Friend';
 			
 			let isAccepted = false;
-			if (memory) {
+			if (memory && senderName) {
 				const targetStr = `@${senderName}`.toLowerCase();
 				isAccepted = userCopies.some(uc => 
 					uc.date === memory.date && 
 					(
-						(uc.description || '').toLowerCase().includes(targetStr) ||
-						(uc.memory_tag || '').toLowerCase().includes(targetStr) ||
-						(uc.description || '').toLowerCase().includes('(shared by') ||
-						(uc.title && memory.title && uc.title.trim().toLowerCase() === memory.title.trim().toLowerCase())
+						(uc.description || '').toLowerCase().includes(`(shared by ${targetStr})`) ||
+						(uc.description || '').toLowerCase().includes(`shared by ${targetStr}`) ||
+						(uc.memory_tag || '').toLowerCase().includes(`shared memory from ${targetStr}`)
 					)
 				);
 			}
@@ -136,10 +135,9 @@ export async function POST({ request }) {
 					rc.user_id === row.recipient_id &&
 					rc.date === memory.date &&
 					(
-						(rc.description || '').toLowerCase().includes(targetStr) ||
-						(rc.memory_tag || '').toLowerCase().includes(targetStr) ||
-						(rc.description || '').toLowerCase().includes('(shared by') ||
-						(rc.title && memory.title && rc.title.trim().toLowerCase() === memory.title.trim().toLowerCase())
+						(rc.description || '').toLowerCase().includes(`(shared by ${targetStr})`) ||
+						(rc.description || '').toLowerCase().includes(`shared by ${targetStr}`) ||
+						(rc.memory_tag || '').toLowerCase().includes(`shared memory from ${targetStr}`)
 					)
 				);
 			}

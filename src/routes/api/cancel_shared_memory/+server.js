@@ -51,7 +51,7 @@ export async function POST({ request }) {
 					.from('chronomuse_memories')
 					.select('date')
 					.eq('id', row.memory_id)
-					.single();
+					.maybeSingle();
 
 				if (origMem && origMem.date) {
 					await supabase
@@ -59,7 +59,7 @@ export async function POST({ request }) {
 						.delete()
 						.eq('user_id', row.recipient_id)
 						.eq('date', origMem.date)
-						.ilike('description', `%Shared by @${senderUsername}%`);
+						.or(`description.ilike.%Shared by @${senderUsername}%,description.ilike.%shared by @${senderUsername}%`);
 				}
 			}
 
