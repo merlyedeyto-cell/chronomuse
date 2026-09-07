@@ -9,10 +9,10 @@ export async function POST({ request }) {
 			return json({ error: 'User ID and array of message IDs are required' }, { status: 400 });
 		}
 
-		// Delete messages where sender is this user (unsend for everyone)
+		// Update message content to __UNSENT__ where sender is this user (unsend for everyone)
 		const { error } = await supabase
 			.from('chronomuse_messages')
-			.delete()
+			.update({ message: '__UNSENT__' })
 			.in('id', message_ids)
 			.eq('sender_id', user_id);
 

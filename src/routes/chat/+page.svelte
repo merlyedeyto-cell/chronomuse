@@ -255,9 +255,7 @@
 				const detail = e?.detail;
 				if (detail) {
 					if (detail.id) {
-						recentlyDeletedMessageIds.add(detail.id);
-						recentlyDeletedMessageIds.add(String(detail.id));
-						messages = messages.filter(m => String(m.id) !== String(detail.id));
+						messages = messages.map(m => String(m.id) === String(detail.id) ? { ...m, message: '__UNSENT__' } : m);
 					}
 					if (Number(detail.sender_id) === Number(activeFriend.friend_id) || Number(detail.receiver_id) === Number(activeFriend.friend_id)) {
 						fetchMessages(activeFriend.friend_id, false);
@@ -563,12 +561,13 @@
 			})
 			.on('broadcast', { event: 'unsend_message' }, (payload) => {
 				if (payload.payload && Array.isArray(payload.payload.message_ids)) {
-					payload.payload.message_ids.forEach(id => {
-						recentlyDeletedMessageIds.add(id);
-						recentlyDeletedMessageIds.add(String(id));
-					});
 					const delIds = new Set(payload.payload.message_ids.map(id => String(id)));
-					messages = messages.filter(m => !delIds.has(String(m.id)));
+					messages = messages.map(m => {
+						if (delIds.has(String(m.id))) {
+							return { ...m, message: '__UNSENT__' };
+						}
+						return m;
+					});
 					fetchChatList();
 				}
 			})
@@ -1191,14 +1190,14 @@
 			return;
 		}
 
-		validIds.forEach(id => {
-			recentlyDeletedMessageIds.add(id);
-			recentlyDeletedMessageIds.add(String(id));
-		});
-
 		const validIdsStr = new Set(validIds.map(id => String(id)));
 		isDeletingMessages = true;
-		messages = messages.filter(m => !validIdsStr.has(String(m.id)) && !recentlyDeletedMessageIds.has(m.id) && !recentlyDeletedMessageIds.has(String(m.id)));
+		messages = messages.map(m => {
+			if (validIdsStr.has(String(m.id))) {
+				return { ...m, message: '__UNSENT__' };
+			}
+			return m;
+		});
 		exitSelectionMode();
 
 		if (typingChannel) {
@@ -1807,8 +1806,11 @@
 		}
 	}
 
-	function formatLastMessagePreview(text) {
+	function formatLastMessagePreview(text, isSentByMe = false, partnerName = 'User') {
 		if (!text) return 'Tap to start chatting';
+		if (text === '__UNSENT__') {
+			return isSentByMe ? 'You unsent a message' : `${partnerName} unsent a message`;
+		}
 		const parsed = parseMessage(text);
 		if (parsed.isImage) return '📷 Photo attachment';
 		if (parsed.reply) {
@@ -2088,7 +2090,7 @@
 													</span>
 												{/if}
 											{/if}
-											<span class="truncate">{formatLastMessagePreview(friend.last_message)}</span>
+											<span class="truncate">{formatLastMessagePreview(friend.last_message, isSentByMe, friend.username)}</span>
 										{/if}
 									</p>
 
@@ -2329,6 +2331,7 @@
 							{@const parsed = parseMessage(msg.message)}
 							{@const isSelected = selectedMessageIds.has(msg.id)}
 							{@const isUserSender = msg.sender_id === user.id}
+							{@const isUnsent = msg.message === '__UNSENT__'}
 
 							<!-- Message Container with Swipe-to-reply -->
 							<div class="relative w-full overflow-visible py-0.5 select-none">
@@ -2358,7 +2361,7 @@
 									{/if}
 
 									<!-- Quick Reply Button on Hover -->
-									{#if !isSelectionMode && swipingMessageId !== msg.id}
+									{#if !isSelectionMode && !isUnsent && swipingMessageId !== msg.id}
 										<button
 											type="button"
 											onclick={() => triggerReply(msg)}
@@ -2468,18 +2471,25 @@
 
 											<!-- Main Chat Bubble with Clear Visible Pink Border & Tail -->
 											<div
-												class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold border-2 transition-all duration-300 relative leading-relaxed {highlightedMessageId === String(msg.id) ? 'bg-gradient-to-r from-pink-200 via-rose-200 to-pink-200 text-pink-950 border-pink-500 ring-4 ring-pink-400/80 shadow-xl shadow-pink-300/60 scale-[1.03] animate-pulse z-20' : isUserSender ? 'bg-pink-100 text-pink-950 border-pink-300 shadow-2xs' : 'bg-white text-pink-950 border-pink-300 shadow-2xs'}"
+												class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold border-2 transition-all duration-300 relative leading-relaxed {highlightedMessageId === String(msg.id) ? 'bg-gradient-to-r from-pink-200 via-rose-200 to-pink-200 text-pink-950 border-pink-500 ring-4 ring-pink-400/80 shadow-xl shadow-pink-300/60 scale-[1.03] animate-pulse z-20' : isUnsent ? 'bg-pink-50/70 text-pink-400/90 border-pink-200/80 shadow-2xs italic' : isUserSender ? 'bg-pink-100 text-pink-950 border-pink-300 shadow-2xs' : 'bg-white text-pink-950 border-pink-300 shadow-2xs'}"
 												class:ring-2={isSelected && highlightedMessageId !== String(msg.id)}
 												class:ring-pink-500={isSelected && highlightedMessageId !== String(msg.id)}
 											>
 												{#if isUserSender}
-													<span class="absolute -right-[7px] top-3.5 w-3 h-3 bg-pink-100 border-t-2 border-r-2 border-pink-300 transform rotate-45 pointer-events-none rounded-tr-xs"></span>
+													<span class="absolute -right-[7px] top-3.5 w-3 h-3 {isUnsent ? 'bg-pink-50/70 border-pink-200/80' : 'bg-pink-100 border-pink-300'} border-t-2 border-r-2 transform rotate-45 pointer-events-none rounded-tr-xs"></span>
 												{:else}
 													<span class="absolute -left-[7px] top-3.5 w-3 h-3 bg-white border-b-2 border-l-2 border-pink-300 transform rotate-45 pointer-events-none rounded-bl-xs"></span>
 												{/if}
 
 												<div class="relative z-10">
-													{#if parsed.isImage}
+													{#if isUnsent}
+														<p class="italic text-xs sm:text-sm text-pink-400/90 flex items-center gap-1.5 select-none font-medium">
+															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5 opacity-70 flex-shrink-0">
+																<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+															</svg>
+															<span>{isUserSender ? 'You unsent a message' : `${activeFriend?.username || 'User'} unsent a message`}</span>
+														</p>
+													{:else if parsed.isImage}
 														<div 
 															class="relative group/img rounded-xl overflow-hidden max-w-[200px] sm:max-w-[230px] border border-pink-300/80 shadow-2xs cursor-pointer active:scale-98 transition-all my-0.5"
 															onclick={(e) => { e.stopPropagation(); openImageViewer(parsed.imageUrl); }}
@@ -2510,7 +2520,8 @@
 											<!-- Message Status & Time -->
 											<div class="flex items-center gap-1 mt-1 px-1 text-[10px] font-bold {isUserSender ? 'text-pink-600 justify-end' : 'text-pink-600 justify-start'}">
 												<span>{formatTime(msg.created_at)}</span>
-												{#if isUserSender}
+												{#if isUserSender && !isUnsent}
+													{#if msg.is_read}
 													{#if msg.is_read}
 														<span class="inline-flex items-center gap-0.5 text-pink-600 font-semibold" title="Seen by @{activeFriend?.username}">
 															<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-pink-500">
