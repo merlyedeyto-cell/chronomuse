@@ -3,6 +3,7 @@
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
 	import { broadcastMemoryEvent } from '$lib/realtimeBroadcast.js';
+	import SelectOptionModal from '$lib/SelectOptionModal.svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -14,6 +15,8 @@
 	let editedDescription = $state('');
 	let editedMoodTag = $state('');
 	let editedMemoryTag = $state('');
+	let showMoodTagModal = $state(false);
+	let showMemoryTagModal = $state(false);
 	let editedPhotoVideo = $state(null);
 	let editedMusic = $state(null);
 	let editedPhotoVideoPreview = $state(null);
@@ -532,26 +535,32 @@
 						<!-- Edit Mode -->
 						<div class="space-y-3">
 							<!-- Mood Tag -->
-							<select
-								bind:value={editedMoodTag}
-								class="w-full px-3 py-2 bg-white border-2 border-pink-200 rounded-lg text-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-sm"
+							<button
+								type="button"
+								onclick={() => showMoodTagModal = true}
+								class="w-full px-3 py-2 bg-white border-2 border-pink-200 rounded-lg text-sm text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-pink-400 font-medium cursor-pointer transition-colors hover:bg-pink-100/30"
 							>
-								<option value="">Select mood</option>
-								{#each moodTags as mood}
-									<option value={mood}>{mood}</option>
-								{/each}
-							</select>
+								<span class={editedMoodTag ? 'text-pink-700 font-semibold truncate' : 'text-pink-400 truncate'}>
+									{editedMoodTag || 'Select mood'}
+								</span>
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-400 flex-shrink-0 ml-1">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+								</svg>
+							</button>
 
 							<!-- Memory Tag -->
-							<select
-								bind:value={editedMemoryTag}
-								class="w-full px-3 py-2 bg-white border-2 border-pink-200 rounded-lg text-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-sm"
+							<button
+								type="button"
+								onclick={() => showMemoryTagModal = true}
+								class="w-full px-3 py-2 bg-white border-2 border-pink-200 rounded-lg text-sm text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-pink-400 font-medium cursor-pointer transition-colors hover:bg-pink-100/30"
 							>
-								<option value="">Select tag</option>
-								{#each memoryTags as tag}
-									<option value={tag}>{tag}</option>
-								{/each}
-							</select>
+								<span class={editedMemoryTag ? 'text-pink-700 font-semibold truncate' : 'text-pink-400 truncate'}>
+									{editedMemoryTag || 'Select tag'}
+								</span>
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-400 flex-shrink-0 ml-1">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+								</svg>
+							</button>
 
 							<!-- Upload Photo or Video -->
 							<div>
@@ -992,6 +1001,28 @@
 		</div>
 	</div>
 {/if}
+
+<!-- Memory Tag Edit Modal -->
+<SelectOptionModal
+	isOpen={showMemoryTagModal}
+	title="Select tag"
+	defaultOption="Select tag"
+	options={memoryTags}
+	selectedValue={editedMemoryTag}
+	onSelect={(val) => editedMemoryTag = val}
+	onClose={() => showMemoryTagModal = false}
+/>
+
+<!-- Mood Tag Edit Modal -->
+<SelectOptionModal
+	isOpen={showMoodTagModal}
+	title="Select mood"
+	defaultOption="Select mood"
+	options={moodTags}
+	selectedValue={editedMoodTag}
+	onSelect={(val) => editedMoodTag = val}
+	onClose={() => showMoodTagModal = false}
+/>
 
 <style>
 	/* Custom scrollbar for memories list */

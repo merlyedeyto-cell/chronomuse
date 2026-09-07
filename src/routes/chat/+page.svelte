@@ -259,6 +259,7 @@
 		};
 
 		window.addEventListener('chronomuse_new_message', handleRealtimeChatMessage);
+		window.addEventListener('chronomuse_message_unsend', handleRealtimeChatMessage);
 		window.addEventListener('chronomuse_friend_change', handleRealtimeChatMessage);
 		window.addEventListener('chronomuse_profile_change', handleRealtimeChatMessage);
 		window.addEventListener('chronomuse_note_change', handleRealtimeChatMessage);
@@ -502,7 +503,15 @@
 			const stored = localStorage.getItem(`chronomuse_removed_msgs_${user.id}`);
 			if (stored) {
 				const arr = JSON.parse(stored);
-				removedMessageIds = new Set(arr);
+				const set = new Set();
+				(arr || []).forEach(id => {
+					set.add(id);
+					set.add(String(id));
+					if (typeof id === 'string' && !isNaN(Number(id))) {
+						set.add(Number(id));
+					}
+				});
+				removedMessageIds = set;
 			}
 		} catch (e) {}
 	}
@@ -545,8 +554,8 @@
 			})
 			.on('broadcast', { event: 'unsend_message' }, (payload) => {
 				if (payload.payload && Array.isArray(payload.payload.message_ids)) {
-					const delIds = new Set(payload.payload.message_ids);
-					messages = messages.filter(m => !delIds.has(m.id));
+					const delIds = new Set(payload.payload.message_ids.map(id => String(id)));
+					messages = messages.filter(m => !delIds.has(String(m.id)));
 					fetchChatList();
 				}
 			})
@@ -836,9 +845,9 @@
 					await tick();
 					scrollToBottom(false);
 				} else {
-					// Polling merge: Avoid duplicates and preserve older prepended messages
-					const existingIds = new Set(messages.map(m => m.id));
-					const newIncoming = serverMessages.filter(sm => !existingIds.has(sm.id));
+					// Polling & Realtime merge: Remove unsent/deleted messages and merge new incoming messages cleanly
+					const serverIds = new Set(serverMessages.map(sm => sm.id));
+					const minServerId = serverMessages.length > 0 ? Math.min(...serverMessages.map(sm => sm.id)) : 0;
 
 					// Preserve pending optimistic temporary messages
 					const pendingTempMessages = messages.filter(m => 
@@ -846,13 +855,33 @@
 						!serverMessages.some(sm => sm.message === m.message && sm.sender_id === m.sender_id)
 					);
 
-					const updatedExisting = messages.filter(m => !String(m.id).startsWith('temp-')).map(m => {
+					const updatedExisting = messages.filter(m => {
+						if (removedMessageIds.has(m.id)) return false;
+						if (String(m.id).startsWith('temp-')) return false; // Handled separately in pendingTempMessages
+						// If message was within the range returned by server, but missing from serverMessages, it was unsent/deleted!
+						if (minServerId > 0 && typeof m.id === 'number' && m.id >= minServerId && !serverIds.has(m.id)) {
+							return false;
+						}
+						return true;
+					}).map(m => {
 						const found = serverMessages.find(sm => sm.id === m.id);
-						return found ? { ...m, is_read: found.is_read } : m;
+						return found ? { ...m, ...found } : m;
 					});
 
+					const updatedExistingIds = new Set(updatedExisting.map(m => m.id));
+					const newIncoming = serverMessages.filter(sm => !updatedExistingIds.has(sm.id));
+
 					const isAtBottom = chatContainer ? (chatContainer.scrollHeight - chatContainer.scrollTop <= chatContainer.clientHeight + 80) : true;
-					messages = [...updatedExisting, ...newIncoming, ...pendingTempMessages];
+					
+					const combined = [...updatedExisting, ...newIncoming, ...pendingTempMessages];
+					combined.sort((a, b) => {
+						const timeA = new Date(a.created_at || 0).getTime();
+						const timeB = new Date(b.created_at || 0).getTime();
+						if (timeA !== timeB) return timeA - timeB;
+						return (a.id || 0) - (b.id || 0);
+					});
+
+					messages = combined;
 
 					if (newIncoming.length > 0) {
 						if (newIncoming.some(sm => sm.sender_id !== user.id)) {
@@ -1132,9 +1161,9 @@
 	async function unsendSelectedMessages() {
 		if (selectedMessageIds.size === 0 || isDeletingMessages) return;
 
-		const idsToDelete = Array.from(selectedMessageIds);
+		const idsToDeleteStr = new Set(Array.from(selectedMessageIds).map(id => String(id)));
 		const validIds = messages
-			.filter(m => idsToDelete.includes(m.id) && m.sender_id === user.id)
+			.filter(m => idsToDeleteStr.has(String(m.id)) && String(m.sender_id) === String(user.id))
 			.map(m => m.id);
 
 		if (validIds.length === 0) {
@@ -1142,8 +1171,9 @@
 			return;
 		}
 
+		const validIdsStr = new Set(validIds.map(id => String(id)));
 		isDeletingMessages = true;
-		messages = messages.filter(m => !validIds.includes(m.id));
+		messages = messages.filter(m => !validIdsStr.has(String(m.id)));
 		exitSelectionMode();
 
 		if (typingChannel) {
@@ -1178,11 +1208,18 @@
 		if (selectedMessageIds.size === 0) return;
 		const idsToRemove = Array.from(selectedMessageIds);
 		const newRemoved = new Set(removedMessageIds);
-		idsToRemove.forEach(id => newRemoved.add(id));
+		idsToRemove.forEach(id => {
+			newRemoved.add(id);
+			newRemoved.add(String(id));
+			if (typeof id === 'string' && !isNaN(Number(id))) {
+				newRemoved.add(Number(id));
+			}
+		});
 		removedMessageIds = newRemoved;
 		saveRemovedMessages();
 
-		messages = messages.filter(m => !idsToRemove.includes(m.id));
+		const strIdsToRemove = new Set(idsToRemove.map(id => String(id)));
+		messages = messages.filter(m => !strIdsToRemove.has(String(m.id)));
 		exitSelectionMode();
 	}
 

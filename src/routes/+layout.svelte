@@ -256,6 +256,18 @@
 				}
 			})
 			.on('postgres_changes', {
+				event: 'DELETE',
+				schema: 'public',
+				table: 'chronomuse_messages'
+			}, (payload) => {
+				const current = getActiveLoggedInUser();
+				if (!current || Number(current.id) !== Number(targetUserId)) return;
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_message_unsend', { detail: payload.old }));
+					window.dispatchEvent(new CustomEvent('chronomuse_notification_change', { detail: payload.old }));
+				}
+			})
+			.on('postgres_changes', {
 				event: '*',
 				schema: 'public',
 				table: 'chronomuse_friend_requests',

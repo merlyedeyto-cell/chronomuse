@@ -51,25 +51,32 @@
 		return memoriesData[dateStr] || [];
 	}
 
+	function isMemoryShared(m) {
+		if (!m) return false;
+		const desc = (m.description || '').toLowerCase();
+		const tag = (m.memory_tag || '').toLowerCase();
+		return Boolean(
+			m.is_shared ||
+			m.shared_by ||
+			m.share_id ||
+			desc.includes('(shared by') ||
+			desc.includes('shared by @') ||
+			tag.includes('shared memory from')
+		);
+	}
+
 	function hasMemories(day) {
 		return getDayMemories(day).length > 0;
 	}
 
-	function hasSharedMemories(day) {
+	function hasPersonalMemories(day) {
 		const mems = getDayMemories(day);
-		return mems.some(m => 
-			m.is_shared || 
-			(m.description || '').includes('(Shared by @') || 
-			(m.memory_tag || '').includes('Shared memory from @')
-		);
+		return mems.some(m => !isMemoryShared(m));
 	}
 
-	function getMemoryDotColor(day) {
-		if (!hasMemories(day)) return '';
-		if (hasSharedMemories(day)) {
-			return 'bg-emerald-500'; // Green dot for shared memories
-		}
-		return 'bg-gradient-to-r from-pink-400 to-pink-600'; // Pink dot for personal memories
+	function hasSharedMemories(day) {
+		const mems = getDayMemories(day);
+		return mems.some(m => isMemoryShared(m));
 	}
 
 	// Hover state for pin tooltip
@@ -368,8 +375,18 @@
 						class:animate-subtle-glow={isTargetHighlighted(day)}
 					>
 						<span class="font-medium" class:font-bold={isToday(day) || isSelected(day) || isTargetHighlighted(day)}>{day}</span>
-						{#if hasMemories(day)}
-							<span class="absolute bottom-1 w-2 h-2 rounded-full {getMemoryDotColor(day)}"></span>
+						{#if hasPersonalMemories(day) && hasSharedMemories(day)}
+							<!-- Both Personal & Shared memories: Two dots side-by-side (Green and Pink) -->
+							<div class="absolute bottom-1 flex items-center space-x-1">
+								<span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 shadow-2xs"></span>
+								<span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 shadow-2xs"></span>
+							</div>
+						{:else if hasSharedMemories(day)}
+							<!-- Only Shared memory: 1 Green dot -->
+							<span class="absolute bottom-1 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 shadow-2xs"></span>
+						{:else if hasPersonalMemories(day)}
+							<!-- Only Personal memory: 1 Pink dot -->
+							<span class="absolute bottom-1 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 shadow-2xs"></span>
 						{/if}
 						{#if isDatePinned(day)}
 							<span class="absolute top-0.5 right-0.5 w-3 h-3 drop-shadow-xs" class:text-white={isToday(day)} class:text-pink-500={!isToday(day)}>
@@ -456,6 +473,13 @@
 			<div class="flex items-center space-x-1">
 				<div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
 				<span class="text-emerald-700 font-semibold">Shared Memory</span>
+			</div>
+			<div class="flex items-center space-x-1">
+				<div class="flex items-center space-x-0.5">
+					<div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+					<div class="w-2 h-2 bg-pink-500 rounded-full"></div>
+				</div>
+				<span class="text-pink-700 font-semibold">Both (Shared & Mine)</span>
 			</div>
 		</div>
 	</div>

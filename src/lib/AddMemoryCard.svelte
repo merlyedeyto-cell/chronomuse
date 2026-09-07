@@ -4,12 +4,15 @@
 	const dispatch = createEventDispatcher();
 
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
+	import SelectOptionModal from '$lib/SelectOptionModal.svelte';
 
 	let { selectedDate = '', resetForm = $bindable(false) } = $props();
 
 	let memoryDescription = $state('');
 	let memoryTag = $state('');
 	let moodTag = $state('');
+	let showMemoryTagModal = $state(false);
+	let showMoodTagModal = $state(false);
 	let photoVideo = $state(null);
 	let music = $state(null);
 	let photoVideoPreview = $state(null);
@@ -346,34 +349,62 @@
 
 		<!-- Memory Tag and Mood Tag Row -->
 		<div class="grid grid-cols-2 gap-2">
-			<!-- Memory Tag Dropdown -->
+			<!-- Memory Tag Field -->
 			<div>
 				<label class="block text-xs font-medium text-pink-600 mb-1">Memory Tag</label>
-				<select
-					bind:value={memoryTag}
-					class="w-full px-2.5 py-1.5 bg-pink-50 border-2 border-pink-200 rounded-lg text-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-xs"
+				<button
+					type="button"
+					onclick={() => showMemoryTagModal = true}
+					class="w-full px-2.5 py-1.5 bg-pink-50 border-2 border-pink-200 rounded-lg text-xs text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-pink-400 font-medium cursor-pointer transition-colors hover:bg-pink-100/50"
 				>
-					<option value="">Select a tag</option>
-					{#each memoryTags as tag}
-						<option value={tag}>{tag}</option>
-					{/each}
-				</select>
+					<span class={memoryTag ? 'text-pink-700 font-semibold truncate' : 'text-pink-400 truncate'}>
+						{memoryTag || 'Select a tag'}
+					</span>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-pink-400 flex-shrink-0 ml-1">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+					</svg>
+				</button>
 			</div>
 
-			<!-- Mood Tag Dropdown -->
+			<!-- Mood Tag Field -->
 			<div>
 				<label class="block text-xs font-medium text-pink-600 mb-1">Mood Tag</label>
-				<select
-					bind:value={moodTag}
-					class="w-full px-2.5 py-1.5 bg-pink-50 border-2 border-pink-200 rounded-lg text-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-xs"
+				<button
+					type="button"
+					onclick={() => showMoodTagModal = true}
+					class="w-full px-2.5 py-1.5 bg-pink-50 border-2 border-pink-200 rounded-lg text-xs text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-pink-400 font-medium cursor-pointer transition-colors hover:bg-pink-100/50"
 				>
-					<option value="">How are you feeling?</option>
-					{#each moodTags as mood}
-						<option value={mood}>{mood}</option>
-					{/each}
-				</select>
+					<span class={moodTag ? 'text-pink-700 font-semibold truncate' : 'text-pink-400 truncate'}>
+						{moodTag || 'How are you feeling?'}
+					</span>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-pink-400 flex-shrink-0 ml-1">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+					</svg>
+				</button>
 			</div>
 		</div>
+
+		<!-- Memory Tag Modal -->
+		<SelectOptionModal
+			isOpen={showMemoryTagModal}
+			title="Select tag"
+			defaultOption="Select tag"
+			options={memoryTags}
+			selectedValue={memoryTag}
+			onSelect={(val) => memoryTag = val}
+			onClose={() => showMemoryTagModal = false}
+		/>
+
+		<!-- Mood Tag Modal -->
+		<SelectOptionModal
+			isOpen={showMoodTagModal}
+			title="Select mood"
+			defaultOption="Select mood"
+			options={moodTags}
+			selectedValue={moodTag}
+			onSelect={(val) => moodTag = val}
+			onClose={() => showMoodTagModal = false}
+		/>
 
 		<!-- Memory Description with Emoji Picker -->
 		<div>
