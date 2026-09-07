@@ -1162,6 +1162,9 @@
 			next.add(msgId);
 		}
 		selectedMessageIds = next;
+		if (next.size === 0) {
+			isSelectionMode = false;
+		}
 	}
 
 	function handleMessageClick(msg) {
@@ -2289,6 +2292,15 @@
 				<div
 					bind:this={chatContainer}
 					onscroll={handleChatScroll}
+					onclick={(e) => {
+						if (isSelectionMode) {
+							const isMessageBubble = e.target.closest('[id^="msg-"]');
+							const isActionButton = e.target.closest('button');
+							if (!isMessageBubble && !isActionButton) {
+								exitSelectionMode();
+							}
+						}
+					}}
 					class="flex-1 min-h-0 p-3 sm:p-4 overflow-y-auto overflow-x-hidden space-y-3 bg-[#fffafb] select-none overscroll-contain"
 				>
 					{#if isFetchingMessages && messages.length === 0}
