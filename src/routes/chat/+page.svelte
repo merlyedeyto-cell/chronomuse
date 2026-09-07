@@ -680,6 +680,11 @@
 	}
 
 	function handleInputFocus() {
+		// Auto-close selection mode when textbox is focused
+		if (isSelectionMode) {
+			isSelectionMode = false;
+			selectedMessageIds = new Set();
+		}
 		updateMobileViewport();
 		setTimeout(() => {
 			updateMobileViewport();
@@ -2646,7 +2651,7 @@
 				{:else}
 					<form onsubmit={(e) => { e.preventDefault(); sendMessage(); }} class="p-2 sm:p-3 bg-white border-t border-pink-100 flex items-center space-x-1.5 sm:space-x-2 w-full min-w-0 flex-shrink-0 sticky bottom-0 z-20">
 						<!-- Upload Photo Button -->
-						<label class="p-1.5 sm:p-2 text-pink-500 hover:text-pink-600 hover:bg-pink-50 rounded-xl cursor-pointer transition-colors flex-shrink-0" title="Attach Photo">
+						<label class="p-1.5 sm:p-2 text-pink-500 hover:text-pink-600 hover:bg-pink-50 rounded-xl cursor-pointer transition-colors flex-shrink-0" title="Attach Photo" onclick={() => { if (isSelectionMode) { isSelectionMode = false; selectedMessageIds = new Set(); } }}>
 							{#if isUploadingImage}
 								<div class="animate-spin w-5 h-5 border-2 border-pink-300 border-t-pink-500 rounded-full"></div>
 							{:else}
