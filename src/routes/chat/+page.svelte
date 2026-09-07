@@ -69,6 +69,7 @@
 	let selectedMessageIds = $state(new Set());
 	let longPressTimer = null;
 	let removedMessageIds = $state(new Set());
+	let recentlyDeletedMessageIds = $state(new Set());
 	let isDeletingMessages = $state(false);
 
 	// Swipe-to-reply state
@@ -252,8 +253,15 @@
 			fetchChatList();
 			if (activeFriend) {
 				const detail = e?.detail;
-				if (detail && (Number(detail.sender_id) === Number(activeFriend.friend_id) || Number(detail.receiver_id) === Number(activeFriend.friend_id))) {
-					fetchMessages(activeFriend.friend_id, false);
+				if (detail) {
+					if (detail.id) {
+						recentlyDeletedMessageIds.add(detail.id);
+						recentlyDeletedMessageIds.add(String(detail.id));
+						messages = messages.filter(m => String(m.id) !== String(detail.id));
+					}
+					if (Number(detail.sender_id) === Number(activeFriend.friend_id) || Number(detail.receiver_id) === Number(activeFriend.friend_id)) {
+						fetchMessages(activeFriend.friend_id, false);
+					}
 				}
 			}
 		};
@@ -542,7 +550,8 @@
 			.on('broadcast', { event: 'direct_message' }, async (payload) => {
 				if (payload.payload && Number(payload.payload.sender_id) === Number(friendId)) {
 					const incoming = payload.payload;
-					if (!messages.some(m => m.id === incoming.id || (m.message === incoming.message && m.sender_id === incoming.sender_id))) {
+					if (recentlyDeletedMessageIds.has(incoming.id) || recentlyDeletedMessageIds.has(String(incoming.id))) return;
+					if (!messages.some(m => String(m.id) === String(incoming.id) || (m.message === incoming.message && Number(m.sender_id) === Number(incoming.sender_id)))) {
 						messages = [...messages, incoming];
 						playIncomingMessageSound(user?.id);
 						await tick();
@@ -554,6 +563,10 @@
 			})
 			.on('broadcast', { event: 'unsend_message' }, (payload) => {
 				if (payload.payload && Array.isArray(payload.payload.message_ids)) {
+					payload.payload.message_ids.forEach(id => {
+						recentlyDeletedMessageIds.add(id);
+						recentlyDeletedMessageIds.add(String(id));
+					});
 					const delIds = new Set(payload.payload.message_ids.map(id => String(id)));
 					messages = messages.filter(m => !delIds.has(String(m.id)));
 					fetchChatList();
@@ -832,7 +845,12 @@
 			});
 			const data = await res.json();
 			if (data.data && data.data.messages) {
-				const serverMessages = (data.data.messages || []).filter(m => !removedMessageIds.has(m.id));
+				const serverMessages = (data.data.messages || []).filter(m => 
+					!removedMessageIds.has(m.id) && 
+					!removedMessageIds.has(String(m.id)) &&
+					!recentlyDeletedMessageIds.has(m.id) &&
+					!recentlyDeletedMessageIds.has(String(m.id))
+				);
 				
 				if (activeFriend && Number(activeFriend.friend_id) === Number(friendId)) {
 					activeFriend.is_blocked_by_me = Boolean(data.data.is_blocked_by_me);
@@ -856,15 +874,17 @@
 					);
 
 					const updatedExisting = messages.filter(m => {
-						if (removedMessageIds.has(m.id)) return false;
-						if (String(m.id).startsWith('temp-')) return false; // Handled separately in pendingTempMessages
+						const idStr = String(m.id);
+						if (removedMessageIds.has(m.id) || removedMessageIds.has(idStr)) return false;
+						if (recentlyDeletedMessageIds.has(m.id) || recentlyDeletedMessageIds.has(idStr)) return false;
+						if (idStr.startsWith('temp-')) return false; // Handled separately in pendingTempMessages
 						// If message was within the range returned by server, but missing from serverMessages, it was unsent/deleted!
 						if (minServerId > 0 && typeof m.id === 'number' && m.id >= minServerId && !serverIds.has(m.id)) {
 							return false;
 						}
 						return true;
 					}).map(m => {
-						const found = serverMessages.find(sm => sm.id === m.id);
+						const found = serverMessages.find(sm => String(sm.id) === String(m.id));
 						return found ? { ...m, ...found } : m;
 					});
 
@@ -1171,9 +1191,14 @@
 			return;
 		}
 
+		validIds.forEach(id => {
+			recentlyDeletedMessageIds.add(id);
+			recentlyDeletedMessageIds.add(String(id));
+		});
+
 		const validIdsStr = new Set(validIds.map(id => String(id)));
 		isDeletingMessages = true;
-		messages = messages.filter(m => !validIdsStr.has(String(m.id)));
+		messages = messages.filter(m => !validIdsStr.has(String(m.id)) && !recentlyDeletedMessageIds.has(m.id) && !recentlyDeletedMessageIds.has(String(m.id)));
 		exitSelectionMode();
 
 		if (typingChannel) {
@@ -1211,15 +1236,18 @@
 		idsToRemove.forEach(id => {
 			newRemoved.add(id);
 			newRemoved.add(String(id));
+			recentlyDeletedMessageIds.add(id);
+			recentlyDeletedMessageIds.add(String(id));
 			if (typeof id === 'string' && !isNaN(Number(id))) {
 				newRemoved.add(Number(id));
+				recentlyDeletedMessageIds.add(Number(id));
 			}
 		});
 		removedMessageIds = newRemoved;
 		saveRemovedMessages();
 
 		const strIdsToRemove = new Set(idsToRemove.map(id => String(id)));
-		messages = messages.filter(m => !strIdsToRemove.has(String(m.id)));
+		messages = messages.filter(m => !strIdsToRemove.has(String(m.id)) && !recentlyDeletedMessageIds.has(m.id) && !recentlyDeletedMessageIds.has(String(m.id)));
 		exitSelectionMode();
 	}
 
