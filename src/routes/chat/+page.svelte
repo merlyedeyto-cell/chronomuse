@@ -2734,7 +2734,11 @@
 															<path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
 														</svg>
 														{#if parsed.reply.type === 'note'}
+																{#if user && String(parsed.reply.user).toLowerCase() === String(user.username).toLowerCase()}
+																	Replied to your note
+																{:else}
 																	Replied to @{parsed.reply.user}'s note
+																{/if}
 																{:else}
 																	@{parsed.reply.user}:
 																{/if}
