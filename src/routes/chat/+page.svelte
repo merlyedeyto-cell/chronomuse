@@ -1427,7 +1427,7 @@
 
 	function triggerReply(msg) {
 		const parsed = parseMessage(msg.message);
-		const replyText = parsed.isImage ? 'Photo' : (parsed.text || 'Photo / Attachment');
+		const replyText = parsed.isImage ? 'Photo' : (parsed.text === '__UNSENT__' ? 'Unsent message' : (parsed.text || 'Photo / Attachment'));
 		replyingTo = {
 			kind: 'message',
 			id: msg.id,
@@ -1817,6 +1817,7 @@
 
 	function getReplyDetails(rawReplyText) {
 		if (!rawReplyText) return { isImage: false, text: '', imageUrl: '' };
+		if (rawReplyText === '__UNSENT__') return { isImage: false, text: 'Unsent message', imageUrl: '' };
 		const isImg = isImageUrl(rawReplyText) || rawReplyText.includes('[IMG]') || rawReplyText.includes('.supabase.co') || rawReplyText === 'Photo' || rawReplyText.includes('📷 Photo');
 		if (isImg) {
 			const cleanUrl = extractImageUrl(rawReplyText);
