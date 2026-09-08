@@ -5,6 +5,7 @@
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
 	import { playTypingSound, playMessageSentSound, playIncomingMessageSound } from '$lib/soundEffects.js';
+	import { broadcastProfileEvent } from '$lib/realtimeBroadcast.js';
 	import Sidebar from '$lib/Sidebar.svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
@@ -63,6 +64,15 @@
 	let imageInput;
 	let emojiPickerRef;
 	let emojiButtonRef;
+
+	// iMessage-style Notes state — unified with Profile page (uses chronomuse_users.note)
+	let myNote = $state(null); // { note_text } — loaded from user profile
+	let friendNotes = $state([]); // [{ user_id, username, avatar_url, note_text }] — derived from friends list
+	let showNoteModal = $state(false);
+	let noteInput = $state('');
+	let isSavingNote = $state(false);
+	let viewingNote = $state(null); // { username, avatar_url, note_text, friend_id }
+	let notesScrollRef;
 
 	// Multi-select & Long-press state
 	let isSelectionMode = $state(false);
@@ -242,6 +252,8 @@
 			}
 		});
 
+		fetchNotes();
+
 		pollInterval = setInterval(() => {
 			fetchChatList();
 			if (activeFriend) {
@@ -268,7 +280,39 @@
 		window.addEventListener('chronomuse_message_unsend', handleRealtimeChatMessage);
 		window.addEventListener('chronomuse_friend_change', handleRealtimeChatMessage);
 		window.addEventListener('chronomuse_profile_change', handleRealtimeChatMessage);
-		window.addEventListener('chronomuse_note_change', handleRealtimeChatMessage);
+
+		// Listen for note changes broadcast from profile page — update myNote reactively
+		const handleNoteChange = (e) => {
+			const detail = e?.detail;
+			if (!detail) return;
+			if (user && String(detail.user_id) === String(user.id)) {
+				// Own note updated from Profile page
+				const noteText = detail.note !== undefined ? detail.note : (detail.updated_fields?.note);
+				if (noteText !== undefined) {
+					myNote = noteText ? { note_text: noteText } : null;
+				}
+			} else {
+				// A friend's note changed — refresh friend notes
+				const noteText = detail.note !== undefined ? detail.note : (detail.updated_fields?.note);
+				if (noteText !== undefined && detail.user_id) {
+					friendNotes = friendNotes.map(fn =>
+						String(fn.user_id) === String(detail.user_id)
+							? { ...fn, note_text: noteText }
+							: fn
+					).filter(fn => fn.note_text);
+					// Also add note if not yet in list
+					if (noteText && !friendNotes.some(fn => String(fn.user_id) === String(detail.user_id))) {
+						const allFriendsList = [...friends, ...requests];
+						const friend = allFriendsList.find(f => String(f.friend_id) === String(detail.user_id));
+						if (friend) {
+							friendNotes = [...friendNotes, { user_id: detail.user_id, username: friend.username, avatar_url: friend.avatar_url || null, note_text: noteText }];
+						}
+					}
+				}
+			}
+		};
+		window.addEventListener('chronomuse_note_change', handleNoteChange);
+		window.addEventListener('chronomuse_profile_change', handleNoteChange);
 
 		// Handle mobile hardware & browser back button to return to chat list
 		const handlePopState = () => {
@@ -342,7 +386,8 @@
 			window.removeEventListener('chronomuse_new_message', handleRealtimeChatMessage);
 			window.removeEventListener('chronomuse_friend_change', handleRealtimeChatMessage);
 			window.removeEventListener('chronomuse_profile_change', handleRealtimeChatMessage);
-			window.removeEventListener('chronomuse_note_change', handleRealtimeChatMessage);
+			window.removeEventListener('chronomuse_note_change', handleNoteChange);
+			window.removeEventListener('chronomuse_profile_change', handleNoteChange);
 			if (typeof window !== 'undefined') {
 				if (window.visualViewport) {
 					window.visualViewport.removeEventListener('resize', updateMobileViewport);
@@ -767,6 +812,8 @@
 					}
 				}
 			}
+			// Refresh friend notes from the updated chat list (includes note field per friend)
+			fetchNotes();
 		} catch (err) {
 			console.error('Error fetching chat list:', err);
 		} finally {
@@ -1863,6 +1910,108 @@
 		}
 		goto('/');
 	}
+
+	// ─── Notes Functions (Unified with Profile page — uses chronomuse_users.note) ───
+
+	function fetchNotes() {
+		if (!user) return;
+		// Own note: load from localStorage (set by profile page) or from user object
+		const storedNote = typeof window !== 'undefined'
+			? (localStorage.getItem(`chronomuse_note_${user.id}`) || user.note || '')
+			: (user.note || '');
+		myNote = storedNote ? { note_text: storedNote } : null;
+
+		// Friends' notes: derived from friends/requests list (note field from get_chat_list API)
+		const allFriendsList = [...friends, ...requests];
+		friendNotes = allFriendsList
+			.filter(f => f.note && f.note.trim())
+			.map(f => ({
+				user_id: f.friend_id,
+				username: f.username,
+				avatar_url: f.avatar_url || null,
+				note_text: f.note
+			}));
+	}
+
+	async function saveNote() {
+		if (!user || !noteInput.trim() || isSavingNote) return;
+		isSavingNote = true;
+		try {
+			const noteText = noteInput.trim().slice(0, 60);
+			// Update note via profile API — same as Profile page
+			await fetch(API_ENDPOINTS.updateProfile, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: user.id, note: noteText })
+			});
+			// Update localStorage so profile page stays in sync
+			if (typeof window !== 'undefined') {
+				if (noteText) {
+					localStorage.setItem(`chronomuse_note_${user.id}`, noteText);
+				} else {
+					localStorage.removeItem(`chronomuse_note_${user.id}`);
+				}
+				// Update stored user object too
+				try {
+					const storedUser = localStorage.getItem('chronomuse_user');
+					if (storedUser) {
+						const parsed = JSON.parse(storedUser);
+						localStorage.setItem('chronomuse_user', JSON.stringify({ ...parsed, note: noteText }));
+					}
+				} catch (e) {}
+			}
+			myNote = noteText ? { note_text: noteText } : null;
+			showNoteModal = false;
+			noteInput = '';
+			// Broadcast note change so Profile page and other devices update in realtime
+			try {
+				broadcastProfileEvent(user.id, { note: noteText });
+			} catch (e) {}
+		} catch (err) {
+			console.error('Error saving note:', err);
+		} finally {
+			isSavingNote = false;
+		}
+	}
+
+	async function deleteNote() {
+		if (!user) return;
+		try {
+			await fetch(API_ENDPOINTS.updateProfile, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: user.id, note: '' })
+			});
+			if (typeof window !== 'undefined') {
+				localStorage.removeItem(`chronomuse_note_${user.id}`);
+				try {
+					const storedUser = localStorage.getItem('chronomuse_user');
+					if (storedUser) {
+						const parsed = JSON.parse(storedUser);
+						localStorage.setItem('chronomuse_user', JSON.stringify({ ...parsed, note: '' }));
+					}
+				} catch (e) {}
+			}
+			myNote = null;
+			showNoteModal = false;
+			noteInput = '';
+			try {
+				broadcastProfileEvent(user.id, { note: '' });
+			} catch (e) {}
+		} catch (err) {
+			console.error('Error deleting note:', err);
+		}
+	}
+
+	function openNoteModal() {
+		noteInput = myNote?.note_text || '';
+		showNoteModal = true;
+	}
+
+	function getNoteTimeLeft() {
+		// Notes in unified system don't expire — return empty string
+		return '';
+	}
 </script>
 
 <svelte:head>
@@ -2005,6 +2154,86 @@
 					</button>
 				</div>
 			</div>
+
+			<!-- iMessage-style Notes Row -->
+			{#if myNote || friendNotes.length > 0 || (!isLoadingChatList)}
+			<div class="px-2.5 sm:px-3 pt-2.5 pb-1">
+				<div
+					bind:this={notesScrollRef}
+					class="flex gap-4 overflow-x-auto pb-2 notes-scroll-row"
+					style="scrollbar-width: none; -ms-overflow-style: none;"
+				>
+					<!-- "Your Note" pill -->
+					<button
+						onclick={openNoteModal}
+						class="flex flex-col items-center flex-shrink-0 group cursor-pointer select-none"
+						style="min-width: 72px; max-width: 80px;"
+						title="{myNote ? 'Edit your note' : 'Add a note'}"
+					>
+						<!-- Speech bubble -->
+						<div class="relative mb-2.5 w-full">
+							<div class="note-bubble bg-white border-2 border-pink-300 shadow-md rounded-2xl px-2 py-1.5 text-[11px] font-semibold text-pink-800 leading-tight text-center min-h-[34px] flex items-center justify-center transition-all group-hover:shadow-lg group-hover:border-pink-400 group-active:scale-95">
+								{#if myNote}
+									<span class="line-clamp-2">{myNote.note_text}</span>
+								{:else}
+									<span class="text-pink-400 text-lg leading-none">+</span>
+								{/if}
+							</div>
+							<!-- Bubble tail -->
+							<div class="absolute left-1/2 -translate-x-1/2 bottom-[-8px] w-3 h-3 overflow-hidden">
+								<div class="w-3 h-3 bg-white border-b-2 border-r-2 border-pink-300 rotate-45 translate-y-[-50%]"></div>
+							</div>
+						</div>
+						<!-- Avatar -->
+						<div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-200 to-pink-400 border-2 border-pink-300 shadow-md flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
+							{#if user?.avatar_url}
+								<img src={user.avatar_url} alt="You" class="w-full h-full object-cover" />
+							{:else}
+								<span class="text-white font-bold text-base">{user?.username?.charAt(0).toUpperCase() || '?'}</span>
+							{/if}
+						</div>
+						<span class="text-[10px] font-semibold text-pink-700 mt-1 truncate w-full text-center">Your note</span>
+					</button>
+
+					<!-- Divider -->
+					{#if friendNotes.length > 0}
+						<div class="w-px bg-pink-200 self-stretch my-1 flex-shrink-0"></div>
+					{/if}
+
+					<!-- Friends' Notes -->
+					{#each friendNotes as fn (fn.user_id)}
+						<button
+							onclick={() => { viewingNote = fn; }}
+							class="flex flex-col items-center flex-shrink-0 group cursor-pointer select-none"
+							style="min-width: 72px; max-width: 80px;"
+							title="{fn.username}'s note"
+						>
+							<!-- Speech bubble -->
+							<div class="relative mb-2.5 w-full">
+								<div class="note-bubble bg-white border-2 border-pink-200 shadow-md rounded-2xl px-2 py-1.5 text-[11px] font-semibold text-pink-800 leading-tight text-center min-h-[34px] flex items-center justify-center transition-all group-hover:shadow-lg group-hover:border-pink-400 group-active:scale-95">
+									<span class="line-clamp-2">{fn.note_text}</span>
+								</div>
+								<!-- Bubble tail -->
+								<div class="absolute left-1/2 -translate-x-1/2 bottom-[-8px] w-3 h-3 overflow-hidden">
+									<div class="w-3 h-3 bg-white border-b-2 border-r-2 border-pink-200 rotate-45 translate-y-[-50%]"></div>
+								</div>
+							</div>
+							<!-- Avatar -->
+							<div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-100 to-pink-300 border-2 border-pink-200 shadow-md flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
+								{#if fn.avatar_url}
+									<img src={fn.avatar_url} alt={fn.username} class="w-full h-full object-cover" />
+								{:else}
+									<span class="text-pink-700 font-bold text-base">{fn.username.charAt(0).toUpperCase()}</span>
+								{/if}
+							</div>
+							<span class="text-[10px] font-medium text-pink-600 mt-1 truncate w-full text-center">@{fn.username}</span>
+						</button>
+					{/each}
+				</div>
+				<!-- Thin separator -->
+				<div class="h-px bg-gradient-to-r from-transparent via-pink-200 to-transparent mt-1"></div>
+			</div>
+			{/if}
 
 			<!-- Friends List -->
 			<div class="flex-grow overflow-y-auto p-2.5 sm:p-3 space-y-2.5">
@@ -3001,6 +3230,170 @@
 	</div>
 {/if}
 
+<!-- ═══ Note Write / Edit Modal ═══════════════════════════════ -->
+{#if showNoteModal}
+	<div
+		class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
+		onclick={(e) => { if (e.target === e.currentTarget) { showNoteModal = false; noteInput = ''; } }}
+	>
+		<div class="bg-white border-t-2 sm:border-2 border-pink-300 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-sm animate-slide-up overflow-hidden">
+			<!-- Modal Header -->
+			<div class="px-5 pt-5 pb-3 flex items-center justify-between border-b border-pink-100">
+				<div class="flex items-center gap-2.5">
+					<!-- Avatar preview -->
+					<div class="w-9 h-9 rounded-full bg-gradient-to-br from-pink-200 to-pink-400 border-2 border-pink-300 flex items-center justify-center overflow-hidden shadow-sm">
+						{#if user?.avatar_url}
+							<img src={user.avatar_url} alt="You" class="w-full h-full object-cover" />
+						{:else}
+							<span class="text-white font-bold text-sm">{user?.username?.charAt(0).toUpperCase() || '?'}</span>
+						{/if}
+					</div>
+					<div>
+						<p class="font-bold text-pink-900 text-sm leading-tight">Your Note</p>
+						<p class="text-[10px] text-pink-500 font-medium">Visible to friends • expires in 24h</p>
+					</div>
+				</div>
+				<button
+					onclick={() => { showNoteModal = false; noteInput = ''; }}
+					class="p-1.5 text-pink-400 hover:text-pink-700 hover:bg-pink-50 rounded-full transition-all"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+
+			<!-- Note Input -->
+			<div class="px-5 py-4">
+				<!-- Speech bubble preview -->
+				<div class="relative mb-5">
+					<div class="bg-pink-50 border-2 border-pink-200 rounded-2xl px-4 py-3 min-h-[52px] flex items-center">
+						{#if noteInput.trim()}
+							<p class="text-sm font-semibold text-pink-800 break-words w-full">{noteInput}</p>
+						{:else}
+							<p class="text-sm text-pink-300 font-medium">Write a note...</p>
+						{/if}
+					</div>
+					<!-- Bubble tail -->
+					<div class="absolute left-6 bottom-[-9px] w-4 h-4 overflow-hidden">
+						<div class="w-4 h-4 bg-pink-50 border-b-2 border-r-2 border-pink-200 rotate-45 translate-y-[-50%]"></div>
+					</div>
+				</div>
+
+				<!-- Textarea -->
+				<textarea
+					bind:value={noteInput}
+					maxlength="60"
+					rows="2"
+					placeholder="What's on your mind? ✨"
+					class="w-full px-3.5 py-2.5 bg-white border-2 border-pink-200 rounded-2xl text-sm text-pink-900 placeholder-pink-300 font-medium resize-none focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-300 transition-all"
+					onkeydown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveNote(); } }}
+				></textarea>
+				<div class="flex items-center justify-between mt-1 px-1">
+					<span class="text-[10px] text-pink-400 font-medium">{noteInput.length}/60 characters</span>
+				</div>
+			</div>
+
+			<!-- Action Buttons -->
+			<div class="px-5 pb-5 flex gap-2.5">
+				{#if myNote}
+					<button
+						onclick={deleteNote}
+						class="flex-shrink-0 px-4 py-2.5 border-2 border-rose-200 text-rose-500 hover:bg-rose-50 hover:border-rose-400 rounded-2xl font-bold text-sm transition-all active:scale-95 flex items-center gap-1.5"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+						</svg>
+						Delete
+					</button>
+				{/if}
+				<button
+					onclick={saveNote}
+					disabled={!noteInput.trim() || isSavingNote}
+					class="flex-grow py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-bold text-sm transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5"
+				>
+					{#if isSavingNote}
+						<div class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+					{:else}
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+						</svg>
+					{/if}
+					{myNote ? 'Update Note' : 'Post Note'}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- ═══ Friend Note Viewer Popup ════════════════════════════════ -->
+{#if viewingNote}
+	<div
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[110] flex items-center justify-center p-5 animate-fade-in"
+		onclick={(e) => { if (e.target === e.currentTarget) viewingNote = null; }}
+	>
+		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-xs w-full overflow-hidden animate-modal-content">
+			<!-- Header -->
+			<div class="px-5 pt-5 pb-4 flex items-center gap-3 border-b border-pink-100">
+				<div class="w-11 h-11 rounded-full bg-gradient-to-br from-pink-100 to-pink-300 border-2 border-pink-200 flex items-center justify-center overflow-hidden shadow-sm flex-shrink-0">
+					{#if viewingNote.avatar_url}
+						<img src={viewingNote.avatar_url} alt={viewingNote.username} class="w-full h-full object-cover" />
+					{:else}
+						<span class="text-pink-700 font-bold text-lg">{viewingNote.username.charAt(0).toUpperCase()}</span>
+					{/if}
+				</div>
+				<div class="flex-grow min-w-0">
+					<p class="font-bold text-pink-900 text-sm truncate">@{viewingNote.username}</p>
+					<p class="text-[10px] text-pink-500 font-medium">Note 💭</p>
+				</div>
+				<button
+					onclick={() => viewingNote = null}
+					class="p-1.5 text-pink-400 hover:text-pink-700 hover:bg-pink-50 rounded-full transition-all flex-shrink-0"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+
+			<!-- Note content -->
+			<div class="px-5 py-5">
+				<!-- Speech bubble display -->
+				<div class="relative mb-4">
+					<div class="bg-gradient-to-br from-pink-50 to-rose-50 border-2 border-pink-200 rounded-2xl px-4 py-3.5 text-sm font-semibold text-pink-800 leading-relaxed shadow-inner">
+						"{viewingNote.note_text}"
+					</div>
+					<div class="absolute left-4 bottom-[-9px] w-4 h-4 overflow-hidden">
+						<div class="w-4 h-4 bg-pink-50 border-b-2 border-r-2 border-pink-200 rotate-45 translate-y-[-50%]"></div>
+					</div>
+				</div>
+			</div>
+
+			<div class="px-5 pb-5 flex gap-2">
+				<button
+					onclick={() => { 
+						const targetFriend = [...friends, ...requests].find(f => Number(f.friend_id) === Number(viewingNote?.user_id)) || { friend_id: viewingNote?.user_id, username: viewingNote?.username, avatar_url: viewingNote?.avatar_url };
+						viewingNote = null; 
+						selectFriend(targetFriend); 
+					}}
+					class="flex-grow py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-2xl font-bold text-sm transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+					</svg>
+					Reply in Chat
+				</button>
+				<button
+					onclick={() => viewingNote = null}
+					class="px-4 py-2.5 border-2 border-pink-200 text-pink-600 hover:bg-pink-50 rounded-2xl font-bold text-sm transition-all active:scale-95"
+				>
+					Close
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
 <style>
 	@keyframes fadeIn {
 		0% {
@@ -3010,6 +3403,7 @@
 			opacity: 1;
 		}
 	}
+
 
 	.animate-fade-in {
 		animation: fadeIn 0.2s ease-out;
@@ -3092,5 +3486,31 @@
 	:global(*) {
 		scrollbar-width: thin;
 		scrollbar-color: #f472b6 rgba(255, 225, 240, 0.5);
+	}
+
+	@keyframes slideUp {
+		0% {
+			opacity: 0;
+			transform: translateY(100%);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.animate-slide-up {
+		animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+	}
+
+	.line-clamp-2 {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.notes-scroll-row::-webkit-scrollbar {
+		display: none;
 	}
 </style>

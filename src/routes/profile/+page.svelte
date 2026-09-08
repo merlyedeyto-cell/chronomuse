@@ -1039,6 +1039,26 @@
 		};
 		window.addEventListener('chronomuse_go_self_profile', handleGoSelfProfile);
 
+		// Handle browser/hardware back button to restore the correct profile view
+		const handlePopState = () => {
+			const urlParams = new URLSearchParams(window.location.search);
+			const paramId = urlParams.get('id') || urlParams.get('user_id');
+			const effectiveId = paramId || currentUser?.id;
+			if (effectiveId && String(effectiveId) !== String(targetUserId)) {
+				// Load the profile corresponding to where we navigated back to
+				if (currentUser?.id && String(effectiveId) === String(currentUser.id)) {
+					// Going back to own profile
+					loadProfile(currentUser.id);
+				} else if (effectiveId) {
+					loadProfile(effectiveId);
+				}
+			} else if (!paramId && currentUser?.id) {
+				// No id param means we went back to /profile (own profile)
+				loadProfile(currentUser.id);
+			}
+		};
+		window.addEventListener('popstate', handlePopState);
+
 		try {
 			realtimeChannel = supabase
 				.channel('public:profile_updates')
@@ -1096,6 +1116,11 @@
 				};
 			} catch (e) {}
 		}
+
+		return () => {
+			window.removeEventListener('chronomuse_go_self_profile', handleGoSelfProfile);
+			window.removeEventListener('popstate', handlePopState);
+		};
 	});
 
 	onDestroy(() => {

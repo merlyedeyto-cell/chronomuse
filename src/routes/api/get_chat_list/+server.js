@@ -51,13 +51,13 @@ export async function POST({ request }) {
 		// 3. Fetch user details for all partners
 		let { data: partnerUsers, error: userError } = await supabase
 			.from('chronomuse_users')
-			.select('id, username, email, avatar_url, last_activity')
+			.select('id, username, email, avatar_url, last_activity, note')
 			.in('id', allPartnerIdsArray);
 
 		if (userError && userError.message?.includes('avatar_url')) {
 			const fallbackUsers = await supabase
 				.from('chronomuse_users')
-				.select('id, username, email, last_activity')
+				.select('id, username, email, last_activity, note')
 				.in('id', allPartnerIdsArray);
 			partnerUsers = fallbackUsers.data;
 		}
@@ -140,6 +140,7 @@ export async function POST({ request }) {
 					username: partner.username,
 					email: partner.email,
 					avatar_url: partner.avatar_url || null,
+					note: partner.note || null,
 					last_activity: partner.last_activity,
 					last_message: lastMsg ? lastMsg.message : null,
 					last_message_time: lastMsg ? lastMsg.created_at : null,
