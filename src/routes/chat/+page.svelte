@@ -16,6 +16,11 @@
 	let chatListFilter = $state('all'); // 'all' | 'unread' | 'requests'
 	let unreadFriendsCount = $derived(friends.reduce((sum, f) => sum + (f.unread_count || 0), 0));
 	let unreadRequestsCount = $derived(requests.reduce((sum, f) => sum + (f.unread_count || 0), 0));
+	// Count of USERS (conversations) with unread messages — same pool the Unread filter uses
+	let unreadUsersCount = $derived(
+		((allConversations.length > 0 ? allConversations : [...friends, ...requests]) || [])
+			.filter(f => !f.is_blocked_by_me && !f.is_blocking_me && (f.unread_count || 0) > 0).length
+	);
 	let unreadTotal = $derived(unreadFriendsCount + unreadRequestsCount);
 
 	let showNotificationModalPopup = $state(false);
@@ -2265,9 +2270,9 @@
 						class="py-1.5 px-1.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative {chatListFilter === 'unread' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
 					>
 						<span>Unread</span>
-						{#if unreadFriendsCount + unreadRequestsCount > 0}
+						{#if unreadUsersCount > 0}
 							<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold {chatListFilter === 'unread' ? 'bg-white text-pink-600' : 'bg-pink-500 text-white animate-pulse'}">
-								{unreadFriendsCount + unreadRequestsCount}
+								{unreadUsersCount}
 							</span>
 						{:else}
 							<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'unread' ? 'bg-white/20 text-white' : 'bg-pink-200 text-pink-700 font-bold'}">
