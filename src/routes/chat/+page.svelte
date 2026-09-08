@@ -213,10 +213,16 @@
 		if (friendIdParam || usernameParam) {
 			const fid = friendIdParam ? Number(friendIdParam) : null;
 			if (pendingNoteReply) {
-				// Let triggerNoteReply (after the chat list loads) open the chat with the reply bar
+				// Open the chat immediately (no waiting for the chat list) with the reply bar
 				if (typeof window !== 'undefined') {
 					history.replaceState({ chatOpen: false }, '', '/chat');
 				}
+				triggerNoteReply({
+					user_id: pendingNoteReply.user_id,
+					username: pendingNoteReply.username || usernameParam || 'User',
+					avatar_url: null,
+					note_text: pendingNoteReply.note_text || ''
+				});
 			} else if (fid && user?.id && Number(fid) === Number(user.id)) {
 				activeFriend = null;
 				if (typeof window !== 'undefined') {
@@ -250,18 +256,6 @@
 		isLoading = false;
 
 		fetchChatList().then(() => {
-			if (pendingNoteReply) {
-				const allList = [...friends, ...requests];
-				const targetFriend = allList.find(f => String(f.friend_id) === String(pendingNoteReply.user_id))
-					|| { friend_id: pendingNoteReply.user_id, id: pendingNoteReply.user_id, username: pendingNoteReply.username || usernameParam || 'User', is_friend: false };
-				triggerNoteReply({
-					user_id: targetFriend.friend_id,
-					username: targetFriend.username,
-					avatar_url: targetFriend.avatar_url || null,
-					note_text: pendingNoteReply.note_text || targetFriend.note || ''
-				});
-				return;
-			}
 			if (activeFriend) {
 				const allList = [...friends, ...requests];
 				const fullFriend = allList.find(f => 
@@ -1477,7 +1471,8 @@
 		const targetFriend = [...friends, ...requests].find(f => Number(f.friend_id) === Number(fn.user_id))
 			|| { friend_id: fn.user_id, username: fn.username, avatar_url: fn.avatar_url || null };
 		viewingNote = null;
-		await selectFriend(targetFriend);
+		// Don't await: show the reply bar instantly while messages load in the background
+		selectFriend(targetFriend);
 		replyingTo = {
 			kind: 'note',
 			id: `note-${fn.user_id}`,
