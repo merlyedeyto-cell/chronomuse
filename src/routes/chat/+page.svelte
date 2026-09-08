@@ -1091,8 +1091,11 @@
 
 		let formattedMessage = textToSend;
 		if (replyingTo && !textCustom) {
-			const replyPayloadText = replyingTo.isImage ? '📷 Photo' : replyingTo.text;
-			formattedMessage = `[REPLY id="${replyingTo.id}" user="${replyingTo.sender_name}" text="${encodeURIComponent(replyPayloadText)}"]${textToSend}[/REPLY]`;
+			const replyPayloadText = replyingTo.isImage ? 'Photo' : replyingTo.text;
+			const replyId = replyingTo.kind === 'note' ? (replyingTo.id || `note-${replyingTo.user_id}`) : replyingTo.id;
+			const replyUser = replyingTo.kind === 'note' ? replyingTo.username : replyingTo.sender_name;
+			const replyTypeAttr = replyingTo.kind === 'note' ? ' type="note"' : '';
+			formattedMessage = `[REPLY id="${replyId}" user="${encodeURIComponent(replyUser)}" text="${encodeURIComponent(replyPayloadText)}"${replyTypeAttr}]${textToSend}[/REPLY]`;
 			replyingTo = null;
 		}
 
@@ -1424,13 +1427,38 @@
 
 	function triggerReply(msg) {
 		const parsed = parseMessage(msg.message);
-		const replyText = parsed.isImage ? '📷 Photo' : (parsed.text || 'Photo / Attachment');
+		const replyText = parsed.isImage ? 'Photo' : (parsed.text || 'Photo / Attachment');
 		replyingTo = {
+			kind: 'message',
 			id: msg.id,
 			sender_name: msg.sender_id === user.id ? 'You' : activeFriend.username,
 			text: replyText,
 			isImage: parsed.isImage,
 			imageUrl: parsed.isImage ? parsed.imageUrl : null
+		};
+		tick().then(() => {
+			if (messageInputRef) {
+				messageInputRef.focus();
+			}
+		});
+	}
+
+	// Opens the friend's chat and pre-fills a reply that quotes their note
+	async function triggerNoteReply(fn) {
+		if (!fn) return;
+		const targetFriend = [...friends, ...requests].find(f => Number(f.friend_id) === Number(fn.user_id))
+			|| { friend_id: fn.user_id, username: fn.username, avatar_url: fn.avatar_url || null };
+		viewingNote = null;
+		await selectFriend(targetFriend);
+		replyingTo = {
+			kind: 'note',
+			id: `note-${fn.user_id}`,
+			user_id: fn.user_id,
+			username: fn.username,
+			sender_name: fn.username,
+			text: fn.note_text,
+			isImage: false,
+			imageUrl: null
 		};
 		tick().then(() => {
 			if (messageInputRef) {
@@ -1789,13 +1817,13 @@
 
 	function getReplyDetails(rawReplyText) {
 		if (!rawReplyText) return { isImage: false, text: '', imageUrl: '' };
-		const isImg = isImageUrl(rawReplyText) || rawReplyText.includes('[IMG]') || rawReplyText.includes('.supabase.co') || rawReplyText.includes('📷 Photo');
+		const isImg = isImageUrl(rawReplyText) || rawReplyText.includes('[IMG]') || rawReplyText.includes('.supabase.co') || rawReplyText === 'Photo' || rawReplyText.includes('📷 Photo');
 		if (isImg) {
 			const cleanUrl = extractImageUrl(rawReplyText);
 			const hasValidUrl = cleanUrl && (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://'));
 			return {
 				isImage: true,
-				text: '📷 Photo',
+				text: 'Photo',
 				imageUrl: hasValidUrl ? cleanUrl : ''
 			};
 		}
@@ -1812,16 +1840,21 @@
 		let replyData = null;
 		let cleanText = text;
 
-		const replyRegex = /^\[REPLY id="([^"]*)" user="([^"]*)" text="([^"]*)"\]([\s\S]*?)\[\/REPLY\]/;
+		const replyRegex = /^\[REPLY id="([^"]*)" user="([^"]*)" text="([^"]*)"(?: type="([^"]*)")?\]([\s\S]*?)\[\/REPLY\]/;
 		const match = text.match(replyRegex);
 
 		if (match) {
+			let decodedUser = match[2];
+			try {
+				decodedUser = decodeURIComponent(match[2]);
+			} catch (e) {}
 			replyData = {
 				id: match[1],
-				user: match[2],
-				text: decodeURIComponent(match[3])
+				user: decodedUser,
+				text: decodeURIComponent(match[3]),
+				type: match[4] || null
 			};
-			cleanText = match[4];
+			cleanText = match[5];
 		}
 
 		const isImage = isImageUrl(cleanText);
@@ -1867,7 +1900,7 @@
 			return isSentByMe ? 'You unsent a message' : `${partnerName} unsent a message`;
 		}
 		const parsed = parseMessage(text);
-		if (parsed.isImage) return '📷 Photo attachment';
+		if (parsed.isImage) return 'Photo attachment';
 		if (parsed.reply) {
 			return `↩ ${parsed.text}`;
 		}
@@ -2689,25 +2722,33 @@
 												<div
 													role="button"
 													tabindex="0"
-													onclick={(e) => { e.stopPropagation(); scrollToMessage(parsed.reply.id); }}
-													onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); scrollToMessage(parsed.reply.id); } }}
+													onclick={(e) => { e.stopPropagation(); if (parsed.reply.type !== 'note') scrollToMessage(parsed.reply.id); }}
+													onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); if (parsed.reply.type !== 'note') scrollToMessage(parsed.reply.id); } }}
 													class="mb-1 px-2.5 py-1 rounded-xl text-[11px] border-l-3 bg-pink-100/90 text-pink-900 border-pink-400 shadow-2xs max-w-full flex items-center space-x-1.5 cursor-pointer hover:bg-pink-200/90 hover:border-pink-500 hover:shadow-xs active:scale-95 transition-all group/reply"
 													class:self-end={isUserSender}
 													class:self-start={!isUserSender}
-													title="Click to jump to replied message"
+													title="{parsed.reply.type === 'note' ? 'Replied to this note' : 'Click to jump to replied message'}"
 												>
 													<span class="font-bold text-pink-700 flex items-center gap-1 group-hover/reply:text-pink-900 transition-colors">
 														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-pink-600 group-hover/reply:-translate-x-0.5 transition-transform">
 															<path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
 														</svg>
-														@{parsed.reply.user}:
+														{#if parsed.reply.type === 'note'}
+																	Replied to @{parsed.reply.user}'s note
+																{:else}
+																	@{parsed.reply.user}:
+																{/if}
 													</span>
 													{#if replyDetails.isImage}
 														<div class="inline-flex items-center space-x-1 bg-white/80 px-1.5 py-0.5 rounded-md border border-pink-300">
 															{#if replyDetails.imageUrl}
 																<img src={replyDetails.imageUrl} alt="Replying photo" class="w-4 h-4 rounded-xs object-cover border border-pink-300 flex-shrink-0" />
+															{:else}
+																<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5 text-pink-700 flex-shrink-0">
+																	<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+																</svg>
 															{/if}
-															<span class="font-bold text-pink-700 text-[10px]">📷 Photo</span>
+															<span class="font-bold text-pink-700 text-[10px]">Photo</span>
 														</div>
 													{:else}
 														<span class="italic opacity-85 truncate">{replyDetails.text}</span>
@@ -2828,7 +2869,11 @@
 									<img src={replyingTo.imageUrl} alt="Replying photo" class="w-7 h-7 rounded-lg object-cover border border-pink-300 flex-shrink-0 shadow-2xs" />
 								{/if}
 								<div class="min-w-0">
-									<p class="font-bold text-pink-600">Replying to @{replyingTo.sender_name}</p>
+									{#if replyingTo.kind === 'note'}
+															<p class="font-bold text-pink-600">Replying to @{replyingTo.username}'s note</p>
+														{:else}
+															<p class="font-bold text-pink-600">Replying to @{replyingTo.sender_name}</p>
+														{/if}
 									<p class="text-pink-900/80 truncate text-[11px] font-medium">{replyingTo.text}</p>
 								</div>
 							</div>
@@ -3285,7 +3330,7 @@
 					bind:value={noteInput}
 					maxlength="60"
 					rows="2"
-					placeholder="What's on your mind? ✨"
+					placeholder="What's on your mind?"
 					class="w-full px-3.5 py-2.5 bg-white border-2 border-pink-200 rounded-2xl text-sm text-pink-900 placeholder-pink-300 font-medium resize-none focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-300 transition-all"
 					onkeydown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveNote(); } }}
 				></textarea>
@@ -3344,7 +3389,12 @@
 				</div>
 				<div class="flex-grow min-w-0">
 					<p class="font-bold text-pink-900 text-sm truncate">@{viewingNote.username}</p>
-					<p class="text-[10px] text-pink-500 font-medium">Note 💭</p>
+					<p class="text-[10px] text-pink-500 font-medium flex items-center gap-1">
+															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3 text-pink-500 flex-shrink-0">
+																<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+															</svg>
+															Note
+														</p>
 				</div>
 				<button
 					onclick={() => viewingNote = null}
@@ -3371,11 +3421,7 @@
 
 			<div class="px-5 pb-5 flex gap-2">
 				<button
-					onclick={() => { 
-						const targetFriend = [...friends, ...requests].find(f => Number(f.friend_id) === Number(viewingNote?.user_id)) || { friend_id: viewingNote?.user_id, username: viewingNote?.username, avatar_url: viewingNote?.avatar_url };
-						viewingNote = null; 
-						selectFriend(targetFriend); 
-					}}
+					onclick={() => { triggerNoteReply(viewingNote); }}
 					class="flex-grow py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-2xl font-bold text-sm transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5"
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
