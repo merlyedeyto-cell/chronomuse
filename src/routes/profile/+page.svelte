@@ -90,6 +90,7 @@
 	let showNoteModal = $state(false);
 	let noteInputText = $state('');
 	let userNote = $state('');
+	let viewingUserNote = $state(false);
 
 	function openNoteModal() {
 		playClickSound();
@@ -1368,16 +1369,19 @@
 									</button>
 								{:else}
 									{#if userNote}
-										<div 
-											class="absolute -top-11 left-1 z-20 bg-white/95 backdrop-blur-md px-3.5 py-1 rounded-2xl shadow-lg border-2 border-pink-300 text-xs font-bold text-pink-700 flex items-center space-x-1.5"
-										>
-											<span class="max-w-[140px] sm:max-w-[180px] truncate">
-												{userNote}
-											</span>
-											<div class="absolute -bottom-1.5 left-5 w-3 h-3 bg-white border-r-2 border-b-2 border-pink-300 rotate-45"></div>
-										</div>
+											<button
+												type="button"
+												class="absolute -top-11 left-1 z-20 bg-white/95 backdrop-blur-md px-3.5 py-1 rounded-2xl shadow-lg border-2 border-pink-300 text-xs font-bold text-pink-700 flex items-center space-x-1.5 cursor-pointer hover:bg-pink-100/80 hover:scale-105 active:scale-95 transition-all"
+												onclick={() => viewingUserNote = true}
+												title="View @{profileData.user.username}'s note"
+											>
+													<span class="max-w-[140px] sm:max-w-[180px] truncate">
+														{userNote}
+													</span>
+													<div class="absolute -bottom-1.5 left-5 w-3 h-3 bg-white border-r-2 border-b-2 border-pink-300 rotate-45"></div>
+											</button>
 									{/if}
-								{/if}
+					{/if}
 
 								<!-- Avatar Circle -->
 								<div class="p-[3.5px] rounded-full bg-gradient-to-tr from-pink-400 via-rose-500 to-purple-600 shadow-xl">
@@ -2106,6 +2110,75 @@
 			</div>
 		</div>
 	{/if}
+<!-- View Other User's Note Popup (like chat) -->
+	{#if viewingUserNote && !profileData.is_self && userNote}
+		<div
+			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[110] flex items-center justify-center p-5 animate-fade-in"
+			onclick={(e) => { if (e.target === e.currentTarget) viewingUserNote = false; }}
+		>
+			<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-xs w-full overflow-hidden animate-modal-content">
+				<!-- Header -->
+				<div class="px-5 pt-5 pb-4 flex items-center gap-3 border-b border-pink-100">
+					<div class="w-11 h-11 rounded-full bg-gradient-to-br from-pink-100 to-pink-300 border-2 border-pink-200 flex items-center justify-center overflow-hidden shadow-sm flex-shrink-0">
+						{#if profileData.user.avatar_url}
+							<img src={profileData.user.avatar_url} alt={profileData.user.username} class="w-full h-full object-cover" />
+						{:else}
+							<span class="text-pink-700 font-bold text-lg">{profileData.user.username.charAt(0).toUpperCase()}</span>
+						{/if}
+					</div>
+					<div class="flex-grow min-w-0">
+						<p class="font-bold text-pink-900 text-sm truncate">@{profileData.user.username}</p>
+						<p class="text-[10px] text-pink-500 font-medium flex items-center gap-1">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3 text-pink-500 flex-shrink-0">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+							</svg>
+							Note
+						</p>
+					</div>
+					<button
+						onclick={() => viewingUserNote = false}
+						class="p-1.5 text-pink-400 hover:text-pink-700 hover:bg-pink-50 rounded-full transition-all flex-shrink-0"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+				</div>
+
+				<!-- Note content -->
+				<div class="px-5 py-5">
+					<!-- Speech bubble display -->
+					<div class="relative mb-4">
+						<div class="bg-gradient-to-br from-pink-50 to-rose-50 border-2 border-pink-200 rounded-2xl px-4 py-3.5 text-sm font-semibold text-pink-800 leading-relaxed shadow-inner">
+							"{userNote}"
+						</div>
+						<div class="absolute left-4 bottom-[-9px] w-4 h-4 overflow-hidden">
+							<div class="w-4 h-4 bg-pink-50 border-b-2 border-r-2 border-pink-200 rotate-45 translate-y-[-50%]"></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="px-5 pb-5 flex gap-2">
+					<button
+						onclick={() => { viewingUserNote = false; openChatWithUser(profileData.user); }}
+						class="flex-grow py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-2xl font-bold text-sm transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+						</svg>
+						Reply in Chat
+					</button>
+					<button
+						onclick={() => viewingUserNote = false}
+						class="px-4 py-2.5 border-2 border-pink-200 text-pink-600 hover:bg-pink-50 rounded-2xl font-bold text-sm transition-all active:scale-95"
+					>
+						Close
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+
 
 	<!-- Toast Notification Banner -->
 	{#if showToast}
