@@ -201,10 +201,23 @@
 		// Read URL params for friend loading
 		const friendIdParam = $page.url.searchParams.get('friend_id');
 		const usernameParam = $page.url.searchParams.get('username');
+		// Note reply handoff from profile page ("Reply in Chat" on a friend's note)
+		let pendingNoteReply = null;
+		if ($page.url.searchParams.get('note_reply') === '1' && friendIdParam && typeof window !== 'undefined') {
+			try {
+				pendingNoteReply = JSON.parse(sessionStorage.getItem('chronomuse_note_reply') || 'null');
+			} catch (e) {}
+			sessionStorage.removeItem('chronomuse_note_reply');
+		}
 
 		if (friendIdParam || usernameParam) {
 			const fid = friendIdParam ? Number(friendIdParam) : null;
-			if (fid && user?.id && Number(fid) === Number(user.id)) {
+			if (pendingNoteReply) {
+				// Let triggerNoteReply (after the chat list loads) open the chat with the reply bar
+				if (typeof window !== 'undefined') {
+					history.replaceState({ chatOpen: false }, '', '/chat');
+				}
+			} else if (fid && user?.id && Number(fid) === Number(user.id)) {
 				activeFriend = null;
 				if (typeof window !== 'undefined') {
 					history.replaceState({ chatOpen: false }, '', '/chat');
@@ -237,6 +250,18 @@
 		isLoading = false;
 
 		fetchChatList().then(() => {
+			if (pendingNoteReply) {
+				const allList = [...friends, ...requests];
+				const targetFriend = allList.find(f => String(f.friend_id) === String(pendingNoteReply.user_id))
+					|| { friend_id: pendingNoteReply.user_id, id: pendingNoteReply.user_id, username: pendingNoteReply.username || usernameParam || 'User', is_friend: false };
+				triggerNoteReply({
+					user_id: targetFriend.friend_id,
+					username: targetFriend.username,
+					avatar_url: targetFriend.avatar_url || null,
+					note_text: pendingNoteReply.note_text || targetFriend.note || ''
+				});
+				return;
+			}
 			if (activeFriend) {
 				const allList = [...friends, ...requests];
 				const fullFriend = allList.find(f => 
@@ -508,14 +533,17 @@
 		if (!friend) return 'Offline';
 		if (isFriendActive(friend.friend_id)) return 'Active now';
 
-		const timestamp = userLastSeenMap[friend.friend_id] || friend.last_activity || friend.last_message_time;
+		// Only use real activity signals — falling back to last_message_time made offline
+		// users appear "Active just now" whenever the conversation had a recent message.
+		const timestamp = userLastSeenMap[friend.friend_id] || friend.last_activity;
 		if (!timestamp) return 'Offline';
 
 		const now = Date.now();
 		const date = new Date(timestamp);
 		const diffMs = now - date.getTime();
 
-		if (isNaN(diffMs) || diffMs < 0) return 'Active just now';
+		if (isNaN(diffMs)) return 'Offline';
+		if (diffMs < 0) return 'Active just now';
 
 		const diffSec = Math.floor(diffMs / 1000);
 		const diffMin = Math.floor(diffSec / 60);
@@ -2142,51 +2170,6 @@
 						<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
 					</svg>
 				</div>
-
-				<!-- All / Unread / Requests Filter Tabs -->
-				<div class="grid grid-cols-3 gap-1 p-1 bg-pink-100/70 rounded-xl border border-pink-200/80">
-					<button
-						onclick={() => chatListFilter = 'all'}
-						class="py-1.5 px-1.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center {chatListFilter === 'all' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
-					>
-						<span>All</span>
-						<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'all' ? 'bg-white/20 text-white' : 'bg-pink-200 text-pink-700 font-bold'}">
-							{allConversations.length || (friends.length + requests.length)}
-						</span>
-					</button>
-
-					<button
-						onclick={() => chatListFilter = 'unread'}
-						class="py-1.5 px-1.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative {chatListFilter === 'unread' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
-					>
-						<span>Unread</span>
-						{#if unreadFriendsCount + unreadRequestsCount > 0}
-							<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold {chatListFilter === 'unread' ? 'bg-white text-pink-600' : 'bg-pink-500 text-white animate-pulse'}">
-								{unreadFriendsCount + unreadRequestsCount}
-							</span>
-						{:else}
-							<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'unread' ? 'bg-white/20 text-white' : 'bg-pink-200 text-pink-700 font-bold'}">
-								0
-							</span>
-						{/if}
-					</button>
-
-					<button
-						onclick={() => chatListFilter = 'requests'}
-						class="py-1.5 px-1.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative {chatListFilter === 'requests' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
-					>
-						<span>Requests</span>
-						{#if requests.length > 0}
-							<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold {chatListFilter === 'requests' ? 'bg-white text-pink-600' : unreadRequestsCount > 0 ? 'bg-rose-500 text-white animate-pulse' : 'bg-pink-200 text-pink-700'}">
-								{requests.length}
-							</span>
-						{:else}
-							<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'requests' ? 'bg-white/20 text-white' : 'bg-pink-200 text-pink-700 font-bold'}">
-								0
-							</span>
-						{/if}
-					</button>
-				</div>
 			</div>
 
 			<!-- iMessage-style Notes Row -->
@@ -2268,6 +2251,53 @@
 				<div class="h-px bg-gradient-to-r from-transparent via-pink-200 to-transparent mt-1"></div>
 			</div>
 			{/if}
+
+			<!-- All / Unread / Requests Filter Tabs (below notes, above the message list) -->
+			<div class="px-2.5 sm:px-3 pb-2.5 pt-1">
+				<div class="grid grid-cols-3 gap-1 p-1 bg-pink-100/70 rounded-xl border border-pink-200/80">
+					<button
+						onclick={() => chatListFilter = 'all'}
+						class="py-1.5 px-1.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center {chatListFilter === 'all' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
+					>
+						<span>All</span>
+						<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'all' ? 'bg-white/20 text-white' : 'bg-pink-200 text-pink-700 font-bold'}">
+							{allConversations.length || (friends.length + requests.length)}
+						</span>
+					</button>
+
+					<button
+						onclick={() => chatListFilter = 'unread'}
+						class="py-1.5 px-1.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative {chatListFilter === 'unread' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
+					>
+						<span>Unread</span>
+						{#if unreadFriendsCount + unreadRequestsCount > 0}
+							<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold {chatListFilter === 'unread' ? 'bg-white text-pink-600' : 'bg-pink-500 text-white animate-pulse'}">
+								{unreadFriendsCount + unreadRequestsCount}
+							</span>
+						{:else}
+							<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'unread' ? 'bg-white/20 text-white' : 'bg-pink-200 text-pink-700 font-bold'}">
+								0
+							</span>
+						{/if}
+					</button>
+
+					<button
+						onclick={() => chatListFilter = 'requests'}
+						class="py-1.5 px-1.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative {chatListFilter === 'requests' ? 'bg-pink-500 text-white shadow-xs' : 'text-pink-600 hover:bg-pink-200/60'}"
+					>
+						<span>Requests</span>
+						{#if requests.length > 0}
+							<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold {chatListFilter === 'requests' ? 'bg-white text-pink-600' : unreadRequestsCount > 0 ? 'bg-rose-500 text-white animate-pulse' : 'bg-pink-200 text-pink-700'}">
+								{requests.length}
+							</span>
+						{:else}
+							<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'requests' ? 'bg-white/20 text-white' : 'bg-pink-200 text-pink-700 font-bold'}">
+								0
+							</span>
+						{/if}
+					</button>
+				</div>
+			</div>
 
 			<!-- Friends List -->
 			<div class="flex-grow overflow-y-auto p-2.5 sm:p-3 space-y-2.5">

@@ -926,10 +926,24 @@
 		}
 	}
 
-	function openChatWithUser(/** @type {any} */ targetUser) {
+	function openChatWithUser(/** @type {any} */ targetUser, /** @type {string|null} */ replyNoteText = null) {
 		playClickSound();
 		const targetId = targetUser.friend_id || targetUser.id;
-		goto(`/chat?user_id=${targetId}`);
+		const username = targetUser.username || '';
+		if (replyNoteText && typeof window !== 'undefined') {
+			// Hand off the note text so the chat page can open the conversation
+			// directly with a "Replying to @user" bar pre-filled
+			try {
+				sessionStorage.setItem('chronomuse_note_reply', JSON.stringify({
+					user_id: targetId,
+					username,
+					note_text: replyNoteText
+				}));
+			} catch (e) {}
+			goto(`/chat?friend_id=${targetId}&username=${encodeURIComponent(username)}&note_reply=1`);
+		} else {
+			goto(`/chat?friend_id=${targetId}&username=${encodeURIComponent(username)}`);
+		}
 	}
 
 	function viewUserProfile(/** @type {any} */ targetUser) {
@@ -2160,7 +2174,7 @@
 
 				<div class="px-5 pb-5 flex gap-2">
 					<button
-						onclick={() => { viewingUserNote = false; openChatWithUser(profileData.user); }}
+						onclick={() => { viewingUserNote = false; openChatWithUser(profileData.user, userNote); }}
 						class="flex-grow py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-2xl font-bold text-sm transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
