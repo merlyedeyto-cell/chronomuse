@@ -470,12 +470,12 @@
 <svelte:head>
 	{#if $page.url.pathname.startsWith('/admin')}
 		<link rel="manifest" href="/manifest-admin.json" />
-		<title>ChronoMuse Admin Portal</title>
+		<title>ChronoMuse Admin</title>
 		<meta name="apple-mobile-web-app-title" content="ChronoMuse Admin" />
 	{:else}
 		<link rel="manifest" href="/manifest.json" />
-		<title>Chronomuse</title>
-		<meta name="apple-mobile-web-app-title" content="Chronomuse" />
+		<title>ChronoMuse</title>
+		<meta name="apple-mobile-web-app-title" content="ChronoMuse" />
 	{/if}
 </svelte:head>
 

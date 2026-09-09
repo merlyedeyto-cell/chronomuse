@@ -1,6 +1,6 @@
 {
-  "name": "Chronomuse",
-  "short_name": "Chronomuse",
+  "name": "ChronoMuse",
+  "short_name": "ChronoMuse",
   "description": "Your personal memory calendar & mood tracker app",
   "start_url": "/",
   "id": "/?source=pwa-user",

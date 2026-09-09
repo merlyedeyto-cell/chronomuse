@@ -1,6 +1,6 @@
 {
   "name": "ChronoMuse Admin",
-  "short_name": "CM Admin",
+  "short_name": "ChronoMuse Admin",
   "description": "Administrator control portal for ChronoMuse",
   "start_url": "/adminmerlye",
   "id": "/adminmerlye?source=pwa-admin",
