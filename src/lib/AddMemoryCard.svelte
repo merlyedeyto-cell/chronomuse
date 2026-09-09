@@ -216,44 +216,42 @@
 		isGeneratingThumbnails = false;
 	}
 
-	function handleFilmstripTouchStart(e, type) {
-		const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-		startTrimmerDrag(clientX, type);
-	}
-
-	function handleFilmstripMouseDown(e, type) {
+	function handlePointerDown(e, type) {
 		e.preventDefault();
-		startTrimmerDrag(e.clientX, type);
-	}
+		e.stopPropagation();
+		const target = e.currentTarget;
+		try {
+			target.setPointerCapture(e.pointerId);
+		} catch (err) {}
 
-	function startTrimmerDrag(clientX, type) {
 		if (type === 'left') isDraggingLeft = true;
 		else if (type === 'right') isDraggingRight = true;
 		else if (type === 'window') isDraggingWindow = true;
 
-		dragStartX = clientX;
+		dragStartX = e.clientX;
 		dragStartStartTime = videoStartTime;
 		dragStartEndTime = videoEndTime;
 
-		const onMove = (moveEvent) => {
-			const currentX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
-			handleTrimmerMove(currentX);
+		const onPointerMove = (moveEv) => {
+			moveEv.preventDefault();
+			handleTrimmerMove(moveEv.clientX);
 		};
 
-		const onEnd = () => {
+		const onPointerUp = (upEv) => {
+			try {
+				target.releasePointerCapture(upEv.pointerId);
+			} catch (err) {}
 			isDraggingLeft = false;
 			isDraggingRight = false;
 			isDraggingWindow = false;
-			window.removeEventListener('mousemove', onMove);
-			window.removeEventListener('mouseup', onEnd);
-			window.removeEventListener('touchmove', onMove);
-			window.removeEventListener('touchend', onEnd);
+			target.removeEventListener('pointermove', onPointerMove);
+			target.removeEventListener('pointerup', onPointerUp);
+			target.removeEventListener('pointercancel', onPointerUp);
 		};
 
-		window.addEventListener('mousemove', onMove);
-		window.addEventListener('mouseup', onEnd);
-		window.addEventListener('touchmove', onMove);
-		window.addEventListener('touchend', onEnd);
+		target.addEventListener('pointermove', onPointerMove);
+		target.addEventListener('pointerup', onPointerUp);
+		target.addEventListener('pointercancel', onPointerUp);
 	}
 
 	function handleTrimmerMove(clientX) {
@@ -280,11 +278,35 @@
 			const windowDuration = dragStartEndTime - dragStartStartTime;
 			let newStart = dragStartStartTime + deltaTime;
 			if (newStart < 0) newStart = 0;
-			if (newStart + windowDuration > videoDuration) newStart = videoDuration - windowDuration;
-			videoStartTime = newStart;
-			videoEndTime = newStart + windowDuration;
+			if (newStart + windowDuration > videoDuration) newStart = Math.max(0, videoDuration - windowDuration);
+			videoStartTime = Math.max(0, newStart);
+			videoEndTime = Math.min(videoDuration, videoStartTime + windowDuration);
 			if (trimVideoElement) trimVideoElement.currentTime = videoStartTime;
 		}
+	}
+
+	function handleFilmstripTrackClick(e) {
+		if (isDraggingLeft || isDraggingRight || isDraggingWindow) return;
+		if (!filmstripElement || videoDuration <= 0) return;
+		const rect = filmstripElement.getBoundingClientRect();
+		const clickX = e.clientX - rect.left;
+		const targetTime = (clickX / rect.width) * videoDuration;
+
+		const windowDuration = Math.min(15, Math.max(1, videoEndTime - videoStartTime));
+		let newStart = targetTime - (windowDuration / 2);
+		if (newStart < 0) newStart = 0;
+		if (newStart + windowDuration > videoDuration) newStart = Math.max(0, videoDuration - windowDuration);
+		videoStartTime = Math.max(0, newStart);
+		videoEndTime = Math.min(videoDuration, videoStartTime + windowDuration);
+		if (trimVideoElement) trimVideoElement.currentTime = videoStartTime;
+	}
+
+	function handleRangeSliderChange(val) {
+		const newStart = Number(val);
+		const windowDuration = Math.min(15, Math.max(1, videoEndTime - videoStartTime));
+		videoStartTime = Math.max(0, newStart);
+		videoEndTime = Math.min(videoDuration, videoStartTime + windowDuration);
+		if (trimVideoElement) trimVideoElement.currentTime = videoStartTime;
 	}
 
 	function formatTimeDisplay(seconds) {
@@ -855,7 +877,7 @@
 <!-- ChronoMuse Themed Messenger-Style Video Trimmer Modal -->
 {#if showVideoTrimmerModal && rawVideoUrl}
 	<div
-		class="fixed inset-0 bg-pink-950/40 backdrop-blur-xs z-[120] flex items-center justify-center p-3 sm:p-4 animate-fade-in select-none"
+		class="fixed inset-0 bg-black/60 z-[120] flex items-center justify-center p-3 sm:p-4 animate-fade-in select-none"
 		onclick={(e) => { if (e.target === e.currentTarget && !isTrimmingVideo) showVideoTrimmerModal = false; }}
 	>
 		<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-lg w-full p-4 sm:p-5 flex flex-col space-y-3.5 relative animate-modal-content">
@@ -915,7 +937,7 @@
 				<!-- Play/Pause Overlay Icon -->
 				{#if !isPlayingTrimVideo}
 					<div class="absolute inset-0 bg-black/25 flex items-center justify-center transition-all">
-						<div class="w-12 h-12 rounded-full bg-pink-500/90 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
+						<div class="w-12 h-12 rounded-full bg-pink-500 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 ml-0.5">
 								<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
 							</svg>
@@ -925,7 +947,7 @@
 			</div>
 
 			<!-- Messenger Storyboard Filmstrip Scrubber Tool -->
-			<div class="bg-pink-50 border-2 border-pink-200 rounded-2xl p-3 space-y-2">
+			<div class="bg-pink-50 border-2 border-pink-200 rounded-2xl p-3 space-y-2.5">
 				<div class="flex items-center justify-between text-xs font-bold">
 					<span class="text-pink-600">Storyboard Timeline</span>
 					<span class="text-pink-800">
@@ -936,7 +958,9 @@
 				<!-- Filmstrip Scrubber Track -->
 				<div
 					class="relative w-full h-14 rounded-xl overflow-hidden bg-pink-100 border-2 border-pink-300 select-none cursor-pointer"
+					style="touch-action: none;"
 					bind:this={filmstripElement}
+					onclick={handleFilmstripTrackClick}
 				>
 					<!-- Frame Thumbnails Strip -->
 					<div class="absolute inset-0 flex w-full h-full pointer-events-none">
@@ -974,26 +998,25 @@
 						<!-- Active Pink Selection Box -->
 						<div
 							class="absolute top-0 bottom-0 border-y-3 border-pink-500 bg-pink-500/25 cursor-grab active:cursor-grabbing flex items-center justify-between"
-							style="left: {leftPercent}%; width: {widthPercent}%;"
-							onmousedown={(e) => handleFilmstripMouseDown(e, 'window')}
-							ontouchstart={(e) => handleFilmstripTouchStart(e, 'window')}
+							style="left: {leftPercent}%; width: {widthPercent}%; touch-action: none;"
+							onpointerdown={(e) => handlePointerDown(e, 'window')}
 						>
 							<!-- Left Drag Handle -->
 							<div
-								class="w-4 h-full bg-pink-500 hover:bg-pink-600 text-white cursor-ew-resize flex items-center justify-center rounded-l-md active:scale-95 transition-transform"
-								onmousedown={(e) => { e.stopPropagation(); handleFilmstripMouseDown(e, 'left'); }}
-								ontouchstart={(e) => { e.stopPropagation(); handleFilmstripTouchStart(e, 'left'); }}
+								class="w-6 h-full bg-pink-500 hover:bg-pink-600 text-white cursor-ew-resize flex items-center justify-center rounded-l-md active:scale-95 transition-transform"
+								style="touch-action: none;"
+								onpointerdown={(e) => handlePointerDown(e, 'left')}
 							>
-								<div class="w-0.5 h-4 bg-white rounded-full"></div>
+								<div class="w-1 h-4 bg-white rounded-full"></div>
 							</div>
 
 							<!-- Right Drag Handle -->
 							<div
-								class="w-4 h-full bg-pink-500 hover:bg-pink-600 text-white cursor-ew-resize flex items-center justify-center rounded-r-md active:scale-95 transition-transform"
-								onmousedown={(e) => { e.stopPropagation(); handleFilmstripMouseDown(e, 'right'); }}
-								ontouchstart={(e) => { e.stopPropagation(); handleFilmstripTouchStart(e, 'right'); }}
+								class="w-6 h-full bg-pink-500 hover:bg-pink-600 text-white cursor-ew-resize flex items-center justify-center rounded-r-md active:scale-95 transition-transform"
+								style="touch-action: none;"
+								onpointerdown={(e) => handlePointerDown(e, 'right')}
 							>
-								<div class="w-0.5 h-4 bg-white rounded-full"></div>
+								<div class="w-1 h-4 bg-white rounded-full"></div>
 							</div>
 						</div>
 
@@ -1007,8 +1030,27 @@
 					{/if}
 				</div>
 
+				<!-- Fine-tuning Range Slider -->
+				{#if videoDuration > 15}
+					<div class="pt-1">
+						<div class="flex items-center justify-between text-[11px] font-bold text-pink-700 mb-1">
+							<span>Slide position:</span>
+							<span>{videoStartTime.toFixed(1)}s - {videoEndTime.toFixed(1)}s</span>
+						</div>
+						<input
+							type="range"
+							min="0"
+							max={Math.max(0, videoDuration - 1)}
+							step="0.2"
+							value={videoStartTime}
+							oninput={(e) => handleRangeSliderChange(e.target.value)}
+							class="w-full accent-pink-500 cursor-pointer h-1.5 bg-pink-200 rounded-lg"
+						/>
+					</div>
+				{/if}
+
 				<p class="text-[11px] text-center text-pink-500 font-medium">
-					Drag the handles or slide the window to select up to 15s.
+					Hold and drag the box or handles, tap on the timeline, or use the slider to move the 15s clip.
 				</p>
 			</div>
 
