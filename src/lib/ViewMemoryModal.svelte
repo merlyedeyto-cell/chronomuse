@@ -1,5 +1,6 @@
 <script>
 	import { createEventDispatcher, onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
 	import { broadcastMemoryEvent } from '$lib/realtimeBroadcast.js';
@@ -567,19 +568,62 @@
 
 							<!-- Upload Photo or Video -->
 							<div>
-								<label class="block text-xs font-medium text-pink-600 mb-1">Photo or Video</label>
-								<label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-pink-300 rounded-xl bg-pink-50 cursor-pointer hover:bg-pink-100 hover:border-pink-400 transition-all duration-200 overflow-hidden">
+								<div class="flex items-center justify-between mb-1">
+									<label class="block text-xs font-medium text-pink-600">Photo or Video</label>
+									{#if editedPhotoVideo || memory.photo_video}
+										<button
+											type="button"
+											onclick={() => { photoVideoInput?.click(); }}
+											class="text-[11px] font-bold text-pink-600 hover:text-pink-700 bg-pink-100 hover:bg-pink-200 px-2.5 py-0.5 rounded-full transition-all flex items-center space-x-1"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+											</svg>
+											<span>Change / Replace</span>
+										</button>
+									{/if}
+								</div>
+
+								<div
+									class="relative flex flex-col items-center justify-center w-full min-h-[96px] max-h-48 border-2 border-dashed border-pink-300 rounded-xl bg-pink-50 cursor-pointer hover:bg-pink-100/70 hover:border-pink-400 transition-all duration-200 overflow-hidden group"
+									onclick={() => { photoVideoInput?.click(); }}
+								>
 									{#if editedPhotoVideoPreview}
 										{#if editedPhotoVideoType.startsWith('image/')}
-											<img src={editedPhotoVideoPreview} alt="Preview" class="w-full h-full object-contain" />
-										{:else if editedPhotoVideoType.startsWith('video/')}
-											<video src={editedPhotoVideoPreview} class="w-full h-full object-contain" controls aria-label="Memory video preview"></video>
+											<img src={editedPhotoVideoPreview} alt="Preview" class="w-full max-h-44 object-contain" />
+										{:else}
+											<div class="relative w-full h-full flex items-center justify-center bg-black/80 py-2">
+												<video src={editedPhotoVideoPreview} class="w-full max-h-40 object-contain pointer-events-none" muted playsinline></video>
+												<div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
+													<span class="text-xs font-bold text-white bg-pink-600 px-3 py-1 rounded-full shadow-md flex items-center space-x-1">
+														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+															<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+														</svg>
+														<span>Click to Change Video</span>
+													</span>
+												</div>
+											</div>
 										{/if}
 									{:else if memory.photo_video}
 										{#if (memory.photo_video_type && memory.photo_video_type.startsWith('video/')) || (typeof memory.photo_video === 'string' && (memory.photo_video.endsWith('.mp4') || memory.photo_video.endsWith('.webm') || memory.photo_video.endsWith('.mov')))}
-											<video src={getMediaUrl(memory.photo_video)} class="w-full h-full object-contain" controls aria-label="Memory video"></video>
+											<div class="relative w-full h-full flex items-center justify-center bg-black/80 py-2">
+												<video src={getMediaUrl(memory.photo_video)} class="w-full max-h-40 object-contain pointer-events-none" muted playsinline></video>
+												<div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
+													<span class="text-xs font-bold text-white bg-pink-600 px-3 py-1 rounded-full shadow-md flex items-center space-x-1">
+														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+															<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+														</svg>
+														<span>Click to Change Video</span>
+													</span>
+												</div>
+											</div>
 										{:else}
-											<img src={getMediaUrl(memory.photo_video)} alt="Current" class="w-full h-full object-contain" />
+											<div class="relative w-full h-full flex items-center justify-center">
+												<img src={getMediaUrl(memory.photo_video)} alt="Current" class="w-full max-h-44 object-contain" />
+												<div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-all">
+													<span class="text-xs font-bold text-white bg-pink-600 px-3 py-1 rounded-full shadow-md">Click to Change Photo</span>
+												</div>
+											</div>
 										{/if}
 									{:else}
 										<div class="flex items-center space-x-3 pt-2 pb-3 px-4">
@@ -594,6 +638,7 @@
 											</div>
 										</div>
 									{/if}
+
 									<input
 										type="file"
 										accept="image/*,video/*"
@@ -601,13 +646,13 @@
 										bind:this={photoVideoInput}
 										class="hidden"
 									/>
-								</label>
+								</div>
 								{#if memory.photo_video && !editedPhotoVideo}
 									<p class="text-xs text-pink-400 mt-1 flex items-center">
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3 h-3 mr-1">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
 										</svg>
-										Current file will be replaced
+										Click box or button to replace current video/photo
 									</p>
 								{/if}
 							</div>
@@ -702,12 +747,17 @@
 							<div class="flex items-center justify-between gap-2 border-b border-pink-100 pb-2.5">
 								<div class="flex items-center flex-wrap gap-1.5 min-w-0">
 									{#if details.isShared && details.senderName}
-										<span class="text-[11px] px-2.5 py-0.5 rounded-full bg-pink-500 text-white font-bold inline-flex items-center space-x-1">
+										<button
+											type="button"
+											onclick={() => { handleClose(); goto(`/profile?id=${encodeURIComponent(details.senderName)}`); }}
+											class="text-[11px] px-2.5 py-0.5 rounded-full bg-pink-500 hover:bg-pink-600 text-white font-bold inline-flex items-center space-x-1 cursor-pointer transition-all active:scale-95 shadow-xs"
+											title="View @{details.senderName}'s Profile"
+										>
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-pink-100 flex-shrink-0">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a5.97 5.97 0 00-.942 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
 											</svg>
 											<span>Shared by @{details.senderName}</span>
-										</span>
+										</button>
 									{/if}
 
 									{#if memory.mood_tag}

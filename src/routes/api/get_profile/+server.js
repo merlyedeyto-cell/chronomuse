@@ -11,48 +11,64 @@ export async function POST({ request }) {
 			return json({ error: 'User ID is required' }, { status: 400 });
 		}
 
-		// 1. Fetch Target User Data
-		let { data: targetUser, error: userError } = await supabase
-			.from('chronomuse_users')
-			.select('id, username, email, avatar_url, cover_url, note, bio, birthday, relationship_status, gender, is_private, created_at, last_activity')
-			.eq('id', targetId)
-			.maybeSingle();
+		// 1. Fetch Target User Data (Supports numeric ID or username with/without @)
+		let targetUser = null;
+		let userError = null;
 
-		// If new columns might not exist in database table yet, fallback gracefully
-		if (userError) {
-			const fallbackQuery = await supabase
-				.from('chronomuse_users')
-				.select('id, username, email, avatar_url, created_at, last_activity, bio, birthday, relationship_status, gender')
-				.eq('id', targetId)
-				.maybeSingle();
+		const cleanTarget = String(targetId).replace(/^@/, '').trim();
+		const isNumeric = !isNaN(Number(cleanTarget)) && /^\d+$/.test(cleanTarget);
 
-			if (fallbackQuery.error) {
-				const minimalQuery = await supabase
-					.from('chronomuse_users')
-					.select('id, username, email, created_at, last_activity')
-					.eq('id', targetId)
-					.maybeSingle();
-				targetUser = minimalQuery.data;
-				userError = minimalQuery.error;
-			} else {
-				targetUser = fallbackQuery.data;
-				userError = fallbackQuery.error;
+		const columns = 'id, username, email, avatar_url, cover_url, note, bio, birthday, relationship_status, gender, is_private, created_at, last_activity';
+		const fallbackColumns = 'id, username, email, avatar_url, created_at, last_activity, bio, birthday, relationship_status, gender';
+		const minimalColumns = 'id, username, email, created_at, last_activity';
+
+		if (isNumeric) {
+			const res = await supabase.from('chronomuse_users').select(columns).eq('id', Number(cleanTarget)).maybeSingle();
+			targetUser = res.data;
+			userError = res.error;
+		}
+
+		if (!targetUser) {
+			const res = await supabase.from('chronomuse_users').select(columns).ilike('username', cleanTarget).maybeSingle();
+			if (res.data) {
+				targetUser = res.data;
+				userError = null;
+			} else if (res.error && !userError) {
+				userError = res.error;
 			}
 		}
 
-		if (userError) {
-			return json({ error: 'Database error: ' + userError.message }, { status: 500 });
+		// If schema column mismatch, retry with fallback columns
+		if (!targetUser && userError) {
+			if (isNumeric) {
+				const fallbackRes = await supabase.from('chronomuse_users').select(fallbackColumns).eq('id', Number(cleanTarget)).maybeSingle();
+				targetUser = fallbackRes.data;
+				if (!targetUser) {
+					const minRes = await supabase.from('chronomuse_users').select(minimalColumns).eq('id', Number(cleanTarget)).maybeSingle();
+					targetUser = minRes.data;
+				}
+			}
+			if (!targetUser) {
+				const fallbackRes = await supabase.from('chronomuse_users').select(fallbackColumns).ilike('username', cleanTarget).maybeSingle();
+				targetUser = fallbackRes.data;
+				if (!targetUser) {
+					const minRes = await supabase.from('chronomuse_users').select(minimalColumns).ilike('username', cleanTarget).maybeSingle();
+					targetUser = minRes.data;
+				}
+			}
 		}
 
 		if (!targetUser) {
 			return json({ error: 'User not found' }, { status: 404 });
 		}
 
+		const resolvedTargetId = targetUser.id;
+
 		// 2. Fetch Target User's Friends
 		const { data: targetFriendships } = await supabase
 			.from('chronomuse_friends')
 			.select('id, friend_id, created_at')
-			.eq('user_id', targetId);
+			.eq('user_id', resolvedTargetId);
 
 		const targetFriendIds = (targetFriendships || []).map(f => f.friend_id);
 		let targetFriends = [];
@@ -90,9 +106,9 @@ export async function POST({ request }) {
 		const { count: memoriesCount } = await supabase
 			.from('chronomuse_memories')
 			.select('id', { count: 'exact', head: true })
-			.eq('user_id', targetId);
+			.eq('user_id', resolvedTargetId);
 
-		const isSelf = String(user_id) === String(targetId);
+		const isSelf = String(user_id) === String(resolvedTargetId);
 		let isFriend = false;
 		let hasPendingRequest = false;
 		let pendingReq = null;
@@ -107,11 +123,11 @@ export async function POST({ request }) {
 				const { data: bData } = await supabase
 					.from('chronomuse_blocked_users')
 					.select('blocker_id, blocked_id')
-					.or(`and(blocker_id.eq.${user_id},blocked_id.eq.${targetId}),and(blocker_id.eq.${targetId},blocked_id.eq.${user_id})`);
+					.or(`and(blocker_id.eq.${user_id},blocked_id.eq.${resolvedTargetId}),and(blocker_id.eq.${resolvedTargetId},blocked_id.eq.${user_id})`);
 
 				if (bData && bData.length > 0) {
 					isBlockedByMe = bData.some(b => String(b.blocker_id) === String(user_id));
-					isBlockingMe = bData.some(b => String(b.blocker_id) === String(targetId));
+					isBlockingMe = bData.some(b => String(b.blocker_id) === String(resolvedTargetId));
 				}
 			} catch (bErr) {}
 
@@ -122,7 +138,7 @@ export async function POST({ request }) {
 			const { data: reqData } = await supabase
 				.from('chronomuse_friend_requests')
 				.select('id, sender_id, receiver_id, status')
-				.or(`and(sender_id.eq.${user_id},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${user_id})`)
+				.or(`and(sender_id.eq.${user_id},receiver_id.eq.${resolvedTargetId}),and(sender_id.eq.${resolvedTargetId},receiver_id.eq.${user_id})`)
 				.eq('status', 'pending')
 				.maybeSingle();
 

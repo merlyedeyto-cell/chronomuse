@@ -591,6 +591,9 @@
 				? cached.user.note
 				: (cached?.is_self && typeof window !== 'undefined' ? (localStorage.getItem(`chronomuse_note_${effectiveTargetId}`) || '') : '');
 			isLoading = false;
+		} else if (!isSilent) {
+			isLoading = true;
+			isProfileNotFound = false;
 		}
 		try {
 			const res = await fetch(API_ENDPOINTS.getProfile, {
@@ -1358,14 +1361,29 @@
 
 	<!-- Main Profile Container -->
 	<main class="flex-grow container mx-auto px-4 py-6 sm:py-8 max-w-3xl space-y-6">
-		{#if !profileData && isLoading}
+		{#if !profileData && (isLoading || !isProfileNotFound)}
 			<div class="flex flex-col items-center justify-center py-24 space-y-3">
 				<div class="w-10 h-10 border-4 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
 				<p class="text-sm font-semibold text-pink-600 animate-pulse">Loading profile...</p>
 			</div>
 		{:else if !profileData}
-			<div class="flex flex-col items-center justify-center py-24 space-y-3">
-				<p class="text-sm font-semibold text-pink-600">Profile not found.</p>
+			<div class="flex flex-col items-center justify-center py-24 space-y-4 text-center">
+				<div class="w-16 h-16 bg-pink-100 text-pink-500 rounded-full flex items-center justify-center mx-auto">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-8 h-8">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+					</svg>
+				</div>
+				<div class="space-y-1">
+					<p class="text-base font-bold text-pink-950">Profile not available</p>
+					<p class="text-xs text-pink-500">This account might be private or no longer exists.</p>
+				</div>
+				<button 
+					type="button"
+					onclick={() => goto('/profile')}
+					class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+				>
+					Go to My Profile
+				</button>
 			</div>
 		{:else if profileData.is_blocked_by_me || profileData.is_blocking_me}
 			<!-- Blocked Profile View Screen -->
