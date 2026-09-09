@@ -23,28 +23,30 @@ export async function POST({ request }) {
 		let photoVideoType = null;
 		let musicUrl = null;
 
-		// Handle Photo Upload
+		// Handle Photo / Video Upload
 		if (photoVideoFile && photoVideoFile.size > 0) {
-			const fileExt = photoVideoFile.name.split('.').pop();
-			const fileName = `photo_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+			const originalName = photoVideoFile.name || 'media.mp4';
+			const fileExt = (originalName.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g, '');
+			const fileName = `media_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt || 'mp4'}`;
 			const filePath = `${userId}/${fileName}`;
+			const mimeType = photoVideoFile.type || (fileExt === 'mp4' ? 'video/mp4' : fileExt === 'webm' ? 'video/webm' : 'image/jpeg');
 
 			const { error: uploadError } = await supabase.storage
 				.from('memories')
-				.upload(filePath, photoVideoFile);
+				.upload(filePath, photoVideoFile, { upsert: true, contentType: mimeType });
 
 			if (uploadError) {
-				return json({ error: 'Photo upload failed: ' + uploadError.message + '. Please ensure a public storage bucket named "memories" exists in your Supabase project.' }, { status: 500 });
+				return json({ error: 'Media upload failed: ' + uploadError.message + '. Please ensure your "memories" bucket exists and allows uploads.' }, { status: 500 });
 			}
 
 			const { data: urlData } = supabase.storage.from('memories').getPublicUrl(filePath);
 			photoVideoUrl = urlData.publicUrl;
-			photoVideoType = photoVideoFile.type;
+			photoVideoType = photoVideoFile.type || (fileExt === 'mp4' || fileExt === 'webm' || fileExt === 'mov' ? 'video/mp4' : 'image/jpeg');
 		}
 
 		// Handle Music Upload
 		if (musicFile && musicFile.size > 0) {
-			const rawName = musicFile.name;
+			const rawName = musicFile.name || 'music.mp3';
 			const lastDotIndex = rawName.lastIndexOf('.');
 			const baseName = lastDotIndex !== -1 ? rawName.substring(0, lastDotIndex) : rawName;
 			const fileExt = lastDotIndex !== -1 ? rawName.substring(lastDotIndex + 1) : 'mp3';
@@ -56,37 +58,51 @@ export async function POST({ request }) {
 
 			const { error: uploadError } = await supabase.storage
 				.from('memories')
-				.upload(filePath, musicFile);
+				.upload(filePath, musicFile, { upsert: true });
 
 			if (uploadError) {
-				return json({ error: 'Music upload failed: ' + uploadError.message + '. Please ensure your "memories" bucket allows audio files (audio/*) and the file is under the size limit.' }, { status: 500 });
+				return json({ error: 'Music upload failed: ' + uploadError.message }, { status: 500 });
 			}
 
 			const { data: urlData } = supabase.storage.from('memories').getPublicUrl(filePath);
 			musicUrl = urlData.publicUrl;
 		}
 
-		// Insert memory record
-		const { data: newMemory, error: insertError } = await supabase
+		// Insert memory record with column fallback
+		const insertPayload = {
+			user_id: userId,
+			date: date,
+			title: title,
+			description: description,
+			mood_tag: moodTag,
+			memory_tag: memoryTag,
+			photo_video: photoVideoUrl,
+			photo_video_type: photoVideoType,
+			music: musicUrl
+		};
+
+		let { data: newMemory, error: insertError } = await supabase
 			.from('chronomuse_memories')
-			.insert([
-				{
-					user_id: userId,
-					date: date,
-					title: title,
-					description: description,
-					mood_tag: moodTag,
-					memory_tag: memoryTag,
-					photo_video: photoVideoUrl,
-					photo_video_type: photoVideoType,
-					music: musicUrl
-				}
-			])
+			.insert([insertPayload])
 			.select()
 			.single();
 
 		if (insertError) {
-			return json({ error: 'Database insert error: ' + insertError.message }, { status: 500 });
+			// If photo_video_type column does not exist yet in table, fallback without it
+			delete insertPayload.photo_video_type;
+			const fallbackInsert = await supabase
+				.from('chronomuse_memories')
+				.insert([insertPayload])
+				.select()
+				.single();
+
+			if (fallbackInsert.error) {
+				return json({ error: 'Database insert error: ' + fallbackInsert.error.message }, { status: 500 });
+			}
+			newMemory = {
+				...fallbackInsert.data,
+				photo_video_type: photoVideoType
+			};
 		}
 
 		return json({
