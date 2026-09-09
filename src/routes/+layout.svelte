@@ -7,7 +7,6 @@
 	import { playIncomingMessageSound, playNotificationSound, playClickSound } from '$lib/soundEffects.js';
 
 	let user = $state(null);
-	let isAccountSuspended = $state(false);
 	let globalMsgChannel = null;
 	let globalEventsChannel = null;
 	let subscribedUserId = null;
@@ -24,18 +23,6 @@
 			return parsed?.id ? parsed : null;
 		} catch (e) {
 			return null;
-		}
-	}
-
-	function handleAccountSuspended() {
-		if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
-			return;
-		}
-		isAccountSuspended = true;
-		teardownListeners();
-		if (typeof window !== 'undefined') {
-			localStorage.removeItem('chronomuse_user');
-			window.dispatchEvent(new Event('chronomuse_auth_change'));
 		}
 	}
 
@@ -84,11 +71,6 @@
 				body: JSON.stringify({ user_id: activeUser.id })
 			});
 			const data = await res.json();
-
-			if (data?.is_suspended) {
-				handleAccountSuspended();
-				return;
-			}
 			
 			// Verify again that user is still active before playing any sound
 			const verifiedUser = getActiveLoggedInUser();
@@ -154,11 +136,6 @@
 				const sId = payload?.payload?.sender_id;
 				const tId = payload?.payload?.target_id;
 				const myId = Number(current.id);
-
-				if (payload?.payload?.eventType === 'account_suspended' && Number(tId) === myId) {
-					handleAccountSuspended();
-					return;
-				}
 
 				if (Number(sId) === myId || Number(tId) === myId) {
 					if (payload?.payload?.eventType === 'friend_request' && Number(tId) === myId) {
@@ -480,32 +457,6 @@
 </svelte:head>
 
 <slot />
-
-<!-- Real-time Account Suspended Modal -->
-{#if isAccountSuspended && !$page.url.pathname.startsWith('/admin')}
-	<div class="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4 animate-fade-in">
-		<div class="bg-white border-2 border-rose-300 rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl space-y-4">
-			<div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto border-2 border-rose-200">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-				</svg>
-			</div>
-			<div>
-				<h2 class="text-lg font-black text-rose-700">Account Suspended</h2>
-				<p class="text-xs text-pink-600 font-medium mt-1.5 leading-relaxed">
-					Your ChronoMuse account has been suspended by the administrator. Access to diaries, notes, chats, and features has been disabled.
-				</p>
-			</div>
-			<button
-				type="button"
-				onclick={() => { isAccountSuspended = false; goto('/'); }}
-				class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm transition-all cursor-pointer"
-			>
-				Return to Sign In
-			</button>
-		</div>
-	</div>
-{/if}
 
 <style>
 	:global(video::-webkit-media-controls-fullscreen-button),

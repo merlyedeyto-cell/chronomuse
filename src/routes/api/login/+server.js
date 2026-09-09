@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { supabase } from '$lib/supabaseClient';
 import bcrypt from 'bcryptjs';
-import { getUserStatus } from '$lib/server/suspensionStore';
 
 export async function POST({ request }) {
 	try {
@@ -50,20 +49,6 @@ export async function POST({ request }) {
 
 		if (!isPasswordCorrect) {
 			return json({ error: 'Invalid username/email or password' }, { status: 200 });
-		}
-
-		const effectiveStatus = getUserStatus(user.id, user.status);
-		if (effectiveStatus === 'suspended') {
-			return json({
-				error: 'This account has been suspended by the administrator.',
-				is_suspended: true,
-				user: {
-					id: user.id,
-					username: user.username,
-					email: user.email,
-					avatar_url: user.avatar_url || null
-				}
-			}, { status: 200 });
 		}
 
 		// Update last_activity timestamp safely

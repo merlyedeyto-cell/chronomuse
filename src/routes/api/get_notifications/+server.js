@@ -1,6 +1,5 @@
 import { json } from '@sveltejs/kit';
 import { supabase } from '$lib/supabaseClient';
-import { getUserStatus } from '$lib/server/suspensionStore';
 
 export async function POST({ request }) {
 	try {
@@ -32,7 +31,7 @@ export async function POST({ request }) {
 				.limit(50),
 			supabase
 				.from('chronomuse_users')
-				.select('id, username, status')
+				.select('id, username')
 				.eq('id', targetUserId)
 				.maybeSingle(),
 			supabase
@@ -46,11 +45,6 @@ export async function POST({ request }) {
 				.eq('status', 'pending')
 				.order('created_at', { ascending: false })
 		]);
-
-		const effectiveStatus = getUserStatus(targetUserId, currentUserRes.data?.status);
-		if (effectiveStatus === 'suspended') {
-			return json({ success: false, is_suspended: true, error: 'This account has been suspended by the administrator.' }, { status: 403 });
-		}
 
 		// Keep user's last_activity fresh in database (live heartbeat)
 		const nowIso = new Date().toISOString();
