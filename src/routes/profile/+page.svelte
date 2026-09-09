@@ -1327,10 +1327,10 @@
 					{/if}
 				</button>
 				
-				<div class="flex items-center space-x-2.5 cursor-pointer" onclick={() => goto('/dashboard')}>
+				<button type="button" class="flex items-center space-x-2.5 cursor-pointer border-0 bg-transparent p-0 text-left" onclick={() => goto('/dashboard')}>
 					<img src="/logo.png" alt="ChronoMuse" class="w-9 h-9 sm:w-10 sm:h-10 rounded-md object-contain flex-shrink-0" />
 					<span class="text-base sm:text-lg font-bold text-pink-500 truncate">ChronoMuse</span>
-				</div>
+				</button>
 			</div>
 
 			<div class="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 ml-2">
@@ -1875,9 +1875,10 @@
 						<div class="flex flex-col space-y-2.5">
 							{#each filteredFriends as friend}
 								<div class="bg-white border border-pink-200 hover:border-pink-300 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-3 hover: transition-all">
-									<div
+									<button
+										type="button"
 										onclick={() => viewUserProfile(friend)}
-										class="flex items-center space-x-3.5 min-w-0 text-left hover:opacity-85 transition-opacity group cursor-pointer flex-grow"
+										class="flex items-center space-x-3.5 min-w-0 text-left hover:opacity-85 transition-opacity group cursor-pointer flex-grow border-0 bg-transparent p-0"
 									>
 										<div class="relative flex-shrink-0">
 											<div class="w-11 h-11 rounded-full bg-pink-400 text-white flex items-center justify-center font-bold text-base overflow-hidden group-hover:scale-105 transition-transform">
@@ -1896,7 +1897,7 @@
 											</p>
 											<p class="text-xs text-pink-500 truncate">{formatLastActive(friend.last_activity)}</p>
 										</div>
-									</div>
+									</button>
 
 									<div class="flex items-center space-x-2 flex-shrink-0">
 										{#if String(friend.id || friend.friend_id || friend.user_id) === String(currentUser?.id)}
@@ -1940,9 +1941,10 @@
 					<div class="flex flex-col space-y-2.5">
 						{#each profileData.mutual_friends as mutual}
 							<div class="bg-white border border-pink-200 hover:border-pink-300 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-3 hover: transition-all">
-								<div
+								<button
+									type="button"
 									onclick={() => viewUserProfile(mutual)}
-									class="flex items-center space-x-3.5 min-w-0 cursor-pointer flex-grow group"
+									class="flex items-center space-x-3.5 min-w-0 text-left cursor-pointer flex-grow group border-0 bg-transparent p-0"
 								>
 									<div class="w-11 h-11 rounded-full bg-pink-400 text-white flex items-center justify-center font-bold text-base overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform">
 										{#if mutual.avatar_url}
@@ -1955,7 +1957,7 @@
 										<p class="text-sm sm:text-base font-bold text-pink-950 group-hover:text-pink-600 truncate block text-left transition-colors group-hover:underline">@{mutual.username}</p>
 										<p class="text-xs text-pink-500 truncate">{mutual.email}</p>
 									</div>
-								</div>
+								</button>
 
 								{#if String(mutual.id || mutual.friend_id || mutual.user_id) === String(currentUser?.id)}
 									<span class="px-3.5 py-1.5 bg-pink-100 text-pink-700 font-extrabold text-xs rounded-xl border border-pink-300 flex-shrink-0">
@@ -2089,6 +2091,8 @@
 
 	<!-- Unfriend Confirmation Modal -->
 	{#if showUnfriendModal && unfriendTarget}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
 			onclick={(e) => { if (e.target === e.currentTarget) showUnfriendModal = false; }}
@@ -2131,6 +2135,8 @@
 
 	<!-- Block User Confirmation Modal -->
 	{#if showBlockModal && blockTarget}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
 			onclick={(e) => { if (e.target === e.currentTarget) showBlockModal = false; }}
@@ -2184,6 +2190,8 @@
 
 	<!-- Add / Edit Note Modal -->
 	{#if showNoteModal}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
 			onclick={(e) => { if (e.target === e.currentTarget) showNoteModal = false; }}
@@ -2257,6 +2265,8 @@
 
 	<!-- View Other User's Note Popup (like chat) -->
 	{#if viewingUserNote && !profileData.is_self && userNote}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[110] flex items-center justify-center p-5 animate-fade-in"
 			onclick={(e) => { if (e.target === e.currentTarget) viewingUserNote = false; }}
@@ -2281,6 +2291,8 @@
 						</p>
 					</div>
 					<button
+						type="button"
+						aria-label="Close"
 						onclick={() => viewingUserNote = false}
 						class="p-1.5 text-pink-400 hover:text-pink-700 hover:bg-pink-50 rounded-full transition-all flex-shrink-0"
 					>
@@ -2325,9 +2337,11 @@
 						Reply in Chat
 					</button>
 					<button
+						type="button"
 						onclick={() => viewingUserNote = false}
 						class="px-4 py-2.5 border-2 border-pink-200 text-pink-600 hover:bg-pink-50 rounded-2xl font-bold text-sm transition-all active:scale-95"
 					>
+						Close
 					</button>
 				</div>
 			</div>

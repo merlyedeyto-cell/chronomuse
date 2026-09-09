@@ -7,15 +7,21 @@ const DATA_FILE = path.resolve(process.cwd(), '.chronomuse_admin_state.json');
 let stateCache = null;
 
 function loadState() {
+	if (stateCache && typeof stateCache === 'object' && stateCache.userStatuses) {
+		return stateCache;
+	}
+
 	try {
 		if (fs.existsSync(DATA_FILE)) {
 			const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-			const parsed = JSON.parse(raw);
-			if (parsed && typeof parsed === 'object') {
-				if (!parsed.userStatuses) parsed.userStatuses = {};
-				if (!Array.isArray(parsed.reactivationRequests)) parsed.reactivationRequests = [];
-				stateCache = parsed;
-				return stateCache;
+			if (raw && raw.trim()) {
+				const parsed = JSON.parse(raw);
+				if (parsed && typeof parsed === 'object') {
+					if (!parsed.userStatuses) parsed.userStatuses = {};
+					if (!Array.isArray(parsed.reactivationRequests)) parsed.reactivationRequests = [];
+					stateCache = parsed;
+					return stateCache;
+				}
 			}
 		}
 	} catch (e) {
@@ -25,7 +31,7 @@ function loadState() {
 	if (!stateCache || typeof stateCache !== 'object') {
 		stateCache = {
 			userStatuses: {}, // { [userId]: 'suspended' | 'active' }
-			reactivationRequests: [] // Array of { id, user_id, username, email, reason, status, is_read, read_at, created_at, updated_at }
+			reactivationRequests: []
 		};
 	}
 
@@ -47,10 +53,14 @@ function saveState() {
 export function getUserStatus(userId, fallbackDbStatus = 'active') {
 	const state = loadState();
 	const key = String(userId);
-	if (state.userStatuses[key]) {
+	if (state.userStatuses && state.userStatuses[key]) {
 		return state.userStatuses[key];
 	}
-	return fallbackDbStatus || 'active';
+	if (fallbackDbStatus === 'suspended' || fallbackDbStatus === 'active') {
+		state.userStatuses[key] = fallbackDbStatus;
+		return fallbackDbStatus;
+	}
+	return 'active';
 }
 
 export function setUserStatus(userId, status) {
@@ -59,7 +69,7 @@ export function setUserStatus(userId, status) {
 	state.userStatuses[key] = status;
 	
 	if (status === 'active') {
-		// Mark pending appeals as approved
+		// Mark all pending appeals as approved
 		state.reactivationRequests.forEach(r => {
 			if (String(r.user_id) === key && r.status === 'pending') {
 				r.status = 'approved';

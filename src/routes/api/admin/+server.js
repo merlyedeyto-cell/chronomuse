@@ -173,8 +173,10 @@ export async function POST({ request }) {
 
 			// Format safe user objects without sensitive password hashes
 			const safeUsers = (users || []).map(u => {
-				const pendingReq = pendingReactivationsMap[u.id];
-				const effectiveStatus = getUserStatus(u.id, u.status);
+				const uId = u.id;
+				const pendingReq = pendingReactivationsMap[uId] || pendingReactivationsMap[String(uId)] || pendingReactivationsMap[Number(uId)];
+				const effectiveStatus = getUserStatus(uId, u.status);
+				const hasPending = (effectiveStatus === 'suspended') && !!pendingReq;
 
 				return {
 					id: u.id,
@@ -188,8 +190,8 @@ export async function POST({ request }) {
 					pinned_count: pinnedCountsByUser[u.id] || 0,
 					notes_count: notesCountsByUser[u.id] || 0,
 					messages_count: messagesCountsByUser[u.id] || 0,
-					has_pending_reactivation: !!pendingReq,
-					reactivation_request: pendingReq || null
+					has_pending_reactivation: hasPending,
+					reactivation_request: hasPending ? pendingReq : null
 				};
 			});
 
@@ -221,7 +223,7 @@ export async function POST({ request }) {
 			// Merge with locally stored appeals
 			const localAppeals = getPendingReactivations();
 			localAppeals.forEach(la => {
-				if (!mergedRequests.some(mr => mr.id === la.id || mr.user_id === la.user_id)) {
+				if (!mergedRequests.some(mr => String(mr.id) === String(la.id) || String(mr.user_id) === String(la.user_id))) {
 					mergedRequests.push(la);
 				}
 			});
@@ -241,18 +243,21 @@ export async function POST({ request }) {
 				return json({ error: 'User ID and action type required' }, { status: 400 });
 			}
 
+			const targetUidNum = Number(user_id) || user_id;
+			const targetUidStr = String(user_id);
+
 			// Resolve in persistent suspension store
-			resolveReactivationRequest(request_id, user_id, action_type);
+			resolveReactivationRequest(request_id, targetUidStr, action_type);
 
 			if (action_type === 'approve') {
-				setUserStatus(user_id, 'active');
+				setUserStatus(targetUidStr, 'active');
 
 				// Reactivate user in Supabase table
 				try {
 					await supabase
 						.from('chronomuse_users')
 						.update({ status: 'active' })
-						.eq('id', user_id);
+						.eq('id', targetUidNum);
 				} catch (e) {}
 
 				// Update request status in DB
@@ -263,11 +268,18 @@ export async function POST({ request }) {
 							.update({ status: 'approved', updated_at: new Date().toISOString() })
 							.eq('id', request_id);
 					}
-					await supabase
-						.from('chronomuse_reactivation_requests')
-						.update({ status: 'approved', updated_at: new Date().toISOString() })
-						.eq('user_id', user_id)
-						.eq('status', 'pending');
+					await Promise.allSettled([
+						supabase
+							.from('chronomuse_reactivation_requests')
+							.update({ status: 'approved', updated_at: new Date().toISOString() })
+							.eq('user_id', targetUidNum)
+							.eq('status', 'pending'),
+						supabase
+							.from('chronomuse_reactivation_requests')
+							.update({ status: 'approved', updated_at: new Date().toISOString() })
+							.eq('user_id', targetUidStr)
+							.eq('status', 'pending')
+					]);
 				} catch (e) {}
 
 				// Realtime broadcast so user's active session is notified
@@ -295,12 +307,19 @@ export async function POST({ request }) {
 							.from('chronomuse_reactivation_requests')
 							.update({ status: 'dismissed', updated_at: new Date().toISOString() })
 							.eq('id', request_id);
-					} else {
-						await supabase
+					}
+					await Promise.allSettled([
+						supabase
 							.from('chronomuse_reactivation_requests')
 							.update({ status: 'dismissed', updated_at: new Date().toISOString() })
-							.eq('user_id', user_id);
-					}
+							.eq('user_id', targetUidNum)
+							.eq('status', 'pending'),
+						supabase
+							.from('chronomuse_reactivation_requests')
+							.update({ status: 'dismissed', updated_at: new Date().toISOString() })
+							.eq('user_id', targetUidStr)
+							.eq('status', 'pending')
+					]);
 				} catch (e) {}
 
 				return json({
@@ -332,14 +351,17 @@ export async function POST({ request }) {
 				return json({ error: 'User ID and new status required' }, { status: 400 });
 			}
 
+			const targetUidNum = Number(user_id) || user_id;
+			const targetUidStr = String(user_id);
+
 			// Store permanently on server
-			setUserStatus(user_id, new_status);
+			setUserStatus(targetUidStr, new_status);
 
 			try {
 				const { error: updateError } = await supabase
 					.from('chronomuse_users')
 					.update({ status: new_status })
-					.eq('id', user_id);
+					.eq('id', targetUidNum);
 
 				if (updateError) {
 					console.warn('Status update warning (column may not exist yet in DB):', updateError.message);
@@ -351,11 +373,18 @@ export async function POST({ request }) {
 			// If reactivated directly, mark any pending requests as resolved
 			if (new_status === 'active') {
 				try {
-					await supabase
-						.from('chronomuse_reactivation_requests')
-						.update({ status: 'approved', updated_at: new Date().toISOString() })
-						.eq('user_id', user_id)
-						.eq('status', 'pending');
+					await Promise.allSettled([
+						supabase
+							.from('chronomuse_reactivation_requests')
+							.update({ status: 'approved', updated_at: new Date().toISOString() })
+							.eq('user_id', targetUidNum)
+							.eq('status', 'pending'),
+						supabase
+							.from('chronomuse_reactivation_requests')
+							.update({ status: 'approved', updated_at: new Date().toISOString() })
+							.eq('user_id', targetUidStr)
+							.eq('status', 'pending')
+					]);
 				} catch (e) {}
 			}
 

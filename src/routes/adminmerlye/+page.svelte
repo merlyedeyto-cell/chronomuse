@@ -309,8 +309,8 @@
 			if (usersRes?.success && Array.isArray(usersRes.data?.users)) {
 				// Preserve optimistic status for users currently being toggled
 				usersList = usersRes.data.users.map(fetchedUser => {
-					if (togglingUsers[fetchedUser.id]) {
-						const localUser = usersList.find(u => u.id === fetchedUser.id);
+					if (togglingUsers[fetchedUser.id] || togglingUsers[String(fetchedUser.id)]) {
+						const localUser = usersList.find(u => String(u.id) === String(fetchedUser.id));
 						if (localUser) {
 							return { ...fetchedUser, status: localUser.status };
 						}
@@ -334,8 +334,9 @@
 	}
 
 	async function toggleUserStatus(targetUser) {
-		if (togglingUsers[targetUser.id]) return;
-		togglingUsers = { ...togglingUsers, [targetUser.id]: true };
+		const uIdStr = String(targetUser.id);
+		if (togglingUsers[uIdStr] || togglingUsers[targetUser.id]) return;
+		togglingUsers = { ...togglingUsers, [uIdStr]: true, [targetUser.id]: true };
 
 		const nextStatus = targetUser.status === 'suspended' ? 'active' : 'suspended';
 		const oldStatus = targetUser.status;
@@ -357,7 +358,7 @@
 				targetUser.status = nextStatus;
 				if (nextStatus === 'active') {
 					targetUser.has_pending_reactivation = false;
-					reactivationRequests = reactivationRequests.filter(r => r.user_id !== targetUser.id);
+					reactivationRequests = reactivationRequests.filter(r => String(r.user_id) !== uIdStr);
 					metrics.pending_reactivations = Math.max(0, reactivationRequests.length);
 				}
 				showNotice(`Status for @${targetUser.username} updated to ${nextStatus}`);
@@ -370,6 +371,7 @@
 			showNotice('Network error updating user status', true);
 		} finally {
 			const nextMap = { ...togglingUsers };
+			delete nextMap[uIdStr];
 			delete nextMap[targetUser.id];
 			togglingUsers = nextMap;
 		}
@@ -379,6 +381,7 @@
 		if (isProcessingAppeal) return;
 		isProcessingAppeal = true;
 
+		const targetUId = String(reqItem.user_id);
 		try {
 			const res = await fetch('/api/admin', {
 				method: 'POST',
@@ -393,15 +396,15 @@
 			});
 			const data = await res.json();
 			if (data.success) {
-				reactivationRequests = reactivationRequests.filter(r => r.id !== reqItem.id && r.user_id !== reqItem.user_id);
-				const userInList = usersList.find(u => u.id === reqItem.user_id);
+				reactivationRequests = reactivationRequests.filter(r => String(r.id) !== String(reqItem.id) && String(r.user_id) !== targetUId);
+				const userInList = usersList.find(u => String(u.id) === targetUId);
 				if (userInList) {
 					userInList.has_pending_reactivation = false;
 					if (actionType === 'approve') {
 						userInList.status = 'active';
 					}
 				}
-				metrics.pending_reactivations = Math.max(0, metrics.pending_reactivations - 1);
+				metrics.pending_reactivations = Math.max(0, reactivationRequests.length);
 				showNotice(actionType === 'approve' ? `Account @${reqItem.username} reactivated!` : `Appeal from @${reqItem.username} dismissed.`);
 			} else {
 				showNotice(data.error || 'Failed to process appeal', true);
