@@ -492,6 +492,18 @@
 
 	let appealSearchQuery = $state('');
 
+	function isAppealNew(item) {
+		if (!item) return false;
+		try {
+			const appealTime = new Date(item.created_at || item.updated_at || 0).getTime();
+			if (!appealTime) return false;
+			// 24 hours in milliseconds (1 day)
+			return (currentTime - appealTime) < 24 * 60 * 60 * 1000;
+		} catch (e) {
+			return false;
+		}
+	}
+
 	let filteredAppeals = $derived(
 		reactivationRequests.filter(r => {
 			if (!appealSearchQuery.trim()) return true;
@@ -971,7 +983,7 @@
 
 <!-- Password Reset Modal -->
 {#if selectedUserForPasswordReset}
-	<div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in">
+	<div class="fixed inset-0 z-50 bg-black/10 backdrop-blur-[1.5px] flex items-center justify-center p-4 animate-fade-in">
 		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-xl max-w-sm w-full p-6 space-y-4">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-3">
 				<div class="flex items-center gap-2 text-pink-900 font-black text-sm">
@@ -1030,7 +1042,7 @@
 
 <!-- Confirm Delete User Modal -->
 {#if selectedUserForDelete}
-	<div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in">
+	<div class="fixed inset-0 z-50 bg-black/10 backdrop-blur-[1.5px] flex items-center justify-center p-4 animate-fade-in">
 		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-xl max-w-sm w-full p-6 space-y-4">
 			<div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl border border-rose-200 flex items-center justify-center mx-auto">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
@@ -1066,120 +1078,9 @@
 	</div>
 {/if}
 
-<!-- Reactivation Appeal Review Modal -->
-{#if viewingAppealModal}
-	{@const targetUser = usersList.find(u => u.id === viewingAppealModal.user_id || u.username === viewingAppealModal.username)}
-	<div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in">
-		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-lg w-full p-5 sm:p-6 space-y-4 animate-modal-content">
-			<!-- Header -->
-			<div class="flex items-start justify-between border-b border-pink-100 pb-3 gap-3">
-				<div class="flex items-center gap-3">
-					<div class="w-10 h-10 bg-pink-100 text-pink-600 rounded-2xl border border-pink-200 flex items-center justify-center flex-shrink-0">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-						</svg>
-					</div>
-					<div>
-						<h3 class="text-sm sm:text-base font-black text-pink-950">Review Reactivation Appeal</h3>
-						<p class="text-xs text-pink-500 font-medium">Evaluate appeal submitted by suspended user</p>
-					</div>
-				</div>
-				<button
-					onclick={() => viewingAppealModal = null}
-					aria-label="Close"
-					class="text-pink-400 hover:text-pink-600 cursor-pointer p-1 rounded-lg hover:bg-pink-50"
-				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
-				</button>
-			</div>
-
-			<!-- User Header -->
-			<div class="flex items-center justify-between gap-3 p-3 bg-pink-50/70 border border-pink-200 rounded-2xl">
-				<div class="flex items-center space-x-3 min-w-0">
-					<div class="w-11 h-11 rounded-full bg-pink-400 text-white font-black flex items-center justify-center text-sm flex-shrink-0 overflow-hidden border border-pink-300 shadow-xs">
-						{#if (targetUser?.avatar_url || viewingAppealModal.avatar_url)}
-							<img src={targetUser?.avatar_url || viewingAppealModal.avatar_url} alt="" class="w-full h-full object-cover" />
-						{:else}
-							{(viewingAppealModal.username || viewingAppealModal.email)?.charAt(0).toUpperCase()}
-						{/if}
-					</div>
-					<div class="min-w-0">
-						<p class="text-sm font-black text-pink-950 truncate">@{viewingAppealModal.username}</p>
-						<p class="text-xs text-pink-500 font-mono truncate">{viewingAppealModal.email || '—'}</p>
-					</div>
-				</div>
-				<span class="text-[10px] font-bold px-2.5 py-1 bg-rose-100 text-rose-800 rounded-full border border-rose-200 whitespace-nowrap flex-shrink-0">
-					Suspended
-				</span>
-			</div>
-
-			<!-- User Message Chat Bubble -->
-			<div class="space-y-1.5">
-				<span class="block text-xs font-bold text-pink-900">Appeal Message / Note from User:</span>
-				<div class="bg-pink-50/70 border-2 border-pink-200 rounded-2xl p-4 relative space-y-2.5">
-					<div class="flex items-start gap-2.5">
-						<div class="p-1.5 bg-pink-100 text-pink-600 rounded-lg mt-0.5 flex-shrink-0">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-							</svg>
-						</div>
-						<div class="min-w-0 flex-1">
-							{#if viewingAppealModal.reason}
-								<p class="text-xs sm:text-sm font-semibold text-slate-900 leading-relaxed break-words whitespace-pre-wrap">
-									"{viewingAppealModal.reason}"
-								</p>
-							{:else}
-								<p class="text-xs text-slate-400 italic">No custom written note was provided with this appeal.</p>
-							{/if}
-						</div>
-					</div>
-					<div class="text-right border-t border-pink-200 pt-2">
-						<span class="text-[11px] text-pink-600 font-mono font-medium">
-							Submitted: {formatDate(viewingAppealModal.created_at || viewingAppealModal.updated_at)}
-						</span>
-					</div>
-				</div>
-			</div>
-
-			<!-- Actions -->
-			<div class="flex items-center justify-end gap-2 pt-2 border-t border-pink-100 flex-wrap">
-				<button
-					type="button"
-					onclick={() => {
-						const appeal = viewingAppealModal;
-						viewingAppealModal = null;
-						respondReactivation(appeal, 'dismiss');
-					}}
-					disabled={isProcessingAppeal}
-					class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer whitespace-nowrap"
-				>
-					Dismiss Request
-				</button>
-				<button
-					type="button"
-					onclick={() => {
-						const appeal = viewingAppealModal;
-						viewingAppealModal = null;
-						respondReactivation(appeal, 'approve');
-					}}
-					disabled={isProcessingAppeal}
-					class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
-				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-					</svg>
-					<span>Approve & Reactivate</span>
-				</button>
-			</div>
-		</div>
-	</div>
-{/if}
-
 <!-- All Pending Reactivation Appeals List Modal -->
 {#if showAppealsListModal}
-	<div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 sm:p-5 animate-fade-in">
+	<div class="fixed inset-0 z-50 bg-black/10 backdrop-blur-[1.5px] flex items-center justify-center p-3 sm:p-5 animate-fade-in">
 		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-2xl w-full p-5 sm:p-6 space-y-3.5 max-h-[90vh] flex flex-col animate-modal-content">
 			<!-- Modal Header -->
 			<div class="flex items-start justify-between border-b border-pink-100 pb-3 flex-shrink-0 gap-3">
@@ -1249,30 +1150,38 @@
 				{:else}
 					{#each filteredAppeals as reqItem (reqItem.id || reqItem.user_id)}
 						{@const reqUser = usersList.find(u => u.id === reqItem.user_id || u.username === reqItem.username)}
-						<!-- Chat-like compact user row for space saving -->
+						{@const isNew = isAppealNew(reqItem)}
+						<!-- Chat-like compact user row with green highlight if new within 1 day -->
 						<button
 							type="button"
 							onclick={() => openAppealReview(reqItem)}
-							class="w-full p-2.5 sm:p-3 rounded-2xl border-2 bg-white hover:bg-pink-50/70 border-pink-200 hover:border-pink-300 transition-all flex items-center justify-between gap-3 text-left cursor-pointer group shadow-2xs"
+							class="w-full p-2.5 sm:p-3 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 text-left cursor-pointer group shadow-2xs {isNew ? 'bg-emerald-50/60 hover:bg-emerald-100/60 border-emerald-300 hover:border-emerald-400' : 'bg-white hover:bg-pink-50/70 border-pink-200 hover:border-pink-300'}"
 						>
 							<!-- Avatar & User Info -->
 							<div class="flex items-center space-x-3 min-w-0">
 								<div class="relative flex-shrink-0">
-									<div class="w-10 h-10 rounded-full bg-pink-400 text-white font-bold flex items-center justify-center text-xs shadow-xs overflow-hidden border border-pink-300 group-hover:scale-105 transition-transform">
+									<div class="w-10 h-10 rounded-full text-white font-bold flex items-center justify-center text-xs shadow-xs overflow-hidden border group-hover:scale-105 transition-transform {isNew ? 'bg-emerald-500 border-emerald-300' : 'bg-pink-400 border-pink-300'}">
 										{#if (reqUser?.avatar_url || reqItem.avatar_url)}
 											<img src={reqUser?.avatar_url || reqItem.avatar_url} alt="" class="w-full h-full object-cover" />
 										{:else}
 											{(reqItem.username || reqItem.email)?.charAt(0).toUpperCase()}
 										{/if}
 									</div>
-									{#if !reqItem.is_read}
+									{#if isNew}
+										<span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white ring-2 ring-emerald-300"></span>
+									{:else if !reqItem.is_read}
 										<span class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-pink-500 rounded-full border-2 border-white ring-2 ring-pink-300"></span>
 									{/if}
 								</div>
 								<div class="min-w-0">
-									<div class="flex items-center gap-1.5">
+									<div class="flex items-center gap-1.5 flex-wrap">
 										<span class="font-bold text-sm text-pink-950 group-hover:text-pink-600 transition-colors truncate">@{reqItem.username}</span>
 										<span class="text-[10px] text-pink-400 font-mono flex-shrink-0">#{reqItem.user_id}</span>
+										{#if isNew}
+											<span class="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
+												NEW
+											</span>
+										{/if}
 									</div>
 									<span class="text-xs text-pink-500 font-mono block truncate">{reqItem.email || '—'}</span>
 								</div>
@@ -1280,10 +1189,10 @@
 
 							<!-- Right Meta & View Button -->
 							<div class="flex items-center gap-2 flex-shrink-0">
-								<span class="text-[10px] text-pink-400 font-mono hidden sm:inline-block">
+								<span class="text-[10px] {isNew ? 'text-emerald-700 font-bold' : 'text-pink-400'} font-mono hidden sm:inline-block">
 									{formatDate(reqItem.created_at || reqItem.updated_at)}
 								</span>
-								<div class="px-2.5 py-1 bg-pink-100 group-hover:bg-pink-200 text-pink-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1">
+								<div class="px-2.5 py-1 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 {isNew ? 'bg-emerald-100 group-hover:bg-emerald-200 text-emerald-800 border border-emerald-300' : 'bg-pink-100 group-hover:bg-pink-200 text-pink-700'}">
 									<span>View</span>
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
@@ -1312,18 +1221,26 @@
 <!-- Dedicated Individual Appeal Review Details Modal -->
 {#if viewingAppealModal}
 	{@const appealUser = usersList.find(u => u.id === viewingAppealModal.user_id || u.username === viewingAppealModal.username)}
-	<div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+	{@const isNew = isAppealNew(viewingAppealModal)}
+	<div class="fixed inset-0 z-50 bg-black/10 backdrop-blur-[1.5px] flex items-center justify-center p-4 animate-fade-in">
 		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-md w-full p-5 space-y-4 animate-modal-content max-h-[90vh] flex flex-col">
 			<!-- Header -->
 			<div class="flex items-center justify-between border-b border-pink-100 pb-3 flex-shrink-0">
 				<div class="flex items-center gap-2.5">
-					<div class="p-2 bg-pink-100 text-pink-600 rounded-xl">
+					<div class="p-2 {isNew ? 'bg-emerald-100 text-emerald-600' : 'bg-pink-100 text-pink-600'} rounded-xl">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
 						</svg>
 					</div>
 					<div>
-						<h3 class="text-sm font-black text-pink-950">Review Appeal</h3>
+						<div class="flex items-center gap-2">
+							<h3 class="text-sm font-black text-pink-950">Review Appeal</h3>
+							{#if isNew}
+								<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
+									NEW
+								</span>
+							{/if}
+						</div>
 						<p class="text-[11px] text-pink-500 font-medium">Submitted by @{viewingAppealModal.username}</p>
 					</div>
 				</div>
@@ -1340,8 +1257,8 @@
 
 			<!-- User Details Card -->
 			<div class="overflow-y-auto flex-1 space-y-3.5 pr-1">
-				<div class="flex items-center space-x-3.5 p-3.5 bg-pink-50/70 border border-pink-200 rounded-2xl">
-					<div class="w-12 h-12 rounded-full bg-pink-400 text-white font-bold flex items-center justify-center text-sm flex-shrink-0 shadow-xs overflow-hidden border-2 border-pink-300">
+				<div class="flex items-center space-x-3.5 p-3.5 border rounded-2xl {isNew ? 'bg-emerald-50/50 border-emerald-200' : 'bg-pink-50/70 border-pink-200'}">
+					<div class="w-12 h-12 rounded-full {isNew ? 'bg-emerald-500 border-emerald-300' : 'bg-pink-400 border-pink-300'} text-white font-bold flex items-center justify-center text-sm flex-shrink-0 shadow-xs overflow-hidden border-2">
 						{#if (appealUser?.avatar_url || viewingAppealModal.avatar_url)}
 							<img src={appealUser?.avatar_url || viewingAppealModal.avatar_url} alt="" class="w-full h-full object-cover" />
 						{:else}
@@ -1355,7 +1272,7 @@
 							<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">Suspended</span>
 						</div>
 						<span class="text-xs text-pink-500 font-mono block truncate">{viewingAppealModal.email || '—'}</span>
-						<span class="text-[10px] text-pink-400 font-medium block mt-0.5">Submitted: {formatDate(viewingAppealModal.created_at || viewingAppealModal.updated_at)}</span>
+						<span class="text-[10px] {isNew ? 'text-emerald-700 font-bold' : 'text-pink-400 font-medium'} block mt-0.5">Submitted: {formatDate(viewingAppealModal.created_at || viewingAppealModal.updated_at)}</span>
 					</div>
 				</div>
 
@@ -1419,7 +1336,7 @@
 
 <!-- Account Status Filter Modal -->
 {#if showFilterModal}
-	<div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in">
+	<div class="fixed inset-0 z-50 bg-black/10 backdrop-blur-[1.5px] flex items-center justify-center p-4 animate-fade-in">
 		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-5 space-y-4 animate-modal-content">
 			<!-- Header -->
 			<div class="flex items-center justify-between border-b border-pink-100 pb-3">
