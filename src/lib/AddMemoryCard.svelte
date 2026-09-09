@@ -877,10 +877,10 @@
 <!-- ChronoMuse Themed Messenger-Style Video Trimmer Modal -->
 {#if showVideoTrimmerModal && rawVideoUrl}
 	<div
-		class="fixed inset-0 bg-black/60 z-[120] flex items-center justify-center p-3 sm:p-4 animate-fade-in select-none"
+		class="fixed inset-0 bg-black/60 z-[120] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in select-none"
 		onclick={(e) => { if (e.target === e.currentTarget && !isTrimmingVideo) showVideoTrimmerModal = false; }}
 	>
-		<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-lg w-full p-4 sm:p-5 flex flex-col space-y-3.5 relative animate-modal-content">
+		<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-lg w-full p-4 sm:p-5 flex flex-col space-y-3.5 relative animate-modal-content m-auto max-h-[94vh] overflow-y-auto">
 			<!-- Top Header: Title, Live Island Timer, Close Button -->
 			<div class="flex items-center justify-between gap-2 border-b border-pink-100 pb-2.5">
 				<div class="flex items-center space-x-2">

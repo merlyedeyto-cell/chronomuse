@@ -1990,38 +1990,38 @@
 						</div>
 					{:else}
 						<!-- Compact Dominant Mood & System Feedback Card -->
-						<div class="p-4 sm:p-5 bg-pink-50 border-2 border-pink-200 rounded-2xl space-y-3">
+						<div class="p-3.5 sm:p-4 bg-pink-50 border-2 border-pink-200 rounded-2xl space-y-2.5">
 							
-							<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-								<div class="space-y-1.5 min-w-0">
-									<p class="text-[11px] font-black uppercase tracking-wider text-pink-600">
+							<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+								<div class="space-y-1 min-w-0">
+									<p class="text-[10px] font-bold uppercase tracking-wider text-pink-600">
 										{dominantMoods.length > 1 ? 'Dominant Moods (Tied)' : 'Dominant Mood'}
 									</p>
-									<div class="flex items-center gap-2 flex-wrap">
+									<div class="flex items-center gap-1.5 flex-wrap">
 										{#if dominantMoods.length > 0}
 											{#each dominantMoods as dMood}
-												<div class="inline-flex items-center space-x-2 bg-white px-3 py-1.5 rounded-xl border-2 border-pink-300">
-													<span class="text-xl">{getMoodDynamicEmoji(dMood)}</span>
-													<span class="text-sm sm:text-base font-black text-pink-950 capitalize">{dMood}</span>
-													<span class="text-xs bg-pink-100 text-pink-700 font-bold px-2 py-0.5 rounded-full">{dominantMoodCount}</span>
+												<div class="inline-flex items-center space-x-1.5 bg-white px-2.5 py-1 rounded-xl border border-pink-300">
+													<span class="text-sm">{getMoodDynamicEmoji(dMood)}</span>
+													<span class="text-xs font-bold text-pink-950 capitalize">{dMood}</span>
+													<span class="text-[10px] bg-pink-100 text-pink-700 font-bold px-1.5 py-0.2 rounded-full">{dominantMoodCount}</span>
 												</div>
 											{/each}
 										{:else}
-											<div class="inline-flex items-center space-x-2 bg-white px-3 py-1.5 rounded-xl border border-pink-200">
-												<span class="text-xl">{getMoodDynamicEmoji(dominantMood)}</span>
-												<span class="text-sm sm:text-base font-black text-pink-950 capitalize">{dominantMood || 'None'}</span>
+											<div class="inline-flex items-center space-x-1.5 bg-white px-2.5 py-1 rounded-xl border border-pink-200">
+												<span class="text-sm">{getMoodDynamicEmoji(dominantMood)}</span>
+												<span class="text-xs font-bold text-pink-950 capitalize">{dominantMood || 'None'}</span>
 											</div>
 										{/if}
 									</div>
 								</div>
 
-								<div class="flex items-center space-x-2 flex-shrink-0 self-start sm:self-center">
-									<span class="px-3 py-1 bg-white border border-pink-300 text-pink-800 rounded-full text-xs font-black">
+								<div class="flex items-center space-x-1.5 flex-shrink-0 self-start sm:self-center">
+									<span class="px-2.5 py-0.5 bg-white border border-pink-300 text-pink-800 rounded-full text-[11px] font-bold">
 										{totalMoodLogs} Logs
 									</span>
 									<button
 										onclick={() => goto('/mood-graph')}
-										class="px-3 py-1 bg-pink-500 hover:bg-pink-600 text-white rounded-full text-xs font-bold active:scale-95 transition-all flex items-center space-x-1 cursor-pointer"
+										class="px-2.5 py-0.5 bg-pink-500 hover:bg-pink-600 text-white rounded-full text-[11px] font-bold active:scale-95 transition-all flex items-center space-x-1 cursor-pointer"
 										title="View Full Mood Graph"
 									>
 										<span>Full Graph</span>
@@ -2030,13 +2030,13 @@
 							</div>
 
 							<!-- System Feedback Message -->
-							<div class="p-3.5 bg-white border border-pink-200 rounded-xl flex items-start space-x-3">
-								<div class="w-6 h-6 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+							<div class="p-2.5 bg-white border border-pink-200 rounded-xl flex items-start space-x-2.5">
+								<div class="w-5 h-5 rounded-md bg-pink-100 text-pink-600 flex items-center justify-center flex-shrink-0 mt-0.5">
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
 									</svg>
 								</div>
-								<p class="text-xs text-pink-900 font-medium leading-relaxed italic">
+								<p class="text-[11px] text-pink-900 font-medium leading-relaxed italic">
 									"{getSystemFeedbackMessage(dominantMood, dominantMoods)}"
 								</p>
 							</div>
