@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
+	import { playNotificationSound } from '$lib/soundEffects.js';
 
 	const ADMIN_PASSCODE = '041205';
 
@@ -135,19 +136,49 @@
 			currentTime = Date.now();
 		}, 15000);
 
-		// Auto-refresh admin data every 30s to keep metrics and active statuses fresh
+		// Live-sync admin data every 2.5s to ensure appeals and metrics update in real-time
 		const autoRefreshInterval = setInterval(() => {
 			if (isAuthenticated && !isLoadingData) {
 				loadAdminData(true);
 			}
-		}, 30000);
+		}, 2500);
 
-		// Listen for realtime reactivation appeal submissions from users
-		const channel = supabase.channel('chronomuse_admin_notifications');
-		channel
+		// Realtime Channel 1: Dedicated Admin Notification Channel
+		const adminChannel = supabase.channel('chronomuse_admin_notifications');
+		adminChannel
 			.on('broadcast', { event: 'reactivation_appeal_submitted' }, (payload) => {
-				loadAdminData();
-				showNotice(`New reactivation appeal received from @${payload?.payload?.username || 'user'}`);
+				try { playNotificationSound(0); } catch (e) {}
+				loadAdminData(true);
+				showNotice(`New appeal received from @${payload?.payload?.username || 'user'}!`);
+			})
+			.subscribe();
+
+		// Realtime Channel 2: Global Events Broadcast Channel
+		const globalChannel = supabase.channel('chronomuse_global_events');
+		globalChannel
+			.on('broadcast', { event: 'global_appeal_event' }, (payload) => {
+				try { playNotificationSound(0); } catch (e) {}
+				loadAdminData(true);
+				showNotice(`New appeal received from @${payload?.payload?.username || 'user'}!`);
+			})
+			.subscribe();
+
+		// Realtime Channel 3: Postgres Table Changes (DB-level sync)
+		const dbChannel = supabase.channel('chronomuse_admin_db_sync');
+		dbChannel
+			.on('postgres_changes', {
+				event: '*',
+				schema: 'public',
+				table: 'chronomuse_reactivation_requests'
+			}, () => {
+				loadAdminData(true);
+			})
+			.on('postgres_changes', {
+				event: 'UPDATE',
+				schema: 'public',
+				table: 'chronomuse_users'
+			}, () => {
+				loadAdminData(true);
 			})
 			.subscribe();
 
@@ -155,7 +186,9 @@
 			clearInterval(timerInterval);
 			clearInterval(autoRefreshInterval);
 			try {
-				supabase.removeChannel(channel);
+				supabase.removeChannel(adminChannel);
+				supabase.removeChannel(globalChannel);
+				supabase.removeChannel(dbChannel);
 			} catch (e) {}
 		};
 	});
@@ -580,14 +613,20 @@
 		<!-- Secret Admin Passcode Screen -->
 		<div class="flex-1 flex items-center justify-center p-4">
 			<div class="bg-white border-2 border-pink-300 shadow-md rounded-3xl max-w-sm w-full p-6 text-center">
-				<div class="w-14 h-14 bg-pink-100 text-pink-600 border-2 border-pink-300 rounded-2xl flex items-center justify-center mx-auto mb-4">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-					</svg>
+				<!-- ChronoMuse Brand Logo & Title -->
+				<div class="mb-5">
+					<img
+						src="/logo.png"
+						alt="ChronoMuse"
+						class="w-14 h-14 mx-auto mb-2 rounded-2xl object-contain border-2 border-pink-200 bg-white p-1 shadow-2xs hover:scale-105 transition-transform duration-300"
+					/>
+					<h1 class="text-xl sm:text-2xl font-extrabold text-pink-600 mb-1 tracking-wider uppercase">CHRONOMUSE</h1>
+					<div class="inline-flex items-center gap-1.5 px-3 py-0.5 bg-pink-100 border border-pink-200 text-pink-800 rounded-full text-xs font-bold mb-1">
+						<span class="w-2 h-2 rounded-full bg-pink-500"></span>
+						<span>Administrative Access</span>
+					</div>
+					<p class="text-[11px] text-pink-500 font-medium">Central Platform Management Console</p>
 				</div>
-
-				<h1 class="text-lg font-black text-pink-700 mb-1">Administrative Access</h1>
-				<p class="text-xs text-pink-500 mb-5 font-medium">ChronoMuse Central Platform Console</p>
 
 				{#if authError}
 					<div class="mb-4 p-2.5 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-700 font-bold flex items-center gap-2 text-left">

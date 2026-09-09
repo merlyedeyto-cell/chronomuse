@@ -79,10 +79,10 @@ export async function POST({ request }) {
 			console.warn('Reactivation DB table warning:', dbErr);
 		}
 
-		// Realtime broadcast to notify admin live
+		// Realtime broadcast to notify admin live across all channels
 		try {
-			const channel = supabase.channel('chronomuse_admin_notifications');
-			await channel.send({
+			const adminChannel = supabase.channel('chronomuse_admin_notifications');
+			await adminChannel.send({
 				type: 'broadcast',
 				event: 'reactivation_appeal_submitted',
 				payload: {
@@ -93,7 +93,24 @@ export async function POST({ request }) {
 					timestamp: new Date().toISOString()
 				}
 			});
-			supabase.removeChannel(channel);
+			supabase.removeChannel(adminChannel);
+		} catch (e) {}
+
+		try {
+			const globalChannel = supabase.channel('chronomuse_global_events');
+			await globalChannel.send({
+				type: 'broadcast',
+				event: 'global_appeal_event',
+				payload: {
+					eventType: 'reactivation_appeal_submitted',
+					user_id: targetUserId,
+					username: targetUsername,
+					email: targetEmail,
+					reason: reason || '',
+					timestamp: new Date().toISOString()
+				}
+			});
+			supabase.removeChannel(globalChannel);
 		} catch (e) {}
 
 		return json({
