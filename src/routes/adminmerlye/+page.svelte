@@ -489,6 +489,21 @@
 			return matchesSearch && matchesStatus;
 		})
 	);
+
+	let appealSearchQuery = $state('');
+
+	let filteredAppeals = $derived(
+		reactivationRequests.filter(r => {
+			if (!appealSearchQuery.trim()) return true;
+			const q = appealSearchQuery.trim().toLowerCase();
+			return (
+				(r.username && r.username.toLowerCase().includes(q)) ||
+				(r.email && r.email.toLowerCase().includes(q)) ||
+				(r.reason && r.reason.toLowerCase().includes(q)) ||
+				String(r.user_id).includes(q)
+			);
+		})
+	);
 </script>
 
 <svelte:head>
@@ -573,17 +588,17 @@
 					</div>
 				</div>
 
-				<div class="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
-					<!-- Appeals Button that opens Modal -->
+				<div class="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+					<!-- All Appeals Button -->
 					<button
 						onclick={openAppealsListModal}
-						class="px-3 py-2 {reactivationRequests.length > 0 ? (unreadAppealsCount > 0 ? 'bg-pink-600 hover:bg-pink-700 text-white shadow-md ring-2 ring-pink-300 animate-pulse' : 'bg-pink-100 hover:bg-pink-200 text-pink-900 border border-pink-300') : 'bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200'} rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
-						title="Open pending reactivation appeals modal"
+						class="flex-1 sm:flex-initial px-3.5 py-2 {reactivationRequests.length > 0 ? (unreadAppealsCount > 0 ? 'bg-pink-600 hover:bg-pink-700 text-white shadow-md ring-2 ring-pink-300 animate-pulse' : 'bg-pink-100 hover:bg-pink-200 text-pink-900 border border-pink-300') : 'bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200'} rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
+						title="Open all pending reactivation appeals"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 {unreadAppealsCount > 0 ? 'text-white' : 'text-pink-600'}">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
 						</svg>
-						<span>Appeals</span>
+						<span>All Appeals</span>
 						{#if reactivationRequests.length > 0}
 							<span class="px-1.5 py-0.2 rounded-full text-[10px] font-black {unreadAppealsCount > 0 ? 'bg-rose-600 text-white' : 'bg-pink-200 text-pink-900'}">
 								{reactivationRequests.length}
@@ -595,24 +610,14 @@
 					</button>
 
 					<button
-						onclick={loadAdminData}
-						disabled={isLoadingData}
-						class="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 border border-pink-300 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
-					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 {isLoadingData ? 'animate-spin' : ''}">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-						</svg>
-						<span>Refresh</span>
-					</button>
-					<button
 						onclick={() => goto('/dashboard')}
-						class="px-3 py-2 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 font-bold text-xs rounded-xl transition-all cursor-pointer text-center"
+						class="flex-1 sm:flex-initial px-3 py-2 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 font-bold text-xs rounded-xl transition-all cursor-pointer text-center whitespace-nowrap"
 					>
 						Go to App
 					</button>
 					<button
 						onclick={handleLogout}
-						class="px-3 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1"
+						class="flex-1 sm:flex-initial px-3 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 whitespace-nowrap"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
@@ -1175,7 +1180,7 @@
 <!-- All Pending Reactivation Appeals List Modal -->
 {#if showAppealsListModal}
 	<div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 sm:p-5 animate-fade-in">
-		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-2xl w-full p-5 sm:p-6 space-y-4 max-h-[90vh] flex flex-col animate-modal-content">
+		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-2xl w-full p-5 sm:p-6 space-y-3.5 max-h-[90vh] flex flex-col animate-modal-content">
 			<!-- Modal Header -->
 			<div class="flex items-start justify-between border-b border-pink-100 pb-3 flex-shrink-0 gap-3">
 				<div class="flex items-center gap-3">
@@ -1186,18 +1191,12 @@
 					</div>
 					<div>
 						<div class="flex items-center gap-2 flex-wrap">
-							<h3 class="text-sm sm:text-base font-black text-pink-950 whitespace-nowrap">Pending Reactivation Appeals</h3>
+							<h3 class="text-sm sm:text-base font-black text-pink-950 whitespace-nowrap">All Appeals Directory</h3>
 							<span class="px-2.5 py-0.5 bg-pink-100 text-pink-900 border border-pink-300 rounded-full text-xs font-bold font-mono whitespace-nowrap">
-								{reactivationRequests.length} {reactivationRequests.length === 1 ? 'request' : 'requests'}
+								{reactivationRequests.length} {reactivationRequests.length === 1 ? 'appeal' : 'appeals'}
 							</span>
-							{#if unreadAppealsCount > 0}
-								<span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-rose-500 text-white rounded-full text-[11px] font-bold whitespace-nowrap animate-pulse">
-									<span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-									{unreadAppealsCount} Unread
-								</span>
-							{/if}
 						</div>
-						<p class="text-xs text-pink-500 font-medium mt-0.5">Review and resolve reinstatement requests from suspended users</p>
+						<p class="text-xs text-pink-500 font-medium mt-0.5">Click any user account to view details, verify profile, or resolve appeal</p>
 					</div>
 				</div>
 
@@ -1214,8 +1213,25 @@
 				</div>
 			</div>
 
+			<!-- Search Bar for fast searching in case of many appeals -->
+			{#if reactivationRequests.length > 0}
+				<div class="relative flex-shrink-0">
+					<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-pink-400">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+						</svg>
+					</div>
+					<input
+						type="text"
+						bind:value={appealSearchQuery}
+						placeholder="Search appeals by username, email, or message..."
+						class="w-full pl-8 pr-3 py-1.5 bg-pink-50 border border-pink-300 rounded-xl text-xs font-bold text-pink-950 placeholder:text-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all"
+					/>
+				</div>
+			{/if}
+
 			<!-- Appeals List (Scrollable) -->
-			<div class="overflow-y-auto flex-1 space-y-3.5 pr-1">
+			<div class="overflow-y-auto flex-1 space-y-3 pr-1">
 				{#if reactivationRequests.length === 0}
 					<div class="text-center py-12 bg-pink-50/50 rounded-2xl border border-pink-100">
 						<div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-2 border border-emerald-200">
@@ -1223,17 +1239,26 @@
 								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 							</svg>
 						</div>
-						<p class="text-sm font-bold text-pink-900">No Pending Reactivation Appeals</p>
+						<p class="text-sm font-bold text-pink-900">No Pending Appeals</p>
 						<p class="text-xs text-pink-500 font-medium mt-0.5">All account suspension appeals have been reviewed and resolved.</p>
 					</div>
+				{:else if filteredAppeals.length === 0}
+					<div class="text-center py-8 text-pink-400 font-medium text-xs">
+						No appeals match "{appealSearchQuery}".
+					</div>
 				{:else}
-					{#each reactivationRequests as reqItem (reqItem.id || reqItem.user_id)}
+					{#each filteredAppeals as reqItem (reqItem.id || reqItem.user_id)}
 						{@const reqUser = usersList.find(u => u.id === reqItem.user_id || u.username === reqItem.username)}
-						<div class="p-4 rounded-2xl border-2 {reqItem.is_read ? 'bg-white border-pink-200' : 'bg-amber-50/70 border-amber-300 shadow-sm'} space-y-3 transition-all">
-							<!-- User Information Header -->
+						<div class="p-3.5 sm:p-4 rounded-2xl border-2 bg-white hover:bg-pink-50/40 border-pink-200 transition-all space-y-2.5 shadow-2xs">
+							<!-- Clickable User Information Header -->
 							<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-								<div class="flex items-center space-x-3 min-w-0">
-									<div class="w-9 h-9 rounded-full bg-pink-400 text-white font-bold flex items-center justify-center text-xs flex-shrink-0 shadow-xs overflow-hidden border border-pink-300">
+								<button
+									type="button"
+									onclick={() => openAppealReview(reqItem)}
+									class="flex items-center space-x-3 min-w-0 text-left cursor-pointer group"
+									title="Click to open appeal review"
+								>
+									<div class="w-10 h-10 rounded-full bg-pink-400 text-white font-bold flex items-center justify-center text-xs flex-shrink-0 shadow-xs overflow-hidden border border-pink-300 group-hover:scale-105 transition-transform">
 										{#if (reqUser?.avatar_url || reqItem.avatar_url)}
 											<img src={reqUser?.avatar_url || reqItem.avatar_url} alt="" class="w-full h-full object-cover" />
 										{:else}
@@ -1241,42 +1266,43 @@
 										{/if}
 									</div>
 									<div class="min-w-0">
-										<div class="flex items-center gap-2 flex-wrap">
-											<span class="font-bold text-sm text-pink-950 whitespace-nowrap">@{reqItem.username}</span>
-											{#if !reqItem.is_read}
-												<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-rose-500 text-white rounded-full text-[10px] font-black uppercase tracking-wider whitespace-nowrap">
-													<span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-													NEW
-												</span>
-											{:else}
-												<span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold whitespace-nowrap">
-													Read
-												</span>
-											{/if}
+										<div class="flex items-center gap-1.5 flex-wrap">
+											<span class="font-bold text-sm text-pink-950 group-hover:text-pink-600 transition-colors">@{reqItem.username}</span>
+											<span class="text-[10px] text-pink-400 font-mono">#{reqItem.user_id}</span>
 										</div>
-										<span class="text-xs text-pink-400 font-mono block truncate">{reqItem.email || '—'}</span>
+										<span class="text-xs text-pink-500 font-mono block truncate">{reqItem.email || '—'}</span>
 									</div>
-								</div>
+								</button>
 
-								<div class="text-left sm:text-right">
-									<span class="text-[11px] text-pink-600 font-mono font-medium block whitespace-nowrap">
+								<div class="flex items-center gap-2 self-end sm:self-center">
+									<span class="text-[10px] text-pink-400 font-mono">
 										{formatDate(reqItem.created_at || reqItem.updated_at)}
 									</span>
+									<button
+										type="button"
+										onclick={() => openAppealReview(reqItem)}
+										class="px-2.5 py-1 bg-pink-100 hover:bg-pink-200 text-pink-800 text-[11px] font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap"
+									>
+										View Appeal
+									</button>
 								</div>
 							</div>
 
-							<!-- Appeal Note Content Box -->
-							<div class="p-3 bg-pink-50/80 border border-pink-200 rounded-xl text-xs sm:text-sm text-pink-950 font-medium whitespace-pre-wrap break-words leading-relaxed">
-								<span class="text-[10px] font-bold text-pink-600 uppercase tracking-wider block mb-1">User Appeal Note:</span>
+							<!-- Appeal Note Preview Box -->
+							<div
+								onclick={() => openAppealReview(reqItem)}
+								class="p-2.5 bg-pink-50/80 hover:bg-pink-100/70 border border-pink-200 rounded-xl text-xs text-pink-950 font-medium whitespace-pre-wrap break-words leading-relaxed cursor-pointer transition-colors"
+								title="Click to expand note"
+							>
 								{#if reqItem.reason}
 									"{reqItem.reason}"
 								{:else}
-									<span class="text-slate-400 italic">No appeal note provided.</span>
+									<span class="text-slate-400 italic">No custom appeal note provided.</span>
 								{/if}
 							</div>
 
 							<!-- Action Buttons -->
-							<div class="flex items-center justify-end gap-2 pt-1 flex-wrap">
+							<div class="flex items-center justify-end gap-2 pt-0.5 flex-wrap">
 								<button
 									type="button"
 									onclick={() => respondReactivation(reqItem, 'dismiss')}
@@ -1289,9 +1315,9 @@
 									type="button"
 									onclick={() => respondReactivation(reqItem, 'approve')}
 									disabled={isProcessingAppeal}
-									class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-sm whitespace-nowrap"
+									class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-sm whitespace-nowrap"
 								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 									</svg>
 									<span>Approve & Reactivate</span>
