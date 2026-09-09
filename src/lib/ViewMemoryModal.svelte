@@ -833,15 +833,17 @@
 											controls 
 											playsinline 
 											preload="metadata"
+											controlslist="nofullscreen nodownload noremoteplayback"
+											disablepictureinpicture
 											aria-label="Memory video"
 										></video>
 										<button
 											type="button"
 											onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'video')}
-											class="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white text-[11px] font-semibold px-2 py-1 rounded-md backdrop-blur-xs flex items-center space-x-1 transition-all z-10"
+											class="absolute top-2.5 right-2.5 bg-pink-600 hover:bg-pink-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg backdrop-blur-xs flex items-center space-x-1.5 transition-all z-10 shadow-sm active:scale-95 cursor-pointer"
 											title="Full view"
 										>
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
 											</svg>
 											<span>Full view</span>
@@ -921,26 +923,57 @@
 	</div>
 </div>
 
-<!-- Full-Screen Media Viewer -->
+<!-- Full-Screen Media Viewer (Chronomuse Theme) -->
 {#if showFullScreenImage}
-	<div class="fixed inset-0 z-50 bg-black bg-opacity-95 flex items-center justify-center overflow-auto p-2 sm:p-4">
-		<!-- Close Button (Top Right) -->
-		<button
-			onclick={closeFullScreenImage}
-			class="absolute top-4 right-4 p-2.5 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-full backdrop-blur-sm transition-all duration-200 z-60"
-			title="Close"
-		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-			</svg>
-		</button>
+	<div 
+		class="fixed inset-0 z-[100] bg-pink-950/85 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-6 animate-fade-in"
+		onclick={(e) => { if (e.target === e.currentTarget) closeFullScreenImage(); }}
+	>
+		<!-- Header Toolbar -->
+		<div class="w-full max-w-4xl flex items-center justify-between px-3 py-2 mb-2 text-white">
+			<div class="flex items-center space-x-2">
+				<div class="w-7 h-7 rounded-full bg-pink-500 flex items-center justify-center text-white shadow-xs">
+					{#if fullScreenMediaType === 'video'}
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 ml-0.5">
+							<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
+						</svg>
+					{:else}
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+						</svg>
+					{/if}
+				</div>
+				<span class="text-sm font-bold text-pink-100">
+					{fullScreenMediaType === 'video' ? 'Full Video View' : 'Full Photo View'}
+				</span>
+			</div>
 
-		<!-- Media Container -->
-		<div class="w-full h-full max-h-screen flex items-center justify-center p-2 sm:p-4">
+			<!-- Close Button -->
+			<button
+				type="button"
+				onclick={closeFullScreenImage}
+				class="p-2 bg-pink-500 hover:bg-pink-600 text-white rounded-full transition-all duration-200 active:scale-95 shadow-md flex items-center justify-center cursor-pointer"
+				title="Close Full View"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
+		</div>
+
+		<!-- Media Display Box -->
+		<div class="relative w-full max-w-4xl flex-1 flex items-center justify-center overflow-hidden rounded-2xl border-2 border-pink-400/40 bg-black/80 p-2 sm:p-4">
 			{#if fullScreenMediaType === 'video'}
-				<video src={fullScreenImageUrl} class="max-w-full max-h-full object-contain rounded-lg shadow-2xl" controls autoplay playsinline></video>
+				<video 
+					src={fullScreenImageUrl} 
+					class="max-w-full max-h-[75vh] sm:max-h-[80vh] object-contain rounded-xl" 
+					controls 
+					autoplay 
+					playsinline
+					controlslist="nodownload"
+				></video>
 			{:else}
-				<img src={fullScreenImageUrl} alt="Full size" class="max-w-full max-h-full object-contain" />
+				<img src={fullScreenImageUrl} alt="Full size" class="max-w-full max-h-[75vh] sm:max-h-[80vh] object-contain rounded-xl" />
 			{/if}
 		</div>
 	</div>
