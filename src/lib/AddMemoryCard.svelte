@@ -21,6 +21,7 @@
 	let isOpening = $state(true);
 	let showEmojiPicker = $state(false);
 	let friends = $state([]);
+	let isLoadingFriends = $state(false);
 	let selectedFriendIds = $state([]);
 	let friendSearchQuery = $state('');
 	let showFriendSelector = $state(false);
@@ -81,6 +82,8 @@
 		music = null;
 		isVideo = false;
 		selectedFriendIds = [];
+		showFriendSelector = false;
+		friendSearchQuery = '';
 		if (photoVideoPreview) {
 			URL.revokeObjectURL(photoVideoPreview);
 			photoVideoPreview = null;
@@ -543,6 +546,7 @@
 		const currentUser = localStorage.getItem('chronomuse_user');
 		const user = currentUser ? JSON.parse(currentUser) : null;
 		if (user && user.id) {
+			isLoadingFriends = true;
 			fetch(API_ENDPOINTS.getFriendsList, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -554,7 +558,10 @@
 					friends = data.data.friends;
 				}
 			})
-			.catch(err => console.error('Error loading friends for sharing:', err));
+			.catch(err => console.error('Error loading friends for sharing:', err))
+			.finally(() => {
+				isLoadingFriends = false;
+			});
 		}
 	});
 
@@ -707,47 +714,60 @@
 			</div>
 		</div>
 
-		<!-- Direct Share with Friends Section -->
-		<div class="border border-pink-200 rounded-xl p-2.5 bg-pink-50">
-			<div class="flex items-center justify-between mb-1.5">
-				<label class="text-xs font-bold text-pink-700 flex items-center gap-1.5">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
-					</svg>
-					Share Directly with Friends ({selectedFriendIds.length})
-				</label>
-				{#if friends.length > 0}
-					<button
-						type="button"
-						onclick={() => showFriendSelector = !showFriendSelector}
-						class="text-[11px] font-bold text-pink-600 hover:text-pink-800 underline cursor-pointer"
-					>
-						{showFriendSelector ? 'Hide List' : 'Select Friends'}
-					</button>
-				{/if}
+		<!-- Direct Share with Friends Section (Hidden / Collapsed by default) -->
+		<div class="border border-pink-200 rounded-xl p-2.5 bg-pink-50 transition-all">
+			<div class="flex items-center justify-between">
+				<button
+					type="button"
+					onclick={() => showFriendSelector = !showFriendSelector}
+					class="flex items-center gap-1.5 text-xs font-bold text-pink-700 hover:text-pink-900 cursor-pointer text-left w-full justify-between"
+				>
+					<span class="flex items-center gap-1.5">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500 flex-shrink-0">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+						</svg>
+						<span>Share Directly with Friends</span>
+						{#if selectedFriendIds.length > 0}
+							<span class="px-1.5 py-0.2 bg-pink-500 text-white rounded-full text-[10px] font-bold">
+								{selectedFriendIds.length}
+							</span>
+						{/if}
+					</span>
+					<span class="text-[11px] font-bold text-pink-600 hover:text-pink-800 underline flex items-center gap-1">
+						<span>{showFriendSelector ? 'Hide List' : (selectedFriendIds.length > 0 ? 'Edit Friends' : 'Select Friends')}</span>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 transition-transform duration-200 {showFriendSelector ? 'rotate-180' : ''}">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+						</svg>
+					</span>
+				</button>
 			</div>
 
-			{#if friends.length === 0}
-				<p class="text-[11px] text-pink-400">No friends added yet to share with.</p>
-			{:else}
-				<!-- Selected Friends Chips Preview -->
-				{#if selectedFriendIds.length > 0}
-					<div class="flex flex-wrap gap-1 mb-2">
-						{#each selectedFriendIds as fid}
-							{@const f = friends.find(item => Number(item.friend_id) === fid || Number(item.id) === fid)}
-							{#if f}
-								<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-pink-500 text-white rounded-full text-[11px] font-bold">
-									@{f.username}
-									<button type="button" onclick={() => toggleFriendTag(fid)} class="hover:text-pink-200">×</button>
-								</span>
-							{/if}
-						{/each}
-					</div>
-				{/if}
+			<!-- Selected Friends Chips Preview (visible if any selected) -->
+			{#if selectedFriendIds.length > 0}
+				<div class="flex flex-wrap gap-1 mt-2">
+					{#each selectedFriendIds as fid}
+						{@const f = friends.find(item => Number(item.friend_id) === fid || Number(item.id) === fid)}
+						{#if f}
+							<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-pink-500 text-white rounded-full text-[11px] font-bold">
+								@{f.username}
+								<button type="button" onclick={() => toggleFriendTag(fid)} class="hover:text-pink-200 cursor-pointer">×</button>
+							</span>
+						{/if}
+					{/each}
+				</div>
+			{/if}
 
-				{#if showFriendSelector}
-					<div class="mt-1 space-y-1.5 max-h-36 overflow-y-auto pr-1">
-						{#if friends.length > 5}
+			{#if showFriendSelector}
+				<div class="mt-2.5 pt-2.5 border-t border-pink-200 space-y-2">
+					{#if isLoadingFriends}
+						<div class="py-2.5 text-center text-[11px] text-pink-400 font-medium flex items-center justify-center space-x-1.5">
+							<div class="w-3.5 h-3.5 border-2 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
+							<span>Loading friends...</span>
+						</div>
+					{:else if friends.length === 0}
+						<p class="text-[11px] text-pink-400 py-1">No friends added yet to share with.</p>
+					{:else}
+						{#if friends.length > 4}
 							<input
 								type="text"
 								bind:value={friendSearchQuery}
@@ -755,20 +775,20 @@
 								class="w-full px-2.5 py-1 bg-white border border-pink-200 rounded-lg text-xs text-pink-800 placeholder-pink-300 focus:outline-none"
 							/>
 						{/if}
-						<div class="grid grid-cols-2 gap-1">
+						<div class="grid grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-1">
 							{#each filteredFriends as friend}
 								{@const isSelected = selectedFriendIds.includes(Number(friend.friend_id || friend.id))}
 								<button
 									type="button"
 									onclick={() => toggleFriendTag(friend.friend_id || friend.id)}
-									class="flex items-center gap-1.5 p-1.5 rounded-lg border text-left transition-all text-xs"
+									class="flex items-center gap-1.5 p-1.5 rounded-lg border text-left transition-all text-xs cursor-pointer"
 									class:bg-pink-200={isSelected}
 									class:border-pink-400={isSelected}
 									class:font-bold={isSelected}
 									class:bg-white={!isSelected}
 									class:border-pink-200={!isSelected}
 								>
-									<div class="w-5 h-5 rounded-full bg-pink-400 text-white text-[10px] font-bold flex items-center justify-center overflow-hidden">
+									<div class="w-5 h-5 rounded-full bg-pink-400 text-white text-[10px] font-bold flex items-center justify-center overflow-hidden flex-shrink-0">
 										{#if friend.avatar_url}
 											<img src={friend.avatar_url} alt="" class="w-full h-full object-cover" />
 										{:else}
@@ -779,8 +799,8 @@
 								</button>
 							{/each}
 						</div>
-					</div>
-				{/if}
+					{/if}
+				</div>
 			{/if}
 		</div>
 
