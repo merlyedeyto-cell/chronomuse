@@ -39,7 +39,7 @@ export async function POST({ request }) {
 		const { data: newUser, error: insertError } = await supabase
 			.from('chronomuse_users')
 			.insert([
-				{ username, email, password: hashedPassword }
+				{ username, email, password: hashedPassword, last_activity: new Date().toISOString() }
 			])
 			.select('id, username, email, avatar_url')
 			.single();

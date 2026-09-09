@@ -63,7 +63,8 @@ export const API_ENDPOINTS = {
 	getProfile: `${API_BASE_URL}/get_profile`,
 	blockUser: `${API_BASE_URL}/block_user`,
 	pinMemory: `${API_BASE_URL}/pin_memory`,
-	unpinMemory: `${API_BASE_URL}/unpin_memory`
+	unpinMemory: `${API_BASE_URL}/unpin_memory`,
+	requestReactivation: `${API_BASE_URL}/request_reactivation`
 };
 
 // Helper function to make API calls

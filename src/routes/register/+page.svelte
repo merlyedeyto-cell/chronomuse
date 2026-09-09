@@ -23,10 +23,8 @@
 </script>
 
 <TopBar showNav={false} showFooter={false}>
-	<div class="bg-pink-100 h-screen overflow-hidden">
-		<div class="h-full flex items-center justify-center px-4">
-			<RegisterCard on:register={handleRegister} on:showToast={showRegisterToast} />
-		</div>
+	<div class="bg-pink-100 min-h-screen flex flex-col items-center justify-center py-6 sm:py-12 px-0 sm:px-4">
+		<RegisterCard on:register={handleRegister} on:showToast={showRegisterToast} />
 	</div>
 
 	<!-- Toast Notification -->

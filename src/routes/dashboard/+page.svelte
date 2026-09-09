@@ -780,7 +780,7 @@
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl w-full">
 					<!-- Left Column - Pinned Memories -->
 					<div class="animate-fade-in-up" style="animation-delay: 0.1s">
-						<PinnedMemoryCard bind:this={pinnedMemoryCardRef} userId={user.id} on:deletePinnedDate={handleDeletePinnedDate} on:viewPinnedMemory={handleViewPinnedMemory} />
+						<PinnedMemoryCard bind:this={pinnedMemoryCardRef} userId={user?.id} on:deletePinnedDate={handleDeletePinnedDate} on:viewPinnedMemory={handleViewPinnedMemory} />
 					</div>
 
 					<!-- Center Column - Calendar -->

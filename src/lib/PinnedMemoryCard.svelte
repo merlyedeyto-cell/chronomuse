@@ -4,17 +4,27 @@
 
 	const dispatch = createEventDispatcher();
 
-	let { userId = 1 } = $props();
+	let { userId = null } = $props();
 	let pinnedMemories = $state([]);
 	let isLoading = $state(true);
 	let editingId = $state(null);
 	let editingTitle = $state('');
 
+	$effect(() => {
+		if (userId) {
+			loadPinnedMemories();
+		}
+	});
+
 	onMount(() => {
-		loadPinnedMemories();
+		if (userId) {
+			loadPinnedMemories();
+		}
 
 		const handleRealtimeChange = () => {
-			loadPinnedMemories(true);
+			if (userId) {
+				loadPinnedMemories(true);
+			}
 		};
 
 		window.addEventListener('chronomuse_memory_change', handleRealtimeChange);
@@ -29,6 +39,11 @@
 	});
 
 	export function loadPinnedMemories(isSilent = false) {
+		if (!userId) {
+			isLoading = false;
+			pinnedMemories = [];
+			return;
+		}
 		if (!isSilent && pinnedMemories.length === 0) {
 			isLoading = true;
 		}

@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { supabase } from '$lib/supabaseClient';
 
 	const ADMIN_PASSCODE = '041205';
 
@@ -13,20 +14,69 @@
 	let metrics = $state({
 		total_users: 0,
 		total_memories: 0,
+		total_pinned_dates: 0,
 		total_notes: 0,
+		total_messages: 0,
 		active_today: 0,
-		database_status: 'Healthy / Connected',
-		storage_status: 'Operational',
-		encryption_protocol: 'TLS 1.3 / Supabase E2E RLS',
+		pending_reactivations: 0,
+		db_latency_ms: 0,
+		database_status: 'Operational',
 		server_time: new Date().toISOString()
 	});
 
 	let usersList = $state([]);
+	let reactivationRequests = $state([]);
 	let userSearchQuery = $state('');
 	let selectedStatusFilter = $state('all');
+	let showFilterModal = $state(false);
+	const statusFilterLabels = {
+		all: 'All Accounts',
+		active: 'Active Only',
+		suspended: 'Suspended Only',
+		appeals: 'Appeals Pending'
+	};
 	let isLoadingData = $state(false);
 	let actionMessage = $state('');
+	let errorMessage = $state('');
 	let isTogglingStatus = $state(false);
+	let isProcessingAppeal = $state(false);
+
+	// Modals State
+	let showAppealsListModal = $state(false);
+	let viewingAppealModal = $state(null);
+	let selectedUserForPasswordReset = $state(null);
+	let newPasswordInput = $state('');
+	let isResettingPassword = $state(false);
+
+	let selectedUserForDelete = $state(null);
+	let isDeletingUser = $state(false);
+
+	let currentTime = $state(Date.now());
+
+	// Table Drag-to-Slide (Desktop & Touch)
+	let tableContainerEl = $state(null);
+	let isTableDragging = $state(false);
+	let tableStartX = 0;
+	let tableScrollLeft = 0;
+
+	function onTableMouseDown(e) {
+		if (e.target.closest('button, input, a, select, textarea, [role="button"]')) return;
+		isTableDragging = true;
+		tableStartX = e.pageX - (tableContainerEl?.offsetLeft || 0);
+		tableScrollLeft = tableContainerEl?.scrollLeft || 0;
+	}
+
+	function onTableMouseMove(e) {
+		if (!isTableDragging || !tableContainerEl) return;
+		e.preventDefault();
+		const x = e.pageX - (tableContainerEl?.offsetLeft || 0);
+		const walk = (x - tableStartX) * 1.5;
+		tableContainerEl.scrollLeft = tableScrollLeft - walk;
+	}
+
+	function onTableMouseUp() {
+		isTableDragging = false;
+	}
 
 	onMount(() => {
 		if (typeof window !== 'undefined') {
@@ -37,6 +87,35 @@
 			}
 		}
 		isCheckingAuth = false;
+
+		// Timer to keep relative times (e.g. "Active now", "6m ago") live and precise
+		const timerInterval = setInterval(() => {
+			currentTime = Date.now();
+		}, 15000);
+
+		// Auto-refresh admin data every 30s to keep metrics and active statuses fresh
+		const autoRefreshInterval = setInterval(() => {
+			if (isAuthenticated && !isLoadingData) {
+				loadAdminData(true);
+			}
+		}, 30000);
+
+		// Listen for realtime reactivation appeal submissions from users
+		const channel = supabase.channel('chronomuse_admin_notifications');
+		channel
+			.on('broadcast', { event: 'reactivation_appeal_submitted' }, (payload) => {
+				loadAdminData();
+				showNotice(`New reactivation appeal received from @${payload?.payload?.username || 'user'}`);
+			})
+			.subscribe();
+
+		return () => {
+			clearInterval(timerInterval);
+			clearInterval(autoRefreshInterval);
+			try {
+				supabase.removeChannel(channel);
+			} catch (e) {}
+		};
 	});
 
 	function handlePasscodeSubmit(e) {
@@ -63,12 +142,25 @@
 		}
 	}
 
-	async function loadAdminData() {
-		isLoadingData = true;
-		actionMessage = '';
+	function showNotice(msg, isError = false) {
+		if (isError) {
+			errorMessage = msg;
+			setTimeout(() => errorMessage = '', 4000);
+		} else {
+			actionMessage = msg;
+			setTimeout(() => actionMessage = '', 4000);
+		}
+	}
+
+	async function loadAdminData(isBackground = false) {
+		if (!isBackground) {
+			isLoadingData = true;
+			actionMessage = '';
+			errorMessage = '';
+		}
 
 		try {
-			const [metricsRes, usersRes] = await Promise.all([
+			const [metricsRes, usersRes, reactivationsRes] = await Promise.all([
 				fetch('/api/admin', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
@@ -77,20 +169,33 @@
 				fetch('/api/admin', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ passcode: ADMIN_PASSCODE, action: 'get_users', limit: 100 })
+					body: JSON.stringify({ passcode: ADMIN_PASSCODE, action: 'get_users', limit: 300 })
+				}).then(r => r.json()),
+				fetch('/api/admin', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ passcode: ADMIN_PASSCODE, action: 'get_reactivations' })
 				}).then(r => r.json())
 			]);
 
-			if (metricsRes.success && metricsRes.data?.metrics) {
+			if (metricsRes?.success && metricsRes.data?.metrics) {
 				metrics = metricsRes.data.metrics;
 			}
-			if (usersRes.success && usersRes.data?.users) {
+			if (usersRes?.success && Array.isArray(usersRes.data?.users)) {
 				usersList = usersRes.data.users;
+			}
+			if (reactivationsRes?.success && Array.isArray(reactivationsRes.data?.requests)) {
+				reactivationRequests = reactivationsRes.data.requests;
 			}
 		} catch (err) {
 			console.error('Error loading admin data:', err);
+			if (!isBackground) {
+				showNotice('Failed to connect to Admin API', true);
+			}
 		} finally {
-			isLoadingData = false;
+			if (!isBackground) {
+				isLoadingData = false;
+			}
 		}
 	}
 
@@ -115,21 +220,187 @@
 			});
 			const data = await res.json();
 			if (data.success) {
-				actionMessage = `Status of @${targetUser.username} updated to ${nextStatus}`;
-				setTimeout(() => actionMessage = '', 3000);
+				showNotice(`Status for @${targetUser.username} updated to ${nextStatus}`);
+				if (nextStatus === 'active') {
+					targetUser.has_pending_reactivation = false;
+					reactivationRequests = reactivationRequests.filter(r => r.user_id !== targetUser.id);
+				}
 			} else {
 				targetUser.status = oldStatus;
+				showNotice(data.error || 'Failed to update user status', true);
 			}
 		} catch (err) {
 			targetUser.status = oldStatus;
-			console.error('Error toggling status:', err);
+			showNotice('Network error updating user status', true);
 		} finally {
 			isTogglingStatus = false;
 		}
 	}
 
+	async function respondReactivation(reqItem, actionType) {
+		if (isProcessingAppeal) return;
+		isProcessingAppeal = true;
+
+		try {
+			const res = await fetch('/api/admin', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					passcode: ADMIN_PASSCODE,
+					action: 'respond_reactivation',
+					request_id: reqItem.id,
+					user_id: reqItem.user_id,
+					action_type: actionType
+				})
+			});
+			const data = await res.json();
+			if (data.success) {
+				reactivationRequests = reactivationRequests.filter(r => r.id !== reqItem.id);
+				const userInList = usersList.find(u => u.id === reqItem.user_id);
+				if (userInList) {
+					userInList.has_pending_reactivation = false;
+					if (actionType === 'approve') {
+						userInList.status = 'active';
+					}
+				}
+				metrics.pending_reactivations = Math.max(0, metrics.pending_reactivations - 1);
+				showNotice(actionType === 'approve' ? `Account @${reqItem.username} reactivated!` : `Appeal from @${reqItem.username} dismissed.`);
+			} else {
+				showNotice(data.error || 'Failed to process appeal', true);
+			}
+		} catch (err) {
+			showNotice('Network error processing appeal', true);
+		} finally {
+			isProcessingAppeal = false;
+		}
+	}
+
+	let unreadAppealsCount = $derived(reactivationRequests.filter(r => !r.is_read).length);
+
+	function openAppealReview(appealItem) {
+		if (!appealItem) return;
+		viewingAppealModal = appealItem;
+
+		// Mark as read if not already read
+		if (!appealItem.is_read) {
+			appealItem.is_read = true;
+			const userInList = usersList.find(u => u.id === appealItem.user_id);
+			if (userInList?.reactivation_request) {
+				userInList.reactivation_request.is_read = true;
+			}
+			fetch('/api/admin', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					passcode: ADMIN_PASSCODE,
+					action: 'mark_appeal_read',
+					request_id: appealItem.id,
+					user_id: appealItem.user_id
+				})
+			}).catch(() => {});
+		}
+	}
+
+	async function markAllAppealsAsRead() {
+		reactivationRequests.forEach(r => r.is_read = true);
+		usersList.forEach(u => {
+			if (u.reactivation_request) u.reactivation_request.is_read = true;
+		});
+
+		try {
+			await fetch('/api/admin', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					passcode: ADMIN_PASSCODE,
+					action: 'mark_all_appeals_read'
+				})
+			});
+			showNotice('All reactivation appeals marked as read');
+		} catch (e) {
+			showNotice('Network error marking appeals as read', true);
+		}
+	}
+
+	function scrollToAppealsSection() {
+		const el = document.getElementById('appeals-section');
+		if (el) {
+			el.scrollIntoView({ behavior: 'smooth' });
+		} else {
+			selectedStatusFilter = 'appeals';
+		}
+	}
+
+	async function handleResetPassword(e) {
+		if (e) e.preventDefault();
+		if (!selectedUserForPasswordReset || !newPasswordInput || newPasswordInput.trim().length < 6) {
+			showNotice('Password must be at least 6 characters long', true);
+			return;
+		}
+
+		isResettingPassword = true;
+		try {
+			const res = await fetch('/api/admin', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					passcode: ADMIN_PASSCODE,
+					action: 'reset_password',
+					user_id: selectedUserForPasswordReset.id,
+					new_password: newPasswordInput.trim()
+				})
+			});
+			const data = await res.json();
+			if (data.success) {
+				showNotice(`Password updated successfully for @${selectedUserForPasswordReset.username}`);
+				selectedUserForPasswordReset = null;
+				newPasswordInput = '';
+			} else {
+				showNotice(data.error || 'Failed to reset password', true);
+			}
+		} catch (err) {
+			showNotice('Network error resetting password', true);
+		} finally {
+			isResettingPassword = false;
+		}
+	}
+
+	async function handleDeleteUser() {
+		if (!selectedUserForDelete) return;
+
+		isDeletingUser = true;
+		const userIdToDelete = selectedUserForDelete.id;
+		const username = selectedUserForDelete.username;
+
+		try {
+			const res = await fetch('/api/admin', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					passcode: ADMIN_PASSCODE,
+					action: 'delete_user',
+					user_id: userIdToDelete
+				})
+			});
+			const data = await res.json();
+			if (data.success) {
+				usersList = usersList.filter(u => u.id !== userIdToDelete);
+				reactivationRequests = reactivationRequests.filter(r => r.user_id !== userIdToDelete);
+				metrics.total_users = Math.max(0, metrics.total_users - 1);
+				showNotice(`Account @${username} and all records deleted`);
+				selectedUserForDelete = null;
+			} else {
+				showNotice(data.error || 'Failed to delete user', true);
+			}
+		} catch (err) {
+			showNotice('Network error deleting user', true);
+		} finally {
+			isDeletingUser = false;
+		}
+	}
+
 	function formatDate(isoStr) {
-		if (!isoStr) return 'N/A';
+		if (!isoStr) return '—';
 		try {
 			const d = new Date(isoStr);
 			return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -138,14 +409,72 @@
 		}
 	}
 
+	function formatLastActive(lastActive, nowTimestamp = currentTime) {
+		if (!lastActive) {
+			return { label: 'No activity yet', isActiveNow: false, isOffline: true };
+		}
+
+		try {
+			const activeTime = new Date(lastActive).getTime();
+			if (isNaN(activeTime)) {
+				return { label: 'No activity yet', isActiveNow: false, isOffline: true };
+			}
+
+			const diffMs = (nowTimestamp || Date.now()) - activeTime;
+			if (diffMs < 0) {
+				return { label: 'Active now', isActiveNow: true, isOffline: false };
+			}
+
+			const diffMins = Math.floor(diffMs / 60000);
+			if (diffMins < 5) {
+				return { label: 'Active now', isActiveNow: true, isOffline: false };
+			}
+			if (diffMins < 60) {
+				return { label: `${diffMins}m ago`, isActiveNow: false, isOffline: false };
+			}
+
+			const diffHours = Math.floor(diffMins / 60);
+			if (diffHours < 24) {
+				return { label: `${diffHours}h ago`, isActiveNow: false, isOffline: false };
+			}
+
+			const diffDays = Math.floor(diffHours / 24);
+			if (diffDays === 1) {
+				return { label: '1d ago', isActiveNow: false, isOffline: false };
+			}
+			if (diffDays < 7) {
+				return { label: `${diffDays}d ago`, isActiveNow: false, isOffline: false };
+			}
+
+			const diffWeeks = Math.floor(diffDays / 7);
+			if (diffWeeks < 5) {
+				return { label: `${diffWeeks}w ago`, isActiveNow: false, isOffline: false };
+			}
+
+			const diffMonths = Math.floor(diffDays / 30);
+			if (diffMonths < 12) {
+				return { label: `${diffMonths}mo ago`, isActiveNow: false, isOffline: false };
+			}
+
+			const diffYears = Math.floor(diffDays / 365);
+			return { label: `${diffYears}y ago`, isActiveNow: false, isOffline: false };
+		} catch (e) {
+			return { label: '—', isActiveNow: false, isOffline: true };
+		}
+	}
+
 	let filteredUsers = $derived(
 		usersList.filter(u => {
-			const matchesSearch = !userSearchQuery || 
-				u.username?.toLowerCase().includes(userSearchQuery.toLowerCase()) || 
-				u.email?.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
-				String(u.id).includes(userSearchQuery);
+			const query = userSearchQuery.trim().toLowerCase();
+			const matchesSearch = !query || 
+				u.username?.toLowerCase().includes(query) || 
+				u.email?.toLowerCase().includes(query) ||
+				String(u.id).includes(query);
 			
-			const matchesStatus = selectedStatusFilter === 'all' || u.status === selectedStatusFilter;
+			const matchesStatus = selectedStatusFilter === 'all' || 
+				u.status === selectedStatusFilter ||
+				(selectedStatusFilter === 'appeals' && u.has_pending_reactivation);
+
 			return matchesSearch && matchesStatus;
 		})
 	);
@@ -155,7 +484,9 @@
 	<title>Admin Portal - ChronoMuse</title>
 </svelte:head>
 
-<div class="min-h-screen bg-pink-100 text-pink-950 font-sans p-4 sm:p-6 flex flex-col">
+<svelte:window onmouseup={onTableMouseUp} />
+
+<div class="min-h-screen bg-pink-100 text-pink-950 font-sans p-4 sm:p-6 flex flex-col antialiased">
 	{#if isCheckingAuth}
 		<div class="flex-1 flex items-center justify-center">
 			<div class="animate-spin h-8 w-8 border-3 border-pink-300 border-t-pink-600 rounded-full"></div>
@@ -163,8 +494,8 @@
 	{:else if !isAuthenticated}
 		<!-- Secret Admin Passcode Screen -->
 		<div class="flex-1 flex items-center justify-center p-4">
-			<div class="bg-white border-2 border-pink-300 rounded-2xl max-w-sm w-full p-6 text-center">
-				<div class="w-14 h-14 bg-pink-100 border-2 border-pink-300 rounded-2xl flex items-center justify-center mx-auto mb-4 text-pink-600">
+			<div class="bg-white border-2 border-pink-300 shadow-md rounded-3xl max-w-sm w-full p-6 text-center">
+				<div class="w-14 h-14 bg-pink-100 text-pink-600 border-2 border-pink-300 rounded-2xl flex items-center justify-center mx-auto mb-4">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
 					</svg>
@@ -174,8 +505,11 @@
 				<p class="text-xs text-pink-500 mb-5 font-medium">ChronoMuse Central Platform Console</p>
 
 				{#if authError}
-					<div class="mb-4 p-2.5 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-700 font-bold">
-						{authError}
+					<div class="mb-4 p-2.5 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-700 font-bold flex items-center gap-2 text-left">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 flex-shrink-0">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+						</svg>
+						<span>{authError}</span>
 					</div>
 				{/if}
 
@@ -189,15 +523,17 @@
 							bind:value={passcodeInput}
 							placeholder="Enter passcode..."
 							class="w-full px-3.5 py-2.5 bg-pink-50 border-2 border-pink-200 rounded-xl text-center text-lg font-mono tracking-widest text-pink-900 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:bg-white"
-							autofocus
 						/>
 					</div>
 
 					<button
 						type="submit"
-						class="w-full py-2.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white font-bold text-sm rounded-xl transition-all cursor-pointer"
+						class="w-full py-2.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white font-bold text-sm rounded-xl shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
 					>
-						Authenticate Console
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+						</svg>
+						<span>Authenticate Console</span>
 					</button>
 
 					<button
@@ -211,30 +547,46 @@
 			</div>
 		</div>
 	{:else}
-		<!-- Authenticated Admin Dashboard -->
-		<div class="container mx-auto max-w-6xl space-y-5">
+		<!-- Authenticated Admin Dashboard (Pink Theme) -->
+		<div class="container mx-auto max-w-6xl space-y-4">
 			<!-- Header -->
-			<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-				<div class="flex items-center space-x-3">
-					<div class="w-11 h-11 bg-pink-500 text-white rounded-xl border border-pink-600 flex items-center justify-center font-black text-xl">
-						⚙️
-					</div>
-					<div>
-						<div class="flex items-center gap-2">
-							<h1 class="text-base sm:text-lg font-black text-pink-700">ChronoMuse Central Control</h1>
-							<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-bold border border-emerald-300">
-								Encrypted & Secure
-							</span>
-						</div>
-						<p class="text-xs text-pink-500">Platform status monitoring & account management (Privacy Shield Active)</p>
+			<div class="bg-white border-2 border-pink-300 shadow-sm rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+				<div class="flex items-center space-x-3 min-w-0">
+					<img src="/logo.png" alt="ChronoMuse" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain border border-pink-200 flex-shrink-0 bg-white shadow-2xs" />
+					<div class="min-w-0 flex items-center gap-2 flex-wrap">
+						<h1 class="text-base sm:text-lg font-black text-pink-700 truncate">ChronoMuse Admin</h1>
+						<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[11px] font-bold border border-emerald-300 whitespace-nowrap">
+							<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+							Connected
+						</span>
 					</div>
 				</div>
 
-				<div class="flex items-center space-x-2 self-end sm:self-auto">
+				<div class="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+					<!-- Appeals Button that opens Modal -->
+					<button
+						onclick={() => showAppealsListModal = true}
+						class="px-3 py-2 {reactivationRequests.length > 0 ? (unreadAppealsCount > 0 ? 'bg-pink-600 hover:bg-pink-700 text-white shadow-md ring-2 ring-pink-300 animate-pulse' : 'bg-pink-100 hover:bg-pink-200 text-pink-900 border border-pink-300') : 'bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200'} rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+						title="Open pending reactivation appeals modal"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 {unreadAppealsCount > 0 ? 'text-white' : 'text-pink-600'}">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+						</svg>
+						<span>Appeals</span>
+						{#if reactivationRequests.length > 0}
+							<span class="px-1.5 py-0.2 rounded-full text-[10px] font-black {unreadAppealsCount > 0 ? 'bg-rose-600 text-white' : 'bg-pink-200 text-pink-900'}">
+								{reactivationRequests.length}
+							</span>
+							{#if unreadAppealsCount > 0}
+								<span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+							{/if}
+						{/if}
+					</button>
+
 					<button
 						onclick={loadAdminData}
 						disabled={isLoadingData}
-						class="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 border border-pink-300 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+						class="px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 border border-pink-300 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 {isLoadingData ? 'animate-spin' : ''}">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -242,183 +594,353 @@
 						<span>Refresh</span>
 					</button>
 					<button
-						onclick={handleLogout}
-						class="px-3 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+						onclick={() => goto('/dashboard')}
+						class="px-3 py-2 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 font-bold text-xs rounded-xl transition-all cursor-pointer text-center"
 					>
-						Exit Console
+						Go to App
+					</button>
+					<button
+						onclick={handleLogout}
+						class="px-3 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+						</svg>
+						<span>Exit</span>
 					</button>
 				</div>
 			</div>
 
-			<!-- Privacy Shield Banner -->
-			<div class="p-3.5 bg-emerald-50 border-2 border-emerald-300 rounded-2xl flex items-start space-x-3 text-emerald-900">
-				<div class="p-1.5 bg-emerald-200 rounded-lg text-emerald-800 flex-shrink-0 mt-0.5">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-					</svg>
-				</div>
-				<div class="text-xs">
-					<p class="font-bold">Zero-Access Privacy Architecture Enforced</p>
-					<p class="text-emerald-700 leading-relaxed mt-0.5">
-						In compliance with secure privacy standards, this console strictly monitors aggregate user metrics and platform operational health without accessing private diary entries, messages, or confidential user activities.
-					</p>
-				</div>
-			</div>
-
+			<!-- Notice Alerts -->
 			{#if actionMessage}
-				<div class="p-3 bg-emerald-100 border border-emerald-300 text-emerald-900 rounded-xl text-xs font-bold">
-					{actionMessage}
+				<div class="p-3 bg-emerald-100 border border-emerald-300 text-emerald-900 rounded-xl text-xs font-bold flex items-center gap-2">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-emerald-600 flex-shrink-0">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+					<span>{actionMessage}</span>
 				</div>
 			{/if}
 
-			<!-- Metric Cards Grid -->
-			<div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+			{#if errorMessage}
+				<div class="p-3 bg-rose-100 border border-rose-300 text-rose-900 rounded-xl text-xs font-bold flex items-center gap-2">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-rose-600 flex-shrink-0">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+					</svg>
+					<span>{errorMessage}</span>
+				</div>
+			{/if}
+
+			<!-- Metric Cards Grid (Compact on Mobile) -->
+			<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
 				<!-- Registered Users -->
-				<div class="bg-white border-2 border-pink-300 rounded-2xl p-4">
-					<div class="flex items-center justify-between mb-2">
-						<span class="text-xs font-bold text-pink-600 uppercase">Registered Users</span>
-						<span class="p-1 bg-pink-100 rounded-md text-pink-600 text-xs">👥</span>
+				<div class="bg-white border-2 border-pink-300 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col justify-between shadow-2xs">
+					<div class="flex items-center justify-between mb-1 sm:mb-2">
+						<span class="text-[10px] sm:text-[11px] font-bold text-pink-600 uppercase tracking-wider">Users</span>
+						<div class="p-1 sm:p-1.5 bg-pink-100 text-pink-600 rounded-md sm:rounded-lg">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+							</svg>
+						</div>
 					</div>
-					<p class="text-2xl font-black text-pink-900">{metrics.total_users}</p>
-					<p class="text-[10px] text-pink-400 mt-1 font-medium">Active Accounts</p>
+					<div>
+						<p class="text-xl sm:text-2xl font-black text-pink-900">{metrics.total_users}</p>
+						<p class="text-[9px] sm:text-[10px] text-pink-400 font-medium">Registered Accounts</p>
+					</div>
 				</div>
 
 				<!-- Active Today -->
-				<div class="bg-white border-2 border-emerald-300 rounded-2xl p-4">
-					<div class="flex items-center justify-between mb-2">
-						<span class="text-xs font-bold text-emerald-700 uppercase">Active Today</span>
-						<span class="p-1 bg-emerald-100 rounded-md text-emerald-600 text-xs">🟢</span>
+				<div class="bg-white border-2 border-emerald-300 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col justify-between shadow-2xs">
+					<div class="flex items-center justify-between mb-1 sm:mb-2">
+						<span class="text-[10px] sm:text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Active (24h)</span>
+						<div class="p-1 sm:p-1.5 bg-emerald-100 text-emerald-600 rounded-md sm:rounded-lg">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+						</div>
 					</div>
-					<p class="text-2xl font-black text-emerald-900">{metrics.active_today}</p>
-					<p class="text-[10px] text-emerald-600 mt-1 font-medium">Logged in last 24h</p>
+					<div>
+						<p class="text-xl sm:text-2xl font-black text-emerald-900">{metrics.active_today}</p>
+						<p class="text-[9px] sm:text-[10px] text-emerald-600 font-medium">Logged in 24h</p>
+					</div>
 				</div>
 
 				<!-- Memories Recorded -->
-				<div class="bg-white border-2 border-pink-300 rounded-2xl p-4">
-					<div class="flex items-center justify-between mb-2">
-						<span class="text-xs font-bold text-pink-600 uppercase">Total Memories</span>
-						<span class="p-1 bg-pink-100 rounded-md text-pink-600 text-xs">📖</span>
+				<div class="bg-white border-2 border-pink-300 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col justify-between shadow-2xs">
+					<div class="flex items-center justify-between mb-1 sm:mb-2">
+						<span class="text-[10px] sm:text-[11px] font-bold text-pink-600 uppercase tracking-wider">Memories</span>
+						<div class="p-1 sm:p-1.5 bg-pink-100 text-pink-600 rounded-md sm:rounded-lg">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+							</svg>
+						</div>
 					</div>
-					<p class="text-2xl font-black text-pink-900">{metrics.total_memories}</p>
-					<p class="text-[10px] text-pink-400 mt-1 font-medium">Calendar Entries</p>
+					<div>
+						<p class="text-xl sm:text-2xl font-black text-pink-900">{metrics.total_memories}</p>
+						<p class="text-[9px] sm:text-[10px] text-pink-400 font-medium">Calendar Entries</p>
+					</div>
 				</div>
 
-				<!-- 24h Notes Published -->
-				<div class="bg-white border-2 border-pink-300 rounded-2xl p-4">
-					<div class="flex items-center justify-between mb-2">
-						<span class="text-xs font-bold text-pink-600 uppercase">24h Notes</span>
-						<span class="p-1 bg-pink-100 rounded-md text-pink-600 text-xs">💬</span>
+				<!-- Pinned Dates -->
+				<div class="bg-white border-2 border-pink-300 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col justify-between shadow-2xs">
+					<div class="flex items-center justify-between mb-1 sm:mb-2">
+						<span class="text-[10px] sm:text-[11px] font-bold text-pink-600 uppercase tracking-wider">Pinned Dates</span>
+						<div class="p-1 sm:p-1.5 bg-pink-100 text-pink-600 rounded-md sm:rounded-lg">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+							</svg>
+						</div>
 					</div>
-					<p class="text-2xl font-black text-pink-900">{metrics.total_notes}</p>
-					<p class="text-[10px] text-pink-400 mt-1 font-medium">Live Thought Bubbles</p>
+					<div>
+						<p class="text-xl sm:text-2xl font-black text-pink-900">{metrics.total_pinned_dates}</p>
+						<p class="text-[9px] sm:text-[10px] text-pink-400 font-medium">Pinned Days</p>
+					</div>
+				</div>
+
+				<!-- Live Thoughts / Notes -->
+				<div class="bg-white border-2 border-pink-300 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col justify-between shadow-2xs">
+					<div class="flex items-center justify-between mb-1 sm:mb-2">
+						<span class="text-[10px] sm:text-[11px] font-bold text-pink-600 uppercase tracking-wider">Notes</span>
+						<div class="p-1 sm:p-1.5 bg-pink-100 text-pink-600 rounded-md sm:rounded-lg">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+							</svg>
+						</div>
+					</div>
+					<div>
+						<p class="text-xl sm:text-2xl font-black text-pink-900">{metrics.total_notes}</p>
+						<p class="text-[9px] sm:text-[10px] text-pink-400 font-medium">Live Thoughts</p>
+					</div>
+				</div>
+
+				<!-- Messages Exchanged -->
+				<div class="bg-white border-2 border-pink-300 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col justify-between shadow-2xs">
+					<div class="flex items-center justify-between mb-1 sm:mb-2">
+						<span class="text-[10px] sm:text-[11px] font-bold text-pink-600 uppercase tracking-wider">Messages</span>
+						<div class="p-1 sm:p-1.5 bg-pink-100 text-pink-600 rounded-md sm:rounded-lg">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+							</svg>
+						</div>
+					</div>
+					<div>
+						<p class="text-xl sm:text-2xl font-black text-pink-900">{metrics.total_messages}</p>
+						<p class="text-[9px] sm:text-[10px] text-pink-400 font-medium">Chat Transcripts</p>
+					</div>
 				</div>
 			</div>
 
-			<!-- Platform Health Status -->
-			<div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-				<div class="bg-white border-2 border-pink-200 rounded-2xl p-3.5 flex items-center justify-between">
-					<span class="text-xs font-bold text-pink-700">Database Engine</span>
-					<span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold border border-emerald-300">
-						{metrics.database_status}
-					</span>
-				</div>
-				<div class="bg-white border-2 border-pink-200 rounded-2xl p-3.5 flex items-center justify-between">
-					<span class="text-xs font-bold text-pink-700">Storage Buckets</span>
-					<span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold border border-emerald-300">
-						{metrics.storage_status}
-					</span>
-				</div>
-				<div class="bg-white border-2 border-pink-200 rounded-2xl p-3.5 flex items-center justify-between">
-					<span class="text-xs font-bold text-pink-700">Security Layer</span>
-					<span class="px-2.5 py-1 bg-pink-100 text-pink-800 rounded-full text-xs font-bold border border-pink-300">
-						{metrics.encryption_protocol}
-					</span>
-				</div>
-			</div>
 
 			<!-- Users Management Directory -->
-			<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 space-y-4">
+			<div class="bg-white border-2 border-pink-300 shadow-sm rounded-2xl p-4 sm:p-5 space-y-4">
 				<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
 					<div>
-						<h2 class="text-base font-bold text-pink-800">Platform Accounts Directory ({filteredUsers.length})</h2>
-						<p class="text-xs text-pink-400">Manage registered user accounts and statuses</p>
+						<h2 class="text-base font-black text-pink-800">Platform Accounts Directory ({filteredUsers.length})</h2>
+						<p class="text-xs text-pink-500 font-medium">Search, moderate, change passwords, and manage registered profiles</p>
 					</div>
 
 					<div class="flex items-center gap-2 w-full sm:w-auto">
-						<input
-							type="text"
-							bind:value={userSearchQuery}
-							placeholder="Search username / email..."
-							class="px-3 py-1.5 bg-pink-50 border border-pink-300 rounded-xl text-xs font-medium text-pink-900 focus:outline-none focus:ring-2 focus:ring-pink-400 flex-1 sm:w-56"
-						/>
-						<select
-							bind:value={selectedStatusFilter}
-							class="px-2.5 py-1.5 bg-pink-50 border border-pink-300 rounded-xl text-xs font-bold text-pink-800 focus:outline-none"
+						<div class="relative flex-1 sm:w-64">
+							<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-pink-400">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+								</svg>
+							</div>
+							<input
+								type="text"
+								bind:value={userSearchQuery}
+								placeholder="Search username or email..."
+								class="w-full pl-8 pr-3 py-1.5 bg-pink-50 border border-pink-300 rounded-xl text-xs font-bold text-pink-900 placeholder:text-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all"
+							/>
+						</div>
+
+						<!-- Filter Button triggering Modal -->
+						<button
+							type="button"
+							onclick={() => showFilterModal = true}
+							class="px-3 py-1.5 bg-pink-50 hover:bg-pink-100 text-pink-800 border border-pink-300 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-between sm:justify-start gap-1.5 whitespace-nowrap shadow-2xs min-w-[120px]"
+							title="Filter accounts directory"
 						>
-							<option value="all">All Statuses</option>
-							<option value="active">Active</option>
-							<option value="suspended">Suspended</option>
-						</select>
+							<div class="flex items-center gap-1.5">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-pink-600">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+								</svg>
+								<span>{statusFilterLabels[selectedStatusFilter]}</span>
+							</div>
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-pink-500">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+							</svg>
+						</button>
 					</div>
 				</div>
 
-				<!-- Users Table -->
-				<div class="overflow-x-auto">
-					<table class="w-full text-left text-xs">
+				<!-- Users Table (Slideable on Desktop & Mobile) -->
+				<div
+					bind:this={tableContainerEl}
+					onmousedown={onTableMouseDown}
+					onmousemove={onTableMouseMove}
+					onmouseup={onTableMouseUp}
+					onmouseleave={onTableMouseUp}
+					role="region"
+					aria-label="Accounts table"
+					class="overflow-x-auto rounded-xl border border-pink-100 scrollbar-thin scroll-smooth {isTableDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}"
+				>
+					<table class="w-full min-w-[980px] text-left text-xs">
 						<thead>
 							<tr class="bg-pink-100 text-pink-800 border-b-2 border-pink-200">
-								<th class="py-2.5 px-3 font-bold">User</th>
-								<th class="py-2.5 px-3 font-bold">Email</th>
-								<th class="py-2.5 px-3 font-bold">Joined</th>
-								<th class="py-2.5 px-3 font-bold">Last Activity</th>
-								<th class="py-2.5 px-3 font-bold">Account Status</th>
-								<th class="py-2.5 px-3 font-bold text-right">Moderation</th>
+								<th class="py-2.5 px-3 font-bold whitespace-nowrap">User</th>
+								<th class="py-2.5 px-3 font-bold whitespace-nowrap">Email</th>
+								<th class="py-2.5 px-3 font-bold text-center whitespace-nowrap">Memories</th>
+								<th class="py-2.5 px-3 font-bold text-center whitespace-nowrap">Pinned</th>
+								<th class="py-2.5 px-3 font-bold text-center whitespace-nowrap">Notes</th>
+								<th class="py-2.5 px-3 font-bold text-center whitespace-nowrap">Messages</th>
+								<th class="py-2.5 px-3 font-bold whitespace-nowrap">Joined Date</th>
+								<th class="py-2.5 px-3 font-bold whitespace-nowrap">Last Active</th>
+								<th class="py-2.5 px-3 font-bold whitespace-nowrap">Account Status</th>
+								<th class="py-2.5 px-3 font-bold text-right whitespace-nowrap">Actions</th>
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-pink-100">
-							{#if filteredUsers.length === 0}
+							{#if isLoadingData && usersList.length === 0}
 								<tr>
-									<td colspan="6" class="text-center py-6 text-pink-400 font-medium">
-										No user accounts matching your criteria.
+									<td colspan="10" class="text-center py-8 text-pink-400 font-medium">
+										<div class="inline-flex items-center gap-2">
+											<div class="animate-spin h-4 w-4 border-2 border-pink-300 border-t-pink-600 rounded-full"></div>
+											<span>Loading registered accounts...</span>
+										</div>
+									</td>
+								</tr>
+							{:else if filteredUsers.length === 0}
+								<tr>
+									<td colspan="10" class="text-center py-8 text-pink-400 font-medium">
+										No user accounts found matching your criteria.
 									</td>
 								</tr>
 							{:else}
 								{#each filteredUsers as userRow (userRow.id)}
 									<tr class="hover:bg-pink-50/70 transition-colors">
 										<td class="py-2.5 px-3">
-											<div class="flex items-center space-x-2">
-												<div class="w-7 h-7 rounded-full bg-pink-400 text-white font-bold flex items-center justify-center overflow-hidden flex-shrink-0">
+											<div class="flex items-center space-x-2.5">
+												<div class="w-7 h-7 rounded-full bg-pink-400 text-white font-bold flex items-center justify-center overflow-hidden flex-shrink-0 text-xs">
 													{#if userRow.avatar_url}
 														<img src={userRow.avatar_url} alt="" class="w-full h-full object-cover" />
 													{:else}
 														{userRow.username?.charAt(0).toUpperCase()}
 													{/if}
 												</div>
-												<span class="font-bold text-pink-900">@{userRow.username}</span>
+												<div>
+													<span class="font-bold text-pink-900 block">@{userRow.username}</span>
+													<span class="text-[10px] text-pink-400 font-mono">ID: #{userRow.id}</span>
+												</div>
 											</div>
 										</td>
-										<td class="py-2.5 px-3 text-pink-700">{userRow.email || '—'}</td>
-										<td class="py-2.5 px-3 text-pink-600">{formatDate(userRow.created_at)}</td>
-										<td class="py-2.5 px-3 text-pink-600">{formatDate(userRow.last_activity)}</td>
-										<td class="py-2.5 px-3">
-											{#if userRow.status === 'suspended'}
-												<span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded-full text-[10px] font-bold border border-rose-300">
-													Suspended
+										<td class="py-2.5 px-3 text-pink-700 font-mono text-[11px]">{userRow.email || '—'}</td>
+										<td class="py-2.5 px-3 text-center">
+											<span class="px-2 py-0.5 bg-pink-100 text-pink-800 rounded-md font-bold text-[11px] border border-pink-200">
+												{userRow.memories_count || 0}
+											</span>
+										</td>
+										<td class="py-2.5 px-3 text-center">
+											<span class="px-2 py-0.5 bg-pink-100 text-pink-800 rounded-md font-bold text-[11px] border border-pink-200">
+												{userRow.pinned_count || 0}
+											</span>
+										</td>
+										<td class="py-2.5 px-3 text-center">
+											<span class="px-2 py-0.5 bg-pink-100 text-pink-800 rounded-md font-bold text-[11px] border border-pink-200">
+												{userRow.notes_count || 0}
+											</span>
+										</td>
+										<td class="py-2.5 px-3 text-center">
+											<span class="px-2 py-0.5 bg-pink-100 text-pink-800 rounded-md font-bold text-[11px] border border-pink-200">
+												{userRow.messages_count || 0}
+											</span>
+										</td>
+										<td class="py-2.5 px-3 text-pink-700 font-medium whitespace-nowrap">
+											{formatDate(userRow.created_at)}
+										</td>
+										<td class="py-2.5 px-3 whitespace-nowrap">
+											{#if !userRow.last_activity}
+												<span class="inline-flex items-center gap-1.5 text-slate-400 font-medium text-[11px]" title="No activity recorded">
+													<span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+													<span class="italic">No activity yet</span>
 												</span>
 											{:else}
-												<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-bold border border-emerald-300">
+												{@const statusInfo = formatLastActive(userRow.last_activity, currentTime)}
+												<span 
+													class="inline-flex items-center gap-1.5" 
+													title={`Exact timestamp: ${formatDate(userRow.last_activity)}`}
+												>
+													<span class="w-2 h-2 rounded-full {statusInfo.isActiveNow ? 'bg-emerald-500 ring-2 ring-emerald-200 animate-pulse' : 'bg-slate-300'}"></span>
+													<span class="{statusInfo.isActiveNow ? 'text-emerald-700 font-bold' : 'text-slate-600 font-medium'} text-xs">
+														{statusInfo.label}
+													</span>
+												</span>
+											{/if}
+										</td>
+										<td class="py-2.5 px-3 whitespace-nowrap">
+											{#if userRow.status === 'suspended'}
+												<div class="flex flex-col gap-1">
+													<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-rose-100 text-rose-800 rounded-full text-[10px] font-bold border border-rose-300 w-max">
+														<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+														Suspended
+													</span>
+													{#if userRow.has_pending_reactivation}
+														<button
+															type="button"
+															onclick={() => openAppealReview(userRow.reactivation_request || { id: null, user_id: userRow.id, username: userRow.username, email: userRow.email, reason: '', is_read: false, created_at: new Date().toISOString() })}
+															class="inline-flex items-center gap-1 px-2 py-0.5 {userRow.reactivation_request && !userRow.reactivation_request.is_read ? 'bg-rose-100 hover:bg-rose-200 text-rose-900 border-rose-300 animate-pulse' : 'bg-pink-100 hover:bg-pink-200 text-pink-800 border-pink-300'} rounded-full text-[9.5px] font-bold border transition-all cursor-pointer shadow-xs w-max"
+															title="Click to read appeal note & message"
+														>
+															{#if userRow.reactivation_request && !userRow.reactivation_request.is_read}
+																<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+															{:else}
+																<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-pink-600">
+																	<path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+																</svg>
+															{/if}
+															<span>{userRow.reactivation_request && !userRow.reactivation_request.is_read ? 'New Appeal' : 'Appeal Note'}</span>
+														</button>
+													{/if}
+												</div>
+											{:else}
+												<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full text-[10px] font-bold border border-pink-200">
 													Active
 												</span>
 											{/if}
 										</td>
 										<td class="py-2.5 px-3 text-right">
-											<button
-												onclick={() => toggleUserStatus(userRow)}
-												disabled={isTogglingStatus}
-												class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer {userRow.status === 'suspended' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-rose-100 hover:bg-rose-200 text-rose-700 border border-rose-300'}"
-											>
-												{userRow.status === 'suspended' ? 'Reactivate' : 'Suspend'}
-											</button>
+											<div class="flex items-center justify-end gap-1.5">
+												<!-- Toggle Status Button -->
+												<button
+													onclick={() => toggleUserStatus(userRow)}
+													disabled={isTogglingStatus}
+													title={userRow.status === 'suspended' ? 'Reactivate Account' : 'Suspend Account'}
+													class="px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer {userRow.status === 'suspended' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-pink-100 hover:bg-pink-200 text-pink-700 border border-pink-300'}"
+												>
+													{userRow.status === 'suspended' ? 'Reactivate' : 'Suspend'}
+												</button>
+
+												<!-- Reset Password Button -->
+												<button
+													onclick={() => { selectedUserForPasswordReset = userRow; newPasswordInput = ''; }}
+													title="Reset Password"
+													class="p-1.5 text-pink-600 hover:text-pink-800 hover:bg-pink-100 rounded-lg transition-all cursor-pointer border border-pink-200"
+												>
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+														<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+													</svg>
+												</button>
+
+												<!-- Delete User Button -->
+												<button
+													onclick={() => { selectedUserForDelete = userRow; }}
+													title="Delete User"
+													class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-100 rounded-lg transition-all cursor-pointer border border-rose-200"
+												>
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+														<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+													</svg>
+												</button>
+											</div>
 										</td>
 									</tr>
 								{/each}
@@ -430,3 +952,423 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Password Reset Modal -->
+{#if selectedUserForPasswordReset}
+	<div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in">
+		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-xl max-w-sm w-full p-6 space-y-4">
+			<div class="flex items-center justify-between border-b border-pink-100 pb-3">
+				<div class="flex items-center gap-2 text-pink-900 font-black text-sm">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+					</svg>
+					<span>Reset Password</span>
+				</div>
+				<button
+					onclick={() => { selectedUserForPasswordReset = null; newPasswordInput = ''; }}
+					aria-label="Close"
+					class="text-pink-400 hover:text-pink-600 cursor-pointer"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+
+			<p class="text-xs text-pink-600 font-medium">
+				Setting new password for <span class="font-bold text-pink-900">@{selectedUserForPasswordReset.username}</span>:
+			</p>
+
+			<form onsubmit={handleResetPassword} class="space-y-3">
+				<div>
+					<label for="new_pw_input" class="block text-xs font-bold text-pink-700 mb-1">New Password (min. 6 chars)</label>
+					<input
+						id="new_pw_input"
+						type="text"
+						bind:value={newPasswordInput}
+						placeholder="Enter new password..."
+						class="w-full px-3 py-2 bg-pink-50 border-2 border-pink-200 rounded-xl text-xs font-mono text-pink-900 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all"
+					/>
+				</div>
+
+				<div class="flex items-center justify-end gap-2 pt-2">
+					<button
+						type="button"
+						onclick={() => { selectedUserForPasswordReset = null; newPasswordInput = ''; }}
+						class="px-3.5 py-1.5 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+					>
+						Cancel
+					</button>
+					<button
+						type="submit"
+						disabled={isResettingPassword || !newPasswordInput || newPasswordInput.trim().length < 6}
+						class="px-3.5 py-1.5 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+					>
+						{isResettingPassword ? 'Saving...' : 'Save Password'}
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+{/if}
+
+<!-- Confirm Delete User Modal -->
+{#if selectedUserForDelete}
+	<div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in">
+		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-xl max-w-sm w-full p-6 space-y-4">
+			<div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl border border-rose-200 flex items-center justify-center mx-auto">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+				</svg>
+			</div>
+
+			<div class="text-center space-y-1">
+				<h3 class="text-sm font-black text-pink-950">Delete Account @{selectedUserForDelete.username}?</h3>
+				<p class="text-xs text-pink-600 font-medium leading-relaxed">
+					This action cannot be undone. All memories, notes, pinned dates, and friendships will be deleted permanently.
+				</p>
+			</div>
+
+			<div class="flex items-center justify-center gap-2 pt-2">
+				<button
+					type="button"
+					onclick={() => { selectedUserForDelete = null; }}
+					class="w-1/2 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+				>
+					Cancel
+				</button>
+				<button
+					type="button"
+					onclick={handleDeleteUser}
+					disabled={isDeletingUser}
+					class="w-1/2 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+				>
+					{isDeletingUser ? 'Deleting...' : 'Confirm Delete'}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Reactivation Appeal Review Modal -->
+{#if viewingAppealModal}
+	{@const targetUser = usersList.find(u => u.id === viewingAppealModal.user_id || u.username === viewingAppealModal.username)}
+	<div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in">
+		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-lg w-full p-5 sm:p-6 space-y-4 animate-modal-content">
+			<!-- Header -->
+			<div class="flex items-start justify-between border-b border-pink-100 pb-3 gap-3">
+				<div class="flex items-center gap-3">
+					<div class="w-10 h-10 bg-pink-100 text-pink-600 rounded-2xl border border-pink-200 flex items-center justify-center flex-shrink-0">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+						</svg>
+					</div>
+					<div>
+						<h3 class="text-sm sm:text-base font-black text-pink-950">Review Reactivation Appeal</h3>
+						<p class="text-xs text-pink-500 font-medium">Evaluate appeal submitted by suspended user</p>
+					</div>
+				</div>
+				<button
+					onclick={() => viewingAppealModal = null}
+					aria-label="Close"
+					class="text-pink-400 hover:text-pink-600 cursor-pointer p-1 rounded-lg hover:bg-pink-50"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+
+			<!-- User Header -->
+			<div class="flex items-center justify-between gap-3 p-3 bg-pink-50/70 border border-pink-200 rounded-2xl">
+				<div class="flex items-center space-x-3 min-w-0">
+					<div class="w-11 h-11 rounded-full bg-pink-400 text-white font-black flex items-center justify-center text-sm flex-shrink-0 overflow-hidden border border-pink-300 shadow-xs">
+						{#if (targetUser?.avatar_url || viewingAppealModal.avatar_url)}
+							<img src={targetUser?.avatar_url || viewingAppealModal.avatar_url} alt="" class="w-full h-full object-cover" />
+						{:else}
+							{(viewingAppealModal.username || viewingAppealModal.email)?.charAt(0).toUpperCase()}
+						{/if}
+					</div>
+					<div class="min-w-0">
+						<p class="text-sm font-black text-pink-950 truncate">@{viewingAppealModal.username}</p>
+						<p class="text-xs text-pink-500 font-mono truncate">{viewingAppealModal.email || '—'}</p>
+					</div>
+				</div>
+				<span class="text-[10px] font-bold px-2.5 py-1 bg-rose-100 text-rose-800 rounded-full border border-rose-200 whitespace-nowrap flex-shrink-0">
+					Suspended
+				</span>
+			</div>
+
+			<!-- User Message Chat Bubble -->
+			<div class="space-y-1.5">
+				<span class="block text-xs font-bold text-pink-900">Appeal Message / Note from User:</span>
+				<div class="bg-pink-50/70 border-2 border-pink-200 rounded-2xl p-4 relative space-y-2.5">
+					<div class="flex items-start gap-2.5">
+						<div class="p-1.5 bg-pink-100 text-pink-600 rounded-lg mt-0.5 flex-shrink-0">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+							</svg>
+						</div>
+						<div class="min-w-0 flex-1">
+							{#if viewingAppealModal.reason}
+								<p class="text-xs sm:text-sm font-semibold text-slate-900 leading-relaxed break-words whitespace-pre-wrap">
+									"{viewingAppealModal.reason}"
+								</p>
+							{:else}
+								<p class="text-xs text-slate-400 italic">No custom written note was provided with this appeal.</p>
+							{/if}
+						</div>
+					</div>
+					<div class="text-right border-t border-pink-200 pt-2">
+						<span class="text-[11px] text-pink-600 font-mono font-medium">
+							Submitted: {formatDate(viewingAppealModal.created_at || viewingAppealModal.updated_at)}
+						</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Actions -->
+			<div class="flex items-center justify-end gap-2 pt-2 border-t border-pink-100 flex-wrap">
+				<button
+					type="button"
+					onclick={() => {
+						const appeal = viewingAppealModal;
+						viewingAppealModal = null;
+						respondReactivation(appeal, 'dismiss');
+					}}
+					disabled={isProcessingAppeal}
+					class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer whitespace-nowrap"
+				>
+					Dismiss Request
+				</button>
+				<button
+					type="button"
+					onclick={() => {
+						const appeal = viewingAppealModal;
+						viewingAppealModal = null;
+						respondReactivation(appeal, 'approve');
+					}}
+					disabled={isProcessingAppeal}
+					class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+					</svg>
+					<span>Approve & Reactivate</span>
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- All Pending Reactivation Appeals List Modal -->
+{#if showAppealsListModal}
+	<div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 sm:p-5 animate-fade-in">
+		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-2xl w-full p-5 sm:p-6 space-y-4 max-h-[90vh] flex flex-col animate-modal-content">
+			<!-- Modal Header -->
+			<div class="flex items-start justify-between border-b border-pink-100 pb-3 flex-shrink-0 gap-3">
+				<div class="flex items-center gap-3">
+					<div class="w-10 h-10 bg-pink-100 text-pink-600 rounded-2xl border border-pink-200 flex items-center justify-center flex-shrink-0">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+						</svg>
+					</div>
+					<div>
+						<div class="flex items-center gap-2 flex-wrap">
+							<h3 class="text-sm sm:text-base font-black text-pink-950 whitespace-nowrap">Pending Reactivation Appeals</h3>
+							<span class="px-2.5 py-0.5 bg-pink-100 text-pink-900 border border-pink-300 rounded-full text-xs font-bold font-mono whitespace-nowrap">
+								{reactivationRequests.length} {reactivationRequests.length === 1 ? 'request' : 'requests'}
+							</span>
+							{#if unreadAppealsCount > 0}
+								<span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-rose-500 text-white rounded-full text-[11px] font-bold whitespace-nowrap animate-pulse">
+									<span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+									{unreadAppealsCount} Unread
+								</span>
+							{/if}
+						</div>
+						<p class="text-xs text-pink-500 font-medium mt-0.5">Review and resolve reinstatement requests from suspended users</p>
+					</div>
+				</div>
+
+				<div class="flex items-center gap-2 flex-shrink-0">
+					{#if unreadAppealsCount > 0}
+						<button
+							type="button"
+							onclick={markAllAppealsAsRead}
+							class="px-2.5 py-1.5 bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-bold rounded-xl border border-pink-200 transition-all cursor-pointer whitespace-nowrap"
+						>
+							Mark all read
+						</button>
+					{/if}
+					<button
+						onclick={() => showAppealsListModal = false}
+						aria-label="Close"
+						class="text-pink-400 hover:text-pink-600 cursor-pointer p-1.5 rounded-xl hover:bg-pink-50 transition-colors"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+				</div>
+			</div>
+
+			<!-- Appeals List (Scrollable) -->
+			<div class="overflow-y-auto flex-1 space-y-3.5 pr-1">
+				{#if reactivationRequests.length === 0}
+					<div class="text-center py-12 bg-pink-50/50 rounded-2xl border border-pink-100">
+						<div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-2 border border-emerald-200">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+						</div>
+						<p class="text-sm font-bold text-pink-900">No Pending Reactivation Appeals</p>
+						<p class="text-xs text-pink-500 font-medium mt-0.5">All account suspension appeals have been reviewed and resolved.</p>
+					</div>
+				{:else}
+					{#each reactivationRequests as reqItem (reqItem.id || reqItem.user_id)}
+						{@const reqUser = usersList.find(u => u.id === reqItem.user_id || u.username === reqItem.username)}
+						<div class="p-4 rounded-2xl border-2 {reqItem.is_read ? 'bg-white border-pink-200' : 'bg-amber-50/70 border-amber-300 shadow-sm'} space-y-3 transition-all">
+							<!-- User Information Header -->
+							<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+								<div class="flex items-center space-x-3 min-w-0">
+									<div class="w-9 h-9 rounded-full bg-pink-400 text-white font-bold flex items-center justify-center text-xs flex-shrink-0 shadow-xs overflow-hidden border border-pink-300">
+										{#if (reqUser?.avatar_url || reqItem.avatar_url)}
+											<img src={reqUser?.avatar_url || reqItem.avatar_url} alt="" class="w-full h-full object-cover" />
+										{:else}
+											{(reqItem.username || reqItem.email)?.charAt(0).toUpperCase()}
+										{/if}
+									</div>
+									<div class="min-w-0">
+										<div class="flex items-center gap-2 flex-wrap">
+											<span class="font-bold text-sm text-pink-950 whitespace-nowrap">@{reqItem.username}</span>
+											{#if !reqItem.is_read}
+												<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-rose-500 text-white rounded-full text-[10px] font-black uppercase tracking-wider whitespace-nowrap">
+													<span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+													NEW
+												</span>
+											{:else}
+												<span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold whitespace-nowrap">
+													Read
+												</span>
+											{/if}
+										</div>
+										<span class="text-xs text-pink-400 font-mono block truncate">{reqItem.email || '—'}</span>
+									</div>
+								</div>
+
+								<div class="text-left sm:text-right">
+									<span class="text-[11px] text-pink-600 font-mono font-medium block whitespace-nowrap">
+										{formatDate(reqItem.created_at || reqItem.updated_at)}
+									</span>
+								</div>
+							</div>
+
+							<!-- Appeal Note Content Box -->
+							<div class="p-3 bg-pink-50/80 border border-pink-200 rounded-xl text-xs sm:text-sm text-pink-950 font-medium whitespace-pre-wrap break-words leading-relaxed">
+								<span class="text-[10px] font-bold text-pink-600 uppercase tracking-wider block mb-1">User Appeal Note:</span>
+								{#if reqItem.reason}
+									"{reqItem.reason}"
+								{:else}
+									<span class="text-slate-400 italic">No appeal note provided.</span>
+								{/if}
+							</div>
+
+							<!-- Action Buttons -->
+							<div class="flex items-center justify-end gap-2 pt-1 flex-wrap">
+								<button
+									type="button"
+									onclick={() => respondReactivation(reqItem, 'dismiss')}
+									disabled={isProcessingAppeal}
+									class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap"
+								>
+									Dismiss
+								</button>
+								<button
+									type="button"
+									onclick={() => respondReactivation(reqItem, 'approve')}
+									disabled={isProcessingAppeal}
+									class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-sm whitespace-nowrap"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+									</svg>
+									<span>Approve & Reactivate</span>
+								</button>
+							</div>
+						</div>
+					{/each}
+				{/if}
+			</div>
+
+			<!-- Modal Footer -->
+			<div class="border-t border-pink-100 pt-3 flex justify-end flex-shrink-0">
+				<button
+					type="button"
+					onclick={() => showAppealsListModal = false}
+					class="px-4 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 font-bold text-xs rounded-xl transition-all cursor-pointer"
+				>
+					Close
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Account Status Filter Modal -->
+{#if showFilterModal}
+	<div class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in">
+		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-5 space-y-4 animate-modal-content">
+			<!-- Header -->
+			<div class="flex items-center justify-between border-b border-pink-100 pb-3">
+				<div class="flex items-center gap-2.5">
+					<div class="p-1.5 bg-pink-100 text-pink-600 rounded-xl">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+						</svg>
+					</div>
+					<div>
+						<h3 class="text-sm font-black text-pink-950">Filter Accounts</h3>
+						<p class="text-[11px] text-pink-500 font-medium">Select view criteria for directory</p>
+					</div>
+				</div>
+				<button
+					onclick={() => showFilterModal = false}
+					aria-label="Close"
+					class="text-pink-400 hover:text-pink-600 cursor-pointer p-1 rounded-lg hover:bg-pink-50"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+
+			<!-- Filter Options List -->
+			<div class="space-y-2">
+				{#each [
+					{ id: 'all', label: 'All Accounts', count: usersList.length, badgeBg: 'bg-pink-100 text-pink-800' },
+					{ id: 'active', label: 'Active Only', count: usersList.filter(u => u.status === 'active').length, badgeBg: 'bg-emerald-100 text-emerald-800 border border-emerald-300' },
+					{ id: 'suspended', label: 'Suspended Only', count: usersList.filter(u => u.status === 'suspended').length, badgeBg: 'bg-rose-100 text-rose-800 border border-rose-300' },
+					{ id: 'appeals', label: 'Appeals Pending', count: reactivationRequests.length, badgeBg: 'bg-amber-100 text-amber-900 border border-amber-300' }
+				] as opt}
+					<button
+						type="button"
+						onclick={() => { selectedStatusFilter = opt.id; showFilterModal = false; }}
+						class="w-full p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between {selectedStatusFilter === opt.id ? 'bg-pink-50 border-pink-400 shadow-2xs' : 'bg-white hover:bg-pink-50/50 border-pink-200'}"
+					>
+						<div class="flex items-center gap-2.5">
+							<div class="w-4 h-4 rounded-full border-2 flex items-center justify-center {selectedStatusFilter === opt.id ? 'border-pink-500 bg-pink-500 text-white' : 'border-pink-300 bg-white'}">
+								{#if selectedStatusFilter === opt.id}
+									<div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+								{/if}
+							</div>
+							<span class="text-xs font-bold {selectedStatusFilter === opt.id ? 'text-pink-950' : 'text-pink-800'}">{opt.label}</span>
+						</div>
+						<span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono {opt.badgeBg}">
+							{opt.count}
+						</span>
+					</button>
+				{/each}
+			</div>
+		</div>
+	</div>
+{/if}
