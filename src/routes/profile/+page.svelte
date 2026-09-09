@@ -2019,13 +2019,6 @@
 									<span class="px-2.5 py-0.5 bg-white border border-pink-300 text-pink-800 rounded-full text-[11px] font-bold">
 										{totalMoodLogs} Logs
 									</span>
-									<button
-										onclick={() => goto('/mood-graph')}
-										class="px-2.5 py-0.5 bg-pink-500 hover:bg-pink-600 text-white rounded-full text-[11px] font-bold active:scale-95 transition-all flex items-center space-x-1 cursor-pointer"
-										title="View Full Mood Graph"
-									>
-										<span>Full Graph</span>
-									</button>
 								</div>
 							</div>
 

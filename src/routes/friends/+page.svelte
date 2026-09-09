@@ -994,7 +994,7 @@
 									Discover People
 								</h3>
 							</div>
-							<span class="text-[11px] text-pink-400 font-medium">Suggested Users (20 per page)</span>
+							<span class="text-[11px] text-pink-400 font-medium">Suggested Users</span>
 						</div>
 
 						{#if isLoadingSuggested && suggestedUsers.length === 0}

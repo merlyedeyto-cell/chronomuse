@@ -309,6 +309,17 @@
 		if (trimVideoElement) trimVideoElement.currentTime = videoStartTime;
 	}
 
+	function portal(node) {
+		document.body.appendChild(node);
+		return {
+			destroy() {
+				if (node && node.parentNode) {
+					node.parentNode.removeChild(node);
+				}
+			}
+		};
+	}
+
 	function formatTimeDisplay(seconds) {
 		const s = Math.floor(seconds || 0);
 		const mins = Math.floor(s / 60);
@@ -877,7 +888,8 @@
 <!-- ChronoMuse Themed Messenger-Style Video Trimmer Modal -->
 {#if showVideoTrimmerModal && rawVideoUrl}
 	<div
-		class="fixed inset-0 bg-black/60 z-[120] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in select-none"
+		use:portal
+		class="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in select-none"
 		onclick={(e) => { if (e.target === e.currentTarget && !isTrimmingVideo) showVideoTrimmerModal = false; }}
 	>
 		<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-lg w-full p-4 sm:p-5 flex flex-col space-y-3.5 relative animate-modal-content m-auto max-h-[94vh] overflow-y-auto">
