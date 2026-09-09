@@ -852,59 +852,55 @@
 	</div>
 </div>
 
-<!-- Messenger-Style 15-Second Video Trimmer / Cropper Modal -->
+<!-- ChronoMuse Themed Messenger-Style Video Trimmer Modal -->
 {#if showVideoTrimmerModal && rawVideoUrl}
 	<div
-		class="fixed inset-0 bg-black/90 z-[120] flex flex-col justify-between p-3 sm:p-5 animate-fade-in select-none"
+		class="fixed inset-0 bg-pink-950/40 backdrop-blur-xs z-[120] flex items-center justify-center p-3 sm:p-4 animate-fade-in select-none"
 		onclick={(e) => { if (e.target === e.currentTarget && !isTrimmingVideo) showVideoTrimmerModal = false; }}
 	>
-		<!-- Top Bar: Cancel, Live Island Timer, Scissors & Done -->
-		<div class="flex items-center justify-between w-full max-w-lg mx-auto z-10 text-white pt-1">
-			<button
-				type="button"
-				onclick={() => { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; }}
-				disabled={isTrimmingVideo}
-				class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold backdrop-blur-md transition-all active:scale-95"
-			>
-				Cancel
-			</button>
+		<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-lg w-full p-4 sm:p-5 flex flex-col space-y-3.5 relative animate-modal-content">
+			<!-- Top Header: Title, Live Island Timer, Close Button -->
+			<div class="flex items-center justify-between gap-2 border-b border-pink-100 pb-2.5">
+				<div class="flex items-center space-x-2">
+					<div class="w-8 h-8 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center font-bold">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+							<path d="M6 3.75a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm12-1.5a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM9.545 10.379l-4.59 7.87a.75.75 0 101.3.758l4.086-7.006 4.085 7.006a.75.75 0 001.3-.758l-4.59-7.87a.75.75 0 00-1.591 0z" />
+						</svg>
+					</div>
+					<div>
+						<h3 class="text-sm sm:text-base font-extrabold text-pink-950 leading-tight">Trim Video Clip</h3>
+						<p class="text-[11px] text-pink-400">15 seconds max clip</p>
+					</div>
+				</div>
 
-			<!-- Dynamic Island Live Timer -->
-			<div class="flex items-center space-x-2 bg-black/80 border border-white/20 px-3.5 py-1.5 rounded-full backdrop-blur-md">
-				<span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-				<span class="font-mono font-bold text-xs sm:text-sm text-white">
-					{formatTimeDisplay(videoCurrentTime)}
-				</span>
-				<span class="text-[10px] text-white/60 font-semibold">
-					/ {formatTimeDisplay(videoEndTime - videoStartTime)}
-				</span>
-			</div>
+				<!-- Live Timer Pill Badge -->
+				<div class="flex items-center space-x-1.5 bg-pink-50 border-2 border-pink-200 px-3 py-1 rounded-full">
+					<span class="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+					<span class="font-mono font-black text-xs text-pink-900">
+						{formatTimeDisplay(videoCurrentTime)}
+					</span>
+					<span class="text-[10px] text-pink-400 font-semibold">
+						/ {formatTimeDisplay(videoEndTime - videoStartTime)}
+					</span>
+				</div>
 
-			<!-- Done / Scissors Button -->
-			<div class="flex items-center space-x-2">
+				<!-- Cancel / Close X Button -->
 				<button
 					type="button"
-					onclick={confirmTrimmedVideo}
+					onclick={() => { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; }}
 					disabled={isTrimmingVideo}
-					class="px-4 py-1.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white font-black text-xs sm:text-sm rounded-full transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+					class="p-1.5 text-pink-400 hover:text-pink-700 hover:bg-pink-100 rounded-full transition-all"
+					title="Cancel"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-						<path d="M6 3.75a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm12-1.5a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM9.545 10.379l-4.59 7.87a.75.75 0 101.3.758l4.086-7.006 4.085 7.006a.75.75 0 001.3-.758l-4.59-7.87a.75.75 0 00-1.591 0z" />
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+						<path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
 					</svg>
-					{#if isTrimmingVideo}
-						<span>Trimming...</span>
-					{:else}
-						<span>Done</span>
-					{/if}
 				</button>
 			</div>
-		</div>
 
-		<!-- Center: Video Viewport -->
-		<div class="flex-grow flex items-center justify-center relative my-auto py-2 max-w-lg w-full mx-auto">
-			<!-- Video container with tap-to-play -->
+			<!-- Center: Video Player Viewport -->
 			<div
-				class="relative w-full max-h-[60vh] rounded-2xl overflow-hidden bg-black flex items-center justify-center cursor-pointer group"
+				class="relative w-full rounded-2xl overflow-hidden bg-black border-2 border-pink-200 flex items-center justify-center cursor-pointer group max-h-56"
 				onclick={togglePlayTrimVideo}
 			>
 				<video
@@ -913,108 +909,139 @@
 					onloadedmetadata={onVideoMetadataLoaded}
 					ontimeupdate={handleTrimTimeUpdate}
 					playsinline
-					class="w-full max-h-[60vh] object-contain"
+					class="w-full max-h-56 object-contain"
 				></video>
 
-				<!-- Play/Pause Floating Overlay -->
+				<!-- Play/Pause Overlay Icon -->
 				{#if !isPlayingTrimVideo}
-					<div class="absolute inset-0 bg-black/30 flex items-center justify-center transition-all">
-						<div class="w-14 h-14 rounded-full bg-white/30 backdrop-blur-md flex items-center justify-center text-white border border-white/40 group-hover:scale-110 transition-transform">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7 ml-0.5">
+					<div class="absolute inset-0 bg-black/25 flex items-center justify-center transition-all">
+						<div class="w-12 h-12 rounded-full bg-pink-500/90 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 ml-0.5">
 								<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
 							</svg>
 						</div>
 					</div>
 				{/if}
 			</div>
-		</div>
 
-		<!-- Bottom Messenger Filmstrip Scrubber Tool -->
-		<div class="w-full max-w-lg mx-auto bg-black/70 backdrop-blur-md rounded-2xl p-3 sm:p-4 border border-white/15 space-y-2.5 z-10">
-			<div class="flex items-center justify-between text-[11px] text-white/80 font-medium">
-				<span>15-second clip limit</span>
-				<span class="text-pink-400 font-bold">
-					Selected: {(videoEndTime - videoStartTime).toFixed(1)}s (Max 15s)
-				</span>
-			</div>
+			<!-- Messenger Storyboard Filmstrip Scrubber Tool -->
+			<div class="bg-pink-50 border-2 border-pink-200 rounded-2xl p-3 space-y-2">
+				<div class="flex items-center justify-between text-xs font-bold">
+					<span class="text-pink-600">Storyboard Timeline</span>
+					<span class="text-pink-800">
+						Duration: {(videoEndTime - videoStartTime).toFixed(1)}s (Max 15s)
+					</span>
+				</div>
 
-			<!-- Filmstrip Scrubber Container -->
-			<div
-				class="relative w-full h-14 rounded-xl overflow-hidden bg-white/10 border border-white/20 select-none cursor-pointer"
-				bind:this={filmstripElement}
-			>
-				<!-- Frame Thumbnails Strip -->
-				<div class="absolute inset-0 flex w-full h-full pointer-events-none">
-					{#if videoThumbnails.length > 0}
-						{#each videoThumbnails as thumb}
-							<div class="flex-1 h-full overflow-hidden border-r border-black/20">
-								<img src={thumb} alt="frame" class="w-full h-full object-cover" />
+				<!-- Filmstrip Scrubber Track -->
+				<div
+					class="relative w-full h-14 rounded-xl overflow-hidden bg-pink-100 border-2 border-pink-300 select-none cursor-pointer"
+					bind:this={filmstripElement}
+				>
+					<!-- Frame Thumbnails Strip -->
+					<div class="absolute inset-0 flex w-full h-full pointer-events-none">
+						{#if videoThumbnails.length > 0}
+							{#each videoThumbnails as thumb}
+								<div class="flex-1 h-full overflow-hidden border-r border-pink-200">
+									<img src={thumb} alt="frame" class="w-full h-full object-cover" />
+								</div>
+							{/each}
+						{:else}
+							<div class="w-full h-full flex items-center justify-center text-pink-400 text-[10px] font-semibold">
+								Generating frames...
 							</div>
-						{/each}
-					{:else}
-						<div class="w-full h-full flex items-center justify-center text-white/40 text-[10px]">
-							Loading frames...
+						{/if}
+					</div>
+
+					{#if videoDuration > 0}
+						{@const leftPercent = (videoStartTime / videoDuration) * 100}
+						{@const widthPercent = ((videoEndTime - videoStartTime) / videoDuration) * 100}
+						{@const rightPercent = 100 - (leftPercent + widthPercent)}
+						{@const currentPercent = (videoCurrentTime / videoDuration) * 100}
+
+						<!-- Left Dimmed Overlay -->
+						<div
+							class="absolute top-0 bottom-0 left-0 bg-pink-950/60 pointer-events-none"
+							style="width: {leftPercent}%;"
+						></div>
+
+						<!-- Right Dimmed Overlay -->
+						<div
+							class="absolute top-0 bottom-0 right-0 bg-pink-950/60 pointer-events-none"
+							style="width: {rightPercent}%;"
+						></div>
+
+						<!-- Active Pink Selection Box -->
+						<div
+							class="absolute top-0 bottom-0 border-y-3 border-pink-500 bg-pink-500/25 cursor-grab active:cursor-grabbing flex items-center justify-between"
+							style="left: {leftPercent}%; width: {widthPercent}%;"
+							onmousedown={(e) => handleFilmstripMouseDown(e, 'window')}
+							ontouchstart={(e) => handleFilmstripTouchStart(e, 'window')}
+						>
+							<!-- Left Drag Handle -->
+							<div
+								class="w-4 h-full bg-pink-500 hover:bg-pink-600 text-white cursor-ew-resize flex items-center justify-center rounded-l-md active:scale-95 transition-transform"
+								onmousedown={(e) => { e.stopPropagation(); handleFilmstripMouseDown(e, 'left'); }}
+								ontouchstart={(e) => { e.stopPropagation(); handleFilmstripTouchStart(e, 'left'); }}
+							>
+								<div class="w-0.5 h-4 bg-white rounded-full"></div>
+							</div>
+
+							<!-- Right Drag Handle -->
+							<div
+								class="w-4 h-full bg-pink-500 hover:bg-pink-600 text-white cursor-ew-resize flex items-center justify-center rounded-r-md active:scale-95 transition-transform"
+								onmousedown={(e) => { e.stopPropagation(); handleFilmstripMouseDown(e, 'right'); }}
+								ontouchstart={(e) => { e.stopPropagation(); handleFilmstripTouchStart(e, 'right'); }}
+							>
+								<div class="w-0.5 h-4 bg-white rounded-full"></div>
+							</div>
+						</div>
+
+						<!-- Live Playhead Needle -->
+						<div
+							class="absolute top-0 bottom-0 w-1 bg-white pointer-events-none z-20"
+							style="left: {currentPercent}%;"
+						>
+							<div class="w-2.5 h-2.5 -ml-0.75 bg-pink-600 border border-white rounded-full -mt-1"></div>
 						</div>
 					{/if}
 				</div>
 
-				{#if videoDuration > 0}
-					{@const leftPercent = (videoStartTime / videoDuration) * 100}
-					{@const widthPercent = ((videoEndTime - videoStartTime) / videoDuration) * 100}
-					{@const rightPercent = 100 - (leftPercent + widthPercent)}
-					{@const currentPercent = (videoCurrentTime / videoDuration) * 100}
-
-					<!-- Left Dimmed Overlay -->
-					<div
-						class="absolute top-0 bottom-0 left-0 bg-black/60 backdrop-blur-2xs pointer-events-none"
-						style="width: {leftPercent}%;"
-					></div>
-
-					<!-- Right Dimmed Overlay -->
-					<div
-						class="absolute top-0 bottom-0 right-0 bg-black/60 backdrop-blur-2xs pointer-events-none"
-						style="width: {rightPercent}%;"
-					></div>
-
-					<!-- Active Messenger Selection Box -->
-					<div
-						class="absolute top-0 bottom-0 border-y-3 border-pink-500 bg-pink-500/15 cursor-grab active:cursor-grabbing flex items-center justify-between"
-						style="left: {leftPercent}%; width: {widthPercent}%;"
-						onmousedown={(e) => handleFilmstripMouseDown(e, 'window')}
-						ontouchstart={(e) => handleFilmstripTouchStart(e, 'window')}
-					>
-						<!-- Left Drag Handle (Messenger Style) -->
-						<div
-							class="w-4 h-full bg-pink-500 hover:bg-pink-400 cursor-ew-resize flex items-center justify-center rounded-l-md active:scale-95 transition-transform"
-							onmousedown={(e) => { e.stopPropagation(); handleFilmstripMouseDown(e, 'left'); }}
-							ontouchstart={(e) => { e.stopPropagation(); handleFilmstripTouchStart(e, 'left'); }}
-						>
-							<div class="w-1 h-4 bg-white rounded-full"></div>
-						</div>
-
-						<!-- Right Drag Handle (Messenger Style) -->
-						<div
-							class="w-4 h-full bg-pink-500 hover:bg-pink-400 cursor-ew-resize flex items-center justify-center rounded-r-md active:scale-95 transition-transform"
-							onmousedown={(e) => { e.stopPropagation(); handleFilmstripMouseDown(e, 'right'); }}
-							ontouchstart={(e) => { e.stopPropagation(); handleFilmstripTouchStart(e, 'right'); }}
-						>
-							<div class="w-1 h-4 bg-white rounded-full"></div>
-						</div>
-					</div>
-
-					<!-- Live Playhead Needle -->
-					<div
-						class="absolute top-0 bottom-0 w-1 bg-white shadow-lg pointer-events-none z-20"
-						style="left: {currentPercent}%;"
-					>
-						<div class="w-2.5 h-2.5 -ml-0.75 bg-white rounded-full -mt-1"></div>
-					</div>
-				{/if}
+				<p class="text-[11px] text-center text-pink-500 font-medium">
+					Drag the handles or slide the window to select up to 15s.
+				</p>
 			</div>
 
-			<p class="text-[10px] text-center text-white/50">
-				Drag handles or slide the window to select up to 15 seconds.
-			</p>
+			<!-- Bottom Action Buttons -->
+			<div class="flex items-center space-x-2 pt-1">
+				<button
+					type="button"
+					onclick={() => { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; }}
+					disabled={isTrimmingVideo}
+					class="w-1/3 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 border border-pink-300 rounded-xl font-bold text-xs sm:text-sm active:scale-95 transition-all"
+				>
+					Cancel
+				</button>
+				<button
+					type="button"
+					onclick={confirmTrimmedVideo}
+					disabled={isTrimmingVideo}
+					class="w-2/3 py-2.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all cursor-pointer disabled:opacity-50"
+				>
+					{#if isTrimmingVideo}
+						<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+						</svg>
+						<span>Trimming 15s Clip...</span>
+					{:else}
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+							<path d="M6 3.75a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm12-1.5a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM9.545 10.379l-4.59 7.87a.75.75 0 101.3.758l4.086-7.006 4.085 7.006a.75.75 0 001.3-.758l-4.59-7.87a.75.75 0 00-1.591 0z" />
+						</svg>
+						<span>Use 15s Clip</span>
+					{/if}
+				</button>
+			</div>
 		</div>
 	</div>
 {/if}
