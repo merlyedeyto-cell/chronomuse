@@ -429,11 +429,11 @@
 										{/if}
 
 										{#if item.memory.photo_video}
-											<div class="mt-2 rounded-lg overflow-hidden max-h-40 border border-pink-200">
-												{#if item.memory.photo_video_type === 'video'}
-													<video src={item.memory.photo_video} controls class="w-full h-auto max-h-40 object-cover"></video>
+											<div class="mt-2 rounded-lg overflow-hidden border border-pink-200 bg-black flex items-center justify-center">
+												{#if item.memory.photo_video_type === 'video' || (typeof item.memory.photo_video === 'string' && (item.memory.photo_video.endsWith('.mp4') || item.memory.photo_video.endsWith('.webm') || item.memory.photo_video.endsWith('.mov')))}
+													<video src={item.memory.photo_video} controls playsinline class="w-full max-h-56 object-contain bg-black"></video>
 												{:else}
-													<img src={item.memory.photo_video} alt="Memory attachment" class="w-full h-auto max-h-40 object-cover" />
+													<img src={item.memory.photo_video} alt="Memory attachment" class="w-full max-h-56 object-contain bg-pink-50" />
 												{/if}
 											</div>
 										{/if}

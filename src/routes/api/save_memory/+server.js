@@ -3,69 +3,95 @@ import { supabase } from '$lib/supabaseClient';
 
 export async function POST({ request }) {
 	try {
-		const formData = await request.formData();
-		
-		const userId = formData.get('user_id');
-		const date = formData.get('date');
-		const title = formData.get('title') || 'Untitled Memory';
-		const description = formData.get('description') || '';
-		const moodTag = formData.get('mood_tag') || '';
-		const memoryTag = formData.get('memory_tag') || '';
-		
-		const photoVideoFile = formData.get('photo_video');
-		const musicFile = formData.get('music');
-
-		if (!userId || !date) {
-			return json({ error: 'User ID and Date are required' }, { status: 400 });
-		}
-
+		const contentType = request.headers.get('content-type') || '';
+		let userId, date, title, description, moodTag, memoryTag;
 		let photoVideoUrl = null;
 		let photoVideoType = null;
 		let musicUrl = null;
 
-		// Handle Photo / Video Upload
-		if (photoVideoFile && photoVideoFile.size > 0) {
-			const originalName = photoVideoFile.name || 'media.mp4';
-			const fileExt = (originalName.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g, '');
-			const fileName = `media_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt || 'mp4'}`;
-			const filePath = `${userId}/${fileName}`;
-			const mimeType = photoVideoFile.type || (fileExt === 'mp4' ? 'video/mp4' : fileExt === 'webm' ? 'video/webm' : 'image/jpeg');
+		if (contentType.includes('application/json')) {
+			const body = await request.json();
+			userId = body.user_id;
+			date = body.date;
+			title = body.title || 'Untitled Memory';
+			description = body.description || '';
+			moodTag = body.mood_tag || '';
+			memoryTag = body.memory_tag || '';
+			photoVideoUrl = body.photo_video || null;
+			photoVideoType = body.photo_video_type || null;
+			musicUrl = body.music || null;
+		} else {
+			const formData = await request.formData();
+			userId = formData.get('user_id');
+			date = formData.get('date');
+			title = formData.get('title') || 'Untitled Memory';
+			description = formData.get('description') || '';
+			moodTag = formData.get('mood_tag') || '';
+			memoryTag = formData.get('memory_tag') || '';
+			
+			const photoVideoFile = formData.get('photo_video');
+			const musicFile = formData.get('music');
 
-			const { error: uploadError } = await supabase.storage
-				.from('memories')
-				.upload(filePath, photoVideoFile, { upsert: true, contentType: mimeType });
+			// If photoVideo is already a URL string in formData
+			if (typeof photoVideoFile === 'string' && photoVideoFile) {
+				photoVideoUrl = photoVideoFile;
+				photoVideoType = formData.get('photo_video_type') || null;
+			} else if (photoVideoFile && typeof photoVideoFile === 'object' && photoVideoFile.size > 0) {
+				const originalName = photoVideoFile.name || 'media.mp4';
+				const fileExt = (originalName.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g, '');
+				const fileName = `media_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt || 'mp4'}`;
+				const filePath = `${userId}/${fileName}`;
+				const mimeType = photoVideoFile.type || (fileExt === 'mp4' ? 'video/mp4' : fileExt === 'webm' ? 'video/webm' : 'image/jpeg');
 
-			if (uploadError) {
-				return json({ error: 'Media upload failed: ' + uploadError.message + '. Please ensure your "memories" bucket exists and allows uploads.' }, { status: 500 });
+				// Convert file to Buffer for robust Node.js upload
+				const arrayBuffer = await photoVideoFile.arrayBuffer();
+				const fileBuffer = Buffer.from(arrayBuffer);
+
+				const { error: uploadError } = await supabase.storage
+					.from('memories')
+					.upload(filePath, fileBuffer, { upsert: true, contentType: mimeType });
+
+				if (uploadError) {
+					console.error('Save memory media upload error:', uploadError);
+					return json({ error: 'Media upload failed: ' + uploadError.message }, { status: 500 });
+				}
+
+				const { data: urlData } = supabase.storage.from('memories').getPublicUrl(filePath);
+				photoVideoUrl = urlData.publicUrl;
+				photoVideoType = mimeType;
 			}
 
-			const { data: urlData } = supabase.storage.from('memories').getPublicUrl(filePath);
-			photoVideoUrl = urlData.publicUrl;
-			photoVideoType = photoVideoFile.type || (fileExt === 'mp4' || fileExt === 'webm' || fileExt === 'mov' ? 'video/mp4' : 'image/jpeg');
+			// If music is already a URL string in formData
+			if (typeof musicFile === 'string' && musicFile) {
+				musicUrl = musicFile;
+			} else if (musicFile && typeof musicFile === 'object' && musicFile.size > 0) {
+				const rawName = musicFile.name || 'music.mp3';
+				const lastDotIndex = rawName.lastIndexOf('.');
+				const baseName = lastDotIndex !== -1 ? rawName.substring(0, lastDotIndex) : rawName;
+				const fileExt = lastDotIndex !== -1 ? rawName.substring(lastDotIndex + 1) : 'mp3';
+				const safeBaseName = baseName.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_');
+				const fileName = `${Date.now()}_${safeBaseName || 'music'}.${fileExt}`;
+				const filePath = `${userId}/${fileName}`;
+
+				const arrayBuffer = await musicFile.arrayBuffer();
+				const fileBuffer = Buffer.from(arrayBuffer);
+
+				const { error: uploadError } = await supabase.storage
+					.from('memories')
+					.upload(filePath, fileBuffer, { upsert: true });
+
+				if (uploadError) {
+					console.error('Save memory music upload error:', uploadError);
+					return json({ error: 'Music upload failed: ' + uploadError.message }, { status: 500 });
+				}
+
+				const { data: urlData } = supabase.storage.from('memories').getPublicUrl(filePath);
+				musicUrl = urlData.publicUrl;
+			}
 		}
 
-		// Handle Music Upload
-		if (musicFile && musicFile.size > 0) {
-			const rawName = musicFile.name || 'music.mp3';
-			const lastDotIndex = rawName.lastIndexOf('.');
-			const baseName = lastDotIndex !== -1 ? rawName.substring(0, lastDotIndex) : rawName;
-			const fileExt = lastDotIndex !== -1 ? rawName.substring(lastDotIndex + 1) : 'mp3';
-			
-			// Clean base name for URL safety while preserving human readability
-			const safeBaseName = baseName.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_');
-			const fileName = `${Date.now()}_${safeBaseName || 'music'}.${fileExt}`;
-			const filePath = `${userId}/${fileName}`;
-
-			const { error: uploadError } = await supabase.storage
-				.from('memories')
-				.upload(filePath, musicFile, { upsert: true });
-
-			if (uploadError) {
-				return json({ error: 'Music upload failed: ' + uploadError.message }, { status: 500 });
-			}
-
-			const { data: urlData } = supabase.storage.from('memories').getPublicUrl(filePath);
-			musicUrl = urlData.publicUrl;
+		if (!userId || !date) {
+			return json({ error: 'User ID and Date are required' }, { status: 400 });
 		}
 
 		// Insert memory record with column fallback
@@ -88,7 +114,7 @@ export async function POST({ request }) {
 			.single();
 
 		if (insertError) {
-			// If photo_video_type column does not exist yet in table, fallback without it
+			console.warn('Initial memory insert failed, retrying without photo_video_type column:', insertError.message);
 			delete insertPayload.photo_video_type;
 			const fallbackInsert = await supabase
 				.from('chronomuse_memories')
@@ -97,6 +123,7 @@ export async function POST({ request }) {
 				.single();
 
 			if (fallbackInsert.error) {
+				console.error('Save memory DB insert error:', fallbackInsert.error);
 				return json({ error: 'Database insert error: ' + fallbackInsert.error.message }, { status: 500 });
 			}
 			newMemory = {
@@ -111,6 +138,7 @@ export async function POST({ request }) {
 			message: 'Memory saved successfully'
 		});
 	} catch (err) {
+		console.error('Save memory error:', err);
 		return json({ error: 'An error occurred: ' + err.message }, { status: 500 });
 	}
 }

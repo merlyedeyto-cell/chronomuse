@@ -302,28 +302,114 @@
 	}
 
 	async function saveMemoryToDatabase(memoryData) {
-		if (!selectedDate) return;
+		if (!selectedDate || !user?.id) return;
 
-		const formData = new FormData();
-		formData.append('user_id', user.id);
-		formData.append('date', selectedDate);
-		formData.append('title', 'Untitled Memory');
-		formData.append('description', memoryData.memoryDescription || '');
-		formData.append('mood_tag', memoryData.moodTag || '');
-		formData.append('memory_tag', memoryData.memoryTag || '');
-		
+		let photoVideoUrl = null;
+		let photoVideoType = null;
+		let musicUrl = null;
+
+		// 1. Fast Direct Upload to Supabase Storage (Bypasses Node payload limits and prevents server timeout)
 		if (memoryData.photoVideo) {
-			formData.append('photo_video', memoryData.photoVideo);
+			if (typeof memoryData.photoVideo === 'string') {
+				photoVideoUrl = memoryData.photoVideo;
+			} else {
+				try {
+					const file = memoryData.photoVideo;
+					const originalName = file.name || (file.type?.startsWith('video/') ? 'video.mp4' : 'image.jpg');
+					const fileExt = (originalName.split('.').pop() || (file.type?.startsWith('video/') ? 'mp4' : 'jpg')).toLowerCase().replace(/[^a-z0-9]/g, '');
+					const fileName = `media_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt || 'mp4'}`;
+					const filePath = `${user.id}/${fileName}`;
+					const mimeType = file.type || (fileExt === 'mp4' ? 'video/mp4' : fileExt === 'webm' ? 'video/webm' : 'image/jpeg');
+
+					const { error: uploadError } = await supabase.storage
+						.from('memories')
+						.upload(filePath, file, { upsert: true, contentType: mimeType });
+
+					if (!uploadError) {
+						const { data: urlData } = supabase.storage.from('memories').getPublicUrl(filePath);
+						photoVideoUrl = urlData.publicUrl;
+						photoVideoType = mimeType;
+					} else {
+						console.warn('Direct media upload warning, will fallback to server upload:', uploadError);
+					}
+				} catch (uploadErr) {
+					console.warn('Direct media upload error, will fallback to server upload:', uploadErr);
+				}
+			}
 		}
+
 		if (memoryData.music) {
-			formData.append('music', memoryData.music);
+			if (typeof memoryData.music === 'string') {
+				musicUrl = memoryData.music;
+			} else {
+				try {
+					const file = memoryData.music;
+					const rawName = file.name || 'music.mp3';
+					const lastDotIndex = rawName.lastIndexOf('.');
+					const baseName = lastDotIndex !== -1 ? rawName.substring(0, lastDotIndex) : rawName;
+					const fileExt = lastDotIndex !== -1 ? rawName.substring(lastDotIndex + 1) : 'mp3';
+					const safeBaseName = baseName.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_');
+					const fileName = `${Date.now()}_${safeBaseName || 'music'}.${fileExt}`;
+					const filePath = `${user.id}/${fileName}`;
+
+					const { error: uploadError } = await supabase.storage
+						.from('memories')
+						.upload(filePath, file, { upsert: true });
+
+					if (!uploadError) {
+						const { data: urlData } = supabase.storage.from('memories').getPublicUrl(filePath);
+						musicUrl = urlData.publicUrl;
+					} else {
+						console.warn('Direct music upload warning:', uploadError);
+					}
+				} catch (uploadErr) {
+					console.warn('Direct music upload error:', uploadErr);
+				}
+			}
 		}
-		
+
 		try {
-			const response = await fetch(API_ENDPOINTS.saveMemory, {
-				method: 'POST',
-				body: formData
-			});
+			let response;
+			// If media/music are already uploaded (or not present), send instant JSON payload
+			if ((!memoryData.photoVideo || photoVideoUrl) && (!memoryData.music || musicUrl)) {
+				response = await fetch(API_ENDPOINTS.saveMemory, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						user_id: user.id,
+						date: selectedDate,
+						title: 'Untitled Memory',
+						description: memoryData.memoryDescription || '',
+						mood_tag: memoryData.moodTag || '',
+						memory_tag: memoryData.memoryTag || '',
+						photo_video: photoVideoUrl,
+						photo_video_type: photoVideoType,
+						music: musicUrl
+					})
+				});
+			} else {
+				// Fallback to FormData upload
+				const formData = new FormData();
+				formData.append('user_id', user.id);
+				formData.append('date', selectedDate);
+				formData.append('title', 'Untitled Memory');
+				formData.append('description', memoryData.memoryDescription || '');
+				formData.append('mood_tag', memoryData.moodTag || '');
+				formData.append('memory_tag', memoryData.memoryTag || '');
+				
+				if (memoryData.photoVideo) {
+					formData.append('photo_video', memoryData.photoVideo);
+				}
+				if (memoryData.music) {
+					formData.append('music', memoryData.music);
+				}
+
+				response = await fetch(API_ENDPOINTS.saveMemory, {
+					method: 'POST',
+					body: formData
+				});
+			}
+
 			const data = await response.json();
 			
 			if (data.success) {

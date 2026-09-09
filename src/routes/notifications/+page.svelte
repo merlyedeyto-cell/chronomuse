@@ -194,15 +194,18 @@
 
 	let showFullScreenImage = $state(false);
 	let fullScreenImageUrl = $state('');
+	let fullScreenMediaType = $state('image');
 
-	function openFullScreenImage(url) {
+	function openFullScreenImage(url, type = 'image') {
 		fullScreenImageUrl = url;
+		fullScreenMediaType = type;
 		showFullScreenImage = true;
 	}
 
 	function closeFullScreenImage() {
 		showFullScreenImage = false;
 		fullScreenImageUrl = '';
+		fullScreenMediaType = 'image';
 	}
 
 	function getMediaUrl(url) {
@@ -985,14 +988,25 @@
 
 							<!-- Photo / Video Attachment -->
 							{#if selectedMemoryToView.memory.photo_video}
-								{#if selectedMemoryToView.memory.photo_video_type === 'video' || (typeof selectedMemoryToView.memory.photo_video === 'string' && (selectedMemoryToView.memory.photo_video.endsWith('.mp4') || selectedMemoryToView.memory.photo_video.endsWith('.webm')))}
-									<div class="relative rounded-lg overflow-hidden border-2 border-pink-200">
-										<video src={getMediaUrl(selectedMemoryToView.memory.photo_video)} class="w-full h-44 object-cover" controls aria-label="Memory video"></video>
+								{#if selectedMemoryToView.memory.photo_video_type === 'video' || (typeof selectedMemoryToView.memory.photo_video === 'string' && (selectedMemoryToView.memory.photo_video.endsWith('.mp4') || selectedMemoryToView.memory.photo_video.endsWith('.webm') || selectedMemoryToView.memory.photo_video.endsWith('.mov')))}
+									<div class="relative rounded-lg overflow-hidden border-2 border-pink-200 bg-black flex flex-col items-center justify-center">
+										<video src={getMediaUrl(selectedMemoryToView.memory.photo_video)} class="w-full max-h-72 sm:max-h-96 object-contain bg-black" controls playsinline aria-label="Memory video"></video>
+										<button
+											type="button"
+											onclick={() => openFullScreenImage(getMediaUrl(selectedMemoryToView.memory.photo_video), 'video')}
+											class="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white text-[11px] font-semibold px-2 py-1 rounded-md backdrop-blur-xs flex items-center space-x-1 transition-all z-10"
+											title="Full view"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+											</svg>
+											<span>Full view</span>
+										</button>
 									</div>
 								{:else}
 									<div
 										class="relative rounded-lg overflow-hidden border-2 border-pink-200 cursor-pointer hover:border-pink-400 transition-all duration-200"
-										onclick={() => openFullScreenImage(getMediaUrl(selectedMemoryToView.memory.photo_video))}
+										onclick={() => openFullScreenImage(getMediaUrl(selectedMemoryToView.memory.photo_video), 'image')}
 									>
 										<img src={getMediaUrl(selectedMemoryToView.memory.photo_video)} alt="Memory Attachment" class="w-full h-44 object-cover hover:scale-105 transition-transform duration-300" />
 										<div class="absolute inset-0 bg-black/0 hover:bg-black/10 transition-all duration-200 flex items-center justify-center pointer-events-none">
@@ -1116,22 +1130,26 @@
 			</div>
 		{/if}
 
-		<!-- Full-screen Image Modal Lightbox -->
+		<!-- Full-screen Media Modal Lightbox -->
 		{#if showFullScreenImage}
 			<div 
-				class="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-4 animate-fade-in"
+				class="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-2 sm:p-4 animate-fade-in"
 				onclick={closeFullScreenImage}
 			>
 				<button
 					onclick={closeFullScreenImage}
-					class="absolute top-4 right-4 p-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all cursor-pointer"
+					class="absolute top-4 right-4 p-2 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all cursor-pointer z-10"
 					title="Close Full Screen"
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 					</svg>
 				</button>
-				<img src={fullScreenImageUrl} alt="Full screen preview" class="max-w-full max-h-[90vh] object-contain rounded-lg" />
+				{#if fullScreenMediaType === 'video'}
+					<video src={fullScreenImageUrl} class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" controls autoplay playsinline onclick={(e) => e.stopPropagation()}></video>
+				{:else}
+					<img src={fullScreenImageUrl} alt="Full screen preview" class="max-w-full max-h-[90vh] object-contain rounded-lg" />
+				{/if}
 			</div>
 		{/if}
 	</div>

@@ -40,12 +40,14 @@
 	let showDeleteConfirmModal = $state(false);
 	let memoryToDeleteId = $state(null);
 	
-	// Full-screen image viewer
+	// Full-screen media viewer
 	let showFullScreenImage = $state(false);
 	let fullScreenImageUrl = $state('');
+	let fullScreenMediaType = $state('image');
 
-	function openFullScreenImage(url) {
+	function openFullScreenImage(url, type = 'image') {
 		fullScreenImageUrl = url;
+		fullScreenMediaType = type;
 		showFullScreenImage = true;
 		document.body.style.overflow = 'hidden';
 	}
@@ -53,6 +55,7 @@
 	function closeFullScreenImage() {
 		showFullScreenImage = false;
 		fullScreenImageUrl = '';
+		fullScreenMediaType = 'image';
 		document.body.style.overflow = '';
 	}
 
@@ -573,10 +576,10 @@
 											<video src={editedPhotoVideoPreview} class="w-full h-full object-contain" controls aria-label="Memory video preview"></video>
 										{/if}
 									{:else if memory.photo_video}
-										{#if memory.photo_video_type && memory.photo_video_type.startsWith('image/')}
-											<img src={getMediaUrl(memory.photo_video)} alt="Current" class="w-full h-full object-contain" />
-										{:else if memory.photo_video_type && memory.photo_video_type.startsWith('video/')}
+										{#if (memory.photo_video_type && memory.photo_video_type.startsWith('video/')) || (typeof memory.photo_video === 'string' && (memory.photo_video.endsWith('.mp4') || memory.photo_video.endsWith('.webm') || memory.photo_video.endsWith('.mov')))}
 											<video src={getMediaUrl(memory.photo_video)} class="w-full h-full object-contain" controls aria-label="Memory video"></video>
+										{:else}
+											<img src={getMediaUrl(memory.photo_video)} alt="Current" class="w-full h-full object-contain" />
 										{/if}
 									{:else}
 										<div class="flex items-center space-x-3 pt-2 pb-3 px-4">
@@ -765,21 +768,34 @@
 
 							<!-- Media -->
 							{#if memory.photo_video}
-								{#if !memory.photo_video_type || memory.photo_video_type.startsWith('image/')}
-									<div class="relative rounded-lg overflow-hidden border-2 border-pink-200 cursor-pointer hover:border-pink-400 transition-all duration-200" onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video))}>
+								{#if (!memory.photo_video_type || memory.photo_video_type.startsWith('image/')) && !(typeof memory.photo_video === 'string' && (memory.photo_video.endsWith('.mp4') || memory.photo_video.endsWith('.webm') || memory.photo_video.endsWith('.mov')))}
+									<div class="relative rounded-lg overflow-hidden border-2 border-pink-200 cursor-pointer hover:border-pink-400 transition-all duration-200" onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'image')}>
 										<img src={getMediaUrl(memory.photo_video)} alt="Memory" class="w-full h-44 object-cover hover:scale-105 transition-transform duration-300" />
 										<div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center pointer-events-none">
 											<span class="text-white text-xs font-medium opacity-0 hover:opacity-100 bg-black bg-opacity-50 px-2.5 py-1 rounded-full">Click to enlarge</span>
 										</div>
 									</div>
-								{:else if memory.photo_video_type && memory.photo_video_type.startsWith('video/')}
-									<div class="relative rounded-lg overflow-hidden border-2 border-pink-200">
-										<video src={getMediaUrl(memory.photo_video)} class="w-full h-44 object-cover" controls aria-label="Memory video"></video>
-									</div>
 								{:else}
-									<!-- Fallback: try to display as image -->
-									<div class="relative rounded-lg overflow-hidden border-2 border-pink-200 cursor-pointer hover:border-pink-400 transition-all duration-200" onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video))}>
-										<img src={getMediaUrl(memory.photo_video)} alt="Memory" class="w-full h-44 object-cover hover:scale-105 transition-transform duration-300" />
+									<div class="relative rounded-lg overflow-hidden border-2 border-pink-200 bg-black flex flex-col items-center justify-center">
+										<video 
+											src={getMediaUrl(memory.photo_video)} 
+											class="w-full max-h-72 sm:max-h-96 object-contain bg-black" 
+											controls 
+											playsinline 
+											preload="metadata"
+											aria-label="Memory video"
+										></video>
+										<button
+											type="button"
+											onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'video')}
+											class="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white text-[11px] font-semibold px-2 py-1 rounded-md backdrop-blur-xs flex items-center space-x-1 transition-all z-10"
+											title="Full view"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+											</svg>
+											<span>Full view</span>
+										</button>
 									</div>
 								{/if}
 							{/if}
@@ -855,13 +871,13 @@
 	</div>
 </div>
 
-<!-- Full-Screen Image Viewer -->
+<!-- Full-Screen Media Viewer -->
 {#if showFullScreenImage}
-	<div class="fixed inset-0 z-50 bg-black bg-opacity-95 flex items-center justify-center overflow-auto">
+	<div class="fixed inset-0 z-50 bg-black bg-opacity-95 flex items-center justify-center overflow-auto p-2 sm:p-4">
 		<!-- Close Button (Top Right) -->
 		<button
 			onclick={closeFullScreenImage}
-			class="absolute top-4 right-4 p-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-full backdrop-blur-sm transition-all duration-200 z-60"
+			class="absolute top-4 right-4 p-2.5 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-full backdrop-blur-sm transition-all duration-200 z-60"
 			title="Close"
 		>
 			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
@@ -869,9 +885,13 @@
 			</svg>
 		</button>
 
-		<!-- Image Container -->
-		<div class="w-full h-screen flex items-center justify-center p-4">
-			<img src={fullScreenImageUrl} alt="Full size" class="max-w-full max-h-full object-contain" />
+		<!-- Media Container -->
+		<div class="w-full h-full max-h-screen flex items-center justify-center p-2 sm:p-4">
+			{#if fullScreenMediaType === 'video'}
+				<video src={fullScreenImageUrl} class="max-w-full max-h-full object-contain rounded-lg shadow-2xl" controls autoplay playsinline></video>
+			{:else}
+				<img src={fullScreenImageUrl} alt="Full size" class="max-w-full max-h-full object-contain" />
+			{/if}
 		</div>
 	</div>
 {/if}
