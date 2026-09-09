@@ -301,7 +301,14 @@
 		}
 	}
 
-	async function markAllAppealsAsRead() {
+	function openAppealsListModal() {
+		showAppealsListModal = true;
+		if (unreadAppealsCount > 0) {
+			markAllAppealsAsRead(false);
+		}
+	}
+
+	async function markAllAppealsAsRead(showToast = true) {
 		reactivationRequests.forEach(r => r.is_read = true);
 		usersList.forEach(u => {
 			if (u.reactivation_request) u.reactivation_request.is_read = true;
@@ -316,9 +323,13 @@
 					action: 'mark_all_appeals_read'
 				})
 			});
-			showNotice('All reactivation appeals marked as read');
+			if (showToast) {
+				showNotice('All reactivation appeals marked as read');
+			}
 		} catch (e) {
-			showNotice('Network error marking appeals as read', true);
+			if (showToast) {
+				showNotice('Network error marking appeals as read', true);
+			}
 		}
 	}
 
@@ -565,7 +576,7 @@
 				<div class="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
 					<!-- Appeals Button that opens Modal -->
 					<button
-						onclick={() => showAppealsListModal = true}
+						onclick={openAppealsListModal}
 						class="px-3 py-2 {reactivationRequests.length > 0 ? (unreadAppealsCount > 0 ? 'bg-pink-600 hover:bg-pink-700 text-white shadow-md ring-2 ring-pink-300 animate-pulse' : 'bg-pink-100 hover:bg-pink-200 text-pink-900 border border-pink-300') : 'bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200'} rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
 						title="Open pending reactivation appeals modal"
 					>
@@ -1191,15 +1202,6 @@
 				</div>
 
 				<div class="flex items-center gap-2 flex-shrink-0">
-					{#if unreadAppealsCount > 0}
-						<button
-							type="button"
-							onclick={markAllAppealsAsRead}
-							class="px-2.5 py-1.5 bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-bold rounded-xl border border-pink-200 transition-all cursor-pointer whitespace-nowrap"
-						>
-							Mark all read
-						</button>
-					{/if}
 					<button
 						onclick={() => showAppealsListModal = false}
 						aria-label="Close"
