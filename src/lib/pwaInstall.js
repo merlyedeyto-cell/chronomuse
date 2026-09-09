@@ -62,7 +62,7 @@ export function initPWAInstall() {
 		// Mark app as installed in localStorage
 		try { localStorage.setItem('chronomuse_pwa_installed', 'true'); } catch(e) {}
 		notifyListeners();
-		// Auto-open the installed app in standalone mode
+		// Auto launch the installed app in standalone mode
 		setTimeout(() => {
 			window.location.href = window.location.origin + '/';
 		}, 500);

@@ -369,9 +369,9 @@
 	<title>Account Settings - ChronoMuse</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 flex flex-col font-sans animate-fade-in">
+<div class="min-h-screen bg-pink-100 flex flex-col font-sans animate-fade-in">
 	<!-- Top Navigation Bar -->
-	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
+	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 sticky top-0 z-50 animate-slide-down">
 		<div class="container mx-auto px-4 py-3 flex items-center justify-between">
 			<div class="flex items-center space-x-3 min-w-0">
 				<!-- Hamburger Menu Button -->
@@ -409,7 +409,7 @@
 				<!-- Soft Pink Glassmorphic Gear Settings Icon Button -->
 				<button
 					onclick={() => goto('/settings')}
-					class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-600 shadow-2xs flex items-center justify-center transition-all cursor-pointer active:scale-95 flex-shrink-0"
+					class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-600 flex items-center justify-center transition-all cursor-pointer active:scale-95 flex-shrink-0"
 					title="Settings"
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
@@ -428,7 +428,7 @@
 	<main class="flex-grow container mx-auto px-4 py-6 sm:py-8 max-w-2xl space-y-4">
 		<!-- Page Title Banner -->
 		<div class="flex items-center space-x-3.5 pb-3 border-b-2 border-pink-300">
-			<div class="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
+			<div class="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
 					<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -444,7 +444,7 @@
 		<div class="space-y-4">
 			
 			<!-- ITEM 0: INSTALL CHRONOMUSE APP -->
-			<div class="bg-gradient-to-r from-pink-500/10 via-white to-pink-500/10 rounded-2xl border-2 border-pink-400 shadow-md overflow-hidden transition-all duration-300">
+			<div class="bg-pink-500/10 rounded-2xl border-2 border-pink-400 overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->
 				<button
 					type="button"
@@ -452,7 +452,7 @@
 					class="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-pink-100/50 transition-colors cursor-pointer"
 				>
 					<div class="flex items-center space-x-3 min-w-0 pr-2">
-						<div class="w-9 h-9 rounded-xl bg-pink-500 text-white border border-pink-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+						<div class="w-9 h-9 rounded-xl bg-pink-500 text-white border border-pink-600 flex items-center justify-center flex-shrink-0">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
 							</svg>
@@ -481,8 +481,8 @@
 				{#if activeTab === 'install'}
 					<div class="px-5 pb-6 sm:px-6 space-y-4 border-t border-pink-200 pt-4 bg-pink-50/40">
 						<div class="max-w-xl space-y-3">
-							<div class="flex items-start space-x-3 bg-white p-3.5 rounded-xl border border-pink-200 shadow-2xs">
-								<img src="/logo.png" alt="ChronoMuse" class="w-12 h-12 rounded-xl object-contain border border-pink-200 shadow-sm flex-shrink-0" />
+							<div class="flex items-start space-x-3 bg-white p-3.5 rounded-xl border border-pink-200">
+								<img src="/logo.png" alt="ChronoMuse" class="w-12 h-12 rounded-xl object-contain border border-pink-200 flex-shrink-0" />
 								<div>
 									<h4 class="text-xs sm:text-sm font-bold text-pink-900">ChronoMuse Mobile App</h4>
 									<p class="text-xs text-pink-600 font-medium leading-relaxed">
@@ -504,7 +504,7 @@
 								<button
 									type="button"
 									onclick={handleInstallAppFromSettings}
-									class="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-xs sm:text-sm rounded-xl hover:from-green-600 hover:to-emerald-700 shadow-md active:scale-95 transition-all flex items-center justify-center space-x-2"
+									class="w-full sm:w-auto px-5 py-2.5 bg-green-500 text-white font-bold text-xs sm:text-sm rounded-xl hover:bg-green-600 active:scale-95 transition-all flex items-center justify-center space-x-2"
 								>
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
@@ -515,7 +515,7 @@
 								<button
 									type="button"
 									onclick={handleInstallAppFromSettings}
-									class="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-pink-500 to-pink-600 text-white font-bold text-xs sm:text-sm rounded-xl hover:from-pink-600 hover:to-pink-700 shadow-md active:scale-95 transition-all flex items-center justify-center space-x-2"
+									class="w-full sm:w-auto px-5 py-2.5 bg-pink-500 text-white font-bold text-xs sm:text-sm rounded-xl hover:bg-pink-600 active:scale-95 transition-all flex items-center justify-center space-x-2"
 								>
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -525,7 +525,7 @@
 							{/if}
 
 							{#if installGuideMessage}
-								<div class="p-3 bg-white rounded-xl border border-pink-300 text-xs font-semibold text-pink-800 text-center animate-fade-in shadow-2xs">
+								<div class="p-3 bg-white rounded-xl border border-pink-300 text-xs font-semibold text-pink-800 text-center animate-fade-in">
 									{installGuideMessage}
 								</div>
 							{/if}
@@ -535,7 +535,7 @@
 			</div>
 
 			<!-- ITEM 1: PRIVACY & ONLINE ACTIVE STATUS -->
-			<div class="bg-white rounded-2xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
+			<div class="bg-white rounded-2xl border-2 border-pink-300 overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->
 				<button
 					type="button"
@@ -543,7 +543,7 @@
 					class="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-pink-50/60 transition-colors cursor-pointer"
 				>
 					<div class="flex items-center space-x-3 min-w-0 pr-2">
-						<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
+						<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
 							</svg>
@@ -571,7 +571,7 @@
 					<div class="px-5 pb-6 sm:px-6 space-y-4 border-t border-pink-100 pt-4 bg-pink-50/20">
 						
 						<!-- Active Status Toggle Card -->
-						<div class="p-4 sm:p-5 bg-white border-2 border-pink-200/90 rounded-2xl flex items-center justify-between gap-4 shadow-2xs">
+						<div class="p-4 sm:p-5 bg-white border-2 border-pink-200/90 rounded-2xl flex items-center justify-between gap-4">
 							<div class="space-y-1 min-w-0 flex-1">
 								<div class="flex items-center space-x-2">
 									<span class="w-3 h-3 rounded-full {activeStatusEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-pink-300'} flex-shrink-0"></span>
@@ -590,7 +590,7 @@
 										onchange={handleActiveStatusToggle}
 										class="sr-only peer"
 									/>
-									<div class="w-14 h-7 bg-pink-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-7 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-pink-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all after:shadow-md peer-checked:bg-gradient-to-r peer-checked:from-pink-500 peer-checked:to-rose-600 shadow-inner"></div>
+									<div class="w-14 h-7 bg-pink-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-7 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-pink-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all after: peer-checked:bg-pink-500"></div>
 									<span class="ml-2.5 text-xs font-black uppercase tracking-wider {activeStatusEnabled ? 'text-pink-600' : 'text-gray-400'}">
 										{activeStatusEnabled ? 'ON' : 'OFF'}
 									</span>
@@ -599,7 +599,7 @@
 						</div>
 
 						<!-- Private Profile Protection Toggle Card -->
-						<div class="p-4 sm:p-5 bg-white border-2 border-pink-200/90 rounded-2xl flex items-center justify-between gap-4 shadow-2xs">
+						<div class="p-4 sm:p-5 bg-white border-2 border-pink-200/90 rounded-2xl flex items-center justify-between gap-4">
 							<div class="space-y-1 min-w-0 flex-1">
 								<h4 class="text-xs sm:text-sm font-extrabold text-pink-950">Private Account Protection</h4>
 								<p class="text-xs text-pink-600 font-medium leading-relaxed">
@@ -615,7 +615,7 @@
 										onchange={handlePrivateAccountToggle}
 										class="sr-only peer"
 									/>
-									<div class="w-14 h-7 bg-pink-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-7 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-pink-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all after:shadow-md peer-checked:bg-gradient-to-r peer-checked:from-pink-500 peer-checked:to-rose-600 shadow-inner"></div>
+									<div class="w-14 h-7 bg-pink-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-7 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-pink-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all after: peer-checked:bg-pink-500"></div>
 									<span class="ml-2.5 text-xs font-black uppercase tracking-wider {privateAccountEnabled ? 'text-pink-600' : 'text-gray-400'}">
 										{privateAccountEnabled ? 'ON' : 'OFF'}
 									</span>
@@ -628,7 +628,7 @@
 			</div>
 
 			<!-- ITEM 2: SOUND & TOUCH FEEDBACK -->
-			<div class="bg-white rounded-2xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
+			<div class="bg-white rounded-2xl border-2 border-pink-300 overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->
 				<button
 					type="button"
@@ -636,7 +636,7 @@
 					class="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-pink-50/60 transition-colors cursor-pointer"
 				>
 					<div class="flex items-center space-x-3 min-w-0 pr-2">
-						<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
+						<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.287a5.25 5.25 0 010 7.426M12 5.25v13.5m0-13.5L7.5 9H4.5A1.5 1.5 0 003 10.5v3A1.5 1.5 0 004.5 15h3l4.5 3.75v-13.5z" />
 							</svg>
@@ -664,7 +664,7 @@
 					<div class="px-5 pb-6 sm:px-6 space-y-4 border-t border-pink-100 pt-4 bg-pink-50/20">
 						
 						<!-- Touch Sound Toggle Card -->
-						<div class="p-4 sm:p-5 bg-white border-2 border-pink-200/90 rounded-2xl flex items-center justify-between gap-4 shadow-2xs">
+						<div class="p-4 sm:p-5 bg-white border-2 border-pink-200/90 rounded-2xl flex items-center justify-between gap-4">
 							<div class="space-y-1 min-w-0 flex-1">
 								<h4 class="text-xs sm:text-sm font-extrabold text-pink-950">Touch & Interaction Sound Effects</h4>
 								<p class="text-xs text-pink-600 font-medium leading-relaxed">
@@ -680,7 +680,7 @@
 										onchange={handleSoundToggle}
 										class="sr-only peer"
 									/>
-									<div class="w-14 h-7 bg-pink-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-7 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-pink-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all after:shadow-md peer-checked:bg-gradient-to-r peer-checked:from-pink-500 peer-checked:to-rose-600 shadow-inner"></div>
+									<div class="w-14 h-7 bg-pink-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-7 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-pink-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all after: peer-checked:bg-pink-500"></div>
 									<span class="ml-2.5 text-xs font-black uppercase tracking-wider {soundEffectsEnabled ? 'text-pink-600' : 'text-gray-400'}">
 										{soundEffectsEnabled ? 'ON' : 'OFF'}
 									</span>
@@ -693,7 +693,7 @@
 			</div>
 
 			<!-- ITEM 3: BLOCKED ACCOUNTS & USERS -->
-			<div class="bg-white rounded-2xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
+			<div class="bg-white rounded-2xl border-2 border-pink-300 overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->
 				<button
 					type="button"
@@ -701,7 +701,7 @@
 					class="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-pink-50/60 transition-colors cursor-pointer"
 				>
 					<div class="flex items-center space-x-3 min-w-0 pr-2">
-						<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
+						<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
 							</svg>
@@ -738,7 +738,7 @@
 									value={blockSearchInput}
 									oninput={handleBlockSearchInput}
 									placeholder="Type username or name to search..."
-									class="w-full pl-9 pr-10 py-2.5 bg-white border-2 border-pink-200 rounded-xl text-xs sm:text-sm font-semibold text-pink-950 focus:outline-none focus:ring-2 focus:ring-pink-400 transition-all shadow-2xs"
+									class="w-full pl-9 pr-10 py-2.5 bg-white border-2 border-pink-200 rounded-xl text-xs sm:text-sm font-semibold text-pink-950 focus:outline-none focus:ring-2 focus:ring-pink-400 transition-all"
 								/>
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-400 absolute left-3 top-3">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
@@ -751,7 +751,7 @@
 
 							<!-- Autocomplete Search Dropdown List -->
 							{#if searchResults.length > 0}
-								<div class="absolute left-0 right-0 top-full mt-1.5 bg-white border-2 border-pink-300 rounded-2xl shadow-xl z-30 max-h-60 overflow-y-auto divide-y divide-pink-100 animate-fade-in">
+								<div class="absolute left-0 right-0 top-full mt-1.5 bg-white border-2 border-pink-300 rounded-2xl z-30 max-h-60 overflow-y-auto divide-y divide-pink-100 animate-fade-in">
 									{#each searchResults as sUser}
 										<button
 											type="button"
@@ -759,7 +759,7 @@
 											class="w-full p-3 flex items-center justify-between hover:bg-pink-50 transition-colors text-left group cursor-pointer"
 										>
 											<div class="flex items-center space-x-3 min-w-0">
-												<div class="w-9 h-9 rounded-full bg-gradient-to-tr from-pink-400 to-rose-500 text-white flex items-center justify-center font-bold text-xs shadow-2xs overflow-hidden flex-shrink-0">
+												<div class="w-9 h-9 rounded-full bg-pink-400 text-white flex items-center justify-center font-bold text-xs overflow-hidden flex-shrink-0">
 													{#if sUser.avatar_url}
 														<img src={sUser.avatar_url} alt={sUser.username} class="w-full h-full object-cover" />
 													{:else}
@@ -772,7 +772,7 @@
 												</div>
 											</div>
 
-											<span class="px-3 py-1 bg-rose-50 border border-rose-200 text-rose-600 font-bold text-xs rounded-xl group-hover:bg-rose-600 group-hover:text-white transition-all shadow-2xs flex-shrink-0">
+											<span class="px-3 py-1 bg-rose-50 border border-rose-200 text-rose-600 font-bold text-xs rounded-xl group-hover:bg-rose-600 group-hover:text-white transition-all flex-shrink-0">
 												Select to Block
 											</span>
 										</button>
@@ -794,9 +794,9 @@
 							<div class="space-y-3 pt-2">
 								<h4 class="text-xs font-extrabold text-pink-950">Currently Blocked Accounts ({blockedUsers.length})</h4>
 								{#each blockedUsers as bUser}
-									<div class="p-4 bg-white border-2 border-pink-200/90 rounded-2xl flex items-center justify-between gap-4 shadow-2xs">
+									<div class="p-4 bg-white border-2 border-pink-200/90 rounded-2xl flex items-center justify-between gap-4">
 										<div class="flex items-center space-x-3 min-w-0 flex-1">
-											<div class="w-9 h-9 rounded-full bg-gradient-to-tr from-pink-400 to-rose-500 text-white flex items-center justify-center font-bold text-xs shadow-2xs overflow-hidden flex-shrink-0">
+											<div class="w-9 h-9 rounded-full bg-pink-400 text-white flex items-center justify-center font-bold text-xs overflow-hidden flex-shrink-0">
 												{#if bUser.avatar_url}
 													<img src={bUser.avatar_url} alt={bUser.username} class="w-full h-full object-cover" />
 												{:else}
@@ -818,7 +818,7 @@
 													onchange={(e) => handleUserBlockToggle(bUser, e)}
 													class="sr-only peer"
 												/>
-												<div class="w-14 h-7 bg-pink-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-7 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-pink-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all after:shadow-md peer-checked:bg-rose-600 shadow-inner"></div>
+												<div class="w-14 h-7 bg-pink-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-7 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-pink-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all after: peer-checked:bg-rose-600"></div>
 												<span class="ml-2.5 text-xs font-black uppercase tracking-wider text-rose-600">
 													BLOCKED
 												</span>
@@ -834,7 +834,7 @@
 			</div>
 
 			<!-- ITEM 4: PASSWORDS & EMAIL SECURITY -->
-			<div class="bg-white rounded-2xl border-2 border-pink-300 shadow-md overflow-hidden transition-all duration-300">
+			<div class="bg-white rounded-2xl border-2 border-pink-300 overflow-hidden transition-all duration-300">
 				<!-- List Header Row (Clickable) -->
 				<button
 					type="button"
@@ -842,7 +842,7 @@
 					class="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-pink-50/60 transition-colors cursor-pointer"
 				>
 					<div class="flex items-center space-x-3 min-w-0 pr-2">
-						<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0 shadow-2xs">
+						<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center flex-shrink-0">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
 							</svg>
@@ -922,7 +922,7 @@
 								<button
 									type="submit"
 									disabled={isSavingProfile}
-									class="px-6 py-2.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all flex items-center space-x-2 active:scale-95 disabled:opacity-50 cursor-pointer"
+									class="px-6 py-2.5 bg-pink-500 hover:bg-pink-600 text-white text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center space-x-2 active:scale-95 disabled:opacity-50 cursor-pointer"
 								>
 									{#if isSavingProfile}
 										<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -955,8 +955,8 @@
 			class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
 			onclick={(e) => { if (e.target === e.currentTarget) showConfirmBlockModal = false; }}
 		>
-			<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center relative overflow-hidden">
-				<div class="w-16 h-16 rounded-full bg-gradient-to-tr from-pink-400 to-rose-500 text-white flex items-center justify-center font-extrabold text-xl shadow-md overflow-hidden mx-auto mb-3">
+			<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-sm w-full p-6 text-center relative overflow-hidden">
+				<div class="w-16 h-16 rounded-full bg-pink-400 text-white flex items-center justify-center font-extrabold text-xl overflow-hidden mx-auto mb-3">
 					{#if selectedUserToBlock.avatar_url}
 						<img src={selectedUserToBlock.avatar_url} alt={selectedUserToBlock.username} class="w-full h-full object-cover" />
 					{:else}
@@ -984,7 +984,7 @@
 					<button
 						type="button"
 						onclick={confirmBlockSelectedUser}
-						class="w-1/2 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer"
+						class="w-1/2 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all active:scale-95 cursor-pointer"
 					>
 						Confirm Block
 					</button>
@@ -999,7 +999,7 @@
 			class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
 			onclick={(e) => { if (e.target === e.currentTarget) showLogoutModal = false; }}
 		>
-			<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center relative overflow-hidden">
+			<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-sm w-full p-6 text-center relative overflow-hidden">
 				<h3 class="text-base sm:text-lg font-black text-pink-950 mb-1.5">Log Out of ChronoMuse?</h3>
 				<p class="text-xs text-pink-600 mb-6 font-medium">
 					Are you sure you want to log out of your account?
@@ -1016,7 +1016,7 @@
 					<button
 						type="button"
 						onclick={handleLogout}
-						class="w-1/2 py-2.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer"
+						class="w-1/2 py-2.5 bg-pink-500 hover:bg-pink-600 text-white rounded-xl font-bold text-xs sm:text-sm transition-all active:scale-95 cursor-pointer"
 					>
 						Log Out
 					</button>
@@ -1028,7 +1028,7 @@
 	<!-- Toast Notification Banner -->
 	{#if showToast}
 		<div class="fixed bottom-5 right-5 z-50 animate-bounce">
-			<div class="px-4 py-3 rounded-2xl shadow-xl border-2 flex items-center space-x-2.5 {toastType === 'error' ? 'bg-rose-500 border-rose-600 text-white' : 'bg-emerald-600 border-emerald-700 text-white'}">
+			<div class="px-4 py-3 rounded-2xl border-2 flex items-center space-x-2.5 {toastType === 'error' ? 'bg-rose-500 border-rose-600 text-white' : 'bg-emerald-600 border-emerald-700 text-white'}">
 				<span class="text-xs sm:text-sm font-bold">{toastMessage}</span>
 			</div>
 		</div>

@@ -118,7 +118,7 @@
 	}
 </script>
 
-<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 transition-all duration-300 hover:shadow-lg">
+<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 transition-all duration-300 hover:">
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-4">
 		<div class="flex items-center space-x-1.5">
@@ -148,7 +148,7 @@
 			{#each pinnedMemories as pinned (pinned.pinned_id)}
 				<div class="flex items-center space-x-2.5 p-2.5 bg-pink-50 border border-pink-200 rounded-xl hover:border-pink-300 hover:bg-pink-100/80 transition-all duration-200 cursor-pointer" onclick={() => viewMemory(pinned)}>
 					<!-- Date Badge -->
-					<div class="flex flex-col items-center justify-center w-9 h-9 bg-gradient-to-r from-pink-400 to-pink-600 rounded-lg text-white shadow-sm flex-shrink-0">
+					<div class="flex flex-col items-center justify-center w-9 h-9 bg-pink-400 rounded-lg text-white flex-shrink-0">
 						<span class="text-[9px] font-semibold uppercase">{getDayName(pinned.date)}</span>
 						<span class="text-xs font-bold">{pinned.date.split('-')[2]}</span>
 					</div>

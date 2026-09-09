@@ -87,12 +87,78 @@
 		};
 	});
 
+	// Suggested / Discover Users State
+	let suggestedUsers = $state([]);
+	let suggestedPage = $state(1);
+	let hasMoreSuggested = $state(false);
+	let isLoadingSuggested = $state(false);
+
 	function loadAllData() {
 		fetchFriends(false);
 		fetchPendingRequests(false);
+		fetchSuggestedUsers(1, false);
+	}
+
+	async function fetchSuggestedUsers(page = 1, append = false) {
+		if (!user || !user.id || isLoadingSuggested) return;
+		isLoadingSuggested = true;
+		try {
+			const res = await fetch(API_ENDPOINTS.getSuggestedUsers, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					user_id: user.id,
+					page: page,
+					limit: 20
+				})
+			});
+			const data = await res.json();
+			if (data.success && data.data) {
+				const newUsers = data.data.users || [];
+				suggestedUsers = append ? [...suggestedUsers, ...newUsers] : newUsers;
+				hasMoreSuggested = data.data.has_more || false;
+				suggestedPage = page;
+				syncSuggestedUsersWithState();
+			}
+		} catch (err) {
+			console.error('Error fetching suggested users:', err);
+		} finally {
+			isLoadingSuggested = false;
+		}
+	}
+
+	function loadMoreSuggestedUsers() {
+		fetchSuggestedUsers(suggestedPage + 1, true);
+	}
+
+	function syncSuggestedUsersWithState() {
+		if (!suggestedUsers || suggestedUsers.length === 0) return;
+		const sentIds = new Set((sentRequests || []).map(r => Number(r.receiver_id || r.id)));
+		const friendIds = new Set((friends || []).map(f => Number(f.friend_id || f.id)));
+		const incomingSenderIds = new Set((pendingRequests || []).map(r => Number(r.sender_id || r.id)));
+
+		suggestedUsers = suggestedUsers.map(u => {
+			const uId = Number(u.id);
+			if (friendIds.has(uId)) {
+				return { ...u, relationship: 'friends' };
+			}
+			if (sentIds.has(uId)) {
+				const req = sentRequests.find(r => Number(r.receiver_id || r.id) === uId);
+				return { ...u, relationship: 'request_sent', request_id: req?.id || req?.request_id || u.request_id };
+			}
+			if (incomingSenderIds.has(uId)) {
+				const req = pendingRequests.find(r => Number(r.sender_id || r.id) === uId);
+				return { ...u, relationship: 'request_received', request_id: req?.id || req?.request_id || u.request_id };
+			}
+			if (u.relationship === 'request_sent' || u.relationship === 'request_received') {
+				return { ...u, relationship: 'none', request_id: null };
+			}
+			return u;
+		});
 	}
 
 	function syncSearchResultsWithState() {
+		syncSuggestedUsersWithState();
 		if (!searchResults || searchResults.length === 0) return;
 		const sentIds = new Set((sentRequests || []).map(r => Number(r.receiver_id || r.id)));
 		const friendIds = new Set((friends || []).map(f => Number(f.friend_id || f.id)));
@@ -503,9 +569,9 @@
 	<title>Friends & Network - Chronomuse</title>
 </svelte:head>
 
-<div class="flex flex-col min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 animate-fade-in font-sans">
+<div class="flex flex-col min-h-screen bg-pink-100 animate-fade-in font-sans">
 	<!-- Top Navigation (Same as Dashboard & Mood Graph) -->
-	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
+	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 sticky top-0 z-50 animate-slide-down">
 			<div class="container mx-auto px-4 py-3 flex items-center justify-between">
 				<div class="flex items-center space-x-3 min-w-0">
 					<!-- Hamburger Menu Button - Mobile Only with Notification Dot -->
@@ -542,7 +608,7 @@
 					</button>
 					<button
 						onclick={() => goto('/settings')}
-						class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-600 shadow-2xs flex items-center justify-center transition-all cursor-pointer active:scale-95 flex-shrink-0"
+						class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-600 flex items-center justify-center transition-all cursor-pointer active:scale-95 flex-shrink-0"
 						title="Settings"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
@@ -560,7 +626,7 @@
 		<!-- Main Content -->
 		<main class="flex-grow container mx-auto px-4 py-8 max-w-5xl">
 			<!-- Header Banner -->
-			<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-3.5 sm:p-4 mb-4 sm:mb-5 animate-fade-in-up">
+			<div class="bg-white border-2 border-pink-300 rounded-2xl p-3.5 sm:p-4 mb-4 sm:mb-5 animate-fade-in-up">
 				<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
 					<div>
 						<div class="flex items-center space-x-2 mb-0.5">
@@ -584,8 +650,7 @@
 							onclick={() => activeTab = 'friends'}
 							class="px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center"
 							class:bg-pink-500={activeTab === 'friends'}
-							class:text-white={activeTab === 'friends'}
-							class:shadow-sm={activeTab === 'friends'}
+							class:text-white={activeTab === 'friends'}
 							class:text-pink-600={activeTab !== 'friends'}
 							class:hover:bg-pink-200={activeTab !== 'friends'}
 						>
@@ -599,8 +664,7 @@
 							onclick={() => activeTab = 'add'}
 							class="px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center"
 							class:bg-pink-500={activeTab === 'add'}
-							class:text-white={activeTab === 'add'}
-							class:shadow-sm={activeTab === 'add'}
+							class:text-white={activeTab === 'add'}
 							class:text-pink-600={activeTab !== 'add'}
 							class:hover:bg-pink-200={activeTab !== 'add'}
 						>
@@ -614,8 +678,7 @@
 							onclick={() => activeTab = 'pending'}
 							class="px-2 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 relative active:scale-95 text-center"
 							class:bg-pink-500={activeTab === 'pending'}
-							class:text-white={activeTab === 'pending'}
-							class:shadow-sm={activeTab === 'pending'}
+							class:text-white={activeTab === 'pending'}
 							class:text-pink-600={activeTab !== 'pending'}
 							class:hover:bg-pink-200={activeTab !== 'pending'}
 						>
@@ -633,7 +696,7 @@
 
 			<!-- Tab 1: My Friends List -->
 			{#if activeTab === 'friends'}
-				<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 animate-fade-in transition-all duration-300 hover:shadow-lg">
+				<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 animate-fade-in transition-all duration-300 hover:">
 					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
 						<h2 class="text-sm sm:text-base font-bold text-pink-600 flex items-center space-x-1.5">
 							<span>All Friends ({filteredFriends().length})</span>
@@ -662,14 +725,14 @@
 						<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 							{#each filteredFriends() as friend (friend.friend_id || friend.friendship_id || friend.id)}
 								<div
-									class="p-3 bg-pink-50/80 border-2 border-pink-200 rounded-xl flex items-center justify-between hover:border-pink-300 transition-all duration-200 shadow-sm"
+									class="p-3 bg-pink-50/80 border-2 border-pink-200 rounded-xl flex items-center justify-between hover:border-pink-300 transition-all duration-200"
 								>
 									<a
 										href="/profile?id={friend.friend_id || friend.id}"
 										class="flex items-center space-x-2.5 min-w-0 hover:opacity-85 transition-opacity group cursor-pointer"
 										title="View @{friend.username}'s Profile"
 									>
-										<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-400 to-pink-600 text-white font-bold text-xs flex items-center justify-center shadow-sm flex-shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
+										<div class="w-9 h-9 rounded-xl bg-pink-400 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
 											{#if friend.avatar_url}
 												<img src={friend.avatar_url} alt={friend.username} class="w-full h-full object-cover" />
 											{:else}
@@ -687,7 +750,7 @@
 									<div class="flex items-center space-x-1.5 flex-shrink-0 ml-2">
 										<button
 											onclick={() => goto(`/profile?id=${friend.friend_id || friend.id}`)}
-											class="px-2.5 py-1.5 bg-white border border-pink-300 text-pink-600 hover:bg-pink-50 active:scale-95 rounded-lg transition-all duration-200 shadow-2xs flex items-center space-x-1 text-xs font-semibold cursor-pointer"
+											class="px-2.5 py-1.5 bg-white border border-pink-300 text-pink-600 hover:bg-pink-50 active:scale-95 rounded-lg transition-all duration-200 flex items-center space-x-1 text-xs font-semibold cursor-pointer"
 											title="View Profile"
 										>
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5">
@@ -698,7 +761,7 @@
 
 										<button
 											onclick={() => openChatWithFriend(friend)}
-											class="px-2.5 py-1.5 bg-pink-500 text-white hover:bg-pink-600 active:scale-95 rounded-lg transition-all duration-200 shadow-sm flex items-center space-x-1 text-xs font-semibold"
+											class="px-2.5 py-1.5 bg-pink-500 text-white hover:bg-pink-600 active:scale-95 rounded-lg transition-all duration-200 flex items-center space-x-1 text-xs font-semibold"
 											title="Open Chat"
 										>
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
@@ -736,9 +799,9 @@
 
 			<!-- Tab 2: Search & Add Friend -->
 			{#if activeTab === 'add'}
-				<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-6 max-w-lg mx-auto animate-pop-in transition-all duration-300 hover:shadow-lg">
+				<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-6 max-w-lg mx-auto animate-pop-in transition-all duration-300 hover:">
 					<div class="text-center mb-5">
-						<div class="w-12 h-12 bg-pink-100 text-pink-500 rounded-full flex items-center justify-center mx-auto mb-2 shadow-inner">
+						<div class="w-12 h-12 bg-pink-100 text-pink-500 rounded-full flex items-center justify-center mx-auto mb-2">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 19.125a1.125 1.125 0 011.125-1.125h15.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H4.875a1.125 1.125 0 01-1.125-1.125v-2.25z" />
 							</svg>
@@ -802,7 +865,7 @@
 
 							<div class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
 								{#each searchResults as targetUser (targetUser.id)}
-									<div class="p-2.5 sm:p-3 bg-pink-50/90 hover:bg-pink-100/70 border-2 border-pink-200 rounded-2xl flex items-center justify-between gap-2 transition-all duration-200 shadow-2xs">
+									<div class="p-2.5 sm:p-3 bg-pink-50/90 hover:bg-pink-100/70 border-2 border-pink-200 rounded-2xl flex items-center justify-between gap-2 transition-all duration-200">
 										<!-- User Info (Clickable) -->
 										<button
 											type="button"
@@ -810,7 +873,7 @@
 											class="flex items-center space-x-2.5 min-w-0 text-left hover:opacity-85 transition-opacity group cursor-pointer"
 											title="View @{targetUser.username}'s Profile"
 										>
-											<div class="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-sm flex items-center justify-center flex-shrink-0 shadow-xs overflow-hidden group-hover:scale-105 transition-transform">
+											<div class="w-10 h-10 rounded-full bg-pink-400 text-white font-bold text-sm flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
 												{#if targetUser.avatar_url}
 													<img src={targetUser.avatar_url} alt={targetUser.username} class="w-full h-full object-cover" />
 												{:else}
@@ -836,7 +899,7 @@
 											<button
 												type="button"
 												onclick={() => goto(`/profile?id=${targetUser.id}`)}
-												class="px-2.5 py-1.5 bg-white border border-pink-300 hover:bg-pink-50 text-pink-600 active:scale-95 text-xs font-semibold rounded-xl transition-all shadow-2xs flex items-center space-x-1 cursor-pointer"
+												class="px-2.5 py-1.5 bg-white border border-pink-300 hover:bg-pink-50 text-pink-600 active:scale-95 text-xs font-semibold rounded-xl transition-all flex items-center space-x-1 cursor-pointer"
 												title="View Full Profile"
 											>
 												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5">
@@ -854,7 +917,7 @@
 												<button
 													type="button"
 													onclick={() => openChatWithFriend({ friend_id: targetUser.id, username: targetUser.username })}
-													class="px-2.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-all shadow-2xs flex items-center space-x-1 cursor-pointer active:scale-95"
+													class="px-2.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-all flex items-center space-x-1 cursor-pointer active:scale-95"
 												>
 													<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
 														<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
@@ -866,7 +929,7 @@
 													type="button"
 													onclick={() => handleCancelFriendRequestFromSearch(targetUser)}
 													disabled={isResponding}
-													class="px-2.5 py-1.5 bg-amber-50 hover:bg-red-50 text-amber-800 hover:text-red-600 border border-amber-300 hover:border-red-300 text-xs font-bold rounded-xl active:scale-95 transition-all shadow-2xs flex items-center space-x-1 cursor-pointer disabled:opacity-50"
+													class="px-2.5 py-1.5 bg-amber-50 hover:bg-red-50 text-amber-800 hover:text-red-600 border border-amber-300 hover:border-red-300 text-xs font-bold rounded-xl active:scale-95 transition-all flex items-center space-x-1 cursor-pointer disabled:opacity-50"
 													title="Click to cancel friend request"
 												>
 													<span>Cancel Add</span>
@@ -875,7 +938,7 @@
 												<button
 													type="button"
 													onclick={() => handleRespondRequest(targetUser.request_id, 'accept')}
-													class="px-2.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-bold rounded-xl hover:from-pink-600 hover:to-rose-600 active:scale-95 transition-all shadow-2xs cursor-pointer"
+													class="px-2.5 py-1.5 bg-pink-500 text-white text-xs font-bold rounded-xl hover:bg-pink-600 active:scale-95 transition-all cursor-pointer"
 												>
 													Accept
 												</button>
@@ -884,7 +947,7 @@
 													type="button"
 													onclick={() => sendFriendRequestToUser(targetUser)}
 													disabled={isAddingFriend}
-													class="px-2.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-2xs disabled:opacity-50 flex items-center space-x-1 cursor-pointer"
+													class="px-2.5 py-1.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white text-xs font-bold rounded-xl transition-all disabled:opacity-50 flex items-center space-x-1 cursor-pointer"
 												>
 													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 														<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -917,6 +980,119 @@
 							</p>
 						</div>
 					{/if}
+
+					<!-- Discover People / Suggested Users Section -->
+					<div class="mt-6 pt-5 border-t-2 border-pink-100 space-y-3">
+						<div class="flex items-center justify-between">
+							<div class="flex items-center space-x-2">
+								<div class="w-7 h-7 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center">
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+									</svg>
+								</div>
+								<h3 class="text-xs sm:text-sm font-bold text-pink-700 uppercase tracking-wide">
+									Discover People
+								</h3>
+							</div>
+							<span class="text-[11px] text-pink-400 font-medium">Suggested Users (20 per page)</span>
+						</div>
+
+						{#if isLoadingSuggested && suggestedUsers.length === 0}
+							<div class="text-center py-6">
+								<div class="animate-spin h-6 w-6 border-3 border-pink-200 border-t-pink-500 rounded-full mx-auto mb-2"></div>
+								<p class="text-xs text-pink-400">Loading suggested users...</p>
+							</div>
+						{:else if suggestedUsers.length > 0}
+							<div class="space-y-2 max-h-80 overflow-y-auto pr-1">
+								{#each suggestedUsers as sugUser (sugUser.id)}
+									<div class="p-2.5 sm:p-3 bg-pink-50/80 hover:bg-pink-100/70 border-2 border-pink-200 rounded-2xl flex items-center justify-between gap-2 transition-all">
+										<!-- User Info -->
+										<button
+											type="button"
+											onclick={() => goto(`/profile?id=${sugUser.id}`)}
+											class="flex items-center space-x-2.5 min-w-0 text-left hover:opacity-85 transition-opacity group cursor-pointer"
+											title="View @{sugUser.username}'s Profile"
+										>
+											<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-pink-400 text-white font-bold text-xs sm:text-sm flex items-center justify-center flex-shrink-0 overflow-hidden">
+												{#if sugUser.avatar_url}
+													<img src={sugUser.avatar_url} alt={sugUser.username} class="w-full h-full object-cover" />
+												{:else}
+													{sugUser.username.charAt(0).toUpperCase()}
+												{/if}
+											</div>
+											<div class="min-w-0">
+												<p class="text-xs sm:text-sm font-bold text-pink-900 truncate group-hover:underline">@{sugUser.username}</p>
+												<p class="text-[10px] text-pink-400 truncate">Joined {new Date(sugUser.created_at || Date.now()).toLocaleDateString()}</p>
+											</div>
+										</button>
+
+										<!-- Actions -->
+										<div class="flex items-center space-x-1.5 flex-shrink-0">
+											{#if sugUser.relationship === 'friends'}
+												<span class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-300 text-xs font-bold rounded-xl flex items-center space-x-1">
+													<span>Friends</span>
+												</span>
+											{:else if sugUser.relationship === 'request_sent'}
+												<button
+													type="button"
+													onclick={() => handleCancelFriendRequestFromSearch(sugUser)}
+													disabled={isResponding}
+													class="px-2.5 py-1.5 bg-amber-50 hover:bg-red-50 text-amber-800 hover:text-red-600 border border-amber-300 hover:border-red-300 text-xs font-bold rounded-xl active:scale-95 transition-all flex items-center space-x-1 cursor-pointer disabled:opacity-50"
+													title="Cancel request"
+												>
+													<span>Cancel Add</span>
+												</button>
+											{:else if sugUser.relationship === 'request_received'}
+												<button
+													type="button"
+													onclick={() => handleRespondRequest(sugUser.request_id, 'accept')}
+													class="px-2.5 py-1.5 bg-pink-500 text-white text-xs font-bold rounded-xl hover:bg-pink-600 active:scale-95 transition-all cursor-pointer"
+												>
+													Accept
+												</button>
+											{:else}
+												<button
+													type="button"
+													onclick={() => sendFriendRequestToUser(sugUser)}
+													disabled={isAddingFriend}
+													class="px-2.5 py-1.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white text-xs font-bold rounded-xl transition-all disabled:opacity-50 flex items-center space-x-1 cursor-pointer"
+												>
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+														<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+													</svg>
+													<span>Add Friend</span>
+												</button>
+											{/if}
+										</div>
+									</div>
+								{/each}
+							</div>
+
+							<!-- Lazy load / Load more button -->
+							{#if hasMoreSuggested}
+								<div class="text-center pt-2">
+									<button
+										type="button"
+										onclick={loadMoreSuggestedUsers}
+										disabled={isLoadingSuggested}
+										class="px-4 py-2 bg-pink-100 hover:bg-pink-200 border-2 border-pink-300 text-pink-700 text-xs font-bold rounded-xl active:scale-95 transition-all disabled:opacity-50 cursor-pointer inline-flex items-center space-x-1.5"
+									>
+										{#if isLoadingSuggested}
+											<div class="animate-spin h-3.5 w-3.5 border-2 border-pink-300 border-t-pink-600 rounded-full"></div>
+											<span>Loading...</span>
+										{:else}
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+											</svg>
+											<span>Load More Users (20)</span>
+										{/if}
+									</button>
+								</div>
+							{/if}
+						{:else}
+							<p class="text-center text-pink-400 py-4 text-xs">No suggested users found.</p>
+						{/if}
+					</div>
 				</div>
 			{/if}
 
@@ -924,7 +1100,7 @@
 			{#if activeTab === 'pending'}
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 animate-pop-in">
 					<!-- Left Card: Incoming Requests -->
-					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-300 hover:shadow-lg">
+					<div class="bg-white border-2 border-pink-300 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-300 hover:">
 						<div>
 							<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 flex flex-wrap items-center justify-between gap-2">
 								<span class="truncate">Incoming Requests ({pendingRequests.length})</span>
@@ -934,13 +1110,13 @@
 							{#if pendingRequests.length > 0}
 								<div class="space-y-2.5">
 									{#each pendingRequests as req, idx (req.id || req.request_id || idx)}
-										<div class="p-2.5 sm:p-3 bg-pink-50 border-2 border-pink-200 rounded-xl flex items-center justify-between gap-2 shadow-sm transition-all duration-200 hover:border-pink-300">
+										<div class="p-2.5 sm:p-3 bg-pink-50 border-2 border-pink-200 rounded-xl flex items-center justify-between gap-2 transition-all duration-200 hover:border-pink-300">
 											<a
 												href="/profile?id={req.sender_id || req.id}"
 												class="flex items-center space-x-2 sm:space-x-2.5 min-w-0 hover:opacity-85 transition-opacity group cursor-pointer"
 												title="View @{req.username}'s Profile"
 											>
-												<div class="w-8 h-8 rounded-lg bg-pink-500 text-white font-bold flex items-center justify-center flex-shrink-0 shadow-sm text-xs overflow-hidden group-hover:scale-105 transition-transform">
+												<div class="w-8 h-8 rounded-lg bg-pink-500 text-white font-bold flex items-center justify-center flex-shrink-0 text-xs overflow-hidden group-hover:scale-105 transition-transform">
 													{#if req.avatar_url}
 														<img src={req.avatar_url} alt={req.username} class="w-full h-full object-cover" />
 													{:else}
@@ -957,7 +1133,7 @@
 												<button
 													onclick={() => handleRespondRequest(req.id || req.request_id, 'accept')}
 													disabled={isResponding}
-													class="px-3 py-1.5 bg-gradient-to-r from-pink-500 to-pink-600 text-white text-xs font-bold rounded-lg hover:from-pink-600 hover:to-pink-700 active:scale-95 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+													class="px-3 py-1.5 bg-pink-500 text-white text-xs font-bold rounded-lg hover:bg-pink-600 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
 												>
 													Accept
 												</button>
@@ -981,7 +1157,7 @@
 					</div>
 
 					<!-- Right Card: Sent Pending Requests -->
-					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-300 hover:shadow-lg">
+					<div class="bg-white border-2 border-pink-300 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-300 hover:">
 						<div>
 							<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 flex flex-wrap items-center justify-between gap-2">
 								<span class="truncate">Sent Pending Requests ({sentRequests.length})</span>
@@ -991,13 +1167,13 @@
 							{#if sentRequests.length > 0}
 								<div class="space-y-2.5">
 									{#each sentRequests as req, idx (req.id || req.request_id || idx)}
-										<div class="p-2.5 sm:p-3 bg-pink-50 border-2 border-pink-200 rounded-xl flex items-center justify-between gap-2 shadow-sm transition-all duration-200 hover:border-pink-300">
+										<div class="p-2.5 sm:p-3 bg-pink-50 border-2 border-pink-200 rounded-xl flex items-center justify-between gap-2 transition-all duration-200 hover:border-pink-300">
 											<a
 												href="/profile?id={req.receiver_id || req.id}"
 												class="flex items-center space-x-2 sm:space-x-2.5 min-w-0 hover:opacity-85 transition-opacity group cursor-pointer"
 												title="View @{req.username}'s Profile"
 											>
-												<div class="w-8 h-8 rounded-lg bg-pink-300 text-pink-700 font-bold flex items-center justify-center flex-shrink-0 shadow-sm text-xs overflow-hidden group-hover:scale-105 transition-transform">
+												<div class="w-8 h-8 rounded-lg bg-pink-300 text-pink-700 font-bold flex items-center justify-center flex-shrink-0 text-xs overflow-hidden group-hover:scale-105 transition-transform">
 													{#if req.avatar_url}
 														<img src={req.avatar_url} alt={req.username} class="w-full h-full object-cover" />
 													{:else}
@@ -1014,7 +1190,7 @@
 												<button
 													onclick={() => handleCancelSentRequest(req.id || req.request_id)}
 													disabled={isResponding}
-													class="px-2.5 py-1.5 bg-amber-50 hover:bg-red-50 border border-amber-300 hover:border-red-300 text-amber-800 hover:text-red-600 active:scale-95 text-xs font-bold rounded-lg transition-all flex-shrink-0 shadow-sm cursor-pointer disabled:opacity-50"
+													class="px-2.5 py-1.5 bg-amber-50 hover:bg-red-50 border border-amber-300 hover:border-red-300 text-amber-800 hover:text-red-600 active:scale-95 text-xs font-bold rounded-lg transition-all flex-shrink-0 cursor-pointer disabled:opacity-50"
 												>
 													Cancel Add
 												</button>
@@ -1036,8 +1212,8 @@
 		<!-- Confirmation Modal for Removing Friend -->
 		{#if showConfirmDelete}
 			<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-				<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center animate-modal-content">
-					<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
+				<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-sm w-full p-6 text-center animate-modal-content">
+					<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3">
 						<svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
 							<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.088 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 00-3.273 0C6.39 3.05 6 3.678 6 4.478v.113a49.488 49.488 0 0012 0v-.113c0-.8-.39-1.428-1.091-1.452a51.196 51.196 0 00-3.273 0zM9.75 9.75a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75zm4.5 0a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 						</svg>
@@ -1050,14 +1226,14 @@
 					<div class="flex space-x-3">
 						<button
 							onclick={() => { showConfirmDelete = false; friendToRemove = null; }}
-							class="w-1/2 py-2.5 bg-pink-100 text-pink-700 rounded-xl font-bold text-sm hover:bg-pink-200 active:scale-95 transition-all shadow-xs"
+							class="w-1/2 py-2.5 bg-pink-100 text-pink-700 rounded-xl font-bold text-sm hover:bg-pink-200 active:scale-95 transition-all"
 						>
 							Cancel
 						</button>
 						<button
 							onclick={confirmRemoveFriend}
 							disabled={isRemoving}
-							class="w-1/2 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 text-white rounded-xl font-bold text-sm hover:from-rose-600 hover:to-red-700 active:scale-95 transition-all shadow-md shadow-rose-200"
+							class="w-1/2 py-2.5 bg-rose-500 text-white rounded-xl font-bold text-sm hover:bg-rose-600 active:scale-95 transition-all -rose-200"
 						>
 							{isRemoving ? 'Removing...' : 'Remove'}
 						</button>
@@ -1072,8 +1248,8 @@
 				class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[100] flex items-center justify-center p-4 animate-fade-in"
 				onclick={(e) => { if (e.target === e.currentTarget) showNotificationModalPopup = false; }}
 			>
-				<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-6 max-w-xs sm:max-w-sm w-full text-center space-y-4 animate-modal-content">
-					<div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-inner {notificationModalType === 'error' ? 'bg-rose-100 text-rose-600 border border-rose-200' : 'bg-emerald-100 text-emerald-600 border border-emerald-200'}">
+				<div class="bg-white border-2 border-pink-300 rounded-3xl p-6 max-w-xs sm:max-w-sm w-full text-center space-y-4 animate-modal-content">
+					<div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto {notificationModalType === 'error' ? 'bg-rose-100 text-rose-600 border border-rose-200' : 'bg-emerald-100 text-emerald-600 border border-emerald-200'}">
 						{#if notificationModalType === 'error'}
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zM12 15.75h.007v.008H12v-.008z" />
@@ -1097,7 +1273,7 @@
 					<button
 						type="button"
 						onclick={() => showNotificationModalPopup = false}
-						class="w-full py-2.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white rounded-2xl font-bold text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer"
+						class="w-full py-2.5 bg-pink-500 hover:bg-pink-600 text-white rounded-2xl font-bold text-xs sm:text-sm transition-all active:scale-95 cursor-pointer"
 					>
 						OK
 					</button>

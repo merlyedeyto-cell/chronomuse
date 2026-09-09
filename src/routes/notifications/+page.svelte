@@ -424,9 +424,9 @@
 	<title>Notifications & Requests - ChronoMuse</title>
 </svelte:head>
 
-<div class="flex flex-col min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 animate-fade-in font-sans">
+<div class="flex flex-col min-h-screen bg-pink-100 animate-fade-in font-sans">
 	<!-- Top Navigation -->
-	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
+	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 sticky top-0 z-50 animate-slide-down">
 			<div class="container mx-auto px-4 py-3 flex items-center justify-between">
 				<div class="flex items-center space-x-3 min-w-0">
 					<!-- Hamburger Menu Button -->
@@ -463,7 +463,7 @@
 					</button>
 					<button
 						onclick={() => goto('/settings')}
-						class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-600 shadow-2xs flex items-center justify-center transition-all cursor-pointer active:scale-95 flex-shrink-0"
+						class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-600 flex items-center justify-center transition-all cursor-pointer active:scale-95 flex-shrink-0"
 						title="Settings"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
@@ -481,7 +481,7 @@
 		<!-- Main Content -->
 		<main class="flex-grow container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-4xl">
 			<!-- Header Banner -->
-			<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 mb-5 animate-fade-in-up">
+			<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 mb-5 animate-fade-in-up">
 				<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 					<div>
 						<div class="flex items-center space-x-2 mb-0.5">
@@ -512,8 +512,7 @@
 							onclick={() => activeTab = 'memories'}
 							class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center relative cursor-pointer"
 							class:bg-pink-500={activeTab === 'memories'}
-							class:text-white={activeTab === 'memories'}
-							class:shadow-sm={activeTab === 'memories'}
+							class:text-white={activeTab === 'memories'}
 							class:text-pink-600={activeTab !== 'memories'}
 							class:hover:bg-pink-200={activeTab !== 'memories'}
 						>
@@ -524,8 +523,7 @@
 							onclick={() => activeTab = 'pending_memories'}
 							class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center relative cursor-pointer"
 							class:bg-pink-500={activeTab === 'pending_memories'}
-							class:text-white={activeTab === 'pending_memories'}
-							class:shadow-sm={activeTab === 'pending_memories'}
+							class:text-white={activeTab === 'pending_memories'}
 							class:text-pink-600={activeTab !== 'pending_memories'}
 							class:hover:bg-pink-200={activeTab !== 'pending_memories'}
 						>
@@ -539,8 +537,7 @@
 							onclick={() => activeTab = 'sent'}
 							class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center cursor-pointer"
 							class:bg-pink-500={activeTab === 'sent'}
-							class:text-white={activeTab === 'sent'}
-							class:shadow-sm={activeTab === 'sent'}
+							class:text-white={activeTab === 'sent'}
 							class:text-pink-600={activeTab !== 'sent'}
 							class:hover:bg-pink-200={activeTab !== 'sent'}
 						>
@@ -552,13 +549,13 @@
 
 			<!-- Tab Contents -->
 			{#if isLoading && !hasLoadedOnce}
-				<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-12 text-center animate-fade-in">
+				<div class="bg-white border-2 border-pink-300 rounded-2xl p-12 text-center animate-fade-in">
 					<div class="w-10 h-10 border-4 border-pink-400 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
 					<p class="text-xs text-pink-500 font-semibold animate-pulse">Loading notifications...</p>
 				</div>
 			{:else if activeTab === 'memories'}
 				{#if acceptedSharedMemories.length === 0}
-					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-10 text-center animate-fade-in">
+					<div class="bg-white border-2 border-pink-300 rounded-2xl p-10 text-center animate-fade-in">
 						<div class="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3 text-pink-400">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -571,7 +568,7 @@
 					</div>
 				{:else}
 					<div class="space-y-4 animate-fade-in">
-						<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5">
+						<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5">
 							<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide flex items-center space-x-1.5">
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -586,14 +583,14 @@
 										tabindex="0"
 										onclick={(e) => handleCardClick(item, e)}
 										onkeydown={(e) => { if (e.key === 'Enter') handleCardClick(item, e); }}
-										class="p-3.5 sm:p-4 bg-white hover:bg-pink-50/50 border border-pink-200 hover:border-pink-300 rounded-2xl shadow-xs transition-all duration-200 cursor-pointer group hover:shadow-md"
+										class="p-3.5 sm:p-4 bg-white hover:bg-pink-50/50 border border-pink-200 hover:border-pink-300 rounded-2xl transition-all duration-200 cursor-pointer group hover:"
 									>
 										<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 											<div class="flex items-center space-x-3 min-w-0">
 												<button
 													type="button"
 													onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.sender_id}`); }}
-													class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform overflow-hidden cursor-pointer"
+													class="w-11 h-11 rounded-xl bg-pink-400 text-white font-bold text-base flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform overflow-hidden cursor-pointer"
 													title="View @{item.sender_username}'s Profile"
 												>
 													{#if item.sender_avatar_url}
@@ -643,7 +640,7 @@
 												<button
 													type="button"
 													onclick={(e) => goToCalendarDate(item.memory.date, e)}
-													class="px-3.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center space-x-1.5 cursor-pointer"
+													class="px-3.5 py-1.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
 												>
 													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 														<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
@@ -661,7 +658,7 @@
 			{:else if activeTab === 'pending_memories'}
 				<!-- Tab 2: Pending Memories Tab -->
 				{#if pendingSharedMemories.length === 0}
-					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-10 text-center animate-fade-in">
+					<div class="bg-white border-2 border-pink-300 rounded-2xl p-10 text-center animate-fade-in">
 						<div class="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3 text-pink-400">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -674,7 +671,7 @@
 					</div>
 				{:else}
 					<div class="space-y-4 animate-fade-in">
-						<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5">
+						<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5">
 							<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide flex items-center space-x-1.5">
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
@@ -689,14 +686,14 @@
 										tabindex="0"
 										onclick={(e) => handleCardClick(item, e)}
 										onkeydown={(e) => { if (e.key === 'Enter') handleCardClick(item, e); }}
-										class="p-3.5 sm:p-4 bg-white hover:bg-pink-50/50 border border-pink-200 hover:border-pink-300 rounded-2xl shadow-xs transition-all duration-200 cursor-pointer group hover:shadow-md"
+										class="p-3.5 sm:p-4 bg-white hover:bg-pink-50/50 border border-pink-200 hover:border-pink-300 rounded-2xl transition-all duration-200 cursor-pointer group hover:"
 									>
 										<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 											<div class="flex items-center space-x-3 min-w-0">
 												<button
 													type="button"
 													onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.sender_id}`); }}
-													class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform overflow-hidden cursor-pointer"
+													class="w-11 h-11 rounded-xl bg-pink-400 text-white font-bold text-base flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform overflow-hidden cursor-pointer"
 													title="View @{item.sender_username}'s Profile"
 												>
 													{#if item.sender_avatar_url}
@@ -742,7 +739,7 @@
 												<button
 													type="button"
 													onclick={(e) => handleRespondSharedMemory(item, 'accept', e)}
-													class="px-3.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+													class="px-3.5 py-1.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white rounded-xl text-xs font-bold transition-all flex items-center space-x-1 cursor-pointer"
 													title="Accept and add memory to my calendar"
 												>
 													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
@@ -770,7 +767,7 @@
 			{:else if activeTab === 'sent'}
 				<!-- Tab 3: Sent / Shared by You Tab -->
 				{#if sentSharedMemories.length === 0}
-					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-10 text-center animate-fade-in">
+					<div class="bg-white border-2 border-pink-300 rounded-2xl p-10 text-center animate-fade-in">
 						<div class="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3 text-pink-400">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
@@ -782,7 +779,7 @@
 						</p>
 					</div>
 				{:else}
-					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5 animate-fade-in">
+					<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 animate-fade-in">
 						<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3.5">
 							<h2 class="text-xs sm:text-sm font-bold text-pink-600 uppercase tracking-wide flex items-center space-x-1.5">
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
@@ -800,14 +797,14 @@
 									tabindex="0"
 									onclick={(e) => handleCardClick(item, e)}
 									onkeydown={(e) => { if (e.key === 'Enter') handleCardClick(item, e); }}
-									class="p-3.5 sm:p-4 bg-white hover:bg-pink-50/50 border border-pink-200 hover:border-pink-300 rounded-2xl shadow-xs transition-all duration-200 cursor-pointer group hover:shadow-md"
+									class="p-3.5 sm:p-4 bg-white hover:bg-pink-50/50 border border-pink-200 hover:border-pink-300 rounded-2xl transition-all duration-200 cursor-pointer group hover:"
 								>
 									<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 										<div class="flex items-center space-x-3 min-w-0">
 											<button
 												type="button"
 												onclick={(e) => { e.stopPropagation(); goto(`/profile?id=${item.recipient_id}`); }}
-												class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform overflow-hidden cursor-pointer"
+												class="w-11 h-11 rounded-xl bg-pink-400 text-white font-bold text-base flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform overflow-hidden cursor-pointer"
 												title="View @{item.recipient_username}'s Profile"
 											>
 												{#if item.recipient_avatar_url}
@@ -871,7 +868,7 @@
 											<button
 												type="button"
 												onclick={(e) => promptCancelShare(item, e)}
-												class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 border border-rose-200 active:scale-95 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer shadow-2xs"
+												class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 border border-rose-200 active:scale-95 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
 												title="Cancel and unshare this memory"
 											>
 												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-rose-500">
@@ -907,7 +904,7 @@
 			>
 				<!-- Modal Container -->
 				<div
-					class="bg-white border-2 border-pink-300 rounded-2xl shadow-xl p-4 sm:p-5 relative max-w-sm sm:max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col animate-pop-in"
+					class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 relative max-w-sm sm:max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col animate-pop-in"
 					onclick={(e) => e.stopPropagation()}
 				>
 					<!-- Close Button -->
@@ -928,7 +925,7 @@
 					</div>
 
 					<!-- Selected Date Card -->
-					<div class="mb-3 p-3 bg-gradient-to-r from-pink-400 via-rose-400 to-pink-400 rounded-xl shadow-xs text-white flex-shrink-0">
+					<div class="mb-3 p-3 bg-pink-400 rounded-xl text-white flex-shrink-0">
 						<div class="flex items-center space-x-2.5">
 							<div class="p-1.5 bg-white/25 rounded-lg">
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-white">
@@ -951,7 +948,7 @@
 									<button
 										type="button"
 										onclick={() => { showViewMemoryModal = false; goto(`/profile?id=${selectedMemoryToView.sender_id || selectedMemoryToView.recipient_id}`); }}
-										class="text-[11px] px-2.5 py-0.5 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 text-white font-bold shadow-xs inline-flex items-center space-x-1 cursor-pointer hover:scale-102 transition-transform"
+										class="text-[11px] px-2.5 py-0.5 rounded-full bg-pink-400 hover:bg-pink-500 text-white font-bold inline-flex items-center space-x-1 cursor-pointer hover:scale-102 transition-transform"
 										title="View Profile"
 									>
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-pink-100 flex-shrink-0">
@@ -961,13 +958,13 @@
 									</button>
 
 									{#if selectedMemoryToView.memory.mood_tag}
-										<span class="text-[10px] px-2.5 py-0.5 rounded-full border {getMoodColor(selectedMemoryToView.memory.mood_tag)} font-bold whitespace-nowrap shadow-xs">
+										<span class="text-[10px] px-2.5 py-0.5 rounded-full border {getMoodColor(selectedMemoryToView.memory.mood_tag)} font-bold whitespace-nowrap">
 											{selectedMemoryToView.memory.mood_tag}
 										</span>
 									{/if}
 
 									{#if selectedMemoryToView.memory.memory_tag && selectedMemoryToView.memory.memory_tag !== 'Untitled Memory' && selectedMemoryToView.memory.memory_tag !== 'Special Memory' && !selectedMemoryToView.memory.memory_tag.startsWith('Shared memory from')}
-										<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 border border-pink-300 font-bold whitespace-nowrap shadow-xs">
+										<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 border border-pink-300 font-bold whitespace-nowrap">
 											{selectedMemoryToView.memory.memory_tag}
 										</span>
 									{/if}
@@ -1007,9 +1004,9 @@
 
 							<!-- Music Audio Player Attachment -->
 							{#if selectedMemoryToView.memory.music}
-								<div class="rounded-lg overflow-hidden border border-pink-200 bg-gradient-to-r from-pink-50 to-pink-100 p-2.5">
+								<div class="rounded-lg overflow-hidden border border-pink-200 bg-pink-50 p-2.5">
 									<div class="flex items-center space-x-1.5 mb-1.5 min-w-0">
-										<div class="w-6 h-6 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center shrink-0">
+										<div class="w-6 h-6 rounded-full bg-pink-400 flex items-center justify-center shrink-0">
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5 text-white">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
 											</svg>
@@ -1037,7 +1034,7 @@
 							<div class="flex items-center space-x-2">
 								<button
 									onclick={(e) => goToCalendarDate(selectedMemoryToView.memory.date, e)}
-									class="flex-1 py-2.5 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold shadow-sm flex items-center justify-center space-x-1.5 cursor-pointer"
+									class="flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold flex items-center justify-center space-x-1.5 cursor-pointer"
 								>
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
@@ -1059,7 +1056,7 @@
 							<div class="flex items-center space-x-2">
 								<button
 									onclick={(e) => handleRespondSharedMemory(selectedMemoryToView, 'accept', e)}
-									class="flex-1 py-2.5 px-3 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all duration-200 flex items-center justify-center space-x-1.5 cursor-pointer"
+									class="flex-1 py-2.5 px-3 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 flex items-center justify-center space-x-1.5 cursor-pointer"
 								>
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -1087,10 +1084,10 @@
 				onclick={() => { if (!isCancelling) showCancelModal = false; }}
 			>
 				<div
-					class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-6 max-w-sm w-full animate-modal-content text-center"
+					class="bg-white border-2 border-pink-300 rounded-3xl p-6 max-w-sm w-full animate-modal-content text-center"
 					onclick={(e) => e.stopPropagation()}
 				>
-					<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
+					<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3">
 						<svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
 							<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.088 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 00-3.273 0C6.39 3.05 6 3.678 6 4.478v.113a49.488 49.488 0 0012 0v-.113c0-.8-.39-1.428-1.091-1.452a51.196 51.196 0 00-3.273 0zM9.75 9.75a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75zm4.5 0a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 						</svg>
@@ -1103,14 +1100,14 @@
 						<button
 							onclick={() => showCancelModal = false}
 							disabled={isCancelling}
-							class="w-1/2 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 text-sm font-bold rounded-xl transition-all active:scale-95 cursor-pointer disabled:opacity-50 shadow-xs"
+							class="w-1/2 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 text-sm font-bold rounded-xl transition-all active:scale-95 cursor-pointer disabled:opacity-50"
 						>
 							Keep Shared
 						</button>
 						<button
 							onclick={confirmCancelShare}
 							disabled={isCancelling}
-							class="w-1/2 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white text-sm font-bold rounded-xl shadow-md shadow-rose-200 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+							class="w-1/2 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl -rose-200 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
 						>
 							{isCancelling ? 'Cancelling...' : 'Cancel Share'}
 						</button>
@@ -1134,7 +1131,7 @@
 						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 					</svg>
 				</button>
-				<img src={fullScreenImageUrl} alt="Full screen preview" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
+				<img src={fullScreenImageUrl} alt="Full screen preview" class="max-w-full max-h-[90vh] object-contain rounded-lg" />
 			</div>
 		{/if}
 	</div>

@@ -20,7 +20,7 @@
 </script>
 
 <div class="flex flex-col min-h-screen font-sans text-sm">
-	<header class="sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg" style="position: -webkit-sticky; position: sticky;">
+	<header class="sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b-2 border-pink-300" style="position: -webkit-sticky; position: sticky;">
 		<div class="container mx-auto px-4 py-3 flex items-center justify-between">
 			<!-- Logo -->
 			<a href="#login-section" onclick={handleLogoClick} class="flex items-center space-x-2">

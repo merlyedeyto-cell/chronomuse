@@ -31,7 +31,7 @@
 	>
 		<!-- Modal Content Box matching Month popup -->
 		<div 
-			class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-5 max-w-xs sm:max-w-sm w-full space-y-3 animate-modal-content max-h-[85vh] flex flex-col"
+			class="bg-white border-2 border-pink-300 rounded-3xl p-5 max-w-xs sm:max-w-sm w-full space-y-3 animate-modal-content max-h-[85vh] flex flex-col"
 			onclick={(e) => e.stopPropagation()}
 			role="dialog"
 			aria-modal="true"
@@ -65,7 +65,7 @@
 					<button
 						type="button"
 						onclick={() => handleSelect('')}
-						class="py-2 px-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-between border col-span-2 {isDefaultSelected ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white border-pink-600 shadow-md scale-[1.02]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-800 border-pink-200/80'}"
+						class="py-2 px-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-between border col-span-2 {isDefaultSelected ? 'bg-pink-500 text-white border-pink-600 scale-[1.02]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-800 border-pink-200/80'}"
 					>
 						<span class="truncate">{defaultOption || title}</span>
 						{#if isDefaultSelected}
@@ -81,7 +81,7 @@
 					<button
 						type="button"
 						onclick={() => handleSelect(option)}
-						class="py-2 px-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-between border {isSelected ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white border-pink-600 shadow-md scale-[1.02]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-800 border-pink-200/80'}"
+						class="py-2 px-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-between border {isSelected ? 'bg-pink-500 text-white border-pink-600 scale-[1.02]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-800 border-pink-200/80'}"
 					>
 						<span class="truncate">{option}</span>
 						{#if isSelected}

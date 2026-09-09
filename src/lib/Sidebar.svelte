@@ -202,7 +202,7 @@
 
 <!-- Sidebar -->
 <aside
-	class="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white shadow-lg transition-all duration-300 z-40 overflow-y-auto scrollbar-hide"
+	class="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white transition-all duration-300 z-40 overflow-y-auto scrollbar-hide"
 	class:w-64={isOpen}
 	class:border-r-2={isOpen}
 	class:border-pink-300={isOpen}
@@ -335,7 +335,7 @@
 			<div class="pt-4 mt-4 border-t border-pink-200 animate-fade-in-up" style="animation-delay: 0.4s">
 				<button
 					onclick={handleLogout}
-					class="w-full py-2 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-lg hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md flex items-center justify-center space-x-2"
+					class="w-full py-2 px-4 bg-pink-400 text-white rounded-lg hover:bg-pink-500 transition-all duration-200 text-sm font-semibold flex items-center justify-center space-x-2"
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />

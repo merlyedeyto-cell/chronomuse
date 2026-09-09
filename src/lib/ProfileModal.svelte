@@ -147,7 +147,7 @@
 	>
 		<!-- Modal Content -->
 		<div
-			class="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-5 sm:p-6 border-2 border-pink-300 transition-all duration-300 max-w-sm sm:max-w-md w-full relative max-h-[90vh] overflow-y-auto animate-modal-content"
+			class="bg-white/95 backdrop-blur-md rounded-2xl p-5 sm:p-6 border-2 border-pink-300 transition-all duration-300 max-w-sm sm:max-w-md w-full relative max-h-[90vh] overflow-y-auto animate-modal-content"
 			class:opacity-0={isClosing}
 			class:scale-95={isClosing}
 			onclick={(e) => e.stopPropagation()}
@@ -171,7 +171,7 @@
 
 			<!-- Header -->
 			<div class="text-center mb-5">
-				<div class="w-14 h-14 mx-auto mb-2.5 rounded-full bg-gradient-to-tr from-pink-400 to-pink-600 flex items-center justify-center text-white text-xl font-bold shadow-md overflow-hidden">
+				<div class="w-14 h-14 mx-auto mb-2.5 rounded-full bg-pink-400 flex items-center justify-center text-white text-xl font-bold overflow-hidden">
 					{#if user?.avatar_url}
 						<img src={user.avatar_url} alt={username} class="w-full h-full object-cover" />
 					{:else}
@@ -248,7 +248,7 @@
 					<button
 						onclick={handleSave}
 						disabled={isSaving}
-						class="w-full py-2 px-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg font-bold hover:from-pink-600 hover:to-pink-700 active:scale-95 transition-all duration-200 shadow-sm text-xs sm:text-sm disabled:opacity-50 flex items-center justify-center space-x-1.5"
+						class="w-full py-2 px-3 bg-pink-500 text-white rounded-lg font-bold hover:bg-pink-600 active:scale-95 transition-all duration-200 text-xs sm:text-sm disabled:opacity-50 flex items-center justify-center space-x-1.5"
 					>
 						{#if isSaving}
 							<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -275,7 +275,7 @@
 				{:else}
 					<button
 						onclick={handleEdit}
-						class="w-full py-3 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md flex items-center justify-center space-x-2"
+						class="w-full py-3 px-4 bg-pink-400 text-white rounded-xl hover:bg-pink-500 transition-all duration-200 text-sm font-semibold flex items-center justify-center space-x-2"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />

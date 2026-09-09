@@ -473,7 +473,7 @@
 	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 >
 	<div
-		class="bg-white border-2 border-pink-300 rounded-2xl shadow-xl p-4 sm:p-5 relative transition-all duration-300 max-w-sm sm:max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col"
+		class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 relative transition-all duration-300 max-w-sm sm:max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col"
 		class:opacity-0={isClosing}
 		class:scale-95={isClosing}
 		class:transform={isClosing}
@@ -497,7 +497,7 @@
 	</div>
 
 	<!-- Selected Date Card -->
-	<div class="mb-3 p-3 bg-gradient-to-r from-pink-400 to-pink-600 rounded-xl shadow-sm text-white">
+	<div class="mb-3 p-3 bg-pink-400 rounded-xl text-white">
 		<div class="flex items-center space-x-2.5">
 			<div class="p-1.5 bg-white/20 rounded-lg">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
@@ -521,7 +521,7 @@
 			<p class="text-sm text-pink-400 mb-4">No memories for this date yet</p>
 			<button
 				onclick={() => dispatch('addMemory')}
-				class="py-2 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-lg hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md"
+				class="py-2 px-4 bg-pink-400 text-white rounded-lg hover:bg-pink-500 transition-all duration-200 text-sm font-semibold"
 			>
 				Add Your First Memory
 			</button>
@@ -565,7 +565,7 @@
 							<!-- Upload Photo or Video -->
 							<div>
 								<label class="block text-xs font-medium text-pink-600 mb-1">Photo or Video</label>
-								<label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-pink-300 rounded-xl bg-gradient-to-r from-pink-50 to-pink-100 cursor-pointer hover:bg-pink-100 hover:border-pink-400 transition-all duration-200 overflow-hidden">
+								<label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-pink-300 rounded-xl bg-pink-50 cursor-pointer hover:bg-pink-100 hover:border-pink-400 transition-all duration-200 overflow-hidden">
 									{#if editedPhotoVideoPreview}
 										{#if editedPhotoVideoType.startsWith('image/')}
 											<img src={editedPhotoVideoPreview} alt="Preview" class="w-full h-full object-contain" />
@@ -580,7 +580,7 @@
 										{/if}
 									{:else}
 										<div class="flex items-center space-x-3 pt-2 pb-3 px-4">
-											<div class="w-10 h-10 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center flex-shrink-0">
+											<div class="w-10 h-10 rounded-full bg-pink-400 flex items-center justify-center flex-shrink-0">
 												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-white">
 													<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
 												</svg>
@@ -612,9 +612,9 @@
 							<!-- Upload Music -->
 							<div>
 								<label class="block text-xs font-medium text-pink-600 mb-1">Music</label>
-								<label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-pink-300 rounded-xl bg-gradient-to-r from-pink-50 to-pink-100 cursor-pointer hover:bg-pink-100 hover:border-pink-400 transition-all duration-200">
+								<label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-pink-300 rounded-xl bg-pink-50 cursor-pointer hover:bg-pink-100 hover:border-pink-400 transition-all duration-200">
 									<div class="flex items-center space-x-3 pt-2 pb-3 px-4 w-full max-w-full min-w-0 overflow-hidden">
-										<div class="w-10 h-10 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center flex-shrink-0">
+										<div class="w-10 h-10 rounded-full bg-pink-400 flex items-center justify-center flex-shrink-0">
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-white">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
 											</svg>
@@ -658,7 +658,7 @@
 									<span class="text-lg leading-none translate-x-1 translate-y-1">😊</span>
 								</button>
 								{#if showEmojiPicker}
-									<div class="absolute bottom-full right-0 mb-2 p-2 bg-white border-2 border-pink-300 rounded-lg shadow-lg z-10 max-w-[180px]">
+									<div class="absolute bottom-full right-0 mb-2 p-2 bg-white border-2 border-pink-300 rounded-lg z-10 max-w-[180px]">
 										<div class="grid grid-cols-6 gap-1">
 											{#each emojis as emoji}
 												<button
@@ -679,7 +679,7 @@
 								<button
 									onclick={() => handleSaveEdit(memory)}
 									disabled={isSaving}
-									class="flex-1 py-2 px-3 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-lg hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold disabled:opacity-50"
+									class="flex-1 py-2 px-3 bg-pink-400 text-white rounded-lg hover:bg-pink-500 transition-all duration-200 text-sm font-semibold disabled:opacity-50"
 								>
 									{#if isSaving}Saving...{:else}Save{/if}
 								</button>
@@ -699,7 +699,7 @@
 							<div class="flex items-center justify-between gap-2 border-b border-pink-100 pb-2.5">
 								<div class="flex items-center flex-wrap gap-1.5 min-w-0">
 									{#if details.isShared && details.senderName}
-										<span class="text-[11px] px-2.5 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold shadow-xs inline-flex items-center space-x-1">
+										<span class="text-[11px] px-2.5 py-0.5 rounded-full bg-pink-500 text-white font-bold inline-flex items-center space-x-1">
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-pink-100 flex-shrink-0">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a5.97 5.97 0 00-.942 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
 											</svg>
@@ -708,13 +708,13 @@
 									{/if}
 
 									{#if memory.mood_tag}
-										<span class="text-[10px] px-2.5 py-0.5 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap shadow-xs">
+										<span class="text-[10px] px-2.5 py-0.5 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap">
 											{memory.mood_tag}
 										</span>
 									{/if}
 
 									{#if details.cleanTag}
-										<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 border border-pink-300 font-bold whitespace-nowrap shadow-xs">
+										<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 border border-pink-300 font-bold whitespace-nowrap">
 											{details.cleanTag}
 										</span>
 									{/if}
@@ -785,9 +785,9 @@
 							{/if}
 
 							{#if memory.music}
-								<div class="rounded-lg overflow-hidden border border-pink-200 bg-gradient-to-r from-pink-50 to-pink-100 p-2.5">
+								<div class="rounded-lg overflow-hidden border border-pink-200 bg-pink-50 p-2.5">
 									<div class="flex items-center space-x-1.5 mb-1.5 min-w-0">
-										<div class="w-6 h-6 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center shrink-0">
+										<div class="w-6 h-6 rounded-full bg-pink-400 flex items-center justify-center shrink-0">
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5 text-white">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
 											</svg>
@@ -844,7 +844,7 @@
 	<div class="mt-3 pt-3 border-t border-pink-200 flex-shrink-0">
 		<button
 			onclick={() => dispatch('addMemory')}
-			class="w-full py-2 px-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg hover:from-pink-600 hover:to-pink-700 active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold shadow-sm flex items-center justify-center space-x-1.5"
+			class="w-full py-2 px-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold flex items-center justify-center space-x-1.5"
 		>
 			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -879,7 +879,7 @@
 <!-- Share Memory Modal -->
 {#if showShareModal}
 	<div class="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4">
-		<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-2xl p-6 max-w-sm w-full relative animate-modal-content">
+		<div class="bg-white border-2 border-pink-300 rounded-2xl p-6 max-w-sm w-full relative animate-modal-content">
 			<button
 				onclick={() => showShareModal = false}
 				class="absolute top-3 right-3 text-pink-400 hover:text-pink-600 p-1 rounded-lg"
@@ -916,10 +916,10 @@
 							onclick={() => {
 								if (!isAlreadyShared) toggleShareFriend(friend.friend_id);
 							}}
-							class="w-full p-2.5 rounded-xl border-2 transition-all flex items-center justify-between text-left {isAlreadyShared ? 'bg-pink-50/70 border-pink-200/80 opacity-80 cursor-not-allowed' : isSelected ? 'border-pink-500 bg-pink-50/90 shadow-2xs cursor-pointer' : 'border-pink-200 bg-white hover:bg-pink-50/40 hover:border-pink-300 cursor-pointer'}"
+							class="w-full p-2.5 rounded-xl border-2 transition-all flex items-center justify-between text-left {isAlreadyShared ? 'bg-pink-50/70 border-pink-200/80 opacity-80 cursor-not-allowed' : isSelected ? 'border-pink-500 bg-pink-50/90 cursor-pointer' : 'border-pink-200 bg-white hover:bg-pink-50/40 hover:border-pink-300 cursor-pointer'}"
 						>
 							<div class="flex items-center space-x-2.5 min-w-0">
-								<div class="w-8 h-8 rounded-full {isAlreadyShared ? 'bg-gradient-to-r from-pink-300 to-rose-300' : 'bg-gradient-to-r from-pink-400 to-pink-600'} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-2xs overflow-hidden">
+								<div class="w-8 h-8 rounded-full {isAlreadyShared ? 'bg-pink-300' : 'bg-pink-400'} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 overflow-hidden">
 									{#if friend.avatar_url}
 										<img src={friend.avatar_url} alt={friend.username} class="w-full h-full object-cover" />
 									{:else}
@@ -935,14 +935,14 @@
 							</div>
 							<div class="flex-shrink-0 ml-2">
 								{#if isAlreadyShared}
-									<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-600 border border-pink-200/90 flex items-center gap-1 shadow-2xs">
+									<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-600 border border-pink-200/90 flex items-center gap-1">
 										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-pink-500">
 											<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
 										</svg>
 										<span>Shared</span>
 									</span>
 								{:else if isSelected}
-									<span class="w-5 h-5 rounded-full bg-pink-500 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+									<span class="w-5 h-5 rounded-full bg-pink-500 text-white flex items-center justify-center text-xs font-bold">
 										✓
 									</span>
 								{:else}
@@ -955,7 +955,7 @@
 				<button
 					onclick={handleShareMemorySubmit}
 					disabled={selectedShareFriendIds.length === 0 || isSharing}
-					class="w-full py-2.5 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl font-semibold text-sm hover:from-pink-500 hover:to-pink-700 transition-all disabled:opacity-50 shadow-md cursor-pointer disabled:cursor-not-allowed"
+					class="w-full py-2.5 bg-pink-400 text-white rounded-xl font-semibold text-sm hover:bg-pink-500 transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
 				>
 					{#if isSharing}Sharing...{:else}Share Memory{/if}
 				</button>
@@ -970,9 +970,9 @@
 		class="fixed inset-0 bg-black/50 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) { showDeleteConfirmModal = false; memoryToDeleteId = null; } }}
 	>
-		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center animate-modal-content relative overflow-hidden">
+		<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-sm w-full p-6 text-center animate-modal-content relative overflow-hidden">
 			<!-- Trash Bin Circle Icon -->
-			<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
+			<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
 					<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 				</svg>
@@ -993,7 +993,7 @@
 				<button
 					type="button"
 					onclick={confirmDeleteMemory}
-					class="w-1/2 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer"
+					class="w-1/2 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-xs sm:text-sm transition-all active:scale-95 cursor-pointer"
 				>
 					Delete
 				</button>

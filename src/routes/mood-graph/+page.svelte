@@ -65,7 +65,8 @@
 	});
 
 	let totalMemories = $state(0);
-	let mostFrequentMood = $state('');
+	let mostFrequentMoods = $state([]);
+	let mostFrequentMoodCount = $state(0);
 
 	// Pie chart data
 	function getPieChartData() {
@@ -127,83 +128,76 @@
 		.catch(() => {});
 	}
 
-	async function loadMoodData(targetPeriod = selectedPeriod, isSilent = false) {
+	let allMemoriesRaw = $state(getInitialMoodData());
+
+	function filterMemoriesByPeriod(memories, period) {
+		if (!memories || !Array.isArray(memories) || memories.length === 0) return [];
+		if (period === 'all') return [...memories];
+
+		const now = new Date();
+		if (period === 'week') {
+			const sevenDaysAgo = new Date();
+			sevenDaysAgo.setDate(now.getDate() - 7);
+			const cutoff = sevenDaysAgo.toISOString().split('T')[0];
+			return memories.filter(m => (m.date || m.created_at?.split('T')[0] || '') >= cutoff);
+		}
+		if (period === 'month') {
+			const thirtyDaysAgo = new Date();
+			thirtyDaysAgo.setDate(now.getDate() - 30);
+			const cutoff = thirtyDaysAgo.toISOString().split('T')[0];
+			return memories.filter(m => (m.date || m.created_at?.split('T')[0] || '') >= cutoff);
+		}
+		if (period === 'year') {
+			const oneYearAgo = new Date();
+			oneYearAgo.setDate(now.getDate() - 365);
+			const cutoff = oneYearAgo.toISOString().split('T')[0];
+			return memories.filter(m => (m.date || m.created_at?.split('T')[0] || '') >= cutoff);
+		}
+		return [...memories];
+	}
+
+	async function loadMoodData(isSilent = false) {
 		const currentUser = user || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 		if (!currentUser?.id) return;
 		user = currentUser;
 
-		// Check memory cache or localStorage
-		if (!periodCache[targetPeriod]) {
-			try {
-				const local = localStorage.getItem(`chronomuse_mood_cache_${currentUser.id}_${targetPeriod}`);
-				if (local) {
-					periodCache[targetPeriod] = JSON.parse(local);
-				}
-			} catch (e) {}
-		}
-
-		if (periodCache[targetPeriod]) {
-			if (targetPeriod === selectedPeriod) {
-				moodData = periodCache[targetPeriod];
-				calculateMoodStats();
-			}
-		}
-
-		if (!isSilent && targetPeriod === selectedPeriod && !periodCache[targetPeriod]) {
+		if (!isSilent && !hasLoadedOnce && allMemoriesRaw.length === 0) {
 			isLoading = true;
 		}
 
-		if (activeFetchControllers[targetPeriod]) {
-			activeFetchControllers[targetPeriod].abort();
+		if (activeFetchControllers['all']) {
+			activeFetchControllers['all'].abort();
 		}
 		const controller = new AbortController();
-		activeFetchControllers[targetPeriod] = controller;
+		activeFetchControllers['all'] = controller;
 
 		try {
-			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${currentUser.id}&period=${targetPeriod}`, {
+			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${currentUser.id}&period=all`, {
 				signal: controller.signal
 			});
 			const data = await res.json();
-			if (data.success && data.data) {
-				periodCache[targetPeriod] = data.data;
+			if (data.success && Array.isArray(data.data)) {
+				allMemoriesRaw = data.data;
 				try {
-					localStorage.setItem(`chronomuse_mood_cache_${currentUser.id}_${targetPeriod}`, JSON.stringify(data.data));
+					localStorage.setItem(`chronomuse_mood_cache_${currentUser.id}_all`, JSON.stringify(data.data));
 				} catch (e) {}
-				if (targetPeriod === selectedPeriod) {
-					moodData = data.data;
-					calculateMoodStats();
-				}
+				moodData = filterMemoriesByPeriod(allMemoriesRaw, selectedPeriod);
+				calculateMoodStats();
 			}
 		} catch (error) {
 			if (error.name !== 'AbortError') {
 				console.error('Error loading mood data:', error);
 			}
 		} finally {
-			if (targetPeriod === selectedPeriod) {
-				isLoading = false;
-				hasLoadedOnce = true;
-			}
+			isLoading = false;
+			hasLoadedOnce = true;
 		}
 	}
 
 	function changePeriod(newPeriod) {
-		if (selectedPeriod === newPeriod) return;
 		selectedPeriod = newPeriod;
-		if (periodCache[newPeriod]) {
-			moodData = periodCache[newPeriod];
-			calculateMoodStats();
-			loadMoodData(newPeriod, true);
-		} else {
-			loadMoodData(newPeriod, false);
-		}
-	}
-
-	function prefetchPeriods() {
-		['all', 'week', 'month', 'year'].forEach(p => {
-			if (p !== selectedPeriod) {
-				loadMoodData(p, true);
-			}
-		});
+		moodData = filterMemoriesByPeriod(allMemoriesRaw, newPeriod);
+		calculateMoodStats();
 	}
 
 	onMount(() => {
@@ -211,9 +205,7 @@
 		if (storedUser) {
 			user = JSON.parse(storedUser);
 			calculateMoodStats();
-			loadMoodData(selectedPeriod, false).then(() => {
-				prefetchPeriods();
-			});
+			loadMoodData(false);
 			checkNotifications();
 		} else {
 			goto('/');
@@ -221,8 +213,7 @@
 
 		const handleRealtimeUpdate = () => {
 			if (user && user.id) {
-				periodCache = {};
-				loadMoodData(selectedPeriod, true);
+				loadMoodData(true);
 				checkNotifications();
 			}
 		};
@@ -231,8 +222,7 @@
 			const updatedUser = localStorage.getItem('chronomuse_user');
 			if (updatedUser) {
 				user = JSON.parse(updatedUser);
-				periodCache = {};
-				loadMoodData(selectedPeriod, true);
+				loadMoodData(true);
 				checkNotifications();
 			} else {
 				goto('/');
@@ -284,14 +274,21 @@
 		
 		totalMemories = moodData.length;
 		
-		// Find most frequent mood
+		// Find all dominant moods sharing the maximum count
 		if (totalMemories > 0) {
-			const maxMood = Object.entries(moodStats).reduce((a, b) => 
-				moodStats[a[0]] > moodStats[b[0]] ? a : b
-			);
-			mostFrequentMood = maxMood[1] > 0 ? (maxMood[0].charAt(0).toUpperCase() + maxMood[0].slice(1)) : 'None';
+			const maxVal = Math.max(...Object.values(moodStats));
+			if (maxVal > 0) {
+				mostFrequentMoodCount = maxVal;
+				mostFrequentMoods = Object.entries(moodStats)
+					.filter(([_, count]) => count === maxVal)
+					.map(([m]) => m.charAt(0).toUpperCase() + m.slice(1));
+			} else {
+				mostFrequentMoodCount = 0;
+				mostFrequentMoods = [];
+			}
 		} else {
-			mostFrequentMood = 'None';
+			mostFrequentMoodCount = 0;
+			mostFrequentMoods = [];
 		}
 	}
 
@@ -329,18 +326,18 @@
 
 	function getMoodColor(mood) {
 		const colors = {
-			'Happy': 'bg-yellow-400',
-			'Sad': 'bg-blue-400',
-			'Excited': 'bg-orange-400',
-			'Angry': 'bg-red-400',
-			'Calm': 'bg-green-400',
-			'Anxious': 'bg-purple-400',
-			'Grateful': 'bg-pink-400',
-			'Lonely': 'bg-gray-400',
-			'Love': 'bg-rose-400',
-			'Neutral': 'bg-slate-400'
+			'Happy': 'bg-yellow-400 text-yellow-900 border-yellow-300',
+			'Sad': 'bg-blue-400 text-white border-blue-300',
+			'Excited': 'bg-orange-400 text-white border-orange-300',
+			'Angry': 'bg-red-400 text-white border-red-300',
+			'Calm': 'bg-green-400 text-white border-green-300',
+			'Anxious': 'bg-purple-400 text-white border-purple-300',
+			'Grateful': 'bg-pink-400 text-white border-pink-300',
+			'Lonely': 'bg-gray-400 text-white border-gray-300',
+			'Love': 'bg-rose-400 text-white border-rose-300',
+			'Neutral': 'bg-slate-400 text-white border-slate-300'
 		};
-		return colors[mood] || 'bg-pink-400';
+		return colors[mood] || 'bg-pink-400 text-white border-pink-300';
 	}
 
 	function getMoodFillColor(mood) {
@@ -371,9 +368,9 @@
 	);
 </script>
 
-<div class="flex flex-col min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 animate-fade-in">
+<div class="flex flex-col min-h-screen bg-pink-100 animate-fade-in">
 	<!-- Top Navigation -->
-	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
+	<nav class="bg-white border-b-2 border-pink-300 sticky top-0 z-50 animate-slide-down">
 			<div class="container mx-auto px-4 py-3 flex items-center justify-between">
 				<div class="flex items-center space-x-2.5">
 					<button
@@ -396,7 +393,7 @@
 						{/if}
 					</button>
 					<img src="/logo.png" alt="ChronoMuse" class="w-9 h-9 sm:w-10 sm:h-10 rounded-md object-contain flex-shrink-0" />
-					<span class="text-base sm:text-lg font-bold text-pink-500 truncate">ChronoMuse</span>
+					<span class="text-base sm:text-lg font-bold text-pink-600 truncate">ChronoMuse</span>
 				</div>
 
 				<div class="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 ml-2">
@@ -409,7 +406,7 @@
 					</button>
 					<button
 						onclick={() => goto('/settings')}
-						class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-600 shadow-2xs flex items-center justify-center transition-all cursor-pointer active:scale-95 flex-shrink-0"
+						class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-600 flex items-center justify-center transition-all cursor-pointer active:scale-95 flex-shrink-0"
 						title="Settings"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
@@ -431,7 +428,7 @@
 		<main class="flex-grow px-4 py-8 md:ml-0 overflow-hidden">
 			<div class="container mx-auto max-w-6xl">
 				<!-- Header Banner -->
-				<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-3.5 sm:p-4 mb-4 sm:mb-5 animate-fade-in-up">
+				<div class="bg-white border-2 border-pink-300 rounded-2xl p-3.5 sm:p-4 mb-4 sm:mb-5 animate-fade-in-up">
 					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 						<div>
 							<div class="flex items-center space-x-2 mb-0.5">
@@ -450,13 +447,12 @@
 						</div>
 
 						<!-- Period Selector -->
-						<div class="flex items-center space-x-1 bg-pink-100/80 p-1 rounded-xl border border-pink-200 self-start sm:self-auto flex-wrap gap-1">
+						<div class="flex items-center space-x-1 bg-pink-100 p-1 rounded-xl border border-pink-200 self-start sm:self-auto flex-wrap gap-1">
 							<button
 								onclick={() => changePeriod('all')}
 								class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 active:scale-95 text-center"
 								class:bg-pink-500={selectedPeriod === 'all'}
 								class:text-white={selectedPeriod === 'all'}
-								class:shadow-sm={selectedPeriod === 'all'}
 								class:text-pink-600={selectedPeriod !== 'all'}
 								class:hover:bg-pink-200={selectedPeriod !== 'all'}
 							>
@@ -467,7 +463,6 @@
 								class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 active:scale-95 text-center"
 								class:bg-pink-500={selectedPeriod === 'week'}
 								class:text-white={selectedPeriod === 'week'}
-								class:shadow-sm={selectedPeriod === 'week'}
 								class:text-pink-600={selectedPeriod !== 'week'}
 								class:hover:bg-pink-200={selectedPeriod !== 'week'}
 							>
@@ -478,7 +473,6 @@
 								class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 active:scale-95 text-center"
 								class:bg-pink-500={selectedPeriod === 'month'}
 								class:text-white={selectedPeriod === 'month'}
-								class:shadow-sm={selectedPeriod === 'month'}
 								class:text-pink-600={selectedPeriod !== 'month'}
 								class:hover:bg-pink-200={selectedPeriod !== 'month'}
 							>
@@ -489,7 +483,6 @@
 								class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 active:scale-95 text-center"
 								class:bg-pink-500={selectedPeriod === 'year'}
 								class:text-white={selectedPeriod === 'year'}
-								class:shadow-sm={selectedPeriod === 'year'}
 								class:text-pink-600={selectedPeriod !== 'year'}
 								class:hover:bg-pink-200={selectedPeriod !== 'year'}
 							>
@@ -501,88 +494,54 @@
 
 				<!-- Mood Statistics Cards -->
 				<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 animate-fade-in-up" style="animation-delay: 0.3s">
-					<!-- Most Frequent Mood -->
-					<!-- Most Frequent -->
-					{#if mostFrequentMood && mostFrequentMood !== 'None'}
-						<button
-							onclick={() => openMoodListModal(mostFrequentMood)}
-							class="bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl shadow-lg p-4 text-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl text-left cursor-pointer"
-						>
-							<div class="flex items-center space-x-2 mb-2">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0V5.625a1.125 1.125 0 011.125-1.125h2.25c1.052 0 2.125.703 2.125 2.25v0c0 1.125-.872 2.25-2.125 2.25h-2.25m-9 0h2.25c1.052 0 2.125-.703 2.125-2.25v0c0-1.125-.872-2.25-2.125-2.25H9.497m0 14.25V5.625a1.125 1.125 0 011.125-1.125h2.25c1.052 0 2.125.703 2.125 2.25v0c0 1.125-.872 2.25-2.125 2.25h-2.25" />
-								</svg>
-								<span class="text-xs font-medium">Most Frequent</span>
-							</div>
-							<p class="text-xl font-bold">{mostFrequentMood}</p>
-						</button>
+					<!-- Most Frequent Mood(s) - Handles Ties so no mood is left over -->
+					{#if mostFrequentMoods.length > 0}
+						{#each mostFrequentMoods as dominantMoodItem}
+							<button
+								onclick={() => openMoodListModal(dominantMoodItem)}
+								class="bg-pink-500 border-2 border-pink-600 rounded-2xl p-4 text-white transition-all duration-300 hover:-translate-y-1 text-left cursor-pointer"
+							>
+								<div class="flex items-center space-x-2 mb-2">
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0V5.625a1.125 1.125 0 011.125-1.125h2.25c1.052 0 2.125.703 2.125 2.25v0c0 1.125-.872 2.25-2.125 2.25h-2.25m-9 0h2.25c1.052 0 2.125-.703 2.125-2.25v0c0-1.125-.872-2.25-2.125-2.25H9.497m0 14.25V5.625a1.125 1.125 0 011.125-1.125h2.25c1.052 0 2.125.703 2.125 2.25v0c0 1.125-.872 2.25-2.125 2.25h-2.25" />
+									</svg>
+									<span class="text-xs font-medium">{mostFrequentMoods.length > 1 ? 'Dominant (Tied)' : 'Most Frequent'}</span>
+								</div>
+								<p class="text-xl font-bold">{dominantMoodItem}</p>
+								<p class="text-xs text-pink-100 mt-1">{mostFrequentMoodCount} {mostFrequentMoodCount === 1 ? 'memory' : 'memories'}</p>
+							</button>
+						{/each}
 					{/if}
 
-					<!-- Happy -->
-					<button
-						onclick={() => openMoodListModal('Happy')}
-						class="bg-white border-2 border-yellow-300 rounded-2xl shadow-lg p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl text-left cursor-pointer"
-					>
-						<div class="flex items-center justify-between mb-2">
-							<span class="text-xs font-medium text-yellow-600">Happy</span>
-							<span class="text-xs font-bold text-yellow-600">{getMoodPercentage('happy')}%</span>
-						</div>
-						<div class="w-full bg-yellow-100 rounded-full h-2">
-							<div class="bg-yellow-400 h-2 rounded-full transition-all duration-300" style="width: {getMoodPercentage('happy')}%"></div>
-						</div>
-						<p class="text-xs text-yellow-600 mt-1">{moodStats.happy} memories</p>
-					</button>
-
-					<!-- Sad -->
-					<button
-						onclick={() => openMoodListModal('Sad')}
-						class="bg-white border-2 border-blue-300 rounded-2xl shadow-lg p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl text-left cursor-pointer"
-					>
-						<div class="flex items-center justify-between mb-2">
-							<span class="text-xs font-medium text-blue-600">Sad</span>
-							<span class="text-xs font-bold text-blue-600">{getMoodPercentage('sad')}%</span>
-						</div>
-						<div class="w-full bg-blue-100 rounded-full h-2">
-							<div class="bg-blue-400 h-2 rounded-full transition-all duration-300" style="width: {getMoodPercentage('sad')}%"></div>
-						</div>
-						<p class="text-xs text-blue-600 mt-1">{moodStats.sad} memories</p>
-					</button>
-
-					<!-- Excited -->
-					<button
-						onclick={() => openMoodListModal('Excited')}
-						class="bg-white border-2 border-orange-300 rounded-2xl shadow-lg p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl text-left cursor-pointer"
-					>
-						<div class="flex items-center justify-between mb-2">
-							<span class="text-xs font-medium text-orange-600">Excited</span>
-							<span class="text-xs font-bold text-orange-600">{getMoodPercentage('excited')}%</span>
-						</div>
-						<div class="w-full bg-orange-100 rounded-full h-2">
-							<div class="bg-orange-400 h-2 rounded-full transition-all duration-300" style="width: {getMoodPercentage('excited')}%"></div>
-						</div>
-						<p class="text-xs text-orange-600 mt-1">{moodStats.excited} memories</p>
-					</button>
-
-					<!-- Calm -->
-					<button
-						onclick={() => openMoodListModal('Calm')}
-						class="bg-white border-2 border-green-300 rounded-2xl shadow-lg p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl text-left cursor-pointer"
-					>
-						<div class="flex items-center justify-between mb-2">
-							<span class="text-xs font-medium text-green-600">Calm</span>
-							<span class="text-xs font-bold text-green-600">{getMoodPercentage('calm')}%</span>
-						</div>
-						<div class="w-full bg-green-100 rounded-full h-2">
-							<div class="bg-green-400 h-2 rounded-full transition-all duration-300" style="width: {getMoodPercentage('calm')}%"></div>
-						</div>
-						<p class="text-xs text-green-600 mt-1">{moodStats.calm} memories</p>
-					</button>
+					<!-- Mood Cards (Only moods with memories > 0) -->
+					{#each Object.entries(moodStats) as [moodKey, count]}
+						{#if count > 0}
+							{@const moodName = moodKey.charAt(0).toUpperCase() + moodKey.slice(1)}
+							<button
+								onclick={() => openMoodListModal(moodName)}
+								class="bg-white border-2 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 text-left cursor-pointer"
+								style="border-color: {getMoodFillColor(moodName)};"
+							>
+								<div class="flex items-center justify-between mb-2">
+									<div class="flex items-center space-x-1.5 min-w-0">
+										<span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: {getMoodFillColor(moodName)}"></span>
+										<span class="text-xs font-bold text-pink-900 truncate">{moodName}</span>
+									</div>
+									<span class="text-xs font-black" style="color: {getMoodFillColor(moodName)}">{getMoodPercentage(moodKey)}%</span>
+								</div>
+								<div class="w-full bg-pink-100 rounded-full h-2 overflow-hidden">
+									<div class="h-2 rounded-full transition-all duration-300" style="width: {getMoodPercentage(moodKey)}%; background-color: {getMoodFillColor(moodName)};"></div>
+								</div>
+								<p class="text-xs text-pink-700 font-medium mt-2">{count} {count === 1 ? 'memory' : 'memories'}</p>
+							</button>
+						{/if}
+					{/each}
 				</div>
 
 				<!-- Pie Chart and Mood Distribution -->
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 animate-fade-in-up" style="animation-delay: 0.4s">
 					<!-- Pie Chart -->
-					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5 transition-all duration-300 hover:shadow-lg">
+					<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 transition-all duration-300">
 						<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide">Mood Breakdown</h2>
 						{#if totalMemories > 0}
 							<div class="flex flex-col items-center">
@@ -616,7 +575,7 @@
 									{#each getPieChartData() as segment}
 										<button
 											onclick={() => openMoodListModal(segment.mood)}
-											class="flex items-center justify-between p-1.5 rounded-lg bg-pink-50/80 hover:bg-pink-100/90 border border-pink-200/80 transition-all duration-200 text-left group shadow-sm"
+											class="flex items-center justify-between p-1.5 rounded-lg bg-pink-50 hover:bg-pink-100 border border-pink-200 transition-all duration-200 text-left group"
 										>
 											<div class="flex items-center space-x-1.5 min-w-0">
 												<div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: {segment.color}"></div>
@@ -636,7 +595,7 @@
 					</div>
 
 					<!-- Mood Bars Chart -->
-					<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5 transition-all duration-300 hover:shadow-lg">
+					<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 transition-all duration-300">
 						<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide">Mood Distribution</h2>
 						<div class="space-y-2.5">
 							{#each Object.entries(moodStats) as [mood, count]}
@@ -664,14 +623,14 @@
 				</div>
 
 				<!-- 10 Recent Memories Section -->
-				<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5 animate-fade-in-up transition-all duration-300 hover:shadow-lg" style="animation-delay: 0.5s">
+				<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 animate-fade-in-up transition-all duration-300" style="animation-delay: 0.5s">
 					<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide">10 Recent Memories</h2>
 					{#if recentTenMemories.length > 0}
 						<div class="space-y-2 max-h-80 overflow-y-auto pr-1">
 							{#each recentTenMemories as memory}
 								<button
 									onclick={() => viewMemory(memory)}
-									class="w-full flex items-center space-x-2.5 p-2.5 bg-pink-50/90 border border-pink-200 hover:border-pink-300 rounded-xl transition-all duration-200 text-left cursor-pointer group hover:bg-pink-100/90 shadow-sm"
+									class="w-full flex items-center space-x-2.5 p-2.5 bg-pink-50 border border-pink-200 hover:border-pink-300 rounded-xl transition-all duration-200 text-left cursor-pointer group hover:bg-pink-100"
 								>
 									<div class="w-3 h-3 rounded-full {getMoodColor(memory.mood_tag)} flex-shrink-0"></div>
 									<div class="flex-1 min-w-0">
@@ -702,7 +661,7 @@
 				onclick={(e) => { if (e.target === e.currentTarget) showMoodListModal = false; }}
 			>
 				<div
-					class="bg-white border-2 border-pink-300 rounded-2xl shadow-xl max-w-md w-full p-4 sm:p-5 relative my-auto"
+					class="bg-white border-2 border-pink-300 rounded-2xl max-w-md w-full p-4 sm:p-5 relative my-auto"
 					onclick={(e) => e.stopPropagation()}
 				>
 					<!-- Close Button -->
@@ -730,7 +689,7 @@
 							{#each filteredMoodMemories as memory}
 								<button
 									onclick={() => handleSelectMemoryFromMoodList(memory)}
-									class="w-full flex items-center space-x-2.5 p-2.5 bg-pink-50/90 border border-pink-200 hover:border-pink-300 rounded-xl transition-all duration-200 text-left cursor-pointer group hover:bg-pink-100/90 shadow-sm"
+									class="w-full flex items-center space-x-2.5 p-2.5 bg-pink-50 border border-pink-200 hover:border-pink-300 rounded-xl transition-all duration-200 text-left cursor-pointer group hover:bg-pink-100"
 								>
 									<div class="w-3 h-3 rounded-full {getMoodColor(memory.mood_tag)} flex-shrink-0"></div>
 									<div class="flex-1 min-w-0">
@@ -746,7 +705,7 @@
 							{/each}
 						</div>
 					{:else}
-						<div class="text-center py-8 bg-pink-50/50 rounded-xl border border-pink-200">
+						<div class="text-center py-8 bg-pink-50 rounded-xl border border-pink-200">
 							<p class="text-sm font-semibold text-pink-500">No memories tagged with "{selectedMoodTag}" yet.</p>
 							<p class="text-xs text-pink-400 mt-1">Start capturing your moments on the dashboard!</p>
 						</div>
@@ -765,7 +724,7 @@
 		{/if}
 
 		<!-- Footer -->
-		<footer class="bg-white/85 backdrop-blur-md border-t-2 border-pink-300 animate-fade-in" style="animation-delay: 0.6s">
+		<footer class="bg-white border-t-2 border-pink-300 animate-fade-in" style="animation-delay: 0.6s">
 			<div class="container mx-auto px-2 sm:px-4 py-2.5 sm:py-3 text-center flex items-center justify-center">
 				<p class="text-[10px] sm:text-xs text-pink-700 whitespace-nowrap font-medium tracking-tight sm:tracking-normal">
 					© 2026 CHRONOMUSE. All rights reserved. Developed by Merlye Deyto

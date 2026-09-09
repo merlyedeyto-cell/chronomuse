@@ -23,7 +23,7 @@
 </script>
 
 <TopBar showNav={false} showFooter={false}>
-	<div class="bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 h-screen overflow-hidden">
+	<div class="bg-pink-100 h-screen overflow-hidden">
 		<div class="h-full flex items-center justify-center px-4">
 			<RegisterCard on:register={handleRegister} on:showToast={showRegisterToast} />
 		</div>
@@ -33,13 +33,8 @@
 	{#if showToast}
 		<div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-bounce-in">
 			<div
-				class="px-6 py-3 rounded-xl shadow-2xl border-2 flex items-center space-x-3"
-				class:bg-gradient-to-r={toastType === 'success'}
-				class:from-green-400={toastType === 'success'}
-				class:to-green-600={toastType === 'success'}
-				class:text-white={toastType === 'success'}
-				class:from-red-400={toastType === 'error'}
-				class:to-red-600={toastType === 'error'}
+				class="px-6 py-3 rounded-xl border-2 flex items-center space-x-3"
+				class:text-white={toastType === 'success'}
 			>
 				{#if toastType === 'success'}
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">

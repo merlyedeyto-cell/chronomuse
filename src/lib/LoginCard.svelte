@@ -92,17 +92,17 @@
 	class="w-full sm:max-w-md mx-1 sm:mx-auto transition-all duration-300"
 	class:scale-105={isClicked}
 >
-	<div class="bg-white/85 backdrop-blur-md rounded-2xl shadow-xl p-6 sm:p-6 border-2 border-pink-300 transition-all duration-300 hover:shadow-2xl">
+	<div class="bg-white rounded-2xl p-6 sm:p-6 border-2 border-pink-300 transition-all duration-300">
 		<!-- Header -->
 		<div class="text-center mb-5">
-			<img src="/logo.png" alt="ChronoMuse" class="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-2 rounded-xl object-contain shadow-sm border border-pink-200 hover:scale-105 transition-transform duration-300" />
+			<img src="/logo.png" alt="ChronoMuse" class="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-2 rounded-xl object-contain border border-pink-200 hover:scale-105 transition-transform duration-300" />
 			<h1 class="text-xl sm:text-2xl font-extrabold text-pink-500 mb-0.5 tracking-wider uppercase">CHRONOMUSE</h1>
 			<p class="text-pink-600 text-xs sm:text-sm font-medium">Sign in to your account</p>
 		</div>
 
 		<!-- Error Message -->
 		{#if errorMessage}
-			<div class="mb-4 p-2.5 bg-red-100/90 border border-red-300 rounded-xl text-red-700 text-xs font-medium text-center">
+			<div class="mb-4 p-2.5 bg-red-100 border border-red-300 rounded-xl text-red-700 text-xs font-medium text-center">
 				{errorMessage}
 			</div>
 		{/if}
@@ -114,7 +114,7 @@
 				<input
 					type="text"
 					bind:value={usernameOrEmail}
-					class="w-full px-3.5 py-2.5 bg-white/90 border-2 border-pink-300 rounded-xl text-pink-700 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200 text-xs sm:text-sm text-center font-medium"
+					class="w-full px-3.5 py-2.5 bg-pink-50 border-2 border-pink-300 rounded-xl text-pink-700 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200 text-xs sm:text-sm text-center font-medium"
 					placeholder="Username or Email"
 					required
 					disabled={isLoading}
@@ -126,7 +126,7 @@
 				<input
 					type={showPassword ? 'text' : 'password'}
 					bind:value={password}
-					class="w-full pl-3.5 pr-10 py-2.5 bg-white/90 border-2 border-pink-300 rounded-xl text-pink-700 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200 text-xs sm:text-sm text-center font-medium"
+					class="w-full pl-3.5 pr-10 py-2.5 bg-pink-50 border-2 border-pink-300 rounded-xl text-pink-700 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-200 text-xs sm:text-sm text-center font-medium"
 					placeholder="Password"
 					required
 					disabled={isLoading}
@@ -155,7 +155,7 @@
 			<button
 				type="submit"
 				disabled={isLoading}
-				class="w-full py-2.5 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-xl font-bold hover:from-pink-500 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 shadow-md transform hover:-translate-y-0.5 active:scale-95 transition-all duration-200 text-xs sm:text-sm uppercase tracking-wider disabled:opacity-50 flex items-center justify-center space-x-2"
+				class="w-full py-2.5 px-4 bg-pink-500 text-white rounded-xl font-bold hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-400 active:scale-95 transition-all duration-200 text-xs sm:text-sm uppercase tracking-wider disabled:opacity-50 flex items-center justify-center space-x-2"
 			>
 				{#if isLoading}
 					<div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -179,21 +179,21 @@
 
 	<!-- Credit Line -->
 	<div class="mt-3.5 text-center flex items-center justify-center">
-		<p class="text-[9.5px] sm:text-[11px] font-semibold text-pink-700 bg-white/40 backdrop-blur-md py-2 px-2.5 sm:px-3 rounded-xl border border-pink-300/80 shadow-sm whitespace-nowrap tracking-tight sm:tracking-normal">
+		<p class="text-[9.5px] sm:text-[11px] font-semibold text-pink-700 bg-white py-2 px-2.5 sm:px-3 rounded-xl border border-pink-300 whitespace-nowrap tracking-tight sm:tracking-normal">
 			© 2026 CHRONOMUSE. All rights reserved. Developed by Merlye Deyto
 		</p>
 	</div>
 </div>
 
-<!-- Install ChronoMuse Banner (fixed bottom, doesn't affect login card position) -->
+<!-- Install ChronoMuse Banner -->
 {#if showInstallBanner && !pwaStatus.isStandalone}
 	<div class="fixed bottom-4 left-0 right-0 md:bottom-auto md:top-20 md:left-auto md:right-4 z-50 p-3 md:p-0 flex justify-center md:justify-end pointer-events-none">
-		<div class="max-w-md md:max-w-xs w-full relative bg-white/95 backdrop-blur-md rounded-2xl border-2 border-pink-400 shadow-2xl overflow-hidden animate-fade-in-up pointer-events-auto">
+		<div class="max-w-md md:max-w-xs w-full relative bg-white rounded-2xl border-2 border-pink-400 overflow-hidden animate-fade-in-up pointer-events-auto">
 			<!-- Close (X) Button -->
 			<button
 				type="button"
 				onclick={() => showInstallBanner = false}
-				class="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-pink-200/80 hover:bg-pink-300 text-pink-700 hover:text-pink-900 transition-all duration-200 z-10"
+				class="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-pink-100 hover:bg-pink-200 text-pink-700 hover:text-pink-900 transition-all duration-200 z-10"
 				aria-label="Close install banner"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
@@ -204,7 +204,7 @@
 			<div class="p-3.5 pt-3 space-y-2">
 				<!-- App Info Row -->
 				<div class="flex items-center space-x-3">
-					<img src="/logo.png" alt="ChronoMuse" class="w-10 h-10 rounded-xl object-contain border border-pink-200 shadow-sm flex-shrink-0" />
+					<img src="/logo.png" alt="ChronoMuse" class="w-10 h-10 rounded-xl object-contain border border-pink-200 flex-shrink-0" />
 					<div class="min-w-0 flex-1 pr-5">
 						<h4 class="text-xs sm:text-sm font-extrabold text-pink-900 leading-tight">ChronoMuse</h4>
 						<p class="text-[10.5px] text-pink-600 font-medium leading-tight">Memory Calendar & Mood Tracker</p>
@@ -222,7 +222,7 @@
 					<button
 						type="button"
 						onclick={handleInstallApp}
-						class="w-full py-2 px-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-xs hover:from-green-600 hover:to-emerald-700 shadow-md active:scale-95 transition-all duration-200 flex items-center justify-center space-x-1.5"
+						class="w-full py-2 px-3 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 active:scale-95 transition-all duration-200 flex items-center justify-center space-x-1.5"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
@@ -233,7 +233,7 @@
 					<button
 						type="button"
 						onclick={handleInstallApp}
-						class="w-full py-2 px-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl font-bold text-xs hover:from-pink-600 hover:to-pink-700 shadow-md active:scale-95 transition-all duration-200 flex items-center justify-center space-x-1.5"
+						class="w-full py-2 px-3 bg-pink-500 text-white rounded-xl font-bold text-xs hover:bg-pink-600 active:scale-95 transition-all duration-200 flex items-center justify-center space-x-1.5"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -251,4 +251,3 @@
 		</div>
 	</div>
 {/if}
-

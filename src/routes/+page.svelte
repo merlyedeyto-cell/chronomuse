@@ -66,7 +66,7 @@
 </script>
 
 <TopBar on:navigate={handleNavigate}>
-	<div class="bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 overflow-x-hidden">
+	<div class="bg-pink-100 overflow-x-hidden">
 		<!-- Login / Home Section - Dedicated Full Viewport Section -->
 		<section id="login-section" class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-12 px-0 sm:px-4 transition-all duration-500" class:scale-105={isLoginHighlight}>
 			<div class="transition-all duration-500" class:ring-4={isLoginHighlight} class:ring-pink-400={isLoginHighlight} class:rounded-2xl={isLoginHighlight}>
@@ -83,11 +83,10 @@
 				<div class="max-w-sm sm:max-w-md md:max-w-lg mx-auto">
 					<div
 						bind:this={aboutCard}
-						class="reveal-card reveal-left bg-white/90 backdrop-blur-md border-2 border-pink-300 rounded-2xl shadow-md p-5 sm:p-6 text-center hover:scale-105 hover:shadow-2xl transition-all duration-300"
+						class="reveal-card reveal-left bg-white/90 backdrop-blur-md border-2 border-pink-300 rounded-2xl p-5 sm:p-6 text-center hover:scale-105 hover: transition-all duration-300"
 						class:scale-105={isAboutHighlight}
 						class:ring-4={isAboutHighlight}
-						class:ring-pink-400={isAboutHighlight}
-						class:shadow-2xl={isAboutHighlight}
+						class:ring-pink-400={isAboutHighlight}
 					>
 						<h2 class="text-base sm:text-lg font-bold text-pink-600 mb-2.5">About CHRONOMUSE</h2>
 						<p class="text-pink-700 text-xs sm:text-sm leading-relaxed font-medium">
@@ -110,11 +109,10 @@
 				<div class="max-w-sm sm:max-w-md md:max-w-lg mx-auto">
 					<div
 						bind:this={contactCard}
-						class="reveal-card reveal-right bg-white/90 backdrop-blur-md border-2 border-pink-300 rounded-2xl shadow-md p-5 sm:p-6 text-center hover:scale-105 hover:shadow-2xl transition-all duration-300"
+						class="reveal-card reveal-right bg-white/90 backdrop-blur-md border-2 border-pink-300 rounded-2xl p-5 sm:p-6 text-center hover:scale-105 hover: transition-all duration-300"
 						class:scale-105={isContactHighlight}
 						class:ring-4={isContactHighlight}
-						class:ring-pink-400={isContactHighlight}
-						class:shadow-2xl={isContactHighlight}
+						class:ring-pink-400={isContactHighlight}
 					>
 						<h2 class="text-base sm:text-lg font-bold text-pink-600 mb-2.5">Contact</h2>
 						<p class="text-pink-700 text-xs sm:text-sm leading-relaxed font-medium">

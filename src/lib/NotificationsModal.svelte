@@ -292,9 +292,9 @@
 		class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
 	>
-		<div class="bg-white/95 backdrop-blur-md border-2 border-pink-300 rounded-3xl shadow-2xl max-w-xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-pop-in">
+		<div class="bg-white/95 backdrop-blur-md border-2 border-pink-300 rounded-3xl max-w-xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-pop-in">
 			<!-- Header -->
-			<div class="p-4 sm:p-5 border-b border-pink-200 bg-gradient-to-r from-pink-500 to-rose-500 text-white flex items-center justify-between">
+			<div class="p-4 sm:p-5 border-b border-pink-200 bg-pink-500 text-white flex items-center justify-between">
 				<div class="flex items-center space-x-2.5">
 					<div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
@@ -378,7 +378,7 @@
 						<div class="space-y-2.5">
 							<h3 class="text-xs font-bold text-pink-600 uppercase tracking-wide">Saved on Calendar ({acceptedSharedMemories.length})</h3>
 							{#each acceptedSharedMemories as item (item.share_id)}
-								<div class="p-3.5 bg-gradient-to-br from-pink-50/90 to-rose-50/60 border border-pink-200 rounded-2xl shadow-xs hover:border-pink-300 transition-all">
+								<div class="p-3.5 bg-pink-50/90 border border-pink-200 rounded-2xl hover:border-pink-300 transition-all">
 									<div class="flex items-start justify-between gap-2 mb-2">
 										<div class="flex items-center space-x-2">
 											<button
@@ -452,7 +452,7 @@
 									<div class="mt-2 flex items-center justify-end space-x-2">
 										<button
 											onclick={() => { closeModal(); goto(`/dashboard?date=${item.memory.date}`); }}
-											class="px-2.5 py-1 bg-white border border-pink-300 hover:bg-pink-100 text-pink-600 rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all shadow-2xs cursor-pointer"
+											class="px-2.5 py-1 bg-white border border-pink-300 hover:bg-pink-100 text-pink-600 rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all cursor-pointer"
 										>
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
@@ -461,7 +461,7 @@
 										</button>
 										<button
 											onclick={() => handleOpenChat(item.sender_id, item.sender_username)}
-											class="px-2.5 py-1 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all shadow-xs cursor-pointer"
+											class="px-2.5 py-1 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all cursor-pointer"
 										>
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
@@ -489,7 +489,7 @@
 						<div class="space-y-2">
 							<h3 class="text-xs font-bold text-pink-600 uppercase tracking-wide">Memory Share Requests ({pendingSharedMemories.length})</h3>
 							{#each pendingSharedMemories as item (item.share_id)}
-								<div class="p-3.5 bg-gradient-to-br from-pink-50/90 to-rose-50/60 border border-pink-200 rounded-2xl shadow-xs">
+								<div class="p-3.5 bg-pink-50/90 border border-pink-200 rounded-2xl">
 									<div class="flex items-start justify-between gap-2 mb-2">
 										<div class="flex items-center space-x-2">
 											<button
@@ -542,7 +542,7 @@
 									<div class="mt-2.5 flex items-center justify-end space-x-2">
 										<button
 											onclick={(e) => handleRespondSharedMemory(item, 'accept', e)}
-											class="px-3.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+											class="px-3.5 py-1.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white text-xs font-bold rounded-xl transition-all flex items-center space-x-1 cursor-pointer"
 										>
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -571,13 +571,13 @@
 						<div class="space-y-2">
 							<h3 class="text-xs font-bold text-pink-600 uppercase tracking-wide">Memories You Shared With Friends ({totalSentCount})</h3>
 							{#each notifications.sent_shared_memories as item (item.share_id)}
-								<div class="p-3.5 bg-gradient-to-br from-pink-50/90 to-rose-50/60 border border-pink-200 rounded-2xl shadow-xs hover:border-pink-300 transition-all">
+								<div class="p-3.5 bg-pink-50/90 border border-pink-200 rounded-2xl hover:border-pink-300 transition-all">
 									<div class="flex items-start justify-between gap-2 mb-2">
 										<div class="flex items-center space-x-2">
 											<button
 												type="button"
 												onclick={() => { closeModal(); goto(`/profile?id=${item.recipient_id}`); }}
-												class="w-7 h-7 rounded-lg bg-gradient-to-tr from-pink-400 to-rose-500 text-white font-bold text-xs flex items-center justify-center overflow-hidden hover:scale-105 transition-transform cursor-pointer"
+												class="w-7 h-7 rounded-lg bg-pink-400 text-white font-bold text-xs flex items-center justify-center overflow-hidden hover:scale-105 transition-transform cursor-pointer"
 												title="View @{item.recipient_username}'s Profile"
 											>
 												{#if item.recipient_avatar_url}
@@ -643,7 +643,7 @@
 										<button
 											onclick={(e) => promptCancelShare(item, e)}
 											disabled={isCancelling}
-											class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+											class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
 											title="Cancel and revoke access to this shared memory"
 										>
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-rose-500">
@@ -668,8 +668,8 @@
 		class="fixed inset-0 bg-black/50 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) { showCancelConfirmModal = false; cancelItemTarget = null; } }}
 	>
-		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center animate-modal-content relative overflow-hidden">
-			<div class="w-14 h-14 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
+		<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-sm w-full p-6 text-center animate-modal-content relative overflow-hidden">
+			<div class="w-14 h-14 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 				</svg>
@@ -691,7 +691,7 @@
 					type="button"
 					onclick={confirmCancelShare}
 					disabled={isCancelling}
-					class="w-1/2 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center justify-center space-x-1"
+					class="w-1/2 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-xs sm:text-sm transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center space-x-1"
 				>
 					{#if isCancelling}
 						<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

@@ -287,7 +287,7 @@
 	}
 </script>
 
-<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5 transition-all duration-300 hover:shadow-lg">
+<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:">
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-4">
 		<button
@@ -305,7 +305,7 @@
 			<button
 				type="button"
 				onclick={() => { showMonthMenu = !showMonthMenu; showYearMenu = false; }}
-				class="pl-3 pr-2.5 py-1.5 bg-pink-100/90 hover:bg-pink-200 text-pink-700 font-black text-xs sm:text-sm rounded-xl border border-pink-300 shadow-2xs transition-all duration-200 cursor-pointer active:scale-95 flex items-center space-x-1"
+				class="pl-3 pr-2.5 py-1.5 bg-pink-100/90 hover:bg-pink-200 text-pink-700 font-black text-xs sm:text-sm rounded-xl border border-pink-300 transition-all duration-200 cursor-pointer active:scale-95 flex items-center space-x-1"
 			>
 				<span>{monthNames[currentMonth]}</span>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-pink-500 transition-transform duration-200 {showMonthMenu ? 'rotate-180' : ''}">
@@ -317,7 +317,7 @@
 			<button
 				type="button"
 				onclick={toggleYearMenu}
-				class="pl-3 pr-2.5 py-1.5 bg-pink-100/90 hover:bg-pink-200 text-pink-700 font-black text-xs sm:text-sm rounded-xl border border-pink-300 shadow-2xs transition-all duration-200 cursor-pointer active:scale-95 flex items-center space-x-1"
+				class="pl-3 pr-2.5 py-1.5 bg-pink-100/90 hover:bg-pink-200 text-pink-700 font-black text-xs sm:text-sm rounded-xl border border-pink-300 transition-all duration-200 cursor-pointer active:scale-95 flex items-center space-x-1"
 			>
 				<span>{currentYear}</span>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-pink-500 transition-transform duration-200 {showYearMenu ? 'rotate-180' : ''}">
@@ -370,26 +370,25 @@
 						class:ring-emerald-500={isTargetHighlighted(day) && hasSharedMemories(day)}
 						class:ring-pink-500={isTargetHighlighted(day) && !hasSharedMemories(day)}
 						class:ring-offset-2={isTargetHighlighted(day)}
-						class:scale-105={isTargetHighlighted(day)}
-						class:shadow-md={isTargetHighlighted(day)}
+						class:scale-105={isTargetHighlighted(day)}
 						class:animate-subtle-glow={isTargetHighlighted(day)}
 					>
 						<span class="font-medium" class:font-bold={isToday(day) || isSelected(day) || isTargetHighlighted(day)}>{day}</span>
 						{#if hasPersonalMemories(day) && hasSharedMemories(day)}
 							<!-- Both Personal & Shared memories: Two dots side-by-side (Green and Pink) -->
 							<div class="absolute bottom-1 flex items-center space-x-1">
-								<span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 shadow-2xs"></span>
-								<span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 shadow-2xs"></span>
+								<span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500"></span>
+								<span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-pink-400"></span>
 							</div>
 						{:else if hasSharedMemories(day)}
 							<!-- Only Shared memory: 1 Green dot -->
-							<span class="absolute bottom-1 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 shadow-2xs"></span>
+							<span class="absolute bottom-1 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500"></span>
 						{:else if hasPersonalMemories(day)}
 							<!-- Only Personal memory: 1 Pink dot -->
-							<span class="absolute bottom-1 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 shadow-2xs"></span>
+							<span class="absolute bottom-1 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-pink-400"></span>
 						{/if}
 						{#if isDatePinned(day)}
-							<span class="absolute top-0.5 right-0.5 w-3 h-3 drop-shadow-xs" class:text-white={isToday(day)} class:text-pink-500={!isToday(day)}>
+							<span class="absolute top-0.5 right-0.5 w-3 h-3 drop-" class:text-white={isToday(day)} class:text-pink-500={!isToday(day)}>
 								<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-full h-full">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
 								</svg>
@@ -400,7 +399,7 @@
 					<!-- Pin Tooltip - Desktop & Mobile (Long Press) -->
 					{#if hoveredDate === day && hasMemories(day)}
 						<div
-							class="pin-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-pink-600 text-white text-xs font-medium rounded-lg whitespace-nowrap shadow-lg z-50 flex items-center gap-2"
+							class="pin-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-pink-600 text-white text-xs font-medium rounded-lg whitespace-nowrap z-50 flex items-center gap-2"
 							onmouseenter={() => {
 								if (closeTimer) {
 									clearTimeout(closeTimer);
@@ -446,7 +445,7 @@
 	<div class="mt-5 pt-4 border-t border-pink-200">
 		<button
 			onclick={jumpToToday}
-			class="w-full py-2.5 px-4 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-lg hover:from-pink-500 hover:to-pink-700 transition-all duration-200 text-sm font-semibold shadow-md flex items-center justify-center space-x-2"
+			class="w-full py-2.5 px-4 bg-pink-400 text-white rounded-lg hover:bg-pink-500 transition-all duration-200 text-sm font-semibold flex items-center justify-center space-x-2"
 		>
 			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -467,7 +466,7 @@
 				<span class="text-pink-600">Selected</span>
 			</div>
 			<div class="flex items-center space-x-1">
-				<div class="w-2 h-2 bg-gradient-to-r from-pink-400 to-pink-600 rounded-full"></div>
+				<div class="w-2 h-2 bg-pink-400 rounded-full"></div>
 				<span class="text-pink-600">My Memory</span>
 			</div>
 			<div class="flex items-center space-x-1">
@@ -500,7 +499,7 @@
 		class="fixed inset-0 bg-transparent z-50 flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) showMonthMenu = false; }}
 	>
-		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-5 max-w-xs sm:max-w-sm w-full space-y-4 animate-modal-content">
+		<div class="bg-white border-2 border-pink-300 rounded-3xl p-5 max-w-xs sm:max-w-sm w-full space-y-4 animate-modal-content">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2.5">
 				<div class="flex items-center space-x-2">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-pink-600">
@@ -524,7 +523,7 @@
 					<button
 						type="button"
 						onclick={() => selectMonth(i)}
-						class="py-2 px-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-between border {currentMonth === i ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white border-pink-600 shadow-md scale-[1.02]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-800 border-pink-200/80'}"
+						class="py-2 px-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-between border {currentMonth === i ? 'bg-pink-500 text-white border-pink-600 scale-[1.02]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-800 border-pink-200/80'}"
 					>
 						<span>{month}</span>
 						{#if currentMonth === i}
@@ -545,7 +544,7 @@
 		class="fixed inset-0 bg-transparent z-50 flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) showYearMenu = false; }}
 	>
-		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-5 max-w-xs sm:max-w-sm w-full space-y-4 animate-modal-content">
+		<div class="bg-white border-2 border-pink-300 rounded-3xl p-5 max-w-xs sm:max-w-sm w-full space-y-4 animate-modal-content">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2.5">
 				<div class="flex items-center space-x-2">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-pink-600">
@@ -579,7 +578,7 @@
 				<button
 					type="button"
 					onclick={submitYearInput}
-					class="py-2 px-4 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white rounded-2xl text-xs font-bold shadow-sm transition-all cursor-pointer whitespace-nowrap active:scale-95"
+					class="py-2 px-4 bg-pink-500 hover:bg-pink-600 text-white rounded-2xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap active:scale-95"
 				>
 					Go
 				</button>
@@ -590,7 +589,7 @@
 					<button
 						type="button"
 						onclick={() => selectYear(year)}
-						class="py-2.5 px-2 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-center border {currentYear === year ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white border-pink-600 shadow-md scale-105' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-800 border-pink-200/80'}"
+						class="py-2.5 px-2 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-center border {currentYear === year ? 'bg-pink-500 text-white border-pink-600 scale-105' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-800 border-pink-200/80'}"
 					>
 						<span>{year}</span>
 					</button>

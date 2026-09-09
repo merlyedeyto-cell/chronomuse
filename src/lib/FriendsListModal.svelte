@@ -134,7 +134,7 @@
 	>
 		<!-- Modal Content -->
 		<div
-			class="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 border-2 border-pink-300 transition-all duration-300 max-w-md w-full relative max-h-[80vh] overflow-hidden flex flex-col animate-modal-content"
+			class="bg-white/90 backdrop-blur-md rounded-2xl p-8 border-2 border-pink-300 transition-all duration-300 max-w-md w-full relative max-h-[80vh] overflow-hidden flex flex-col animate-modal-content"
 			class:opacity-0={isClosing}
 			class:scale-95={isClosing}
 			class:transform={isClosing}
@@ -153,7 +153,7 @@
 
 			<!-- Header -->
 			<div class="text-center mb-6 flex-shrink-0">
-				<div class="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center">
+				<div class="w-16 h-16 mx-auto mb-3 rounded-full bg-pink-400 flex items-center justify-center">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-white">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
 					</svg>
@@ -185,7 +185,7 @@
 									<button
 										type="button"
 										onclick={() => handleViewProfile(friend.friend_id)}
-										class="w-11 h-11 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center text-white font-bold text-base flex-shrink-0 overflow-hidden hover:scale-105 transition-transform cursor-pointer"
+										class="w-11 h-11 rounded-full bg-pink-400 flex items-center justify-center text-white font-bold text-base flex-shrink-0 overflow-hidden hover:scale-105 transition-transform cursor-pointer"
 										title="View @{friend.username}'s Profile"
 									>
 										{#if friend.avatar_url}
@@ -210,7 +210,7 @@
 									<div class="flex items-center space-x-1 flex-shrink-0">
 										<button
 											onclick={() => handleViewProfile(friend.friend_id)}
-											class="px-2.5 py-1 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 rounded-lg text-xs font-semibold transition-all shadow-2xs cursor-pointer flex items-center space-x-1"
+											class="px-2.5 py-1 bg-white border border-pink-300 text-pink-600 hover:bg-pink-100 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center space-x-1"
 											title="View Profile"
 										>
 											<span>Profile</span>
@@ -237,7 +237,7 @@
 	<!-- Confirm Delete Modal -->
 	{#if showConfirmDelete}
 		<div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-modal-backdrop">
-			<div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border-2 border-red-300 animate-modal-content">
+			<div class="bg-white rounded-2xl p-6 max-w-sm w-full border-2 border-red-300 animate-modal-content">
 				<div class="text-center mb-4">
 					<div class="w-16 h-16 mx-auto mb-3 rounded-full bg-red-100 flex items-center justify-center">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-red-500">

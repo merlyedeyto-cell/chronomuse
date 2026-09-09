@@ -133,7 +133,7 @@
 			window.addEventListener('chronomuse_notification_change', checkNotifications);
 			window.addEventListener('chronomuse_memory_change', handleMemoryChange);
 
-			// Fast auto-sync interval to ensure instant memory updates across devices
+			// Fast au interval to ensure instant memory updates across devices
 			syncInterval = setInterval(() => {
 				if (selectedDate) {
 					loadMemoriesForDate(selectedDate);
@@ -632,9 +632,9 @@
 	}
 </script>
 
-<div class="flex flex-col min-h-screen bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 animate-fade-in">
+<div class="flex flex-col min-h-screen bg-pink-100 animate-fade-in">
 	<!-- Top Navigation -->
-	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 shadow-lg sticky top-0 z-50 animate-slide-down">
+	<nav class="bg-white/85 backdrop-blur-md border-b-2 border-pink-300 sticky top-0 z-50 animate-slide-down">
 			<div class="container mx-auto px-4 py-3 flex items-center justify-between">
 				<div class="flex items-center space-x-2.5">
 					<button
@@ -670,7 +670,7 @@
 					</button>
 					<button
 						onclick={() => goto('/settings')}
-						class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-600 shadow-2xs flex items-center justify-center transition-all cursor-pointer active:scale-95 flex-shrink-0"
+						class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-600 flex items-center justify-center transition-all cursor-pointer active:scale-95 flex-shrink-0"
 						title="Settings"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
@@ -721,12 +721,12 @@
 								on:showToast={showMemoryToast}
 							/>
 						{:else}
-							<div class="bg-white border-2 border-pink-300 rounded-2xl shadow-md p-4 sm:p-5 text-center transition-all duration-300 hover:shadow-lg">
+							<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 text-center transition-all duration-300 hover:">
 								<h3 class="text-base sm:text-lg font-bold text-pink-600 mb-1.5">Create & Capture Memories</h3>
 								<p class="text-[11px] sm:text-xs text-pink-400 mb-3.5 leading-relaxed font-medium">Click any date on the calendar to view or add new memories!</p>
 								<button
 									onclick={toggleAddMemory}
-									class="w-full py-2 px-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg hover:from-pink-600 hover:to-pink-700 active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold shadow-sm flex items-center justify-center space-x-1.5"
+									class="w-full py-2 px-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold flex items-center justify-center space-x-1.5"
 								>
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -766,9 +766,9 @@
 		<!-- Unpin Date Modal -->
 		{#if showDeletePinnedModal}
 			<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-				<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center animate-modal-content relative overflow-hidden">
+				<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-sm w-full p-6 text-center animate-modal-content relative overflow-hidden">
 					<!-- Unpin Circle Icon -->
-					<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs">
+					<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
 						</svg>
@@ -780,13 +780,13 @@
 					<div class="flex items-center space-x-3">
 						<button
 							onclick={closeDeletePinnedModal}
-							class="w-1/2 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs"
+							class="w-1/2 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer"
 						>
 							Cancel
 						</button>
 						<button
 							onclick={deletePinnedDate}
-							class="w-1/2 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md shadow-rose-200 active:scale-95 cursor-pointer"
+							class="w-1/2 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-xs sm:text-sm transition-all -rose-200 active:scale-95 cursor-pointer"
 						>
 							Unpin
 						</button>
@@ -799,13 +799,8 @@
 		{#if showToast}
 			<div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-bounce-in">
 				<div
-					class="px-6 py-3 rounded-xl shadow-2xl border-2 flex items-center space-x-3"
-					class:bg-gradient-to-r={toastType === 'success'}
-					class:from-green-400={toastType === 'success'}
-					class:to-green-600={toastType === 'success'}
-					class:text-white={toastType === 'success'}
-					class:from-red-400={toastType === 'error'}
-					class:to-red-600={toastType === 'error'}
+					class="px-6 py-3 rounded-xl border-2 flex items-center space-x-3"
+					class:text-white={toastType === 'success'}
 				>
 					{#if toastType === 'success'}
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
@@ -827,8 +822,8 @@
 				class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[100] flex items-center justify-center p-4 animate-fade-in"
 				onclick={(e) => { if (e.target === e.currentTarget) showNotificationModalPopup = false; }}
 			>
-				<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl p-6 max-w-xs sm:max-w-sm w-full text-center space-y-4 animate-modal-content">
-					<div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-inner {notificationModalType === 'error' ? 'bg-rose-100 text-rose-600 border border-rose-200' : 'bg-emerald-100 text-emerald-600 border border-emerald-200'}">
+				<div class="bg-white border-2 border-pink-300 rounded-3xl p-6 max-w-xs sm:max-w-sm w-full text-center space-y-4 animate-modal-content">
+					<div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto {notificationModalType === 'error' ? 'bg-rose-100 text-rose-600 border border-rose-200' : 'bg-emerald-100 text-emerald-600 border border-emerald-200'}">
 						{#if notificationModalType === 'error'}
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zM12 15.75h.007v.008H12v-.008z" />
@@ -852,7 +847,7 @@
 					<button
 						type="button"
 						onclick={() => showNotificationModalPopup = false}
-						class="w-full py-2.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white rounded-2xl font-bold text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer"
+						class="w-full py-2.5 bg-pink-500 hover:bg-pink-600 text-white rounded-2xl font-bold text-xs sm:text-sm transition-all active:scale-95 cursor-pointer"
 					>
 						OK
 					</button>
