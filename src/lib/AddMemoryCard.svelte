@@ -25,15 +25,27 @@
 	let friendSearchQuery = $state('');
 	let showFriendSelector = $state(false);
 
-	// Video Trimmer State (Max 15 seconds)
+	// Video Trimmer State (Max 15 seconds) - Messenger Style
 	let showVideoTrimmerModal = $state(false);
 	let rawVideoFile = $state(null);
 	let rawVideoUrl = $state(null);
 	let videoDuration = $state(0);
 	let videoStartTime = $state(0);
+	let videoEndTime = $state(15);
+	let videoCurrentTime = $state(0);
+	let isPlayingTrimVideo = $state(false);
 	let isTrimmingVideo = $state(false);
-	let trimVideoElement;
-	let trimmerInterval;
+	let trimVideoElement = $state();
+	let videoThumbnails = $state([]);
+	let isGeneratingThumbnails = $state(false);
+	let filmstripElement = $state();
+
+	let isDraggingLeft = false;
+	let isDraggingRight = false;
+	let isDraggingWindow = false;
+	let dragStartX = 0;
+	let dragStartStartTime = 0;
+	let dragStartEndTime = 0;
 
 	let photoVideoInput;
 	let musicInput;
@@ -119,11 +131,13 @@
 		if (!file) return;
 
 		if (file.type.startsWith('video/')) {
-			// Video selected -> setup 15s cropper/trimmer
 			rawVideoFile = file;
 			if (rawVideoUrl) URL.revokeObjectURL(rawVideoUrl);
 			rawVideoUrl = URL.createObjectURL(file);
 			videoStartTime = 0;
+			videoEndTime = 15;
+			videoCurrentTime = 0;
+			videoThumbnails = [];
 			showVideoTrimmerModal = true;
 		} else if (file.type.startsWith('image/')) {
 			isVideo = false;
@@ -133,20 +147,151 @@
 		}
 	}
 
-	function onVideoMetadataLoaded(e) {
+	async function onVideoMetadataLoaded(e) {
 		const vid = e.target;
 		videoDuration = vid.duration || 0;
-		if (videoDuration <= 15) {
-			// If already <= 15 seconds, default full duration
-			videoStartTime = 0;
+		videoStartTime = 0;
+		videoEndTime = Math.min(15, videoDuration);
+		videoCurrentTime = 0;
+		generateVideoThumbnails();
+	}
+
+	function handleTrimTimeUpdate() {
+		if (!trimVideoElement) return;
+		videoCurrentTime = trimVideoElement.currentTime;
+		if (videoCurrentTime >= videoEndTime || videoCurrentTime < videoStartTime) {
+			trimVideoElement.currentTime = videoStartTime;
 		}
 	}
 
-	function handleSeekVideoPreview(time) {
-		videoStartTime = Number(time);
-		if (trimVideoElement) {
-			trimVideoElement.currentTime = videoStartTime;
+	function togglePlayTrimVideo() {
+		if (!trimVideoElement) return;
+		if (trimVideoElement.paused) {
+			if (trimVideoElement.currentTime < videoStartTime || trimVideoElement.currentTime >= videoEndTime) {
+				trimVideoElement.currentTime = videoStartTime;
+			}
+			trimVideoElement.play();
+			isPlayingTrimVideo = true;
+		} else {
+			trimVideoElement.pause();
+			isPlayingTrimVideo = false;
 		}
+	}
+
+	async function generateVideoThumbnails() {
+		if (!rawVideoUrl || isGeneratingThumbnails || videoDuration <= 0) return;
+		isGeneratingThumbnails = true;
+		videoThumbnails = [];
+
+		const numFrames = 8;
+		const hiddenVid = document.createElement('video');
+		hiddenVid.src = rawVideoUrl;
+		hiddenVid.crossOrigin = 'anonymous';
+		hiddenVid.muted = true;
+
+		await new Promise((res) => {
+			hiddenVid.onloadedmetadata = res;
+			hiddenVid.load();
+		});
+
+		const canvas = document.createElement('canvas');
+		canvas.width = 80;
+		canvas.height = 80;
+		const ctx = canvas.getContext('2d');
+
+		const frames = [];
+		const step = videoDuration / numFrames;
+
+		for (let i = 0; i < numFrames; i++) {
+			const targetTime = Math.min(videoDuration - 0.05, i * step);
+			hiddenVid.currentTime = targetTime;
+			await new Promise((res) => {
+				hiddenVid.onseeked = res;
+			});
+			ctx.drawImage(hiddenVid, 0, 0, canvas.width, canvas.height);
+			frames.push(canvas.toDataURL('image/jpeg', 0.6));
+		}
+
+		videoThumbnails = frames;
+		isGeneratingThumbnails = false;
+	}
+
+	function handleFilmstripTouchStart(e, type) {
+		const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+		startTrimmerDrag(clientX, type);
+	}
+
+	function handleFilmstripMouseDown(e, type) {
+		e.preventDefault();
+		startTrimmerDrag(e.clientX, type);
+	}
+
+	function startTrimmerDrag(clientX, type) {
+		if (type === 'left') isDraggingLeft = true;
+		else if (type === 'right') isDraggingRight = true;
+		else if (type === 'window') isDraggingWindow = true;
+
+		dragStartX = clientX;
+		dragStartStartTime = videoStartTime;
+		dragStartEndTime = videoEndTime;
+
+		const onMove = (moveEvent) => {
+			const currentX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
+			handleTrimmerMove(currentX);
+		};
+
+		const onEnd = () => {
+			isDraggingLeft = false;
+			isDraggingRight = false;
+			isDraggingWindow = false;
+			window.removeEventListener('mousemove', onMove);
+			window.removeEventListener('mouseup', onEnd);
+			window.removeEventListener('touchmove', onMove);
+			window.removeEventListener('touchend', onEnd);
+		};
+
+		window.addEventListener('mousemove', onMove);
+		window.addEventListener('mouseup', onEnd);
+		window.addEventListener('touchmove', onMove);
+		window.addEventListener('touchend', onEnd);
+	}
+
+	function handleTrimmerMove(clientX) {
+		if (!filmstripElement || videoDuration <= 0) return;
+		const rect = filmstripElement.getBoundingClientRect();
+		const deltaX = clientX - dragStartX;
+		const deltaTime = (deltaX / rect.width) * videoDuration;
+
+		if (isDraggingLeft) {
+			let newStart = Math.max(0, Math.min(dragStartStartTime + deltaTime, videoEndTime - 1));
+			if (videoEndTime - newStart > 15) {
+				newStart = videoEndTime - 15;
+			}
+			videoStartTime = Math.max(0, newStart);
+			if (trimVideoElement) trimVideoElement.currentTime = videoStartTime;
+		} else if (isDraggingRight) {
+			let newEnd = Math.min(videoDuration, Math.max(dragStartEndTime + deltaTime, videoStartTime + 1));
+			if (newEnd - videoStartTime > 15) {
+				newEnd = videoStartTime + 15;
+			}
+			videoEndTime = Math.min(videoDuration, newEnd);
+			if (trimVideoElement) trimVideoElement.currentTime = videoEndTime;
+		} else if (isDraggingWindow) {
+			const windowDuration = dragStartEndTime - dragStartStartTime;
+			let newStart = dragStartStartTime + deltaTime;
+			if (newStart < 0) newStart = 0;
+			if (newStart + windowDuration > videoDuration) newStart = videoDuration - windowDuration;
+			videoStartTime = newStart;
+			videoEndTime = newStart + windowDuration;
+			if (trimVideoElement) trimVideoElement.currentTime = videoStartTime;
+		}
+	}
+
+	function formatTimeDisplay(seconds) {
+		const s = Math.floor(seconds || 0);
+		const mins = Math.floor(s / 60);
+		const secs = s % 60;
+		return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 	}
 
 	async function confirmTrimmedVideo() {
@@ -158,8 +303,8 @@
 		isTrimmingVideo = true;
 
 		try {
-			// If video duration is <= 15s and start is 0, use original file directly
-			if (videoDuration <= 15 && videoStartTime === 0) {
+			// If video duration is <= 15s and entire video is selected, use original file directly
+			if (videoDuration <= 15 && videoStartTime === 0 && videoEndTime >= videoDuration) {
 				photoVideo = rawVideoFile;
 				isVideo = true;
 				if (photoVideoPreview) URL.revokeObjectURL(photoVideoPreview);
@@ -169,7 +314,7 @@
 				return;
 			}
 
-			// Crop video to 15 seconds using MediaRecorder + Video stream
+			// Crop video to selected window (max 15 seconds) using Canvas + MediaRecorder
 			const canvas = document.createElement('canvas');
 			const ctx = canvas.getContext('2d');
 			
@@ -188,27 +333,21 @@
 
 			const stream = canvas.captureStream(30);
 			
-			// Try to capture audio track
-			let audioTrack = null;
 			try {
 				const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 				const source = audioCtx.createMediaElementSource(video);
 				const dest = audioCtx.createMediaStreamDestination();
 				source.connect(dest);
 				source.connect(audioCtx.destination);
-				audioTrack = dest.stream.getAudioTracks()[0];
+				const audioTrack = dest.stream.getAudioTracks()[0];
 				if (audioTrack) {
 					stream.addTrack(audioTrack);
 				}
 			} catch (ae) {}
 
 			let mimeType = 'video/webm;codecs=vp8,opus';
-			if (!MediaRecorder.isTypeSupported(mimeType)) {
-				mimeType = 'video/webm';
-			}
-			if (!MediaRecorder.isTypeSupported(mimeType)) {
-				mimeType = 'video/mp4';
-			}
+			if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
+			if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/mp4';
 
 			const recorder = new MediaRecorder(stream, { mimeType });
 			const chunks = [];
@@ -219,7 +358,7 @@
 				}
 			};
 
-			const trimDuration = Math.min(15, videoDuration - videoStartTime);
+			const trimDuration = Math.min(15, videoEndTime - videoStartTime);
 			video.currentTime = videoStartTime;
 
 			await new Promise((resolve) => {
@@ -240,7 +379,7 @@
 
 			await new Promise((resolve) => {
 				const checkTime = () => {
-					if (video.currentTime >= videoStartTime + trimDuration || video.ended) {
+					if (video.currentTime >= videoEndTime || video.ended) {
 						video.pause();
 						cancelAnimationFrame(animationFrameId);
 						resolve();
@@ -713,76 +852,169 @@
 	</div>
 </div>
 
-<!-- 15-Second Video Trimmer / Cropper Modal -->
+<!-- Messenger-Style 15-Second Video Trimmer / Cropper Modal -->
 {#if showVideoTrimmerModal && rawVideoUrl}
 	<div
-		class="fixed inset-0 bg-black/60 z-[120] flex items-center justify-center p-4 animate-fade-in"
+		class="fixed inset-0 bg-black/90 z-[120] flex flex-col justify-between p-3 sm:p-5 animate-fade-in select-none"
 		onclick={(e) => { if (e.target === e.currentTarget && !isTrimmingVideo) showVideoTrimmerModal = false; }}
 	>
-		<div class="bg-white border-2 border-pink-300 rounded-2xl max-w-md w-full p-4 sm:p-5 relative animate-modal-content text-center">
-			<h3 class="text-base font-bold text-pink-700 mb-1">Crop Video to 15s Clip</h3>
-			<p class="text-xs text-pink-500 mb-3">Adjust the slider to choose the 15-second part of the video you want to save.</p>
+		<!-- Top Bar: Cancel, Live Island Timer, Scissors & Done -->
+		<div class="flex items-center justify-between w-full max-w-lg mx-auto z-10 text-white pt-1">
+			<button
+				type="button"
+				onclick={() => { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; }}
+				disabled={isTrimmingVideo}
+				class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-semibold backdrop-blur-md transition-all active:scale-95"
+			>
+				Cancel
+			</button>
 
-			<div class="rounded-xl overflow-hidden bg-black max-h-56 mb-3 flex items-center justify-center">
-				<video
-					src={rawVideoUrl}
-					bind:this={trimVideoElement}
-					onloadedmetadata={onVideoMetadataLoaded}
-					controls
-					class="w-full max-h-56 object-contain"
-				></video>
+			<!-- Dynamic Island Live Timer -->
+			<div class="flex items-center space-x-2 bg-black/80 border border-white/20 px-3.5 py-1.5 rounded-full backdrop-blur-md">
+				<span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+				<span class="font-mono font-bold text-xs sm:text-sm text-white">
+					{formatTimeDisplay(videoCurrentTime)}
+				</span>
+				<span class="text-[10px] text-white/60 font-semibold">
+					/ {formatTimeDisplay(videoEndTime - videoStartTime)}
+				</span>
 			</div>
 
-			<div class="space-y-3 text-left bg-pink-50 p-3 rounded-xl border border-pink-200 mb-4">
-				<div class="flex items-center justify-between text-xs font-bold text-pink-800">
-					<span>Total Duration: {videoDuration ? videoDuration.toFixed(1) + 's' : 'Loading...'}</span>
-					<span class="text-pink-600">Clip: {videoStartTime.toFixed(1)}s - {Math.min(videoDuration, videoStartTime + 15).toFixed(1)}s (Max 15s)</span>
-				</div>
-
-				{#if videoDuration > 15}
-					<div>
-						<label class="block text-[11px] font-bold text-pink-700 mb-1">Start Time (Scrub): {videoStartTime.toFixed(1)}s</label>
-						<input
-							type="range"
-							min="0"
-							max={Math.max(0, videoDuration - 1)}
-							step="0.5"
-							value={videoStartTime}
-							oninput={(e) => handleSeekVideoPreview(e.target.value)}
-							class="w-full accent-pink-500 cursor-pointer"
-						/>
-					</div>
-				{:else}
-					<p class="text-[11px] text-emerald-700 font-medium">Video is already under 15 seconds! It can be used directly.</p>
-				{/if}
-			</div>
-
-			<div class="flex gap-2">
-				<button
-					type="button"
-					onclick={() => { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; }}
-					disabled={isTrimmingVideo}
-					class="w-1/3 py-2 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded-xl font-bold text-xs"
-				>
-					Cancel
-				</button>
+			<!-- Done / Scissors Button -->
+			<div class="flex items-center space-x-2">
 				<button
 					type="button"
 					onclick={confirmTrimmedVideo}
 					disabled={isTrimmingVideo}
-					class="w-2/3 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
+					class="px-4 py-1.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white font-black text-xs sm:text-sm rounded-full transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
 				>
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+						<path d="M6 3.75a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm12-1.5a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM9.545 10.379l-4.59 7.87a.75.75 0 101.3.758l4.086-7.006 4.085 7.006a.75.75 0 001.3-.758l-4.59-7.87a.75.75 0 00-1.591 0z" />
+					</svg>
 					{#if isTrimmingVideo}
-						<svg class="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-						</svg>
-						<span>Trimming 15s Clip...</span>
+						<span>Trimming...</span>
 					{:else}
-						<span>Use 15s Clip</span>
+						<span>Done</span>
 					{/if}
 				</button>
 			</div>
+		</div>
+
+		<!-- Center: Video Viewport -->
+		<div class="flex-grow flex items-center justify-center relative my-auto py-2 max-w-lg w-full mx-auto">
+			<!-- Video container with tap-to-play -->
+			<div
+				class="relative w-full max-h-[60vh] rounded-2xl overflow-hidden bg-black flex items-center justify-center cursor-pointer group"
+				onclick={togglePlayTrimVideo}
+			>
+				<video
+					src={rawVideoUrl}
+					bind:this={trimVideoElement}
+					onloadedmetadata={onVideoMetadataLoaded}
+					ontimeupdate={handleTrimTimeUpdate}
+					playsinline
+					class="w-full max-h-[60vh] object-contain"
+				></video>
+
+				<!-- Play/Pause Floating Overlay -->
+				{#if !isPlayingTrimVideo}
+					<div class="absolute inset-0 bg-black/30 flex items-center justify-center transition-all">
+						<div class="w-14 h-14 rounded-full bg-white/30 backdrop-blur-md flex items-center justify-center text-white border border-white/40 group-hover:scale-110 transition-transform">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7 ml-0.5">
+								<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
+							</svg>
+						</div>
+					</div>
+				{/if}
+			</div>
+		</div>
+
+		<!-- Bottom Messenger Filmstrip Scrubber Tool -->
+		<div class="w-full max-w-lg mx-auto bg-black/70 backdrop-blur-md rounded-2xl p-3 sm:p-4 border border-white/15 space-y-2.5 z-10">
+			<div class="flex items-center justify-between text-[11px] text-white/80 font-medium">
+				<span>15-second clip limit</span>
+				<span class="text-pink-400 font-bold">
+					Selected: {(videoEndTime - videoStartTime).toFixed(1)}s (Max 15s)
+				</span>
+			</div>
+
+			<!-- Filmstrip Scrubber Container -->
+			<div
+				class="relative w-full h-14 rounded-xl overflow-hidden bg-white/10 border border-white/20 select-none cursor-pointer"
+				bind:this={filmstripElement}
+			>
+				<!-- Frame Thumbnails Strip -->
+				<div class="absolute inset-0 flex w-full h-full pointer-events-none">
+					{#if videoThumbnails.length > 0}
+						{#each videoThumbnails as thumb}
+							<div class="flex-1 h-full overflow-hidden border-r border-black/20">
+								<img src={thumb} alt="frame" class="w-full h-full object-cover" />
+							</div>
+						{/each}
+					{:else}
+						<div class="w-full h-full flex items-center justify-center text-white/40 text-[10px]">
+							Loading frames...
+						</div>
+					{/if}
+				</div>
+
+				{#if videoDuration > 0}
+					{@const leftPercent = (videoStartTime / videoDuration) * 100}
+					{@const widthPercent = ((videoEndTime - videoStartTime) / videoDuration) * 100}
+					{@const rightPercent = 100 - (leftPercent + widthPercent)}
+					{@const currentPercent = (videoCurrentTime / videoDuration) * 100}
+
+					<!-- Left Dimmed Overlay -->
+					<div
+						class="absolute top-0 bottom-0 left-0 bg-black/60 backdrop-blur-2xs pointer-events-none"
+						style="width: {leftPercent}%;"
+					></div>
+
+					<!-- Right Dimmed Overlay -->
+					<div
+						class="absolute top-0 bottom-0 right-0 bg-black/60 backdrop-blur-2xs pointer-events-none"
+						style="width: {rightPercent}%;"
+					></div>
+
+					<!-- Active Messenger Selection Box -->
+					<div
+						class="absolute top-0 bottom-0 border-y-3 border-pink-500 bg-pink-500/15 cursor-grab active:cursor-grabbing flex items-center justify-between"
+						style="left: {leftPercent}%; width: {widthPercent}%;"
+						onmousedown={(e) => handleFilmstripMouseDown(e, 'window')}
+						ontouchstart={(e) => handleFilmstripTouchStart(e, 'window')}
+					>
+						<!-- Left Drag Handle (Messenger Style) -->
+						<div
+							class="w-4 h-full bg-pink-500 hover:bg-pink-400 cursor-ew-resize flex items-center justify-center rounded-l-md active:scale-95 transition-transform"
+							onmousedown={(e) => { e.stopPropagation(); handleFilmstripMouseDown(e, 'left'); }}
+							ontouchstart={(e) => { e.stopPropagation(); handleFilmstripTouchStart(e, 'left'); }}
+						>
+							<div class="w-1 h-4 bg-white rounded-full"></div>
+						</div>
+
+						<!-- Right Drag Handle (Messenger Style) -->
+						<div
+							class="w-4 h-full bg-pink-500 hover:bg-pink-400 cursor-ew-resize flex items-center justify-center rounded-r-md active:scale-95 transition-transform"
+							onmousedown={(e) => { e.stopPropagation(); handleFilmstripMouseDown(e, 'right'); }}
+							ontouchstart={(e) => { e.stopPropagation(); handleFilmstripTouchStart(e, 'right'); }}
+						>
+							<div class="w-1 h-4 bg-white rounded-full"></div>
+						</div>
+					</div>
+
+					<!-- Live Playhead Needle -->
+					<div
+						class="absolute top-0 bottom-0 w-1 bg-white shadow-lg pointer-events-none z-20"
+						style="left: {currentPercent}%;"
+					>
+						<div class="w-2.5 h-2.5 -ml-0.75 bg-white rounded-full -mt-1"></div>
+					</div>
+				{/if}
+			</div>
+
+			<p class="text-[10px] text-center text-white/50">
+				Drag handles or slide the window to select up to 15 seconds.
+			</p>
 		</div>
 	</div>
 {/if}
