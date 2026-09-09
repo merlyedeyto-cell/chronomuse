@@ -23,7 +23,7 @@
 
 {#if isOpen}
 	<div 
-		class="fixed inset-0 z-[110] bg-transparent flex items-center justify-center p-4 animate-fade-in overscroll-contain touch-none"
+		class="fixed inset-0 z-[110] bg-transparent flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) onClose(); }}
 		role="button"
 		tabindex="0"

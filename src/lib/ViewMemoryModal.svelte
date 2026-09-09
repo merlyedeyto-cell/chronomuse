@@ -703,14 +703,14 @@
 
 <!-- Backdrop Overlay -->
 <div
-	class="fixed inset-0 bg-black/40 backdrop-blur-md z-40 transition-opacity duration-300 overscroll-contain touch-none"
+	class="fixed inset-0 bg-black/40 backdrop-blur-md z-40 transition-opacity duration-300"
 	class:opacity-0={isClosing}
 	onclick={handleClose}
 ></div>
 
 <!-- Modal Content Container -->
 <div
-	class="fixed inset-0 z-50 flex items-center justify-center p-4 overscroll-contain"
+	class="fixed inset-0 z-50 flex items-center justify-center p-4"
 	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 >
 	<div
