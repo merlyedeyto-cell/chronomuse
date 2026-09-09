@@ -67,7 +67,11 @@ export const API_ENDPOINTS = {
 	requestReactivation: `${API_BASE_URL}/request_reactivation`
 };
 
-// Helper function to make API calls
+/**
+ * Helper function to make API calls
+ * @param {string} endpoint
+ * @param {RequestInit} [options]
+ */
 export async function apiCall(endpoint, options = {}) {
 	const defaultOptions = {
 		headers: {
@@ -92,7 +96,11 @@ export async function apiCall(endpoint, options = {}) {
 	}
 }
 
-// Helper for POST requests
+/**
+ * Helper for POST requests
+ * @param {string} endpoint
+ * @param {any} [data]
+ */
 export async function apiPost(endpoint, data) {
 	return apiCall(endpoint, {
 		method: 'POST',
@@ -100,10 +108,19 @@ export async function apiPost(endpoint, data) {
 	});
 }
 
-// Helper for GET requests
+/**
+ * Helper for GET requests
+ * @param {string} endpoint
+ * @param {Record<string, any>} [params]
+ */
 export async function apiGet(endpoint, params = {}) {
-	const url = new URL(endpoint);
-	Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+	const base = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+	const url = new URL(endpoint, base);
+	Object.keys(params).forEach(key => {
+		if (params[key] !== undefined && params[key] !== null) {
+			url.searchParams.append(key, String(params[key]));
+		}
+	});
 	return apiCall(url.toString(), { method: 'GET' });
 }
 

@@ -906,7 +906,11 @@
 		{#if showNotificationModalPopup}
 			<div
 				class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[100] flex items-center justify-center p-4 animate-fade-in"
+				role="dialog"
+				aria-modal="true"
+				tabindex="-1"
 				onclick={(e) => { if (e.target === e.currentTarget) showNotificationModalPopup = false; }}
+				onkeydown={(e) => { if (e.key === 'Escape') showNotificationModalPopup = false; }}
 			>
 				<div class="bg-white border-2 border-pink-300 rounded-3xl p-6 max-w-xs sm:max-w-sm w-full text-center space-y-4 animate-modal-content">
 					<div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto {notificationModalType === 'error' ? 'bg-rose-100 text-rose-600 border border-rose-200' : 'bg-emerald-100 text-emerald-600 border border-emerald-200'}">

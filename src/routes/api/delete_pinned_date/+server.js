@@ -24,6 +24,7 @@ export async function POST({ request }) {
 			message: 'Pinned date deleted successfully'
 		});
 	} catch (err) {
-		return json({ error: 'An error occurred: ' + err.message }, { status: 500 });
+		const errorMessage = err instanceof Error ? err.message : String(err);
+		return json({ error: 'An error occurred: ' + errorMessage }, { status: 500 });
 	}
 }

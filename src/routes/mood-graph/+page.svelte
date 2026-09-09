@@ -558,8 +558,12 @@
 												stroke-width="14"
 												stroke-dasharray={segment.strokeDasharray}
 												stroke-dashoffset={segment.strokeDashoffset}
-												class="transition-all duration-500 cursor-pointer hover:opacity-90"
+												class="transition-all duration-500 cursor-pointer hover:opacity-90 focus:outline-hidden"
+												role="button"
+												tabindex="0"
+												aria-label={`View ${segment.mood} memories`}
 												onclick={() => openMoodListModal(segment.mood)}
+												onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') openMoodListModal(segment.mood); }}
 											/>
 										{/each}
 									</svg>
@@ -658,11 +662,14 @@
 		{#if showMoodListModal}
 			<div
 				class="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in overflow-y-auto"
+				role="dialog"
+				aria-modal="true"
+				tabindex="-1"
 				onclick={(e) => { if (e.target === e.currentTarget) showMoodListModal = false; }}
+				onkeydown={(e) => { if (e.key === 'Escape') showMoodListModal = false; }}
 			>
 				<div
 					class="bg-white border-2 border-pink-300 rounded-2xl max-w-md w-full p-4 sm:p-5 relative my-auto"
-					onclick={(e) => e.stopPropagation()}
 				>
 					<!-- Close Button -->
 					<button
