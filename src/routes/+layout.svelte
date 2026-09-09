@@ -419,6 +419,43 @@
 			}
 		};
 
+		// Global Modal Scroll-Lock Observer & Background Scroll Preventer
+		const updateScrollLock = () => {
+			if (typeof document === 'undefined') return;
+			const activeModal = document.querySelector(
+				'.fixed.inset-0:not(.pointer-events-none):not([class*="hidden"]), [role="dialog"], [aria-modal="true"], .z-\\[100\\], .z-\\[110\\], .z-\\[80\\], .z-\\[70\\], .z-\\[60\\], .z-50.fixed'
+			);
+			if (activeModal) {
+				document.body.classList.add('modal-open-scroll-lock');
+				document.documentElement.classList.add('modal-open-scroll-lock');
+			} else {
+				document.body.classList.remove('modal-open-scroll-lock');
+				document.documentElement.classList.remove('modal-open-scroll-lock');
+			}
+		};
+
+		const preventBackgroundScroll = (e) => {
+			const activeModal = document.querySelector(
+				'.fixed.inset-0:not(.pointer-events-none):not([class*="hidden"]), [role="dialog"], [aria-modal="true"], .z-\\[100\\], .z-\\[110\\], .z-\\[80\\], .z-\\[70\\], .z-\\[60\\], .z-50.fixed'
+			);
+			if (!activeModal) return;
+
+			// If target is inside a scrollable container inside the modal
+			const scrollable = e.target?.closest?.('.overflow-y-auto, .overflow-x-auto, textarea, input, select');
+			if (!scrollable) {
+				e.preventDefault();
+			}
+		};
+
+		const observer = new MutationObserver(() => {
+			updateScrollLock();
+		});
+
+		observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+		window.addEventListener('resize', updateScrollLock);
+		window.addEventListener('wheel', preventBackgroundScroll, { passive: false });
+		window.addEventListener('touchmove', preventBackgroundScroll, { passive: false });
+
 		window.addEventListener('click', handleGlobalClick, { capture: true, passive: true });
 		window.addEventListener('storage', syncUserStateAndListeners);
 		window.addEventListener('chronomuse_auth_change', syncUserStateAndListeners);
@@ -427,6 +464,10 @@
 			window.removeEventListener('click', handleGlobalClick, { capture: true });
 			window.removeEventListener('storage', syncUserStateAndListeners);
 			window.removeEventListener('chronomuse_auth_change', syncUserStateAndListeners);
+			window.removeEventListener('resize', updateScrollLock);
+			window.removeEventListener('wheel', preventBackgroundScroll);
+			window.removeEventListener('touchmove', preventBackgroundScroll);
+			observer.disconnect();
 			teardownListeners();
 		};
 	});
@@ -435,6 +476,20 @@
 <slot />
 
 <style>
+	:global(body.modal-open-scroll-lock),
+	:global(html.modal-open-scroll-lock) {
+		overflow: hidden !important;
+		touch-action: none !important;
+		overscroll-behavior: contain !important;
+	}
+
+	:global(.modal-open-scroll-lock .overflow-y-auto),
+	:global(.modal-open-scroll-lock [role="dialog"]),
+	:global(.modal-open-scroll-lock .overflow-x-auto) {
+		touch-action: pan-y !important;
+		overscroll-behavior: contain !important;
+	}
+
 	:global(video::-webkit-media-controls-fullscreen-button),
 	:global(video *::-webkit-media-controls-fullscreen-button),
 	:global(video::-webkit-media-controls-enclosure .fullscreen-button),

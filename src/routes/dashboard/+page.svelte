@@ -851,7 +851,7 @@
 
 		<!-- Unpin Date Modal -->
 		{#if showDeletePinnedModal}
-			<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+			<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in overscroll-contain touch-none">
 				<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-sm w-full p-6 text-center animate-modal-content relative overflow-hidden">
 					<!-- Unpin Circle Icon -->
 					<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -905,7 +905,7 @@
 		<!-- Custom Success / Alert Notification Modal -->
 		{#if showNotificationModalPopup}
 			<div
-				class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[100] flex items-center justify-center p-4 animate-fade-in"
+				class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[100] flex items-center justify-center p-4 animate-fade-in overscroll-contain touch-none"
 				onclick={(e) => { if (e.target === e.currentTarget) showNotificationModalPopup = false; }}
 			>
 				<div class="bg-white border-2 border-pink-300 rounded-3xl p-6 max-w-xs sm:max-w-sm w-full text-center space-y-4 animate-modal-content">

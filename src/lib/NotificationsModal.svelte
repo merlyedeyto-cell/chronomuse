@@ -289,7 +289,7 @@
 
 {#if isOpen}
 	<div
-		class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in"
+		class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in overscroll-contain touch-none"
 		onclick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
 	>
 		<div class="bg-white/95 backdrop-blur-md border-2 border-pink-300 rounded-3xl max-w-xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-pop-in">
