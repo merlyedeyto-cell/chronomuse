@@ -262,12 +262,26 @@ export async function POST({ request }) {
 							.from('chronomuse_reactivation_requests')
 							.update({ status: 'approved', updated_at: new Date().toISOString() })
 							.eq('id', request_id);
-					} else {
-						await supabase
-							.from('chronomuse_reactivation_requests')
-							.update({ status: 'approved', updated_at: new Date().toISOString() })
-							.eq('user_id', user_id);
 					}
+					await supabase
+						.from('chronomuse_reactivation_requests')
+						.update({ status: 'approved', updated_at: new Date().toISOString() })
+						.eq('user_id', user_id)
+						.eq('status', 'pending');
+				} catch (e) {}
+
+				// Realtime broadcast so user's active session is notified
+				try {
+					const channel = supabase.channel('chronomuse_global_events');
+					await channel.send({
+						type: 'broadcast',
+						event: 'global_friend_event',
+						payload: {
+							eventType: 'account_reactivated',
+							target_id: Number(user_id)
+						}
+					});
+					supabase.removeChannel(channel);
 				} catch (e) {}
 
 				return json({

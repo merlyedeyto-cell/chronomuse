@@ -39,8 +39,37 @@
 	let isLoadingData = $state(false);
 	let actionMessage = $state('');
 	let errorMessage = $state('');
-	let isTogglingStatus = $state(false);
+	let togglingUsers = $state({});
 	let isProcessingAppeal = $state(false);
+
+	let loadSeq = 0;
+	let refreshDebounceTimer = null;
+	let lastAppealNotifTime = 0;
+	let lastAppealNotifUser = null;
+
+	function debouncedLoadAdminData(delay = 600) {
+		if (refreshDebounceTimer) clearTimeout(refreshDebounceTimer);
+		refreshDebounceTimer = setTimeout(() => {
+			if (isAuthenticated && !isLoadingData) {
+				loadAdminData(true);
+			}
+		}, delay);
+	}
+
+	function handleIncomingAppeal(payload) {
+		const uId = payload?.payload?.user_id || payload?.user_id;
+		const uName = payload?.payload?.username || payload?.username || 'user';
+		const now = Date.now();
+		if (lastAppealNotifUser === uId && (now - lastAppealNotifTime) < 4000) {
+			debouncedLoadAdminData(300);
+			return;
+		}
+		lastAppealNotifTime = now;
+		lastAppealNotifUser = uId;
+		try { playNotificationSound(0); } catch (e) {}
+		debouncedLoadAdminData(300);
+		showNotice(`New appeal received from @${uName}!`);
+	}
 
 	// Modals State
 	let showAppealsListModal = $state(false);
@@ -157,34 +186,22 @@
 			currentTime = Date.now();
 		}, 15000);
 
-		// Live-sync admin data every 2.5s to ensure appeals and metrics update in real-time
+		// Polling interval for background metrics & appeals (5s debounce interval)
 		const autoRefreshInterval = setInterval(() => {
 			if (isAuthenticated && !isLoadingData) {
 				loadAdminData(true);
 			}
-		}, 2500);
+		}, 5000);
 
 		// Realtime Channel 1: Dedicated Admin Notification Channel
 		const adminChannel = supabase.channel('chronomuse_admin_notifications');
 		adminChannel
 			.on('broadcast', { event: 'reactivation_appeal_submitted' }, (payload) => {
-				try { playNotificationSound(0); } catch (e) {}
-				loadAdminData(true);
-				showNotice(`New appeal received from @${payload?.payload?.username || 'user'}!`);
+				handleIncomingAppeal(payload);
 			})
 			.subscribe();
 
-		// Realtime Channel 2: Global Events Broadcast Channel
-		const globalChannel = supabase.channel('chronomuse_global_events');
-		globalChannel
-			.on('broadcast', { event: 'global_appeal_event' }, (payload) => {
-				try { playNotificationSound(0); } catch (e) {}
-				loadAdminData(true);
-				showNotice(`New appeal received from @${payload?.payload?.username || 'user'}!`);
-			})
-			.subscribe();
-
-		// Realtime Channel 3: Postgres Table Changes (DB-level sync)
+		// Realtime Channel 2: Postgres Table Changes (DB-level sync with debounce)
 		const dbChannel = supabase.channel('chronomuse_admin_db_sync');
 		dbChannel
 			.on('postgres_changes', {
@@ -192,23 +209,24 @@
 				schema: 'public',
 				table: 'chronomuse_reactivation_requests'
 			}, () => {
-				loadAdminData(true);
+				debouncedLoadAdminData(400);
 			})
 			.on('postgres_changes', {
 				event: 'UPDATE',
 				schema: 'public',
 				table: 'chronomuse_users'
 			}, () => {
-				loadAdminData(true);
+				// Debounce heavily (1500ms) so user activity heartbeats don't thrash the admin list
+				debouncedLoadAdminData(1500);
 			})
 			.subscribe();
 
 		return () => {
 			clearInterval(timerInterval);
 			clearInterval(autoRefreshInterval);
+			if (refreshDebounceTimer) clearTimeout(refreshDebounceTimer);
 			try {
 				supabase.removeChannel(adminChannel);
-				supabase.removeChannel(globalChannel);
 				supabase.removeChannel(dbChannel);
 			} catch (e) {}
 			if (typeof document !== 'undefined') {
@@ -261,6 +279,8 @@
 			errorMessage = '';
 		}
 
+		const currentSeq = ++loadSeq;
+
 		try {
 			const [metricsRes, usersRes, reactivationsRes] = await Promise.all([
 				fetch('/api/admin', {
@@ -280,30 +300,42 @@
 				}).then(r => r.json())
 			]);
 
+			// If a newer load request was made, ignore stale results
+			if (currentSeq !== loadSeq) return;
+
 			if (metricsRes?.success && metricsRes.data?.metrics) {
 				metrics = metricsRes.data.metrics;
 			}
 			if (usersRes?.success && Array.isArray(usersRes.data?.users)) {
-				usersList = usersRes.data.users;
+				// Preserve optimistic status for users currently being toggled
+				usersList = usersRes.data.users.map(fetchedUser => {
+					if (togglingUsers[fetchedUser.id]) {
+						const localUser = usersList.find(u => u.id === fetchedUser.id);
+						if (localUser) {
+							return { ...fetchedUser, status: localUser.status };
+						}
+					}
+					return fetchedUser;
+				});
 			}
 			if (reactivationsRes?.success && Array.isArray(reactivationsRes.data?.requests)) {
 				reactivationRequests = reactivationsRes.data.requests;
 			}
 		} catch (err) {
 			console.error('Error loading admin data:', err);
-			if (!isBackground) {
+			if (!isBackground && currentSeq === loadSeq) {
 				showNotice('Failed to connect to Admin API', true);
 			}
 		} finally {
-			if (!isBackground) {
+			if (!isBackground && currentSeq === loadSeq) {
 				isLoadingData = false;
 			}
 		}
 	}
 
 	async function toggleUserStatus(targetUser) {
-		if (isTogglingStatus) return;
-		isTogglingStatus = true;
+		if (togglingUsers[targetUser.id]) return;
+		togglingUsers = { ...togglingUsers, [targetUser.id]: true };
 
 		const nextStatus = targetUser.status === 'suspended' ? 'active' : 'suspended';
 		const oldStatus = targetUser.status;
@@ -322,11 +354,13 @@
 			});
 			const data = await res.json();
 			if (data.success) {
-				showNotice(`Status for @${targetUser.username} updated to ${nextStatus}`);
+				targetUser.status = nextStatus;
 				if (nextStatus === 'active') {
 					targetUser.has_pending_reactivation = false;
 					reactivationRequests = reactivationRequests.filter(r => r.user_id !== targetUser.id);
+					metrics.pending_reactivations = Math.max(0, reactivationRequests.length);
 				}
+				showNotice(`Status for @${targetUser.username} updated to ${nextStatus}`);
 			} else {
 				targetUser.status = oldStatus;
 				showNotice(data.error || 'Failed to update user status', true);
@@ -335,7 +369,9 @@
 			targetUser.status = oldStatus;
 			showNotice('Network error updating user status', true);
 		} finally {
-			isTogglingStatus = false;
+			const nextMap = { ...togglingUsers };
+			delete nextMap[targetUser.id];
+			togglingUsers = nextMap;
 		}
 	}
 
@@ -357,7 +393,7 @@
 			});
 			const data = await res.json();
 			if (data.success) {
-				reactivationRequests = reactivationRequests.filter(r => r.id !== reqItem.id);
+				reactivationRequests = reactivationRequests.filter(r => r.id !== reqItem.id && r.user_id !== reqItem.user_id);
 				const userInList = usersList.find(u => u.id === reqItem.user_id);
 				if (userInList) {
 					userInList.has_pending_reactivation = false;
@@ -1056,11 +1092,14 @@
 												<!-- Toggle Status Button -->
 												<button
 													onclick={() => toggleUserStatus(userRow)}
-													disabled={isTogglingStatus}
+													disabled={!!togglingUsers[userRow.id]}
 													title={userRow.status === 'suspended' ? 'Reactivate Account' : 'Suspend Account'}
-													class="px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer {userRow.status === 'suspended' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-pink-100 hover:bg-pink-200 text-pink-700 border border-pink-300'}"
+													class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs {userRow.status === 'suspended' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-pink-100 hover:bg-pink-200 text-pink-700 border border-pink-300'} {togglingUsers[userRow.id] ? 'opacity-75 cursor-wait' : ''}"
 												>
-													{userRow.status === 'suspended' ? 'Reactivate' : 'Suspend'}
+													{#if togglingUsers[userRow.id]}
+														<div class="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full"></div>
+													{/if}
+													<span>{userRow.status === 'suspended' ? 'Reactivate' : 'Suspend'}</span>
 												</button>
 
 												<!-- Reset Password Button -->
