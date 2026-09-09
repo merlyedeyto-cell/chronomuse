@@ -28,6 +28,9 @@
 	}
 
 	function handleAccountSuspended() {
+		if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
+			return;
+		}
 		isAccountSuspended = true;
 		teardownListeners();
 		if (typeof window !== 'undefined') {
@@ -63,6 +66,10 @@
 	}
 
 	async function checkNotificationsCount() {
+		if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
+			return;
+		}
+
 		const activeUser = getActiveLoggedInUser();
 		if (!activeUser?.id || Number(activeUser.id) !== Number(subscribedUserId)) {
 			// User logged out or switched accounts
@@ -107,6 +114,12 @@
 	function syncUserStateAndListeners() {
 		if (typeof window === 'undefined') return;
 
+		// Inside admin portal, do not attach user listeners or trigger user lockouts
+		if (window.location.pathname.startsWith('/admin') || ($page && $page.url && $page.url.pathname.startsWith('/admin'))) {
+			teardownListeners();
+			return;
+		}
+
 		const activeUser = getActiveLoggedInUser();
 
 		// Case 1: No user is logged in (Logged out)
@@ -135,6 +148,7 @@
 		globalEventsChannel = supabase.channel('chronomuse_global_events');
 		globalEventsChannel
 			.on('broadcast', { event: 'global_friend_event' }, (payload) => {
+				if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) return;
 				const current = getActiveLoggedInUser();
 				if (!current?.id) return;
 				const sId = payload?.payload?.sender_id;
@@ -456,7 +470,7 @@
 <slot />
 
 <!-- Real-time Account Suspended Modal -->
-{#if isAccountSuspended}
+{#if isAccountSuspended && !$page.url.pathname.startsWith('/admin')}
 	<div class="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4 animate-fade-in">
 		<div class="bg-white border-2 border-rose-300 rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl space-y-4">
 			<div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto border-2 border-rose-200">
