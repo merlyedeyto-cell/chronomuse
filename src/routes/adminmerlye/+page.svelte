@@ -954,6 +954,7 @@
 				</div>
 
 				<!-- Users Table (Slideable on Desktop & Mobile) -->
+				<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 				<div
 					bind:this={tableContainerEl}
 					onmousedown={onTableMouseDown}
@@ -962,6 +963,7 @@
 					onmouseleave={onTableMouseUp}
 					role="region"
 					aria-label="Accounts table"
+					tabindex="0"
 					class="overflow-x-auto rounded-xl border border-pink-100 scrollbar-thin scroll-smooth {isTableDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}"
 				>
 					<table class="w-full min-w-[980px] text-left text-xs">
