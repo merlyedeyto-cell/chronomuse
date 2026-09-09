@@ -53,6 +53,27 @@
 
 	let currentTime = $state(Date.now());
 
+	// PWA Install State for Admin Portal
+	let deferredInstallPrompt = $state(null);
+	let isInstallable = $state(false);
+	let isAppInstalled = $state(false);
+	let showInstallHelper = $state(false);
+
+	function handleInstallAdminApp() {
+		if (deferredInstallPrompt) {
+			deferredInstallPrompt.prompt();
+			deferredInstallPrompt.userChoice.then((choiceResult) => {
+				if (choiceResult.outcome === 'accepted') {
+					showNotice('Installing ChronoMuse Admin app...');
+					isInstallable = false;
+				}
+				deferredInstallPrompt = null;
+			});
+		} else {
+			showInstallHelper = true;
+		}
+	}
+
 	// Table Drag-to-Slide (Desktop & Touch)
 	let tableContainerEl = $state(null);
 	let isTableDragging = $state(false);
@@ -84,6 +105,27 @@
 			if (savedAuth === ADMIN_PASSCODE) {
 				isAuthenticated = true;
 				loadAdminData();
+			}
+
+			// PWA Install Listeners
+			const handleBeforeInstall = (e) => {
+				e.preventDefault();
+				deferredInstallPrompt = e;
+				isInstallable = true;
+			};
+
+			const handleAppInstalled = () => {
+				deferredInstallPrompt = null;
+				isInstallable = false;
+				isAppInstalled = true;
+				showNotice('ChronoMuse Admin installed to Home Screen!');
+			};
+
+			window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+			window.addEventListener('appinstalled', handleAppInstalled);
+
+			if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+				isAppInstalled = true;
 			}
 		}
 		isCheckingAuth = false;
@@ -520,6 +562,11 @@
 
 <svelte:head>
 	<title>Admin Portal - ChronoMuse</title>
+	<link rel="manifest" href="/manifest-admin.json" />
+	<meta name="apple-mobile-web-app-title" content="ChronoMuse Admin" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="mobile-web-app-capable" content="yes" />
+	<meta name="theme-color" content="#ff4fae" />
 </svelte:head>
 
 <svelte:window onmouseup={onTableMouseUp} />
@@ -574,13 +621,25 @@
 						<span>Authenticate Console</span>
 					</button>
 
-					<button
-						type="button"
-						onclick={() => goto('/dashboard')}
-						class="w-full py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 font-bold text-xs rounded-xl transition-all cursor-pointer"
-					>
-						Return to App
-					</button>
+					<div class="flex items-center gap-2">
+						<button
+							type="button"
+							onclick={() => goto('/dashboard')}
+							class="w-1/2 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 font-bold text-xs rounded-xl transition-all cursor-pointer"
+						>
+							Return to App
+						</button>
+						<button
+							type="button"
+							onclick={handleInstallAdminApp}
+							class="w-1/2 py-2 bg-pink-50 hover:bg-pink-100 text-pink-700 font-bold text-xs rounded-xl border border-pink-200 transition-all cursor-pointer flex items-center justify-center gap-1"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+							</svg>
+							<span>Install App</span>
+						</button>
+					</div>
 				</form>
 			</div>
 		</div>
@@ -601,6 +660,21 @@
 				</div>
 
 				<div class="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+					<!-- Install Admin App Button -->
+					{#if !isAppInstalled}
+						<button
+							type="button"
+							onclick={handleInstallAdminApp}
+							class="flex-1 sm:flex-initial px-3 py-2 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
+							title="Install ChronoMuse Admin as a standalone app on your device"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-pink-600">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+							</svg>
+							<span>Install Admin</span>
+						</button>
+					{/if}
+
 					<!-- All Appeals Button -->
 					<button
 						onclick={openAppealsListModal}
@@ -1388,6 +1462,66 @@
 						</span>
 					</button>
 				{/each}
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Install Admin App Instructions Modal -->
+{#if showInstallHelper}
+	<div class="fixed inset-0 z-50 bg-black/10 backdrop-blur-[1.5px] flex items-center justify-center p-4 animate-fade-in">
+		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-5 space-y-4 animate-modal-content">
+			<!-- Header -->
+			<div class="flex items-center justify-between border-b border-pink-100 pb-3">
+				<div class="flex items-center gap-2.5">
+					<div class="p-2 bg-pink-100 text-pink-600 rounded-xl">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+						</svg>
+					</div>
+					<div>
+						<h3 class="text-sm font-black text-pink-950">Install Admin App</h3>
+						<p class="text-[11px] text-pink-500 font-medium">Add to your Home Screen</p>
+					</div>
+				</div>
+				<button
+					onclick={() => showInstallHelper = false}
+					aria-label="Close"
+					class="text-pink-400 hover:text-pink-600 cursor-pointer p-1 rounded-lg hover:bg-pink-50"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+
+			<!-- Steps -->
+			<div class="space-y-3 py-1 text-left text-xs text-pink-950">
+				<div class="p-3 bg-pink-50/70 border border-pink-200 rounded-2xl space-y-2">
+					<div class="flex items-start gap-2.5">
+						<span class="w-5 h-5 rounded-full bg-pink-500 text-white font-bold flex items-center justify-center text-[10px] flex-shrink-0">1</span>
+						<p class="leading-relaxed">In your mobile browser menu (or Safari Share button <span class="font-bold text-pink-600">⎋</span> / Chrome menu <span class="font-bold text-pink-600">⋮</span>), tap <span class="font-bold text-pink-700">Share / Options</span>.</p>
+					</div>
+					<div class="flex items-start gap-2.5">
+						<span class="w-5 h-5 rounded-full bg-pink-500 text-white font-bold flex items-center justify-center text-[10px] flex-shrink-0">2</span>
+						<p class="leading-relaxed">Select <span class="font-bold text-pink-700">"Add to Home Screen"</span> or <span class="font-bold text-pink-700">"Install App"</span>.</p>
+					</div>
+					<div class="flex items-start gap-2.5">
+						<span class="w-5 h-5 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center text-[10px] flex-shrink-0">3</span>
+						<p class="leading-relaxed"><span class="font-bold text-emerald-700">ChronoMuse Admin</span> will be installed as an independent standalone app icon on your home screen!</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- Footer -->
+			<div class="border-t border-pink-100 pt-3 flex justify-end">
+				<button
+					type="button"
+					onclick={() => showInstallHelper = false}
+					class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer"
+				>
+					Got it!
+				</button>
 			</div>
 		</div>
 	</div>

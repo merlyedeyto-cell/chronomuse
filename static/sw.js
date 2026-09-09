@@ -2,9 +2,11 @@
 const CACHE_NAME = 'chronomuse-v1';
 const ASSETS_TO_CACHE = [
   '/',
+  '/adminmerlye',
   '/logo.png',
   '/favicon.svg',
-  '/manifest.json'
+  '/manifest.json',
+  '/manifest-admin.json'
 ];
 
 self.addEventListener('install', (event) => {

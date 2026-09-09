@@ -1,0 +1,30 @@
+{
+  "name": "ChronoMuse Admin",
+  "short_name": "CM Admin",
+  "description": "Administrator control portal for ChronoMuse",
+  "start_url": "/adminmerlye",
+  "id": "/adminmerlye",
+  "scope": "/adminmerlye",
+  "display": "standalone",
+  "background_color": "#ffe1f0",
+  "theme_color": "#ff4fae",
+  "orientation": "portrait",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "handle_links": "preferred",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
