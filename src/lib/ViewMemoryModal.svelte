@@ -21,11 +21,34 @@
 	let editedPhotoVideo = $state(null);
 	let editedMusic = $state(null);
 	let editedPhotoVideoPreview = $state(null);
-	let editedPhotoVideoType = $state('');
 	let isEditing = $state(false);
 	let isSaving = $state(false);
 	let photoVideoInput;
 	let musicInput;
+	
+	let editedPhotoVideoType = $state('');
+	
+	// Video Trimmer State (Max 15 seconds) - Messenger Style
+	let showVideoTrimmerModal = $state(false);
+	let rawVideoFile = $state(null);
+	let rawVideoUrl = $state(null);
+	let videoDuration = $state(0);
+	let videoStartTime = $state(0);
+	let videoEndTime = $state(15);
+	let videoCurrentTime = $state(0);
+	let isPlayingTrimVideo = $state(false);
+	let isTrimmingVideo = $state(false);
+	let trimVideoElement = $state();
+	let videoThumbnails = $state([]);
+	let isGeneratingThumbnails = $state(false);
+	let filmstripElement = $state();
+
+	let isDraggingLeft = false;
+	let isDraggingRight = false;
+	let isDraggingWindow = false;
+	let dragStartX = 0;
+	let dragStartStartTime = 0;
+	let dragStartEndTime = 0;
 	
 	// Friends & Sharing State
 	let friends = $state([]);
@@ -225,15 +248,227 @@
 
 	function handleEditedPhotoVideoChange(event) {
 		const file = event.target.files[0];
-		if (file) {
+		if (!file) return;
+
+		if (file.type.startsWith('video/')) {
+			rawVideoFile = file;
+			if (rawVideoUrl) URL.revokeObjectURL(rawVideoUrl);
+			rawVideoUrl = URL.createObjectURL(file);
+			videoStartTime = 0;
+			videoEndTime = 15;
+			videoCurrentTime = 0;
+			videoThumbnails = [];
+			showVideoTrimmerModal = true;
+		} else if (file.type.startsWith('image/')) {
 			editedPhotoVideo = file;
 			editedPhotoVideoType = file.type;
-			// Create preview URL
-			if (file.type.startsWith('image/')) {
-				editedPhotoVideoPreview = URL.createObjectURL(file);
-			} else if (file.type.startsWith('video/')) {
-				editedPhotoVideoPreview = URL.createObjectURL(file);
+			if (editedPhotoVideoPreview) URL.revokeObjectURL(editedPhotoVideoPreview);
+			editedPhotoVideoPreview = URL.createObjectURL(file);
+		}
+	}
+
+	async function onVideoMetadataLoaded(e) {
+		const vid = e.target;
+		videoDuration = vid.duration || 0;
+		videoStartTime = 0;
+		videoEndTime = Math.min(15, videoDuration);
+		videoCurrentTime = 0;
+		generateVideoThumbnails();
+	}
+
+	function handleTrimTimeUpdate() {
+		if (!trimVideoElement) return;
+		videoCurrentTime = trimVideoElement.currentTime;
+		if (videoCurrentTime >= videoEndTime || videoCurrentTime < videoStartTime) {
+			trimVideoElement.currentTime = videoStartTime;
+		}
+	}
+
+	function togglePlayTrimVideo() {
+		if (!trimVideoElement) return;
+		if (trimVideoElement.paused) {
+			if (trimVideoElement.currentTime < videoStartTime || trimVideoElement.currentTime >= videoEndTime) {
+				trimVideoElement.currentTime = videoStartTime;
 			}
+			trimVideoElement.play();
+			isPlayingTrimVideo = true;
+		} else {
+			trimVideoElement.pause();
+			isPlayingTrimVideo = false;
+		}
+	}
+
+	async function generateVideoThumbnails() {
+		if (!rawVideoUrl || isGeneratingThumbnails || videoDuration <= 0) return;
+		isGeneratingThumbnails = true;
+		videoThumbnails = [];
+
+		const numFrames = 8;
+		const hiddenVid = document.createElement('video');
+		hiddenVid.src = rawVideoUrl;
+		hiddenVid.crossOrigin = 'anonymous';
+		hiddenVid.muted = true;
+
+		await new Promise((res) => {
+			hiddenVid.onloadedmetadata = res;
+			hiddenVid.load();
+		});
+
+		const canvas = document.createElement('canvas');
+		canvas.width = 80;
+		canvas.height = 80;
+		const ctx = canvas.getContext('2d');
+
+		const frames = [];
+		const step = videoDuration / numFrames;
+
+		for (let i = 0; i < numFrames; i++) {
+			const targetTime = Math.min(videoDuration - 0.05, i * step);
+			hiddenVid.currentTime = targetTime;
+			await new Promise((res) => {
+				hiddenVid.onseeked = res;
+			});
+			ctx.drawImage(hiddenVid, 0, 0, canvas.width, canvas.height);
+			frames.push(canvas.toDataURL('image/jpeg', 0.6));
+		}
+
+		videoThumbnails = frames;
+		isGeneratingThumbnails = false;
+	}
+
+	function handlePointerDown(e, type) {
+		e.preventDefault();
+		e.stopPropagation();
+		const target = e.currentTarget;
+		try {
+			target.setPointerCapture(e.pointerId);
+		} catch (err) {}
+
+		if (type === 'left') isDraggingLeft = true;
+		else if (type === 'right') isDraggingRight = true;
+		else if (type === 'window') isDraggingWindow = true;
+
+		dragStartX = e.clientX;
+		dragStartStartTime = videoStartTime;
+		dragStartEndTime = videoEndTime;
+
+		const onPointerMove = (moveEv) => {
+			moveEv.preventDefault();
+			handleTrimmerMove(moveEv.clientX);
+		};
+
+		const onPointerUp = (upEv) => {
+			try {
+				target.releasePointerCapture(upEv.pointerId);
+			} catch (err) {}
+			isDraggingLeft = false;
+			isDraggingRight = false;
+			isDraggingWindow = false;
+			target.removeEventListener('pointermove', onPointerMove);
+			target.removeEventListener('pointerup', onPointerUp);
+			target.removeEventListener('pointercancel', onPointerUp);
+		};
+
+		target.addEventListener('pointermove', onPointerMove);
+		target.addEventListener('pointerup', onPointerUp);
+		target.addEventListener('pointercancel', onPointerUp);
+	}
+
+	function handleTrimmerMove(clientX) {
+		if (!filmstripElement || videoDuration <= 0) return;
+		const rect = filmstripElement.getBoundingClientRect();
+		const deltaX = clientX - dragStartX;
+		const deltaTime = (deltaX / rect.width) * videoDuration;
+
+		if (isDraggingLeft) {
+			let newStart = Math.max(0, Math.min(dragStartStartTime + deltaTime, videoEndTime - 1));
+			if (videoEndTime - newStart > 15) {
+				newStart = videoEndTime - 15;
+			}
+			videoStartTime = Math.max(0, newStart);
+			if (trimVideoElement) trimVideoElement.currentTime = videoStartTime;
+		} else if (isDraggingRight) {
+			let newEnd = Math.min(videoDuration, Math.max(dragStartEndTime + deltaTime, videoStartTime + 1));
+			if (newEnd - videoStartTime > 15) {
+				newEnd = videoStartTime + 15;
+			}
+			videoEndTime = Math.min(videoDuration, newEnd);
+			if (trimVideoElement) trimVideoElement.currentTime = videoEndTime;
+		} else if (isDraggingWindow) {
+			const windowDuration = dragStartEndTime - dragStartStartTime;
+			let newStart = dragStartStartTime + deltaTime;
+			if (newStart < 0) newStart = 0;
+			if (newStart + windowDuration > videoDuration) newStart = Math.max(0, videoDuration - windowDuration);
+			videoStartTime = Math.max(0, newStart);
+			videoEndTime = Math.min(videoDuration, videoStartTime + windowDuration);
+			if (trimVideoElement) trimVideoElement.currentTime = videoStartTime;
+		}
+	}
+
+	function handleFilmstripTrackClick(e) {
+		if (isDraggingLeft || isDraggingRight || isDraggingWindow) return;
+		if (!filmstripElement || videoDuration <= 0) return;
+		const rect = filmstripElement.getBoundingClientRect();
+		const clickX = e.clientX - rect.left;
+		const targetTime = (clickX / rect.width) * videoDuration;
+
+		const windowDuration = Math.min(15, Math.max(1, videoEndTime - videoStartTime));
+		let newStart = targetTime - (windowDuration / 2);
+		if (newStart < 0) newStart = 0;
+		if (newStart + windowDuration > videoDuration) newStart = Math.max(0, videoDuration - windowDuration);
+		videoStartTime = Math.max(0, newStart);
+		videoEndTime = Math.min(videoDuration, videoStartTime + windowDuration);
+		if (trimVideoElement) trimVideoElement.currentTime = videoStartTime;
+	}
+
+	function handleRangeSliderChange(val) {
+		const newStart = Number(val);
+		const windowDuration = Math.min(15, Math.max(1, videoEndTime - videoStartTime));
+		videoStartTime = Math.max(0, newStart);
+		videoEndTime = Math.min(videoDuration, videoStartTime + windowDuration);
+		if (trimVideoElement) trimVideoElement.currentTime = videoStartTime;
+	}
+
+	function portal(node) {
+		document.body.appendChild(node);
+		return {
+			destroy() {
+				if (node && node.parentNode) {
+					node.parentNode.removeChild(node);
+				}
+			}
+		};
+	}
+
+	function formatTimeDisplay(seconds) {
+		const s = Math.floor(seconds || 0);
+		const mins = Math.floor(s / 60);
+		const secs = s % 60;
+		return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+	}
+
+	async function confirmTrimmedVideo() {
+		if (!rawVideoFile) {
+			showVideoTrimmerModal = false;
+			return;
+		}
+
+		isTrimmingVideo = true;
+
+		try {
+			editedPhotoVideo = rawVideoFile;
+			editedPhotoVideoType = rawVideoFile.type || 'video/mp4';
+			if (editedPhotoVideoPreview) URL.revokeObjectURL(editedPhotoVideoPreview);
+			editedPhotoVideoPreview = URL.createObjectURL(rawVideoFile);
+		} catch (err) {
+			console.error('Video trim error in ViewMemoryModal:', err);
+			editedPhotoVideo = rawVideoFile;
+			editedPhotoVideoType = rawVideoFile.type || 'video/mp4';
+			if (editedPhotoVideoPreview) URL.revokeObjectURL(editedPhotoVideoPreview);
+			editedPhotoVideoPreview = URL.createObjectURL(rawVideoFile);
+		} finally {
+			isTrimmingVideo = false;
+			showVideoTrimmerModal = false;
 		}
 	}
 
@@ -400,6 +635,7 @@
 		editedMoodTag = memory.mood_tag || '';
 		editedMemoryTag = memory.memory_tag || '';
 		editedPhotoVideo = null;
+		editedPhotoVideoType = memory.photo_video_type || '';
 		editedMusic = null;
 		editedPhotoVideoPreview = null;
 		// Reset file inputs
@@ -413,6 +649,7 @@
 		editedMoodTag = '';
 		editedMemoryTag = '';
 		editedPhotoVideo = null;
+		editedPhotoVideoType = '';
 		editedMusic = null;
 		if (editedPhotoVideoPreview) {
 			URL.revokeObjectURL(editedPhotoVideoPreview);
@@ -923,28 +1160,18 @@
 	</div>
 </div>
 
-<!-- Full-Screen Media Viewer (Chronomuse Theme) -->
+<!-- Full-Screen Media Viewer (Chronomuse Light Pink Theme matching Chat) -->
 {#if showFullScreenImage}
 	<div 
-		class="fixed inset-0 z-[100] bg-pink-950/85 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-6 animate-fade-in"
+		class="fixed inset-0 z-[100] bg-pink-100/95 backdrop-blur-md flex flex-col justify-between p-3 sm:p-5 select-none animate-fade-in touch-none overflow-hidden"
 		onclick={(e) => { if (e.target === e.currentTarget) closeFullScreenImage(); }}
 	>
 		<!-- Header Toolbar -->
-		<div class="w-full max-w-4xl flex items-center justify-between px-3 py-2 mb-2 text-white">
+		<div class="w-full max-w-5xl mx-auto flex items-center justify-between z-20 flex-shrink-0 pt-1">
 			<div class="flex items-center space-x-2">
-				<div class="w-7 h-7 rounded-full bg-pink-500 flex items-center justify-center text-white shadow-xs">
-					{#if fullScreenMediaType === 'video'}
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 ml-0.5">
-							<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
-						</svg>
-					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-						</svg>
-					{/if}
-				</div>
-				<span class="text-sm font-bold text-pink-100">
-					{fullScreenMediaType === 'video' ? 'Full Video View' : 'Full Photo View'}
+				<span class="text-xs sm:text-sm font-bold text-pink-900 bg-white/90 px-3.5 py-1.5 rounded-full backdrop-blur-sm border border-pink-300 flex items-center space-x-2">
+					<span class="w-2 h-2 rounded-full bg-pink-500"></span>
+					<span>{fullScreenMediaType === 'video' ? 'Video View' : 'Photo View'}</span>
 				</span>
 			</div>
 
@@ -952,7 +1179,7 @@
 			<button
 				type="button"
 				onclick={closeFullScreenImage}
-				class="p-2 bg-pink-500 hover:bg-pink-600 text-white rounded-full transition-all duration-200 active:scale-95 shadow-md flex items-center justify-center cursor-pointer"
+				class="p-2 text-pink-700 hover:text-pink-900 bg-white/90 hover:bg-white border border-pink-300 rounded-full transition-all backdrop-blur-sm cursor-pointer active:scale-95 flex items-center justify-center"
 				title="Close Full View"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
@@ -962,19 +1189,235 @@
 		</div>
 
 		<!-- Media Display Box -->
-		<div class="relative w-full max-w-4xl flex-1 flex items-center justify-center overflow-hidden rounded-2xl border-2 border-pink-400/40 bg-black/80 p-2 sm:p-4">
+		<div class="relative overflow-hidden rounded-2xl border-2 border-pink-300 bg-white/60 max-h-[75vh] sm:max-h-[82vh] flex items-center justify-center select-none p-2 sm:p-4 my-auto w-full max-w-5xl mx-auto">
 			{#if fullScreenMediaType === 'video'}
 				<video 
 					src={fullScreenImageUrl} 
-					class="max-w-full max-h-[75vh] sm:max-h-[80vh] object-contain rounded-xl" 
+					class="max-w-full max-h-[72vh] sm:max-h-[78vh] object-contain rounded-xl" 
 					controls 
 					autoplay 
 					playsinline
-					controlslist="nodownload"
+					controlslist="nofullscreen nodownload noremoteplayback"
+					disablepictureinpicture
 				></video>
 			{:else}
-				<img src={fullScreenImageUrl} alt="Full size" class="max-w-full max-h-[75vh] sm:max-h-[80vh] object-contain rounded-xl" />
+				<img src={fullScreenImageUrl} alt="Full size" class="max-w-full max-h-[72vh] sm:max-h-[78vh] object-contain rounded-xl" />
 			{/if}
+		</div>
+	</div>
+{/if}
+
+<!-- Video Trimmer Modal (Max 15s - Messenger Style) -->
+{#if showVideoTrimmerModal && rawVideoUrl}
+	<div
+		use:portal
+		class="fixed inset-0 z-[80] bg-black/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in"
+		onclick={(e) => { if (e.target === e.currentTarget && !isTrimmingVideo) { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; } }}
+	>
+		<div
+			class="bg-white border-2 border-pink-300 rounded-3xl max-w-md w-full p-4 sm:p-5 space-y-3.5 shadow-2xl relative animate-modal-content"
+			onclick={(e) => e.stopPropagation()}
+		>
+			<!-- Top Header -->
+			<div class="flex items-center justify-between pb-2 border-b border-pink-100">
+				<div class="flex items-center space-x-2">
+					<div class="w-8 h-8 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center font-bold">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+							<path d="M6 3.75a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm12-1.5a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM9.545 10.379l-4.59 7.87a.75.75 0 101.3.758l4.086-7.006 4.085 7.006a.75.75 0 001.3-.758l-4.59-7.87a.75.75 0 00-1.591 0z" />
+						</svg>
+					</div>
+					<div>
+						<h3 class="text-sm sm:text-base font-extrabold text-pink-950 leading-tight">Trim Video Clip</h3>
+						<p class="text-[11px] text-pink-400">15 seconds max clip</p>
+					</div>
+				</div>
+
+				<!-- Live Timer Pill Badge -->
+				<div class="flex items-center space-x-1.5 bg-pink-50 border-2 border-pink-200 px-3 py-1 rounded-full">
+					<span class="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+					<span class="font-mono font-black text-xs text-pink-900">
+						{formatTimeDisplay(videoCurrentTime)}
+					</span>
+					<span class="text-[10px] text-pink-400 font-semibold">
+						/ {formatTimeDisplay(videoEndTime - videoStartTime)}
+					</span>
+				</div>
+
+				<!-- Cancel / Close X Button -->
+				<button
+					type="button"
+					onclick={() => { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; }}
+					disabled={isTrimmingVideo}
+					class="p-1.5 text-pink-400 hover:text-pink-700 hover:bg-pink-100 rounded-full transition-all"
+					title="Cancel"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+						<path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+					</svg>
+				</button>
+			</div>
+
+			<!-- Center: Video Player Viewport -->
+			<div
+				class="relative w-full rounded-2xl overflow-hidden bg-black border-2 border-pink-200 flex items-center justify-center cursor-pointer group max-h-56"
+				onclick={togglePlayTrimVideo}
+			>
+				<video
+					src={rawVideoUrl}
+					bind:this={trimVideoElement}
+					onloadedmetadata={onVideoMetadataLoaded}
+					ontimeupdate={handleTrimTimeUpdate}
+					playsinline
+					class="w-full max-h-56 object-contain"
+				></video>
+
+				<!-- Play/Pause Overlay Icon -->
+				{#if !isPlayingTrimVideo}
+					<div class="absolute inset-0 bg-black/25 flex items-center justify-center transition-all">
+						<div class="w-12 h-12 rounded-full bg-pink-500 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 ml-0.5">
+								<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
+							</svg>
+						</div>
+					</div>
+				{/if}
+			</div>
+
+			<!-- Messenger Storyboard Filmstrip Scrubber Tool -->
+			<div class="bg-pink-50 border-2 border-pink-200 rounded-2xl p-3 space-y-2.5">
+				<div class="flex items-center justify-between text-xs font-bold">
+					<span class="text-pink-600">Storyboard Timeline</span>
+					<span class="text-pink-800">
+						Duration: {(videoEndTime - videoStartTime).toFixed(1)}s (Max 15s)
+					</span>
+				</div>
+
+				<!-- Filmstrip Scrubber Track -->
+				<div
+					class="relative w-full h-14 rounded-xl overflow-hidden bg-pink-100 border-2 border-pink-300 select-none cursor-pointer"
+					style="touch-action: none;"
+					bind:this={filmstripElement}
+					onclick={handleFilmstripTrackClick}
+				>
+					<!-- Frame Thumbnails Strip -->
+					<div class="absolute inset-0 flex w-full h-full pointer-events-none">
+						{#if videoThumbnails.length > 0}
+							{#each videoThumbnails as thumb}
+								<div class="flex-1 h-full overflow-hidden border-r border-pink-200">
+									<img src={thumb} alt="frame" class="w-full h-full object-cover" />
+								</div>
+							{/each}
+						{:else}
+							<div class="w-full h-full flex items-center justify-center text-pink-400 text-[10px] font-semibold">
+								Generating frames...
+							</div>
+						{/if}
+					</div>
+
+					{#if videoDuration > 0}
+						{@const leftPercent = (videoStartTime / videoDuration) * 100}
+						{@const widthPercent = ((videoEndTime - videoStartTime) / videoDuration) * 100}
+						{@const rightPercent = 100 - (leftPercent + widthPercent)}
+						{@const currentPercent = (videoCurrentTime / videoDuration) * 100}
+
+						<!-- Left Dimmed Overlay -->
+						<div
+							class="absolute top-0 bottom-0 left-0 bg-pink-950/60 pointer-events-none"
+							style="width: {leftPercent}%;"
+						></div>
+
+						<!-- Right Dimmed Overlay -->
+						<div
+							class="absolute top-0 bottom-0 right-0 bg-pink-950/60 pointer-events-none"
+							style="width: {rightPercent}%;"
+						></div>
+
+						<!-- Active Pink Selection Box -->
+						<div
+							class="absolute top-0 bottom-0 border-y-3 border-pink-500 bg-pink-500/25 cursor-grab active:cursor-grabbing flex items-center justify-between"
+							style="left: {leftPercent}%; width: {widthPercent}%; touch-action: none;"
+							onpointerdown={(e) => handlePointerDown(e, 'window')}
+						>
+							<!-- Left Drag Handle -->
+							<div
+								class="w-6 h-full bg-pink-500 hover:bg-pink-600 text-white cursor-ew-resize flex items-center justify-center rounded-l-md active:scale-95 transition-transform"
+								style="touch-action: none;"
+								onpointerdown={(e) => handlePointerDown(e, 'left')}
+							>
+								<div class="w-1 h-4 bg-white rounded-full"></div>
+							</div>
+
+							<!-- Right Drag Handle -->
+							<div
+								class="w-6 h-full bg-pink-500 hover:bg-pink-600 text-white cursor-ew-resize flex items-center justify-center rounded-r-md active:scale-95 transition-transform"
+								style="touch-action: none;"
+								onpointerdown={(e) => handlePointerDown(e, 'right')}
+							>
+								<div class="w-1 h-4 bg-white rounded-full"></div>
+							</div>
+						</div>
+
+						<!-- Live Playhead Needle -->
+						<div
+							class="absolute top-0 bottom-0 w-1 bg-white pointer-events-none z-20"
+							style="left: {currentPercent}%;"
+						>
+							<div class="w-2.5 h-2.5 -ml-0.75 bg-pink-600 border border-white rounded-full -mt-1"></div>
+						</div>
+					{/if}
+				</div>
+
+				<!-- Fine-tuning Range Slider -->
+				{#if videoDuration > 15}
+					<div class="pt-1">
+						<div class="flex items-center justify-between text-[11px] font-bold text-pink-700 mb-1">
+							<span>Slide position:</span>
+							<span>{videoStartTime.toFixed(1)}s - {videoEndTime.toFixed(1)}s</span>
+						</div>
+						<input
+							type="range"
+							min="0"
+							max={Math.max(0, videoDuration - 1)}
+							step="0.2"
+							value={videoStartTime}
+							oninput={(e) => handleRangeSliderChange(e.target.value)}
+							class="w-full accent-pink-500 cursor-pointer h-1.5 bg-pink-200 rounded-lg"
+						/>
+					</div>
+				{/if}
+
+				<p class="text-[11px] text-center text-pink-500 font-medium">
+					Hold and drag the box or handles, tap on the timeline, or use the slider to move the 15s clip.
+				</p>
+			</div>
+
+			<!-- Bottom Action Buttons -->
+			<div class="flex items-center space-x-2 pt-1">
+				<button
+					type="button"
+					onclick={() => { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; }}
+					disabled={isTrimmingVideo}
+					class="w-1/3 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 border border-pink-300 rounded-xl font-bold text-xs sm:text-sm active:scale-95 transition-all"
+				>
+					Cancel
+				</button>
+				<button
+					type="button"
+					onclick={confirmTrimmedVideo}
+					disabled={isTrimmingVideo}
+					class="w-2/3 py-2.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all cursor-pointer disabled:opacity-50"
+				>
+					{#if isTrimmingVideo}
+						<div class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+						<span>Attaching...</span>
+					{:else}
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+							<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+						</svg>
+						<span>Attach 15s Clip</span>
+					{/if}
+				</button>
+			</div>
 		</div>
 	</div>
 {/if}

@@ -433,3 +433,23 @@
 </script>
 
 <slot />
+
+<style>
+	:global(video::-webkit-media-controls-fullscreen-button),
+	:global(video *::-webkit-media-controls-fullscreen-button),
+	:global(video::-webkit-media-controls-enclosure .fullscreen-button),
+	:global(video::-webkit-media-controls-toggle-closed-captions-button),
+	:global(video::-internal-media-controls-overlay-cast-button) {
+		display: none !important;
+		-webkit-appearance: none !important;
+		visibility: hidden !important;
+		opacity: 0 !important;
+		pointer-events: none !important;
+		width: 0px !important;
+		height: 0px !important;
+		max-width: 0px !important;
+		max-height: 0px !important;
+		position: absolute !important;
+		right: -9999px !important;
+	}
+</style>
