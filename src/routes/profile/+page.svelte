@@ -500,13 +500,14 @@
 		goto('/');
 	}
 
-	async function fetchUserMoodSummary(isSilent = false) {
-		if (typeof window === 'undefined' || !currentUser?.id) return;
+	async function fetchUserMoodSummary(targetId = null, isSilent = false) {
+		const effectiveId = targetId || profileData?.user?.id || currentUser?.id;
+		if (typeof window === 'undefined' || !effectiveId) return;
 		if (!isSilent && totalMoodLogs === 0) {
 			isLoadingMoods = true;
 		}
 		try {
-			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${currentUser.id}&period=all`);
+			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${effectiveId}&period=all`);
 			const data = await res.json();
 			const moods = data.success && Array.isArray(data.data) ? data.data : [];
 
@@ -648,7 +649,19 @@
 						}
 					} catch (e) {}
 					currentUser = updatedStored;
-					fetchUserMoodSummary(isSilent);
+				}
+
+				// Check target privacy: if self or public, load their mood summary
+				const targetIsPrivate = profileData.is_self
+					? false
+					: (profileData.user?.is_private ?? (typeof window !== 'undefined' ? localStorage.getItem(`chronomuse_private_${effectiveTargetId}`) === 'true' : false));
+
+				if (profileData.is_self || !targetIsPrivate) {
+					fetchUserMoodSummary(effectiveTargetId, isSilent);
+				} else {
+					if (activeTab === 'mood') {
+						activeTab = 'about';
+					}
 				}
 			} else {
 				if (data.error && data.error.toLowerCase().includes('not found')) {
@@ -1168,6 +1181,12 @@
 		)
 	);
 
+	let isTargetPrivate = $derived(
+		profileData?.is_self
+			? false
+			: (profileData?.user?.is_private ?? (typeof window !== 'undefined' && profileData?.user?.id ? localStorage.getItem(`chronomuse_private_${profileData.user.id}`) === 'true' : false))
+	);
+
 	function getMoodColorClass(moodTag) {
 		switch ((moodTag || '').toLowerCase()) {
 			case 'happy': return 'bg-amber-100 text-amber-800 border-amber-300';
@@ -1685,7 +1704,7 @@
 					</button>
 				{/if}
 
-				{#if profileData.is_self}
+				{#if profileData.is_self || !isTargetPrivate}
 					<button
 						onclick={() => activeTab = 'mood'}
 						class="flex-1 min-w-0 py-2 sm:py-2.5 px-2 sm:px-4 rounded-xl text-[11px] sm:text-sm font-bold transition-all flex items-center justify-center space-x-1.5 whitespace-nowrap cursor-pointer {activeTab === 'mood' ? 'bg-pink-500 text-white ' : 'bg-transparent text-pink-700 hover:bg-pink-100/70'}"
@@ -1938,26 +1957,30 @@
 				</div>
 			{/if}
 
-			<!-- TAB 3: MOOD SUMMARY FOR SELF-PROFILE -->
-			{#if activeTab === 'mood' && profileData.is_self}
+			<!-- TAB 3: MOOD SUMMARY FOR SELF OR PUBLIC OTHER PROFILES -->
+			{#if activeTab === 'mood' && (profileData.is_self || !isTargetPrivate)}
 				<div class="bg-white border-2 border-pink-300 rounded-2xl p-5 sm:p-6 space-y-4 animate-fade-in">
 					<div class="flex items-center justify-between gap-3 pb-3 border-b border-pink-100">
 						<div class="min-w-0">
 							<h3 class="text-base font-black text-pink-950 flex items-center space-x-2 truncate">
-								<span>Mood Insights & Reflection</span>
+								<span>{profileData.is_self ? 'Mood Insights & Reflection' : `@${profileData.user.username}'s Mood Insights`}</span>
 							</h3>
-							<p class="text-xs text-pink-600 font-medium truncate">System feedback based on your overall logged emotions</p>
+							<p class="text-xs text-pink-600 font-medium truncate">
+								{profileData.is_self ? 'System feedback based on your overall logged emotions' : `Emotional reflections based on @${profileData.user.username}'s logged moods`}
+							</p>
 						</div>
 
-						<button
-							onclick={() => goto('/mood-graph')}
-							class="px-3.5 py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl transition-all flex items-center space-x-1.5 active:scale-95 cursor-pointer flex-shrink-0"
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-							</svg>
-							<span>Full Graph</span>
-						</button>
+						{#if profileData.is_self}
+							<button
+								onclick={() => goto('/mood-graph')}
+								class="px-3.5 py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold rounded-xl transition-all flex items-center space-x-1.5 active:scale-95 cursor-pointer flex-shrink-0"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+								</svg>
+								<span>Full Graph</span>
+							</button>
+						{/if}
 					</div>
 
 					{#if isLoadingMoods}
@@ -1973,20 +1996,24 @@
 								</svg>
 							</div>
 							<div class="space-y-1.5 max-w-md mx-auto">
-								<h4 class="text-base sm:text-lg font-black text-pink-950">No Mood Logs Yet</h4>
+								<h4 class="text-base sm:text-lg font-black text-pink-950">
+									{profileData.is_self ? 'No Mood Logs Yet' : `@${profileData.user.username} hasn't logged any moods yet`}
+								</h4>
 								<p class="text-xs sm:text-sm text-pink-600 font-medium leading-relaxed">
-									Log your daily memories and emotions to unlock personalized mood reflections and insights!
+									{profileData.is_self ? 'Log your daily memories and emotions to unlock personalized mood reflections and insights!' : 'When they log their daily emotions, reflections and dominant moods will be visible here.'}
 								</p>
 							</div>
-							<button
-								onclick={() => goto('/mood-graph')}
-								class="px-5 py-2.5 bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs sm:text-sm rounded-xl hover: active:scale-95 transition-all cursor-pointer inline-flex items-center space-x-2"
-							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-								</svg>
-								<span>Log Mood & View Graph</span>
-							</button>
+							{#if profileData.is_self}
+								<button
+									onclick={() => goto('/mood-graph')}
+									class="px-5 py-2.5 bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs sm:text-sm rounded-xl hover: active:scale-95 transition-all cursor-pointer inline-flex items-center space-x-2"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+									</svg>
+									<span>Log Mood & View Graph</span>
+								</button>
+							{/if}
 						</div>
 					{:else}
 						<!-- Compact Dominant Mood & System Feedback Card -->

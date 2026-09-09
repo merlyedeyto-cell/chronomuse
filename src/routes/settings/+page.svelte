@@ -96,16 +96,36 @@
 		showNotification(enabled ? 'Touch sound effects turned ON' : 'Touch sound effects turned OFF', 'success');
 	}
 
-	function handlePrivateAccountToggle(/** @type {any} */ e) {
+	async function handlePrivateAccountToggle(/** @type {any} */ e) {
 		const enabled = e.target.checked;
 		privateAccountEnabled = enabled;
 		if (currentUser?.id) {
 			try {
 				localStorage.setItem(`chronomuse_private_${currentUser.id}`, enabled ? 'true' : 'false');
 			} catch (err) {}
+
+			try {
+				await fetch(API_ENDPOINTS.updateProfile, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						user_id: currentUser.id,
+						is_private: enabled
+					})
+				});
+			} catch (err) {}
+
+			try {
+				const updatedUser = { ...currentUser, is_private: enabled };
+				localStorage.setItem('chronomuse_user', JSON.stringify(updatedUser));
+				currentUser = updatedUser;
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new Event('chronomuse_auth_change'));
+				}
+			} catch (err) {}
 		}
 		playClickSound();
-		showNotification(enabled ? 'Private Account Mode turned ON' : 'Public Account Mode turned ON', 'success');
+		showNotification(enabled ? 'Private Account ON (Mood summary is hidden from other users)' : 'Private Account OFF (Mood summary is visible to other users)', 'success');
 	}
 
 	async function loadBlockedUsers() {
@@ -603,7 +623,7 @@
 							<div class="space-y-1 min-w-0 flex-1">
 								<h4 class="text-xs sm:text-sm font-extrabold text-pink-950">Private Account Protection</h4>
 								<p class="text-xs text-pink-600 font-medium leading-relaxed">
-									Require friend request approval before users can view your full profile and activities.
+									When turned ON, your mood summary is kept private and hidden from other users. When turned OFF, other users can view your mood summary.
 								</p>
 							</div>
 

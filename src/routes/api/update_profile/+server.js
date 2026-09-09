@@ -17,6 +17,7 @@ export async function POST({ request }) {
 		let gender;
 		let cover_url;
 		let note;
+		let is_private;
 
 		const contentType = request.headers.get('content-type') || '';
 		if (contentType.includes('multipart/form-data')) {
@@ -33,6 +34,7 @@ export async function POST({ request }) {
 			gender = formData.get('gender');
 			cover_url = formData.get('cover_url');
 			note = formData.get('note');
+			is_private = formData.get('is_private');
 		} else {
 			const body = await request.json();
 			user_id = body.user_id;
@@ -46,6 +48,7 @@ export async function POST({ request }) {
 			gender = body.gender;
 			cover_url = body.cover_url;
 			note = body.note;
+			is_private = body.is_private;
 		}
 
 		if (!user_id) {
@@ -112,6 +115,9 @@ export async function POST({ request }) {
 		if (birthday !== undefined) updateData.birthday = birthday;
 		if (relationship_status !== undefined) updateData.relationship_status = relationship_status;
 		if (gender !== undefined) updateData.gender = gender;
+		if (is_private !== undefined && is_private !== null) {
+			updateData.is_private = (is_private === true || is_private === 'true');
+		}
 
 		// If a new password is provided, hash it
 		if (new_password && new_password.trim() !== '') {
@@ -128,17 +134,18 @@ export async function POST({ request }) {
 			.from('chronomuse_users')
 			.update(updateData)
 			.eq('id', user_id)
-			.select('id, username, email, avatar_url, cover_url, note, bio, birthday, relationship_status, gender')
+			.select('id, username, email, avatar_url, cover_url, note, bio, birthday, relationship_status, gender, is_private')
 			.single();
 
 		if (updateError) {
-			// If column bio/birthday/avatar_url/cover_url/note does not exist yet in table, fallback without new fields
+			// If column bio/birthday/avatar_url/cover_url/note/is_private does not exist yet in table, fallback without new fields
 			delete updateData.bio;
 			delete updateData.birthday;
 			delete updateData.relationship_status;
 			delete updateData.gender;
 			delete updateData.cover_url;
 			delete updateData.note;
+			delete updateData.is_private;
 
 			let { data: fallbackUser, error: fallbackError } = await supabase
 				.from('chronomuse_users')
@@ -158,7 +165,8 @@ export async function POST({ request }) {
 				bio: bio !== undefined ? bio : null,
 				birthday: birthday !== undefined ? birthday : null,
 				relationship_status: relationship_status !== undefined ? relationship_status : null,
-				gender: gender !== undefined ? gender : null
+				gender: gender !== undefined ? gender : null,
+				is_private: is_private !== undefined ? (is_private === true || is_private === 'true') : false
 			};
 		} else {
 			updatedUser = userFull;

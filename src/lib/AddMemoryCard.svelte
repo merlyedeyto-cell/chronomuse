@@ -331,7 +331,7 @@
 	}
 
 	async function confirmTrimmedVideo() {
-		if (!rawVideoFile || !trimVideoElement) {
+		if (!rawVideoFile) {
 			showVideoTrimmerModal = false;
 			return;
 		}
@@ -339,107 +339,19 @@
 		isTrimmingVideo = true;
 
 		try {
-			// If video duration is <= 15s and entire video is selected, use original file directly
-			if (videoDuration <= 15 && videoStartTime === 0 && videoEndTime >= videoDuration) {
-				photoVideo = rawVideoFile;
-				isVideo = true;
-				if (photoVideoPreview) URL.revokeObjectURL(photoVideoPreview);
-				photoVideoPreview = URL.createObjectURL(rawVideoFile);
-				isTrimmingVideo = false;
-				showVideoTrimmerModal = false;
-				return;
-			}
-
-			// Crop video to selected window (max 15 seconds) using Canvas + MediaRecorder
-			const canvas = document.createElement('canvas');
-			const ctx = canvas.getContext('2d');
-			
-			const video = document.createElement('video');
-			video.src = rawVideoUrl;
-			video.crossOrigin = 'anonymous';
-			video.muted = false;
-			
-			await new Promise((resolve) => {
-				video.onloadedmetadata = resolve;
-				video.load();
-			});
-
-			canvas.width = video.videoWidth || 640;
-			canvas.height = video.videoHeight || 480;
-
-			const stream = canvas.captureStream(30);
-			
-			try {
-				const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-				const source = audioCtx.createMediaElementSource(video);
-				const dest = audioCtx.createMediaStreamDestination();
-				source.connect(dest);
-				source.connect(audioCtx.destination);
-				const audioTrack = dest.stream.getAudioTracks()[0];
-				if (audioTrack) {
-					stream.addTrack(audioTrack);
-				}
-			} catch (ae) {}
-
-			let mimeType = 'video/webm;codecs=vp8,opus';
-			if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
-			if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/mp4';
-
-			const recorder = new MediaRecorder(stream, { mimeType });
-			const chunks = [];
-
-			recorder.ondataavailable = (e) => {
-				if (e.data && e.data.size > 0) {
-					chunks.push(e.data);
-				}
-			};
-
-			const trimDuration = Math.min(15, videoEndTime - videoStartTime);
-			video.currentTime = videoStartTime;
-
-			await new Promise((resolve) => {
-				video.onseeked = resolve;
-			});
-
-			recorder.start();
-			video.play();
-
-			let animationFrameId;
-			const drawFrame = () => {
-				if (!video.paused && !video.ended) {
-					ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-					animationFrameId = requestAnimationFrame(drawFrame);
-				}
-			};
-			drawFrame();
-
-			await new Promise((resolve) => {
-				const checkTime = () => {
-					if (video.currentTime >= videoEndTime || video.ended) {
-						video.pause();
-						cancelAnimationFrame(animationFrameId);
-						resolve();
-					} else {
-						setTimeout(checkTime, 50);
-					}
-				};
-				checkTime();
-			});
-
-			recorder.stop();
-			await new Promise((resolve) => {
-				recorder.onstop = resolve;
-			});
-
-			const blob = new Blob(chunks, { type: 'video/mp4' });
-			const trimmedFile = new File([blob], `clip_${Date.now()}.mp4`, { type: 'video/mp4' });
-
-			photoVideo = trimmedFile;
+			// Instant 0ms attachment: Assign video file and preview immediately
+			photoVideo = rawVideoFile;
 			isVideo = true;
 			if (photoVideoPreview) URL.revokeObjectURL(photoVideoPreview);
-			photoVideoPreview = URL.createObjectURL(blob);
+			photoVideoPreview = URL.createObjectURL(rawVideoFile);
+
+			const clipLength = Math.max(1, (videoEndTime - videoStartTime)).toFixed(1);
+			dispatch('showToast', {
+				message: `15s Clip Attached (${videoStartTime.toFixed(1)}s - ${videoEndTime.toFixed(1)}s)!`,
+				type: 'success'
+			});
 		} catch (err) {
-			console.error('Video trim error, falling back to original:', err);
+			console.error('Video trim error:', err);
 			photoVideo = rawVideoFile;
 			isVideo = true;
 			if (photoVideoPreview) URL.revokeObjectURL(photoVideoPreview);

@@ -14,7 +14,7 @@ export async function POST({ request }) {
 		// 1. Fetch Target User Data
 		let { data: targetUser, error: userError } = await supabase
 			.from('chronomuse_users')
-			.select('id, username, email, avatar_url, cover_url, note, bio, birthday, relationship_status, gender, created_at, last_activity')
+			.select('id, username, email, avatar_url, cover_url, note, bio, birthday, relationship_status, gender, is_private, created_at, last_activity')
 			.eq('id', targetId)
 			.maybeSingle();
 
@@ -157,10 +157,12 @@ export async function POST({ request }) {
 					birthday: targetUser.birthday || null,
 					relationship_status: targetUser.relationship_status || null,
 					gender: targetUser.gender || null,
+					is_private: targetUser.is_private === true,
 					created_at: targetUser.created_at || null,
 					last_activity: targetUser.last_activity || null
 				},
 				is_self: isSelf,
+				is_private: targetUser.is_private === true,
 				is_friend: isFriend,
 				is_blocked_by_me: isBlockedByMe,
 				is_blocking_me: isBlockingMe,
