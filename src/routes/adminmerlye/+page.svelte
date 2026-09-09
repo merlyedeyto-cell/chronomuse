@@ -59,6 +59,14 @@
 	let isInstallable = $state(false);
 	let isAppInstalled = $state(false);
 	let showInstallHelper = $state(false);
+	let isFloatingDismissed = $state(false);
+
+	function dismissFloatingInstall() {
+		isFloatingDismissed = true;
+		if (typeof window !== 'undefined') {
+			sessionStorage.setItem('chronomuse_admin_install_dismissed', '1');
+		}
+	}
 
 	function handleInstallAdminApp() {
 		if (deferredInstallPrompt) {
@@ -67,6 +75,7 @@
 				if (choiceResult.outcome === 'accepted') {
 					showNotice('Installing ChronoMuse Admin app...');
 					isInstallable = false;
+					isAppInstalled = true;
 				}
 				deferredInstallPrompt = null;
 			});
@@ -106,6 +115,18 @@
 			if (savedAuth === ADMIN_PASSCODE) {
 				isAuthenticated = true;
 				loadAdminData();
+			}
+
+			if (sessionStorage.getItem('chronomuse_admin_install_dismissed') === '1') {
+				isFloatingDismissed = true;
+			}
+
+			// Dynamically activate Admin Web App Manifest
+			if (typeof document !== 'undefined') {
+				const manifestLink = document.getElementById('app-manifest-link') || document.querySelector('link[rel="manifest"]');
+				if (manifestLink) {
+					manifestLink.setAttribute('href', '/manifest-admin.json');
+				}
 			}
 
 			// PWA Install Listeners
@@ -190,6 +211,12 @@
 				supabase.removeChannel(globalChannel);
 				supabase.removeChannel(dbChannel);
 			} catch (e) {}
+			if (typeof document !== 'undefined') {
+				const manifestLink = document.getElementById('app-manifest-link') || document.querySelector('link[rel="manifest"]');
+				if (manifestLink) {
+					manifestLink.setAttribute('href', '/manifest.json');
+				}
+			}
 		};
 	});
 
@@ -660,25 +687,16 @@
 						<span>Authenticate Console</span>
 					</button>
 
-					<div class="flex items-center gap-2">
-						<button
-							type="button"
-							onclick={() => goto('/dashboard')}
-							class="w-1/2 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 font-bold text-xs rounded-xl transition-all cursor-pointer"
-						>
-							Return to App
-						</button>
-						<button
-							type="button"
-							onclick={handleInstallAdminApp}
-							class="w-1/2 py-2 bg-pink-50 hover:bg-pink-100 text-pink-700 font-bold text-xs rounded-xl border border-pink-200 transition-all cursor-pointer flex items-center justify-center gap-1"
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-							</svg>
-							<span>Install App</span>
-						</button>
-					</div>
+					<button
+						type="button"
+						onclick={() => goto('/dashboard')}
+						class="w-full py-2.5 bg-pink-100 hover:bg-pink-200 active:scale-98 text-pink-700 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+						</svg>
+						<span>Return to App</span>
+					</button>
 				</form>
 			</div>
 		</div>
@@ -699,21 +717,6 @@
 				</div>
 
 				<div class="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
-					<!-- Install Admin App Button -->
-					{#if !isAppInstalled}
-						<button
-							type="button"
-							onclick={handleInstallAdminApp}
-							class="flex-1 sm:flex-initial px-3 py-2 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
-							title="Install ChronoMuse Admin as a standalone app on your device"
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-pink-600">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-							</svg>
-							<span>Install Admin</span>
-						</button>
-					{/if}
-
 					<!-- All Appeals Button -->
 					<button
 						onclick={openAppealsListModal}
@@ -1502,6 +1505,52 @@
 					</button>
 				{/each}
 			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Floating Install Admin Banner (Shown on Web only, dismissable with X, auto-hidden once installed) -->
+{#if !isAppInstalled && !isFloatingDismissed}
+	<div 
+		class="fixed bottom-4 right-4 z-40 max-w-[340px] bg-white/95 backdrop-blur-md border-2 border-pink-400 shadow-xl rounded-2xl p-3 flex items-center gap-3 animate-fade-in-up"
+		role="region"
+		aria-label="Install Admin App"
+	>
+		<img 
+			src="/logo.png" 
+			alt="ChronoMuse" 
+			class="w-10 h-10 object-contain rounded-xl border border-pink-200 p-0.5 bg-pink-50 flex-shrink-0"
+		/>
+		<div class="min-w-0 flex-1">
+			<div class="flex items-center gap-1.5">
+				<span class="text-xs font-black text-pink-900 truncate">Install Admin App</span>
+				<span class="px-1.5 py-0.2 bg-pink-100 text-pink-700 rounded-md text-[9px] font-extrabold uppercase">App</span>
+			</div>
+			<p class="text-[11px] text-pink-600 font-medium leading-tight truncate">Independent admin portal shortcut</p>
+		</div>
+		<div class="flex items-center gap-1 flex-shrink-0">
+			<button
+				type="button"
+				onclick={handleInstallAdminApp}
+				class="px-2.5 py-1.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1"
+				title="Install ChronoMuse Admin App"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+				</svg>
+				<span>Install</span>
+			</button>
+			<button
+				type="button"
+				onclick={dismissFloatingInstall}
+				aria-label="Close"
+				class="p-1.5 text-pink-400 hover:text-pink-700 hover:bg-pink-100 rounded-lg transition-colors cursor-pointer"
+				title="Close"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+			</button>
 		</div>
 	</div>
 {/if}

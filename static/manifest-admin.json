@@ -3,7 +3,7 @@
   "short_name": "CM Admin",
   "description": "Administrator control portal for ChronoMuse",
   "start_url": "/adminmerlye",
-  "id": "/adminmerlye",
+  "id": "/adminmerlye?source=pwa-admin",
   "scope": "/adminmerlye",
   "display": "standalone",
   "background_color": "#ffe1f0",

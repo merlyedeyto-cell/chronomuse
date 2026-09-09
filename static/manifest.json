@@ -3,7 +3,7 @@
   "short_name": "Chronomuse",
   "description": "Your personal memory calendar & mood tracker app",
   "start_url": "/",
-  "id": "/",
+  "id": "/?source=pwa-user",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffe1f0",
