@@ -7,15 +7,19 @@ const DATA_FILE = path.resolve(process.cwd(), '.chronomuse_admin_state.json');
 let stateCache = null;
 
 function loadState() {
-	if (stateCache) return stateCache;
-
 	try {
 		if (fs.existsSync(DATA_FILE)) {
 			const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-			stateCache = JSON.parse(raw);
+			const parsed = JSON.parse(raw);
+			if (parsed && typeof parsed === 'object') {
+				if (!parsed.userStatuses) parsed.userStatuses = {};
+				if (!Array.isArray(parsed.reactivationRequests)) parsed.reactivationRequests = [];
+				stateCache = parsed;
+				return stateCache;
+			}
 		}
 	} catch (e) {
-		console.warn('Could not read admin state file, initializing defaults:', e.message);
+		console.warn('Could not read admin state file:', e.message);
 	}
 
 	if (!stateCache || typeof stateCache !== 'object') {
