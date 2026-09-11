@@ -2129,30 +2129,30 @@
 	<div class="flex-grow flex flex-col md:flex-row overflow-hidden {activeFriend !== null ? 'p-0 w-full h-full max-w-full md:container md:mx-auto md:px-4 md:py-4 md:max-w-7xl md:gap-4 md:h-[calc(100vh-5rem)]' : 'container mx-auto px-3 sm:px-4 py-3 sm:py-4 max-w-7xl gap-3 sm:gap-4 h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5rem)]'}">
 		
 		<!-- Left Panel: Friends & Search -->
-		<div class="w-full md:w-84 lg:w-96 flex-shrink-0 bg-white/95 backdrop-blur-md border border-pink-100 rounded-2xl sm:rounded-3xl shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col overflow-hidden animate-fade-in-up" class:hidden={activeFriend !== null} class:md:flex={true} style="animation-delay: 0.05s">
+		<div class="w-full md:w-80 lg:w-84 flex-shrink-0 bg-white/95 backdrop-blur-md border border-pink-100 rounded-2xl sm:rounded-3xl shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col overflow-hidden animate-fade-in-up" class:hidden={activeFriend !== null} class:md:flex={true} style="animation-delay: 0.05s">
 			<!-- Conversations Header -->
-			<div class="p-3.5 sm:p-4 bg-[#fdf2f6] text-pink-950 border-b border-pink-100 font-bold text-sm sm:text-base flex items-center justify-between">
+			<div class="p-3 sm:p-3.5 bg-[#fdf2f6] text-pink-950 border-b border-pink-100 font-bold text-xs sm:text-sm flex items-center justify-between">
 				<div class="flex items-center space-x-2">
-					<div class="w-7 h-7 rounded-xl bg-[#f43f8e]/10 text-[#f43f8e] flex items-center justify-center">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+					<div class="w-6 h-6 rounded-lg bg-[#f43f8e]/10 text-[#f43f8e] flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
 						</svg>
 					</div>
 					<span class="font-black text-pink-950">Messages</span>
 				</div>
-				<span class="text-xs bg-pink-100 text-[#f43f8e] px-2.5 py-0.5 rounded-full font-bold border border-pink-200/80">{friends.length + requests.length}</span>
+				<span class="text-[10px] bg-pink-100 text-[#f43f8e] px-2 py-0.5 rounded-full font-bold border border-pink-200/80">{friends.length + requests.length}</span>
 			</div>
 
 			<!-- Search Bar -->
-			<div class="p-2.5 sm:p-3 border-b border-pink-100/80 bg-[#fff5f8]/50 space-y-2">
+			<div class="p-2 sm:p-2.5 border-b border-pink-100/80 bg-[#fff5f8]/50 space-y-1.5">
 				<div class="relative">
 					<input
 						type="text"
 						bind:value={searchQuery}
 						placeholder="Search conversations..."
-						class="w-full pl-8 pr-3 py-2 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-pink-900 placeholder-pink-400/60 text-xs focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 focus:border-[#f43f8e] focus:bg-white transition-all font-medium"
+						class="w-full pl-7 pr-2.5 py-1.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-pink-900 placeholder-pink-400/60 text-xs focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 focus:border-[#f43f8e] focus:bg-white transition-all font-medium"
 					/>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-400 absolute left-2.5 top-2.5">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-pink-400 absolute left-2.5 top-2">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
 					</svg>
 				</div>
@@ -2160,42 +2160,42 @@
 
 			<!-- iMessage-style Notes Row -->
 			{#if myNote || friendNotes.length > 0 || (!isLoadingChatList)}
-			<div class="px-2.5 sm:px-3 pt-2.5 pb-1">
+			<div class="px-2 sm:px-2.5 pt-2 pb-1">
 				<div
 					bind:this={notesScrollRef}
-					class="flex gap-3 overflow-x-auto pb-2 notes-scroll-row"
+					class="flex gap-2.5 overflow-x-auto pb-1.5 notes-scroll-row"
 					style="scrollbar-width: none; -ms-overflow-style: none;"
 				>
 					<!-- "Your Note" pill -->
 					<button
 						onclick={openNoteModal}
 						class="flex flex-col items-center flex-shrink-0 group cursor-pointer select-none"
-						style="min-width: 72px; max-width: 80px;"
+						style="min-width: 60px; max-width: 68px;"
 						title="{myNote ? 'Edit your note' : 'Add a note'}"
 					>
 						<!-- Speech bubble -->
-						<div class="relative mb-2.5 w-full">
-							<div class="note-bubble bg-white border border-pink-200 rounded-2xl px-2 py-1.5 text-[11px] font-semibold text-pink-800 leading-tight text-center min-h-[34px] flex items-center justify-center shadow-2xs transition-all group-hover:border-[#f43f8e]/50 group-active:scale-95">
+						<div class="relative mb-1.5 w-full">
+							<div class="note-bubble bg-white border border-pink-200 rounded-xl px-1.5 py-1 text-[10px] font-semibold text-pink-800 leading-tight text-center min-h-[28px] flex items-center justify-center shadow-2xs transition-all group-hover:border-[#f43f8e]/50 group-active:scale-95">
 								{#if myNote}
 									<span class="line-clamp-2">{myNote.note_text}</span>
 								{:else}
-									<span class="text-[#f43f8e] text-lg leading-none font-bold">+</span>
+									<span class="text-[#f43f8e] text-base leading-none font-bold">+</span>
 								{/if}
 							</div>
 							<!-- Bubble tail -->
-							<div class="absolute left-1/2 -translate-x-1/2 bottom-[-8px] w-3 h-3 overflow-hidden">
-								<div class="w-3 h-3 bg-white border-b border-r border-pink-200 rotate-45 translate-y-[-50%]"></div>
+							<div class="absolute left-1/2 -translate-x-1/2 bottom-[-6px] w-2.5 h-2.5 overflow-hidden">
+								<div class="w-2.5 h-2.5 bg-white border-b border-r border-pink-200 rotate-45 translate-y-[-50%]"></div>
 							</div>
 						</div>
 						<!-- Avatar -->
-						<div class="w-11 h-11 rounded-full bg-pink-100 border border-pink-200 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
+						<div class="w-9 h-9 rounded-full bg-pink-100 border border-pink-200 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
 							{#if user?.avatar_url}
 								<img src={user.avatar_url} alt="You" class="w-full h-full object-cover" />
 							{:else}
-								<span class="text-[#f43f8e] font-bold text-base">{user?.username?.charAt(0).toUpperCase() || '?'}</span>
+								<span class="text-[#f43f8e] font-bold text-sm">{user?.username?.charAt(0).toUpperCase() || '?'}</span>
 							{/if}
 						</div>
-						<span class="text-[10px] font-semibold text-pink-700 mt-1 truncate w-full text-center">Your note</span>
+						<span class="text-[9px] font-semibold text-pink-700 mt-0.5 truncate w-full text-center">Your note</span>
 					</button>
 
 					<!-- Divider -->
@@ -2208,60 +2208,58 @@
 						<button
 							onclick={() => { viewingNote = fn; }}
 							class="flex flex-col items-center flex-shrink-0 group cursor-pointer select-none"
-							style="min-width: 72px; max-width: 80px;"
+							style="min-width: 60px; max-width: 68px;"
 							title="{fn.username}'s note"
 						>
 							<!-- Speech bubble -->
-							<div class="relative mb-2.5 w-full">
-								<div class="note-bubble bg-white border border-pink-200 rounded-2xl px-2 py-1.5 text-[11px] font-semibold text-pink-800 leading-tight text-center min-h-[34px] flex items-center justify-center shadow-2xs transition-all group-hover:border-[#f43f8e]/50 group-active:scale-95">
+							<div class="relative mb-1.5 w-full">
+								<div class="note-bubble bg-white border border-pink-200 rounded-xl px-1.5 py-1 text-[10px] font-semibold text-pink-800 leading-tight text-center min-h-[28px] flex items-center justify-center shadow-2xs transition-all group-hover:border-[#f43f8e]/50 group-active:scale-95">
 									<span class="line-clamp-2">{fn.note_text}</span>
 								</div>
 								<!-- Bubble tail -->
-								<div class="absolute left-1/2 -translate-x-1/2 bottom-[-8px] w-3 h-3 overflow-hidden">
-									<div class="w-3 h-3 bg-white border-b border-r border-pink-200 rotate-45 translate-y-[-50%]"></div>
+								<div class="absolute left-1/2 -translate-x-1/2 bottom-[-6px] w-2.5 h-2.5 overflow-hidden">
+									<div class="w-2.5 h-2.5 bg-white border-b border-r border-pink-200 rotate-45 translate-y-[-50%]"></div>
 								</div>
 							</div>
 							<!-- Avatar -->
-							<div class="w-11 h-11 rounded-full bg-pink-50 border border-pink-200 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
+							<div class="w-9 h-9 rounded-full bg-pink-50 border border-pink-200 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
 								{#if fn.avatar_url}
 									<img src={fn.avatar_url} alt={fn.username} class="w-full h-full object-cover" />
 								{:else}
-									<span class="text-[#f43f8e] font-bold text-base">{fn.username.charAt(0).toUpperCase()}</span>
+									<span class="text-[#f43f8e] font-bold text-sm">{fn.username.charAt(0).toUpperCase()}</span>
 								{/if}
 							</div>
-							<span class="text-[10px] font-medium text-pink-600 mt-1 truncate w-full text-center">@{fn.username}</span>
+							<span class="text-[9px] font-medium text-pink-600 mt-0.5 truncate w-full text-center">@{fn.username}</span>
 						</button>
 					{/each}
 				</div>
-				<!-- Thin separator -->
-				<div class="h-px bg-transparent mt-1"></div>
 			</div>
 			{/if}
 
 			<!-- All / Unread / Requests Filter Tabs (Pills) -->
-			<div class="px-2.5 sm:px-3 pb-2.5 pt-1">
-				<div class="grid grid-cols-3 gap-1 p-1 bg-[#fdf2f6] rounded-2xl border border-pink-100">
+			<div class="px-2 sm:px-2.5 pb-2 pt-0.5">
+				<div class="grid grid-cols-3 gap-1 p-0.5 bg-[#fdf2f6] rounded-xl border border-pink-100">
 					<button
 						onclick={() => chatListFilter = 'all'}
-						class="py-1.5 px-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center cursor-pointer {chatListFilter === 'all' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:bg-pink-100/70 hover:text-pink-900'}"
+						class="py-1 px-1 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center cursor-pointer {chatListFilter === 'all' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:bg-pink-100/70 hover:text-pink-900'}"
 					>
 						<span>All</span>
-						<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'all' ? 'bg-white/20 text-white' : 'bg-pink-100 text-pink-700 font-bold'}">
+						<span class="text-[9px] px-1 py-0.2 rounded-full {chatListFilter === 'all' ? 'bg-white/20 text-white' : 'bg-pink-100 text-pink-700 font-bold'}">
 							{allConversations.length || (friends.length + requests.length)}
 						</span>
 					</button>
 
 					<button
 						onclick={() => chatListFilter = 'unread'}
-						class="py-1.5 px-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative cursor-pointer {chatListFilter === 'unread' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:bg-pink-100/70 hover:text-pink-900'}"
+						class="py-1 px-1 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative cursor-pointer {chatListFilter === 'unread' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:bg-pink-100/70 hover:text-pink-900'}"
 					>
 						<span>Unread</span>
 						{#if unreadUsersCount > 0}
-							<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold {chatListFilter === 'unread' ? 'bg-white text-[#f43f8e]' : 'bg-[#f43f8e] text-white animate-pulse'}">
+							<span class="text-[9px] px-1 py-0.2 rounded-full font-bold {chatListFilter === 'unread' ? 'bg-white text-[#f43f8e]' : 'bg-[#f43f8e] text-white animate-pulse'}">
 								{unreadUsersCount}
 							</span>
 						{:else}
-							<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'unread' ? 'bg-white/20 text-white' : 'bg-pink-100 text-pink-700 font-bold'}">
+							<span class="text-[9px] px-1 py-0.2 rounded-full {chatListFilter === 'unread' ? 'bg-white/20 text-white' : 'bg-pink-100 text-pink-700 font-bold'}">
 								0
 							</span>
 						{/if}
@@ -2269,15 +2267,15 @@
 
 					<button
 						onclick={() => chatListFilter = 'requests'}
-						class="py-1.5 px-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative cursor-pointer {chatListFilter === 'requests' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:bg-pink-100/70 hover:text-pink-900'}"
+						class="py-1 px-1 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center space-x-1 active:scale-95 text-center relative cursor-pointer {chatListFilter === 'requests' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:bg-pink-100/70 hover:text-pink-900'}"
 					>
 						<span>Requests</span>
 						{#if requests.length > 0}
-							<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold {chatListFilter === 'requests' ? 'bg-white text-[#f43f8e]' : unreadRequestsCount > 0 ? 'bg-rose-500 text-white animate-pulse' : 'bg-pink-100 text-pink-700'}">
+							<span class="text-[9px] px-1 py-0.2 rounded-full font-bold {chatListFilter === 'requests' ? 'bg-white text-[#f43f8e]' : unreadRequestsCount > 0 ? 'bg-rose-500 text-white animate-pulse' : 'bg-pink-100 text-pink-700'}">
 								{requests.length}
 							</span>
 						{:else}
-							<span class="text-[10px] px-1.5 py-0.2 rounded-full {chatListFilter === 'requests' ? 'bg-white/20 text-white' : 'bg-pink-100 text-pink-700 font-bold'}">
+							<span class="text-[9px] px-1 py-0.2 rounded-full {chatListFilter === 'requests' ? 'bg-white/20 text-white' : 'bg-pink-100 text-pink-700 font-bold'}">
 								0
 							</span>
 						{/if}
@@ -2286,27 +2284,27 @@
 			</div>
 
 			<!-- Friends List -->
-			<div class="flex-grow overflow-y-auto p-2.5 sm:p-3 space-y-2.5">
+			<div class="flex-grow overflow-y-auto p-2 sm:p-2.5 space-y-1.5">
 				{#if isLoadingChatList && friends.length === 0 && requests.length === 0}
 					<div class="p-8 text-center text-pink-400 text-sm flex flex-col items-center">
 						<div class="animate-spin w-7 h-7 border-3 border-pink-300 border-t-pink-500 rounded-full mb-2"></div>
 						<span>Loading conversations...</span>
 					</div>
 				{:else if !isLoadingChatList && filteredFriends().length === 0}
-					<div class="p-8 text-center text-pink-400 text-xs">
+					<div class="p-6 text-center text-pink-400 text-xs">
 						{#if chatListFilter === 'unread'}
-							<p class="font-semibold text-pink-700 text-sm mb-1">No unread chats</p>
+							<p class="font-semibold text-pink-700 text-xs mb-1">No unread chats</p>
 							<p class="text-pink-400/80">You're all caught up!</p>
 						{:else if chatListFilter === 'requests'}
 							<div class="flex flex-col items-center">
-								<p class="font-semibold text-pink-700 text-sm mb-1">No message requests</p>
+								<p class="font-semibold text-pink-700 text-xs mb-1">No message requests</p>
 								<p class="text-pink-400/80">Messages from people who aren't your friends yet will appear here.</p>
 							</div>
 						{:else if searchQuery.trim()}
-							<p class="font-semibold text-pink-700 text-sm mb-1">No conversations found</p>
+							<p class="font-semibold text-pink-700 text-xs mb-1">No conversations found</p>
 							<p class="text-pink-400/80">No results for "{searchQuery}"</p>
 						{:else}
-							<p class="font-semibold text-pink-700 text-sm mb-1">No friends found</p>
+							<p class="font-semibold text-pink-700 text-xs mb-1">No friends found</p>
 							<p class="text-pink-400/80">Add friends from the Friends menu to start chatting!</p>
 						{/if}
 					</div>
@@ -2318,10 +2316,10 @@
 						{@const isUnread = friend.unread_count > 0}
 						<button
 							onclick={() => selectFriend(friend)}
-							class="w-full p-3 sm:p-3.5 flex items-center space-x-3 text-left relative group rounded-2xl border transition-all cursor-pointer hover:shadow-2xs active:scale-[0.99] {isSelected ? 'bg-[#fdf2f6] border-[#f43f8e]/50 ring-2 ring-[#f43f8e]/20 shadow-xs' : 'bg-white/90 hover:bg-[#fff5f8] border-pink-100 hover:border-pink-200'}"
+							class="w-full p-2 sm:p-2.5 flex items-center space-x-2.5 text-left relative group rounded-xl border transition-all cursor-pointer hover:shadow-2xs active:scale-[0.99] {isSelected ? 'bg-[#fdf2f6] border-[#f43f8e]/50 ring-2 ring-[#f43f8e]/20 shadow-xs' : 'bg-white/90 hover:bg-[#fff5f8] border-pink-100 hover:border-pink-200'}"
 						>
 							<div class="relative flex-shrink-0">
-								<div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-pink-100 text-[#f43f8e] border border-pink-200/90 flex items-center justify-center font-bold text-sm sm:text-base group-hover:scale-105 transition-transform overflow-hidden">
+								<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-pink-100 text-[#f43f8e] border border-pink-200/90 flex items-center justify-center font-bold text-xs sm:text-sm group-hover:scale-105 transition-transform overflow-hidden">
 									{#if friend.avatar_url}
 										<img src={friend.avatar_url} alt={friend.username} class="w-full h-full object-cover" />
 									{:else}
@@ -2330,50 +2328,50 @@
 								</div>
 								<!-- Active / Offline Status Dot -->
 								{#if isActive}
-									<span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white animate-pulse" title="Active now"></span>
+									<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white animate-pulse" title="Active now"></span>
 								{:else}
-									<span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-pink-200 border-2 border-white" title={formatLastActive(friend)}></span>
+									<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-pink-200 border-2 border-white" title={formatLastActive(friend)}></span>
 								{/if}
 							</div>
 							<div class="flex-grow min-w-0">
 								<div class="flex items-center justify-between">
 									<div class="flex items-center space-x-1.5 min-w-0 flex-grow pr-1">
-										<p class="text-sm font-semibold truncate transition-colors {isUnread ? 'font-bold text-pink-950' : isSelected ? 'font-bold text-[#f43f8e]' : 'text-pink-900 group-hover:text-[#f43f8e]'}">
+										<p class="text-xs sm:text-sm font-semibold truncate transition-colors {isUnread ? 'font-bold text-pink-950' : isSelected ? 'font-bold text-[#f43f8e]' : 'text-pink-900 group-hover:text-[#f43f8e]'}">
 											@{friend.username}
 										</p>
 										{#if friend.is_request || !friend.is_friend}
-											<span class="inline-flex items-center text-[9px] font-bold text-amber-700 bg-amber-100 border border-amber-300/80 px-1.5 py-0.2 rounded-full flex-shrink-0">
+											<span class="inline-flex items-center text-[8px] font-bold text-amber-700 bg-amber-100 border border-amber-300/80 px-1 py-0.1 rounded-full flex-shrink-0">
 												Request
 											</span>
 										{/if}
 									</div>
 									{#if friend.last_message_time}
-										<span class="text-[10px] font-medium ml-1 flex-shrink-0 {isUnread ? 'text-[#f43f8e] font-bold' : 'text-pink-400/80'}">
+										<span class="text-[9px] sm:text-[10px] font-medium ml-1 flex-shrink-0 {isUnread ? 'text-[#f43f8e] font-bold' : 'text-pink-400/80'}">
 											{formatFriendListDate(friend.last_message_time)}
 										</span>
 									{/if}
 								</div>
 								<div class="flex items-center justify-between mt-0.5 min-w-0">
-									<p class="text-xs truncate flex items-center gap-1 min-w-0 {isUnread ? 'font-semibold text-pink-900' : 'text-pink-800/70'}">
+									<p class="text-[11px] sm:text-xs truncate flex items-center gap-1 min-w-0 {isUnread ? 'font-semibold text-pink-900' : 'text-pink-800/70'}">
 										{#if activeFriend?.friend_id === friend.friend_id && isOtherUserTyping}
 											<span class="text-[#f43f8e] font-semibold italic animate-pulse">typing...</span>
 										{:else}
 											{#if isSentByMe && friend.last_message}
 												{#if friend.last_is_read}
 													<!-- Seen indicator -->
-													<span class="inline-flex items-center text-[#f43f8e] font-medium text-[11px] flex-shrink-0" title="Seen">
-														<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] mr-0.5">
+													<span class="inline-flex items-center text-[#f43f8e] font-medium text-[10px] flex-shrink-0" title="Seen">
+														<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-[#f43f8e] mr-0.5">
 															<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
 														</svg>
-														<span class="text-[10px] font-semibold text-[#f43f8e]">Seen:</span>
+														<span class="text-[9px] font-semibold text-[#f43f8e]">Seen:</span>
 													</span>
 												{:else}
 													<!-- Sent indicator -->
-													<span class="inline-flex items-center text-pink-400 text-[11px] flex-shrink-0" title="Sent">
-														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-pink-400 mr-0.5">
+													<span class="inline-flex items-center text-pink-400 text-[10px] flex-shrink-0" title="Sent">
+														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-2.5 h-2.5 text-pink-400 mr-0.5">
 															<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 														</svg>
-														<span class="text-[10px] text-pink-400">Sent:</span>
+														<span class="text-[9px] text-pink-400">Sent:</span>
 													</span>
 												{/if}
 											{/if}
@@ -2382,7 +2380,7 @@
 									</p>
 
 									{#if isUnread}
-										<span class="ml-1.5 px-1.5 py-0.2 bg-[#f43f8e] text-white text-[10px] font-bold rounded-full flex-shrink-0 animate-pulse">
+										<span class="ml-1.5 px-1.5 py-0.2 bg-[#f43f8e] text-white text-[9px] font-bold rounded-full flex-shrink-0 animate-pulse">
 											{friend.unread_count}
 										</span>
 									{/if}
@@ -2435,24 +2433,24 @@
 					</div>
 				{:else}
 					<!-- Active Chat Normal Header -->
-					<div class="p-3 sm:p-3.5 bg-[#fdf2f6] backdrop-blur-md border-b border-pink-100 text-pink-950 flex items-center justify-between flex-shrink-0 sticky top-0 z-30">
+					<div class="p-2.5 sm:p-3 bg-[#fdf2f6] backdrop-blur-md border-b border-pink-100 text-pink-950 flex items-center justify-between flex-shrink-0 sticky top-0 z-30">
 						<div class="flex items-center space-x-2 min-w-0">
 							<button
 								onclick={handleBackToChatList}
-								class="md:hidden p-1.5 bg-white hover:bg-pink-50 border border-pink-200 rounded-xl text-pink-700 transition-colors flex-shrink-0 active:scale-95 cursor-pointer"
+								class="md:hidden p-1 bg-white hover:bg-pink-50 border border-pink-200 rounded-lg text-pink-700 transition-colors flex-shrink-0 active:scale-95 cursor-pointer"
 								title="Back to Chat List"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
 								</svg>
 							</button>
 							<a
 								href="/profile?id={activeFriend.friend_id}"
-								class="flex items-center space-x-2.5 min-w-0 hover:opacity-95 transition-opacity group cursor-pointer"
+								class="flex items-center space-x-2 min-w-0 hover:opacity-95 transition-opacity group cursor-pointer"
 								title="View @{activeFriend.username}'s Profile"
 							>
 								<div class="relative flex-shrink-0">
-									<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-pink-100 border border-pink-200 flex items-center justify-center text-[#f43f8e] font-bold text-sm sm:text-base overflow-hidden group-hover:scale-105 transition-transform">
+									<div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-pink-100 border border-pink-200 flex items-center justify-center text-[#f43f8e] font-bold text-xs sm:text-sm overflow-hidden group-hover:scale-105 transition-transform">
 										{#if activeFriend.avatar_url}
 											<img src={activeFriend.avatar_url} alt={activeFriend.username} class="w-full h-full object-cover" />
 										{:else}
@@ -2460,19 +2458,19 @@
 										{/if}
 									</div>
 									{#if isRecentActive(activeFriend)}
-										<span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full animate-pulse" title="Active"></span>
+										<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full animate-pulse" title="Active"></span>
 									{:else}
-										<span class="absolute bottom-0 right-0 w-3 h-3 bg-slate-300 border-2 border-white rounded-full" title="Offline"></span>
+										<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-slate-300 border-2 border-white rounded-full" title="Offline"></span>
 									{/if}
 								</div>
 								<div class="min-w-0">
-									<h3 class="font-bold text-sm leading-tight text-pink-950 truncate group-hover:underline flex items-center gap-1">
+									<h3 class="font-bold text-xs sm:text-sm leading-tight text-pink-950 truncate group-hover:underline flex items-center gap-1">
 										<span>@{activeFriend.username}</span>
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] opacity-70 group-hover:opacity-100">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-[#f43f8e] opacity-70 group-hover:opacity-100">
 											<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 111.04-1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
 										</svg>
 									</h3>
-									<div class="text-[11px] text-pink-600 flex items-center gap-1.5 mt-0.5">
+									<div class="text-[10px] text-pink-600 flex items-center gap-1 mt-0.5">
 										{#if isOtherUserTyping}
 											<span class="font-semibold italic text-[#f43f8e] flex items-center gap-1">
 												<span>typing</span>
@@ -2483,13 +2481,13 @@
 												</span>
 											</span>
 										{:else if isRecentActive(activeFriend)}
-											<span class="flex items-center gap-1.5 text-emerald-600 font-bold">
-												<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+											<span class="flex items-center gap-1 text-emerald-600 font-bold">
+												<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
 												<span>{formatLastActive(activeFriend)}</span>
 											</span>
 										{:else}
 											<span class="flex items-center gap-1 text-pink-600/80 font-medium">
-												<span class="w-1.5 h-1.5 rounded-full bg-pink-300 inline-block"></span>
+												<span class="w-1 h-1 rounded-full bg-pink-300 inline-block"></span>
 												<span>{formatLastActive(activeFriend)}</span>
 											</span>
 										{/if}
@@ -2499,10 +2497,10 @@
 						</div>
 
 						<!-- Header Actions (Pill Buttons) -->
-						<div class="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
+						<div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
 							<a
 								href="/profile?id={activeFriend.friend_id}"
-								class="px-2.5 py-1.5 bg-white hover:bg-pink-50 border border-pink-200 text-pink-700 rounded-xl transition-colors text-xs font-semibold flex items-center space-x-1 cursor-pointer shadow-2xs"
+								class="px-2 py-1 bg-white hover:bg-pink-50 border border-pink-200 text-pink-700 rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 cursor-pointer shadow-2xs"
 								title="View Profile"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
@@ -2512,7 +2510,7 @@
 							</a>
 							<button
 								onclick={() => promptToggleBlockUser(activeFriend)}
-								class="px-2.5 py-1.5 bg-white hover:bg-pink-50 border border-pink-200 {isCurrentFriendBlockedByMe ? 'text-emerald-700 hover:text-emerald-800' : 'text-rose-600 hover:text-rose-700'} rounded-xl transition-colors text-xs font-semibold flex items-center space-x-1 cursor-pointer shadow-2xs"
+								class="px-2 py-1 bg-white hover:bg-pink-50 border border-pink-200 {isCurrentFriendBlockedByMe ? 'text-emerald-700 hover:text-emerald-800' : 'text-rose-600 hover:text-rose-700'} rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 cursor-pointer shadow-2xs"
 								title={isCurrentFriendBlockedByMe ? "Unblock User" : "Block User"}
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5">
@@ -2522,13 +2520,13 @@
 							</button>
 							<button
 								onclick={() => showClearModal = true}
-								class="px-2.5 py-1.5 bg-white hover:bg-pink-50 border border-pink-200 text-pink-700 rounded-xl transition-colors text-xs font-semibold flex items-center space-x-1 cursor-pointer shadow-2xs"
+								class="px-2 py-1 bg-white hover:bg-pink-50 border border-pink-200 text-pink-700 rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 cursor-pointer shadow-2xs"
 								title="Clear Chat History"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
 									<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 								</svg>
-								<span class="hidden sm:inline">Clear Chat</span>
+								<span class="hidden sm:inline">Clear</span>
 							</button>
 						</div>
 					</div>
@@ -2537,16 +2535,16 @@
 				<!-- Message Request Top Banner (Shown if not friends yet) -->
 				{#if activeFriend && (activeFriend.is_request || !activeFriend.is_friend)}
 					{@const isPendingRequest = activeFriend.has_pending_request && String(activeFriend.pending_request_sender_id) === String(user?.id)}
-					<div class="px-3.5 py-2.5 bg-amber-50 border-b border-pink-100 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs gap-2.5 animate-fade-in flex-shrink-0">
+					<div class="px-3 py-2 bg-amber-50 border-b border-pink-100 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs gap-2 animate-fade-in flex-shrink-0">
 						<div class="text-pink-950 font-medium leading-relaxed">
 							<span><strong>Message Request:</strong> You and @{activeFriend.username} are not connected as friends yet.</span>
 						</div>
-						<div class="flex items-center space-x-2 flex-shrink-0 self-end sm:self-auto">
+						<div class="flex items-center space-x-1.5 flex-shrink-0 self-end sm:self-auto">
 							<a
 								href="/profile?id={activeFriend.friend_id}"
-								class="px-2.5 py-1 bg-white hover:bg-pink-50 text-pink-700 border border-pink-200 font-bold rounded-xl transition-colors flex items-center space-x-1 cursor-pointer"
+								class="px-2 py-0.5 bg-white hover:bg-pink-50 text-pink-700 border border-pink-200 font-bold rounded-lg transition-colors flex items-center space-x-1 cursor-pointer"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
 								</svg>
 								<span>Profile</span>
@@ -2554,15 +2552,15 @@
 							<button
 								onclick={() => sendFriendRequestFromChat(activeFriend)}
 								disabled={isSendingFriendRequest || isPendingRequest}
-								class="px-3 py-1 {isPendingRequest ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#f43f8e] hover:bg-[#e0337f] cursor-pointer shadow-xs'} text-white font-bold rounded-xl transition-all flex items-center space-x-1 active:scale-95 disabled:opacity-50"
+								class="px-2.5 py-0.5 {isPendingRequest ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#f43f8e] hover:bg-[#e0337f] cursor-pointer shadow-xs'} text-white font-bold rounded-lg transition-all flex items-center space-x-1 active:scale-95 disabled:opacity-50"
 							>
 								{#if isPendingRequest}
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
 									</svg>
 									<span>Pending</span>
 								{:else}
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 19.125a1.125 1.125 0 011.125-1.125h15.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H4.875a1.125 1.125 0 01-1.125-1.125v-2.25z" />
 									</svg>
 									<span>Add Friend</span>
@@ -2585,31 +2583,31 @@
 							}
 						}
 					}}
-					class="flex-1 min-h-0 p-3 sm:p-4 overflow-y-auto overflow-x-hidden space-y-3 bg-[#fffafb] select-none overscroll-contain"
+					class="flex-1 min-h-0 p-2.5 sm:p-3 overflow-y-auto overflow-x-hidden space-y-2 sm:space-y-2.5 bg-[#fffafb] select-none overscroll-contain"
 				>
 					{#if isFetchingMessages && messages.length === 0}
 						<div class="h-full flex items-center justify-center py-12">
 							<div class="animate-spin h-6 w-6 border-2 border-pink-300 border-t-pink-500 rounded-full"></div>
 						</div>
 					{:else if messages.length === 0}
-						<div class="h-full flex flex-col items-center justify-center text-pink-400 text-sm py-12">
-							<div class="w-12 h-12 rounded-2xl bg-pink-100 border border-pink-200 text-pink-600 flex items-center justify-center mb-2.5">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
+						<div class="h-full flex flex-col items-center justify-center text-pink-400 text-xs py-10">
+							<div class="w-11 h-11 rounded-2xl bg-pink-100 border border-pink-200 text-pink-600 flex items-center justify-center mb-2">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
 								</svg>
 							</div>
-							<p class="font-bold text-pink-950 text-sm sm:text-base">Start a conversation with @{activeFriend.username}</p>
-							<p class="text-xs text-pink-600 mt-1 max-w-xs text-center font-medium">Say hi, share photos, or hold messages to reply and interact!</p>
+							<p class="font-bold text-pink-950 text-xs sm:text-sm">Start a conversation with @{activeFriend.username}</p>
+							<p class="text-[11px] text-pink-600 mt-0.5 max-w-xs text-center font-medium">Say hi, share photos, or swipe to reply!</p>
 						</div>
 					{:else}
 						<!-- Loading Older Messages Spinner / History Header -->
 						{#if isLoadingOlder}
-							<div class="py-2.5 flex items-center justify-center space-x-2 text-pink-500 text-xs animate-fade-in bg-pink-50/60 rounded-xl border border-pink-100 mb-2">
-								<div class="animate-spin w-4 h-4 border-2 border-pink-300 border-t-pink-500 rounded-full"></div>
+							<div class="py-2 flex items-center justify-center space-x-2 text-pink-500 text-[11px] animate-fade-in bg-pink-50/60 rounded-xl border border-pink-100 mb-2">
+								<div class="animate-spin w-3.5 h-3.5 border-2 border-pink-300 border-t-pink-500 rounded-full"></div>
 								<span class="font-medium">Loading earlier messages...</span>
 							</div>
 						{:else if !hasMoreMessages && messages.length >= 20}
-							<div class="py-2 text-center text-pink-400/80 text-[11px] font-medium border-b border-pink-100/60 pb-2 mb-2">
+							<div class="py-1.5 text-center text-pink-400/80 text-[10px] font-medium border-b border-pink-100/60 pb-1.5 mb-1.5">
 								<span>Beginning of conversation history</span>
 							</div>
 						{/if}
@@ -2617,8 +2615,8 @@
 						{#each messages as msg, i (msg.id)}
 							<!-- Date Separator Header with exact date formatting -->
 							{#if isNewDay(i)}
-								<div class="flex items-center justify-center my-3">
-									<span class="px-3.5 py-1 bg-white/90 border border-pink-200 text-pink-700 text-[11px] font-bold rounded-full shadow-2xs">
+								<div class="flex items-center justify-center my-2">
+									<span class="px-3 py-0.5 bg-white/90 border border-pink-200 text-pink-700 text-[10px] font-bold rounded-full shadow-2xs">
 										{formatDateDivider(msg.created_at)}
 									</span>
 								</div>
@@ -2633,7 +2631,7 @@
 							<div class="relative w-full overflow-visible py-0.5 select-none">
 								<!-- Message Row -->
 								<div
-									class="flex items-center space-x-2 group w-full"
+									class="flex items-center space-x-1.5 group w-full"
 									class:justify-end={isUserSender}
 									class:justify-start={!isUserSender}
 								>
@@ -2642,14 +2640,14 @@
 										<button
 											type="button"
 											onclick={() => toggleMessageSelection(msg.id)}
-											class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
+											class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
 											class:bg-[#f43f8e]={isSelected}
 											class:border-[#f43f8e]={isSelected}
 											class:border-pink-300={!isSelected}
 											class:bg-white={!isSelected}
 										>
 											{#if isSelected}
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-3 h-3 text-white">
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-2.5 h-2.5 text-white">
 													<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 												</svg>
 											{/if}
@@ -2676,7 +2674,7 @@
 									{#if !isUserSender}
 										<a
 											href="/profile?id={activeFriend.friend_id}"
-											class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-pink-100 text-[#f43f8e] border border-pink-200 flex items-center justify-center font-bold text-xs overflow-hidden flex-shrink-0 self-end mb-1 mr-1 hover:scale-105 transition-transform"
+											class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-pink-100 text-[#f43f8e] border border-pink-200 flex items-center justify-center font-bold text-[11px] overflow-hidden flex-shrink-0 self-end mb-1 mr-0.5 hover:scale-105 transition-transform"
 											title="View @{activeFriend.username}'s Profile"
 										>
 											{#if activeFriend.avatar_url}
@@ -2701,9 +2699,9 @@
 												"
 											>
 												<div
-													class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-200 {isSwipeThresholdReached ? 'bg-[#f43f8e] text-white ring-2 ring-white scale-110 shadow-xs' : 'bg-pink-100 text-[#f43f8e] border border-pink-200'}"
+													class="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center transition-all duration-200 {isSwipeThresholdReached ? 'bg-[#f43f8e] text-white ring-2 ring-white scale-110 shadow-xs' : 'bg-pink-100 text-[#f43f8e] border border-pink-200'}"
 												>
-													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 {isSwipeThresholdReached ? 'scale-110 -rotate-12' : ''} {!isUserSender ? 'rotate-180' : ''}">
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 sm:w-3.5 sm:h-3.5 transition-transform duration-200 {isSwipeThresholdReached ? 'scale-110 -rotate-12' : ''} {!isUserSender ? 'rotate-180' : ''}">
 														<path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
 													</svg>
 												</div>
@@ -2741,13 +2739,13 @@
 													tabindex="0"
 													onclick={(e) => { e.stopPropagation(); if (parsed.reply.type !== 'note') scrollToMessage(parsed.reply.id); }}
 													onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); if (parsed.reply.type !== 'note') scrollToMessage(parsed.reply.id); } }}
-													class="mb-1 px-2.5 py-1 rounded-xl text-[11px] border-l-3 bg-pink-100/90 text-pink-900 border-[#f43f8e] max-w-full flex items-center space-x-1.5 cursor-pointer hover:bg-pink-200/90 hover:border-pink-600 active:scale-95 transition-all group/reply shadow-2xs"
+													class="mb-1 px-2 py-0.5 rounded-lg text-[10px] border-l-2 bg-pink-100/90 text-pink-900 border-[#f43f8e] max-w-full flex items-center space-x-1 cursor-pointer hover:bg-pink-200/90 hover:border-pink-600 active:scale-95 transition-all group/reply shadow-2xs"
 													class:self-end={isUserSender}
 													class:self-start={!isUserSender}
 													title="{parsed.reply.type === 'note' ? 'Replied to this note' : 'Click to jump to replied message'}"
 												>
 													<span class="font-bold text-[#f43f8e] flex items-center gap-1 group-hover/reply:text-pink-900 transition-colors">
-														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-[#f43f8e] group-hover/reply:-translate-x-0.5 transition-transform">
+														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-2.5 h-2.5 text-[#f43f8e] group-hover/reply:-translate-x-0.5 transition-transform">
 															<path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
 														</svg>
 														{#if parsed.reply.type === 'note'}
@@ -2761,15 +2759,15 @@
 														{/if}
 													</span>
 													{#if replyDetails.isImage}
-														<div class="inline-flex items-center space-x-1 bg-white/80 px-1.5 py-0.5 rounded-md border border-pink-200">
+														<div class="inline-flex items-center space-x-1 bg-white/80 px-1 py-0.2 rounded-xs border border-pink-200">
 															{#if replyDetails.imageUrl}
-																<img src={replyDetails.imageUrl} alt="Replying photo" class="w-4 h-4 rounded-xs object-cover border border-pink-200 flex-shrink-0" />
+																<img src={replyDetails.imageUrl} alt="Replying photo" class="w-3.5 h-3.5 rounded-xs object-cover border border-pink-200 flex-shrink-0" />
 															{:else}
-																<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5 text-pink-700 flex-shrink-0">
+																<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3 h-3 text-pink-700 flex-shrink-0">
 																	<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
 																</svg>
 															{/if}
-															<span class="font-bold text-pink-700 text-[10px]">Photo</span>
+															<span class="font-bold text-pink-700 text-[9px]">Photo</span>
 														</div>
 													{:else}
 														<span class="italic opacity-85 truncate">{replyDetails.text}</span>
@@ -2779,27 +2777,27 @@
 
 											<!-- Main Chat Bubble with Clear Visible Styling & Tail -->
 											<div
-												class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all duration-300 relative leading-relaxed shadow-2xs {highlightedMessageId === String(msg.id) ? 'bg-pink-200 text-pink-950 border-2 border-[#f43f8e] ring-4 ring-[#f43f8e]/40 scale-[1.03] animate-pulse z-20' : isUnsent ? 'bg-pink-50/70 text-pink-400/90 border border-pink-200/80 italic' : isUserSender ? 'bg-[#f43f8e] text-white border border-[#f43f8e]' : 'bg-white text-gray-900 border border-pink-100'}"
+												class="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl text-xs sm:text-sm font-semibold transition-all duration-300 relative leading-relaxed shadow-2xs {highlightedMessageId === String(msg.id) ? 'bg-pink-200 text-pink-950 border-2 border-[#f43f8e] ring-4 ring-[#f43f8e]/40 scale-[1.03] animate-pulse z-20' : isUnsent ? 'bg-pink-50/70 text-pink-400/90 border border-pink-200/80 italic' : isUserSender ? 'bg-[#f43f8e] text-white border border-[#f43f8e]' : 'bg-white text-gray-900 border border-pink-100'}"
 												class:ring-2={isSelected && highlightedMessageId !== String(msg.id)}
 												class:ring-[#f43f8e]={isSelected && highlightedMessageId !== String(msg.id)}
 											>
 												{#if isUserSender}
-													<span class="absolute -right-[6px] top-3.5 w-3 h-3 {isUnsent ? 'bg-pink-50/70 border-pink-200/80' : 'bg-[#f43f8e]'} border-t border-r transform rotate-45 pointer-events-none rounded-tr-xs"></span>
+													<span class="absolute -right-[5px] top-3 w-2.5 h-2.5 {isUnsent ? 'bg-pink-50/70 border-pink-200/80' : 'bg-[#f43f8e]'} border-t border-r transform rotate-45 pointer-events-none rounded-tr-xs"></span>
 												{:else}
-													<span class="absolute -left-[6px] top-3.5 w-3 h-3 bg-white border-b border-l border-pink-100 transform rotate-45 pointer-events-none rounded-bl-xs"></span>
+													<span class="absolute -left-[5px] top-3 w-2.5 h-2.5 bg-white border-b border-l border-pink-100 transform rotate-45 pointer-events-none rounded-bl-xs"></span>
 												{/if}
 
 												<div class="relative z-10">
 													{#if isUnsent}
-														<p class="italic text-xs sm:text-sm text-pink-400/90 flex items-center gap-1.5 select-none font-medium">
-															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5 opacity-70 flex-shrink-0">
+														<p class="italic text-[11px] sm:text-xs text-pink-400/90 flex items-center gap-1 select-none font-medium">
+															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3 h-3 opacity-70 flex-shrink-0">
 																<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
 															</svg>
 															<span>{isUserSender ? 'You unsent a message' : `${activeFriend?.username || 'User'} unsent a message`}</span>
 														</p>
 													{:else if parsed.isImage}
 														<div 
-															class="relative group/img rounded-xl overflow-hidden max-w-[200px] sm:max-w-[230px] border border-pink-200/80 cursor-pointer active:scale-98 transition-all my-0.5 shadow-2xs"
+															class="relative group/img rounded-xl overflow-hidden max-w-[180px] sm:max-w-[210px] border border-pink-200/80 cursor-pointer active:scale-98 transition-all my-0.5 shadow-2xs"
 															onclick={(e) => { e.stopPropagation(); openImageViewer(parsed.imageUrl); }}
 															role="button"
 															tabindex="0"
@@ -2809,12 +2807,12 @@
 															<img 
 																src={parsed.imageUrl} 
 																alt="Chat Attachment" 
-																class="w-full max-h-52 sm:max-h-60 object-cover rounded-xl transition-transform duration-200 group-hover/img:scale-105" 
+																class="w-full max-h-48 sm:max-h-56 object-cover rounded-xl transition-transform duration-200 group-hover/img:scale-105" 
 																loading="lazy" 
 															/>
-															<div class="absolute inset-0 bg-pink-950/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white">
-																<div class="p-1.5 bg-black/40 backdrop-blur-xs rounded-full">
-																	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-white">
+															<div class="absolute inset-0 bg-pink-950/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-1 text-white">
+																<div class="p-1 bg-black/40 backdrop-blur-xs rounded-full">
+																	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-white">
 																		<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
 																	</svg>
 																</div>
@@ -2826,19 +2824,19 @@
 												</div>
 											</div>
 											<!-- Message Status & Time -->
-											<div class="flex items-center gap-1 mt-1 px-1 text-[10px] font-bold {isUserSender ? 'text-pink-600 justify-end' : 'text-pink-600 justify-start'}">
+											<div class="flex items-center gap-1 mt-0.5 px-1 text-[9px] font-bold {isUserSender ? 'text-pink-600 justify-end' : 'text-pink-600 justify-start'}">
 												<span>{formatTime(msg.created_at)}</span>
 												{#if isUserSender && !isUnsent}
 													{#if msg.is_read}
 														<span class="inline-flex items-center gap-0.5 text-[#f43f8e] font-semibold" title="Seen by @{activeFriend?.username}">
-															<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
+															<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-[#f43f8e]">
 																<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
 															</svg>
 															<span>Seen</span>
 														</span>
 													{:else}
 														<span class="inline-flex items-center gap-0.5 text-pink-400/90" title="Sent">
-															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-pink-400">
+															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-2.5 h-2.5 text-pink-400">
 																<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 															</svg>
 															<span>Sent</span>
@@ -2854,24 +2852,24 @@
 
 						<!-- Typing Indicator Bubble in message stream -->
 						{#if isOtherUserTyping}
-							<div class="flex items-start space-x-2 animate-message-pop py-1 my-1">
-								<div class="w-8 h-8 rounded-full bg-pink-100 text-[#f43f8e] border border-pink-200 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5 overflow-hidden">
+							<div class="flex items-start space-x-1.5 animate-message-pop py-0.5 my-0.5">
+								<div class="w-6 h-6 rounded-full bg-pink-100 text-[#f43f8e] border border-pink-200 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5 overflow-hidden">
 									{#if activeFriend.avatar_url}
 										<img src={activeFriend.avatar_url} alt={activeFriend.username} class="w-full h-full object-cover" />
 									{:else}
 										{activeFriend.username.charAt(0).toUpperCase()}
 									{/if}
 								</div>
-								<div class="flex flex-col items-start space-y-1">
+								<div class="flex flex-col items-start space-y-0.5">
 									<!-- 3-dot Bubble with Cute Tail & Crisp Border -->
-									<div class="bg-white border border-pink-200 px-3.5 py-2.5 rounded-2xl flex items-center space-x-1.5 relative shadow-2xs">
-										<span class="absolute -left-[6px] top-3.5 w-3 h-3 bg-white border-b border-l border-pink-200 transform rotate-45 pointer-events-none rounded-bl-xs"></span>
-										<div class="w-2 h-2 rounded-full bg-[#f43f8e] animate-bounce relative z-10" style="animation-delay: 0ms"></div>
-										<div class="w-2 h-2 rounded-full bg-[#f43f8e] animate-bounce relative z-10" style="animation-delay: 150ms"></div>
-										<div class="w-2 h-2 rounded-full bg-[#f43f8e] animate-bounce relative z-10" style="animation-delay: 300ms"></div>
+									<div class="bg-white border border-pink-200 px-3 py-1.5 rounded-xl flex items-center space-x-1 relative shadow-2xs">
+										<span class="absolute -left-[5px] top-2.5 w-2 h-2 bg-white border-b border-l border-pink-200 transform rotate-45 pointer-events-none rounded-bl-xs"></span>
+										<div class="w-1.5 h-1.5 rounded-full bg-[#f43f8e] animate-bounce relative z-10" style="animation-delay: 0ms"></div>
+										<div class="w-1.5 h-1.5 rounded-full bg-[#f43f8e] animate-bounce relative z-10" style="animation-delay: 150ms"></div>
+										<div class="w-1.5 h-1.5 rounded-full bg-[#f43f8e] animate-bounce relative z-10" style="animation-delay: 300ms"></div>
 									</div>
 									<!-- Label below the bubble -->
-									<span class="text-[11px] text-[#f43f8e] font-medium italic pl-1">
+									<span class="text-[10px] text-[#f43f8e] font-medium italic pl-0.5">
 										@{activeFriend.username} is typing...
 									</span>
 								</div>
@@ -2882,25 +2880,25 @@
 
 				<!-- Floating Reply Bar -->
 				{#if replyingTo}
-					<div class="px-3.5 py-2 bg-[#fdf2f6] border-t border-pink-100 flex items-center justify-between text-xs animate-slide-down">
+					<div class="px-3 py-1.5 bg-[#fdf2f6] border-t border-pink-100 flex items-center justify-between text-xs animate-slide-down">
 						<div class="flex items-center space-x-2 min-w-0">
-							<div class="w-1 h-7 bg-[#f43f8e] rounded-full flex-shrink-0"></div>
-							<div class="min-w-0 flex items-center space-x-2">
+							<div class="w-1 h-6 bg-[#f43f8e] rounded-full flex-shrink-0"></div>
+							<div class="min-w-0 flex items-center space-x-1.5">
 								{#if replyingTo.isImage && replyingTo.imageUrl}
-									<img src={replyingTo.imageUrl} alt="Replying photo" class="w-7 h-7 rounded-lg object-cover border border-pink-200 flex-shrink-0" />
+									<img src={replyingTo.imageUrl} alt="Replying photo" class="w-6 h-6 rounded-md object-cover border border-pink-200 flex-shrink-0" />
 								{/if}
 								<div class="min-w-0">
 									{#if replyingTo.kind === 'note'}
-										<p class="font-bold text-[#f43f8e]">Replying to @{replyingTo.username}'s note</p>
+										<p class="font-bold text-[#f43f8e] text-[11px]">Replying to @{replyingTo.username}'s note</p>
 									{:else}
-										<p class="font-bold text-[#f43f8e]">Replying to @{replyingTo.sender_name}</p>
+										<p class="font-bold text-[#f43f8e] text-[11px]">Replying to @{replyingTo.sender_name}</p>
 									{/if}
-									<p class="text-pink-900/80 truncate text-[11px] font-medium">{replyingTo.text}</p>
+									<p class="text-pink-900/80 truncate text-[10px] font-medium">{replyingTo.text}</p>
 								</div>
 							</div>
 						</div>
 						<button onclick={cancelReply} class="p-1 text-pink-400 hover:text-[#f43f8e] rounded-full cursor-pointer transition-colors" aria-label="Cancel reply">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 							</svg>
 						</button>
@@ -2909,13 +2907,13 @@
 
 				<!-- Emoji Picker Dropup -->
 				{#if showEmojiPicker}
-					<div bind:this={emojiPickerRef} class="absolute bottom-16 right-4 sm:right-14 p-3 bg-white border border-pink-200 rounded-3xl z-30 max-w-[240px] shadow-[0_4px_20px_rgba(244,114,182,0.15)] animate-fade-in-up">
+					<div bind:this={emojiPickerRef} class="absolute bottom-14 right-3 sm:right-10 p-2.5 bg-white border border-pink-200 rounded-2xl z-30 max-w-[220px] shadow-[0_4px_20px_rgba(244,114,182,0.15)] animate-fade-in-up">
 						<div class="grid grid-cols-7 gap-1">
 							{#each emojis as emoji}
 								<button
 									type="button"
 									onclick={() => insertEmoji(emoji)}
-									class="p-1 hover:bg-pink-50 rounded-lg transition-all text-lg hover:scale-110 cursor-pointer"
+									class="p-0.5 hover:bg-pink-50 rounded-md transition-all text-base hover:scale-110 cursor-pointer"
 								>
 									{emoji}
 								</button>
@@ -2926,31 +2924,31 @@
 
 				<!-- Input Form Section or Blocked Banner -->
 				{#if isCurrentFriendBlockedByMe}
-					<div class="p-3 sm:p-4 bg-pink-50/80 border-t border-pink-100 flex flex-col sm:flex-row items-center justify-between gap-3 sticky bottom-0 z-20">
-						<div class="flex items-center space-x-2 text-pink-950 text-xs sm:text-sm font-semibold">
-							<span class="text-base sm:text-lg">🚫</span>
-							<span>You blocked @{activeFriend.username}. You cannot send or receive messages from this user.</span>
+					<div class="p-2.5 sm:p-3 bg-pink-50/80 border-t border-pink-100 flex flex-col sm:flex-row items-center justify-between gap-2.5 sticky bottom-0 z-20">
+						<div class="flex items-center space-x-1.5 text-pink-950 text-xs font-semibold">
+							<span class="text-sm">🚫</span>
+							<span>You blocked @{activeFriend.username}. You cannot send or receive messages.</span>
 						</div>
 						<button
 							onclick={() => handleToggleBlockUser(activeFriend.friend_id || activeFriend.id, true)}
-							class="px-3.5 py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer flex-shrink-0"
+							class="px-3 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-bold text-xs rounded-lg shadow-xs active:scale-95 transition-all cursor-pointer flex-shrink-0"
 						>
 							Unblock @{activeFriend.username}
 						</button>
 					</div>
 				{:else if activeFriend?.is_blocking_me}
-					<div class="p-3 sm:p-4 bg-gray-50 border-t border-pink-100 flex items-center justify-center space-x-2 text-pink-900 text-xs sm:text-sm font-semibold sticky bottom-0 z-20">
-						<span class="text-base sm:text-lg">🚫</span>
-						<span>You cannot message @{activeFriend.username} because you have been blocked by this user.</span>
+					<div class="p-2.5 sm:p-3 bg-gray-50 border-t border-pink-100 flex items-center justify-center space-x-1.5 text-pink-900 text-xs font-semibold sticky bottom-0 z-20">
+						<span class="text-sm">🚫</span>
+						<span>You cannot message @{activeFriend.username} because you have been blocked.</span>
 					</div>
 				{:else}
-					<form onsubmit={(e) => { e.preventDefault(); sendMessage(); }} class="p-2 sm:p-3 bg-white border-t border-pink-100 flex items-center space-x-1.5 sm:space-x-2 w-full min-w-0 flex-shrink-0 sticky bottom-0 z-20">
+					<form onsubmit={(e) => { e.preventDefault(); sendMessage(); }} class="p-1.5 sm:p-2 bg-white border-t border-pink-100 flex items-center space-x-1.5 w-full min-w-0 flex-shrink-0 sticky bottom-0 z-20">
 						<!-- Upload Photo Button -->
-						<label class="p-1.5 sm:p-2 text-[#f43f8e] hover:bg-pink-50 rounded-xl cursor-pointer transition-colors flex-shrink-0" title="Attach Photo" onclick={() => { if (isSelectionMode) { isSelectionMode = false; selectedMessageIds = new Set(); } }}>
+						<label class="p-1 sm:p-1.5 text-[#f43f8e] hover:bg-pink-50 rounded-lg cursor-pointer transition-colors flex-shrink-0" title="Attach Photo" onclick={() => { if (isSelectionMode) { isSelectionMode = false; selectedMessageIds = new Set(); } }}>
 							{#if isUploadingImage}
-								<div class="animate-spin w-5 h-5 border-2 border-pink-300 border-t-[#f43f8e] rounded-full"></div>
+								<div class="animate-spin w-4 h-4 border-2 border-pink-300 border-t-[#f43f8e] rounded-full"></div>
 							{:else}
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
 								</svg>
 							{/if}
@@ -2975,17 +2973,17 @@
 								onfocus={handleInputFocus}
 								onblur={handleInputBlur}
 								placeholder="Type a message... (swipe to reply, hold to select)"
-								class="w-full pl-3 pr-9 py-2 sm:py-2.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-gray-800 text-xs sm:text-sm placeholder-pink-400/60 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/20 focus:border-[#f43f8e] focus:bg-white transition-all font-medium"
+								class="w-full pl-2.5 pr-8 py-1.5 sm:py-2 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-gray-800 text-xs sm:text-sm placeholder-pink-400/60 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/20 focus:border-[#f43f8e] focus:bg-white transition-all font-medium"
 							/>
 							<!-- Emoji Picker Toggle Button -->
 							<button
 								type="button"
 								bind:this={emojiButtonRef}
 								onclick={() => showEmojiPicker = !showEmojiPicker}
-								class="absolute right-2 p-1 text-pink-400 hover:text-[#f43f8e] rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+								class="absolute right-1.5 p-1 text-pink-400 hover:text-[#f43f8e] rounded-md transition-colors cursor-pointer flex items-center justify-center"
 								title="Emojis"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
 								</svg>
 							</button>
@@ -2995,10 +2993,10 @@
 						<button
 							type="submit"
 							disabled={!newMessageText.trim() || isSending}
-							class="py-2 sm:py-2.5 px-3.5 sm:px-4 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl font-bold text-xs sm:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1.5 flex-shrink-0 active:scale-95 group cursor-pointer shadow-xs"
+							class="py-1.5 sm:py-2 px-3 sm:px-3.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl font-bold text-xs sm:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 flex-shrink-0 active:scale-95 group cursor-pointer shadow-xs"
 						>
 							<span>Send</span>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 flex-shrink-0 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform duration-200">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0 group-hover:translate-x-0.5 transition-transform duration-200">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
 							</svg>
 						</button>
