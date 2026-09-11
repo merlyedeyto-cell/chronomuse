@@ -141,13 +141,13 @@
 <!-- Backdrop Overlay -->
 {#if isOpen}
 	<div
-		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 transition-opacity duration-300 flex items-center justify-center p-3 pb-20 sm:p-4 sm:pb-4 animate-modal-backdrop font-sans"
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 transition-opacity duration-300 flex items-center justify-center p-3 sm:p-4 animate-modal-backdrop font-sans"
 		class:opacity-0={isClosing}
 		onclick={handleClose}
 	>
 		<!-- Modal Content -->
 		<div
-			class="bg-white rounded-3xl p-5 border border-pink-100 transition-all duration-300 max-w-sm w-full relative max-h-[calc(100dvh-6.5rem)] sm:max-h-[90vh] overflow-y-auto animate-modal-content shadow-2xl"
+			class="bg-white rounded-3xl p-5 border border-pink-100 transition-all duration-300 max-w-sm w-full relative max-h-[90vh] overflow-y-auto animate-modal-content shadow-2xl my-auto"
 			class:opacity-0={isClosing}
 			class:scale-95={isClosing}
 			onclick={(e) => e.stopPropagation()}

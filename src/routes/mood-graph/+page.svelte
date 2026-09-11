@@ -594,7 +594,7 @@
 	<!-- Mood List Modal Popup -->
 	{#if showMoodListModal}
 		<div
-			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 pb-20 sm:p-4 sm:pb-4 animate-fade-in overflow-y-auto"
+			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in overflow-y-auto"
 			role="dialog"
 			aria-modal="true"
 			tabindex="-1"
@@ -602,7 +602,7 @@
 			onkeydown={(e) => { if (e.key === 'Escape') showMoodListModal = false; }}
 		>
 			<div
-				class="bg-white border border-pink-100 rounded-3xl max-w-sm sm:max-w-md w-full p-4 sm:p-5 relative my-auto shadow-2xl animate-scale-up max-h-[calc(100dvh-6.5rem)] overflow-y-auto"
+				class="bg-white border border-pink-100 rounded-3xl max-w-sm sm:max-w-md w-full p-4 sm:p-5 relative my-auto shadow-2xl animate-scale-up max-h-[85vh] overflow-y-auto"
 			>
 				<!-- Close Button -->
 				<button
