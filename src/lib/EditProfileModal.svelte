@@ -98,59 +98,55 @@
 </script>
 
 {#if isOpen}
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
-		class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) isOpen = false; }}
 	>
-		<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-md w-full p-6 relative overflow-hidden space-y-4 animate-modal-content">
-			<div class="flex items-center justify-between border-b border-pink-100 pb-3">
-				<div class="flex items-center space-x-2.5">
-					<div class="w-9 h-9 rounded-xl bg-pink-100 text-pink-600 border border-pink-300 flex items-center justify-center font-bold text-base">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-						</svg>
-					</div>
-					<h3 class="text-base sm:text-lg font-black text-pink-950">Edit Profile Info</h3>
+		<div class="bg-white border border-pink-100 rounded-[32px] max-w-md w-full p-6 relative overflow-hidden space-y-4 shadow-2xl animate-modal-content">
+			<!-- Header -->
+			<div class="flex items-center justify-between pb-1">
+				<div class="flex items-center space-x-2">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-5 h-5 text-[#f43f8e]">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+					</svg>
+					<h3 class="text-base sm:text-lg font-black text-[#f43f8e]">Edit Profile Info</h3>
 				</div>
 
 				<button
 					type="button"
 					onclick={() => isOpen = false}
-					class="p-1.5 text-pink-400 hover:text-pink-600 rounded-lg transition-colors cursor-pointer"
+					class="p-1 text-pink-400 hover:text-pink-600 rounded-full transition-colors cursor-pointer"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 					</svg>
 				</button>
 			</div>
 
-			<form onsubmit={handleSubmit} class="space-y-4">
+			<form onsubmit={handleSubmit} class="space-y-3.5">
 				<!-- Bio -->
 				<div>
-					<label class="block text-xs font-extrabold text-pink-950 mb-1">Bio / Status Quote</label>
+					<label class="block text-xs font-black text-[#f43f8e] mb-1.5">Bio / Status Quote</label>
 					<textarea
 						bind:value={editBio}
-						rows="3"
-						placeholder="Share a short bio or status message with your friends..."
-						class="w-full px-3.5 py-2.5 bg-pink-50/50 border-2 border-pink-200 rounded-xl text-xs sm:text-sm font-medium text-pink-950 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all resize-none"
+						rows="2"
+						placeholder="Share a short bio or status message..."
+						class="w-full px-4 py-3 bg-white border border-pink-200 rounded-2xl text-xs sm:text-sm font-bold text-pink-950 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 transition-all resize-none"
 					></textarea>
 				</div>
 
 				<!-- Birthday -->
 				<div>
-					<label class="block text-xs font-extrabold text-pink-950 mb-1">Birthday</label>
+					<label class="block text-xs font-black text-[#f43f8e] mb-1.5">Birthday</label>
 					<button
 						type="button"
 						onclick={openBirthdayModal}
-						class="w-full px-3.5 py-2.5 bg-pink-50/60 hover:bg-pink-100/70 border-2 border-pink-200 rounded-xl text-xs sm:text-sm font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer active:scale-[0.99]"
+						class="w-full px-4 py-3 bg-white border border-pink-200 rounded-2xl text-xs sm:text-sm font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer hover:border-pink-300 active:scale-[0.99]"
 					>
-						<div class="flex items-center space-x-2">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-							</svg>
-							<span>{formatBirthdayDisplay(editBirthday)}</span>
-						</div>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-pink-400">
+						<span>{formatBirthdayDisplay(editBirthday)}</span>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
 						</svg>
 					</button>
@@ -158,19 +154,14 @@
 
 				<!-- Relationship Status -->
 				<div>
-					<label class="block text-xs font-extrabold text-pink-950 mb-1">Relationship Status</label>
+					<label class="block text-xs font-black text-[#f43f8e] mb-1.5">Relationship Status</label>
 					<button
 						type="button"
 						onclick={() => showRelationshipModal = true}
-						class="w-full px-3.5 py-2.5 bg-pink-50/60 hover:bg-pink-100/70 border-2 border-pink-200 rounded-xl text-xs sm:text-sm font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer active:scale-[0.99]"
+						class="w-full px-4 py-3 bg-white border border-pink-200 rounded-2xl text-xs sm:text-sm font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer hover:border-pink-300 active:scale-[0.99]"
 					>
-						<div class="flex items-center space-x-2">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-							</svg>
-							<span>{editRelationshipStatus || 'Select status...'}</span>
-						</div>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-pink-400">
+						<span>{editRelationshipStatus || 'Select status...'}</span>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 						</svg>
 					</button>
@@ -178,39 +169,35 @@
 
 				<!-- Gender -->
 				<div>
-					<label class="block text-xs font-extrabold text-pink-950 mb-1">Gender <span class="text-pink-500 font-normal">(Optional)</span></label>
+					<label class="block text-xs font-black text-[#f43f8e] mb-1.5">Gender <span class="text-pink-400 font-bold">(Optional)</span></label>
 					<button
 						type="button"
 						onclick={() => showGenderModal = true}
-						class="w-full px-3.5 py-2.5 bg-pink-50/60 hover:bg-pink-100/70 border-2 border-pink-200 rounded-xl text-xs sm:text-sm font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer active:scale-[0.99]"
+						class="w-full px-4 py-3 bg-white border border-pink-200 rounded-2xl text-xs sm:text-sm font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer hover:border-pink-300 active:scale-[0.99]"
 					>
-						<div class="flex items-center space-x-2">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-							</svg>
-							<span>{editGender || 'Select gender...'}</span>
-						</div>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-pink-400">
+						<span>{editGender || 'Select gender...'}</span>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 						</svg>
 					</button>
 				</div>
 
 				<!-- Action Buttons -->
-				<div class="flex items-center space-x-3 pt-2">
+				<div class="flex items-center space-x-3 pt-3">
 					<button
 						type="button"
 						onclick={() => isOpen = false}
-						class="w-1/2 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer active:scale-95"
+						class="w-1/2 py-3 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-2xl font-black text-xs sm:text-sm transition-all cursor-pointer border border-pink-100 active:scale-95"
 					>
 						Cancel
 					</button>
 					<button
 						type="submit"
 						disabled={isSaving}
-						class="w-1/2 py-2.5 bg-pink-500 hover:bg-pink-600 text-white rounded-xl font-bold text-xs sm:text-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50 flex items-center justify-center space-x-1.5"
+						class="w-1/2 py-3 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-2xl font-black text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-50 flex items-center justify-center space-x-2"
 					>
 						{#if isSaving}
+							<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
 							<span>Saving...</span>
 						{:else}
 							<span>Save Details</span>
