@@ -242,12 +242,48 @@
 		}
 	}
 
+	let modalAudioElement = $state(/** @type {HTMLAudioElement | null} */ (null));
+	let isAudioPlaying = $state(false);
+	let audioCurrentTime = $state(0);
+	let audioDuration = $state(0);
+
+	function toggleAudioPlay() {
+		playClickSound();
+		if (!modalAudioElement) return;
+		if (isAudioPlaying) {
+			modalAudioElement.pause();
+		} else {
+			modalAudioElement.play().catch(() => {});
+		}
+	}
+
+	function handleAudioSeek(e) {
+		const target = /** @type {HTMLInputElement} */ (e.target);
+		const time = parseFloat(target.value);
+		if (modalAudioElement) {
+			modalAudioElement.currentTime = time;
+			audioCurrentTime = time;
+		}
+	}
+
+	function formatAudioTime(seconds) {
+		if (isNaN(seconds) || seconds < 0) return '0:00';
+		const m = Math.floor(seconds / 60);
+		const s = Math.floor(seconds % 60);
+		return `${m}:${s < 10 ? '0' : ''}${s}`;
+	}
+
 	function handleCardClick(item, e) {
 		openMemoryDetails(item, e);
 	}
 
 	function openMemoryDetails(item, e) {
 		if (e) e.stopPropagation();
+		if (modalAudioElement) {
+			modalAudioElement.pause();
+			isAudioPlaying = false;
+			audioCurrentTime = 0;
+		}
 		selectedMemoryToView = item;
 		showViewMemoryModal = true;
 	}
@@ -890,18 +926,72 @@
 							{/if}
 						{/if}
 
-						<!-- Music attachment if any -->
+						<!-- Custom Themed Pink Pill Music Player -->
 						{#if selectedMemoryToView.memory.music}
-							<div class="rounded-xl overflow-hidden border border-pink-100 bg-pink-50/70 p-2.5">
-								<div class="flex items-center space-x-1.5 mb-1.5">
-									<div class="w-6 h-6 rounded-full bg-[#f43f8e] flex items-center justify-center shrink-0">
-										<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
+							<div class="bg-pink-50/90 border border-pink-200/90 rounded-2xl p-3 space-y-2">
+								<!-- Header: Music Note Icon + Song Title -->
+								<div class="flex items-center space-x-2 min-w-0">
+									<div class="w-6 h-6 rounded-full bg-[#f43f8e] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+										<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+											<path d="M19.95 2.1a1 1 0 00-.95.1L8 6.4a1 1 0 00-.8 1V17.5a3.5 3.5 0 102 3.14V11.2l9-3.6v6.9a3.5 3.5 0 102 3.14V3a1 1 0 00-.25-.9z" />
 										</svg>
 									</div>
-									<span class="text-xs font-bold text-pink-600 truncate">{getMusicName(selectedMemoryToView.memory.music)}</span>
+									<p class="text-xs font-black text-[#e8367f] truncate" title={getMusicName(selectedMemoryToView.memory.music)}>
+										{getMusicName(selectedMemoryToView.memory.music)}
+									</p>
 								</div>
-								<audio src={getMusicUrl(selectedMemoryToView.memory.music)} controls class="w-full h-8 rounded-full" crossorigin="anonymous"></audio>
+
+								<!-- Pill Controls Bar -->
+								<div class="bg-white rounded-full px-3 py-1.5 border border-pink-200/80 flex items-center space-x-2 shadow-xs">
+									<button
+										type="button"
+										onclick={toggleAudioPlay}
+										class="w-7 h-7 rounded-full bg-[#f43f8e] hover:bg-[#e0337f] text-white flex items-center justify-center flex-shrink-0 shadow-xs active:scale-95 transition-all cursor-pointer"
+										title={isAudioPlaying ? 'Pause' : 'Play'}
+									>
+										{#if isAudioPlaying}
+											<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+												<path fill-rule="evenodd" d="M6.75 5.25a.75.75 0 01.75.75v12a.75.75 0 01-1.5 0v-12a.75.75 0 01.75-.75zm10.5 0a.75.75 0 01.75.75v12a.75.75 0 01-1.5 0v-12a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+											</svg>
+										{:else}
+											<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 translate-x-0.5" viewBox="0 0 24 24" fill="currentColor">
+												<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
+											</svg>
+										{/if}
+									</button>
+
+									<span class="text-[10px] font-black text-pink-600 min-w-[28px] text-right tabular-nums">
+										{formatAudioTime(audioCurrentTime)}
+									</span>
+
+									<!-- Pink Range Slider Track -->
+									<input
+										type="range"
+										min="0"
+										max={audioDuration || 100}
+										step="0.1"
+										value={audioCurrentTime}
+										oninput={handleAudioSeek}
+										class="flex-1 h-1.5 bg-pink-100 accent-[#f43f8e] rounded-full cursor-pointer"
+									/>
+
+									<span class="text-[10px] font-bold text-pink-400 min-w-[28px] tabular-nums">
+										{formatAudioTime(audioDuration)}
+									</span>
+
+									<audio
+										bind:this={modalAudioElement}
+										src={getMusicUrl(selectedMemoryToView.memory.music)}
+										preload="metadata"
+										onloadedmetadata={(e) => { audioDuration = e.currentTarget.duration || 0; }}
+										ontimeupdate={(e) => { audioCurrentTime = e.currentTarget.currentTime || 0; }}
+										onended={() => { isAudioPlaying = false; audioCurrentTime = 0; }}
+										onplay={() => { isAudioPlaying = true; }}
+										onpause={() => { isAudioPlaying = false; }}
+										crossorigin="anonymous"
+										class="hidden"
+									></audio>
+								</div>
 							</div>
 						{/if}
 
@@ -914,14 +1004,14 @@
 					</div>
 				</div>
 
-				<!-- Bottom Action Buttons Footer (Exact replica of Screenshot 4) -->
-				<div class="mt-4 pt-3 border-t border-pink-100 flex-shrink-0 grid grid-cols-2 gap-3">
+				<!-- Bottom Action Buttons Footer (Slim & sleek, non-bulky) -->
+				<div class="mt-4 pt-3 border-t border-pink-100 flex-shrink-0 grid grid-cols-2 gap-2.5">
 					{#if selectedMemoryToView.status === 'accepted'}
 						<button
 							onclick={(e) => { playClickSound(); goToCalendarDate(selectedMemoryToView.memory.date, e); }}
-							class="py-3 px-3 bg-[#10b981] hover:bg-[#059669] text-white rounded-2xl active:scale-95 transition-all duration-200 text-xs sm:text-sm font-black flex items-center justify-center space-x-2 shadow-sm cursor-pointer"
+							class="h-10 py-2 px-3 bg-[#10b981] hover:bg-[#059669] text-white rounded-xl active:scale-95 transition-all duration-200 text-xs font-black flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer whitespace-nowrap"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
 							</svg>
 							<span>Open on Calendar</span>
@@ -929,9 +1019,9 @@
 
 						<button
 							onclick={() => { playClickSound(); handleOpenChat(selectedMemoryToView.sender_id, selectedMemoryToView.sender_username); }}
-							class="py-3 px-3 bg-white border-2 border-pink-300 hover:bg-pink-50 text-[#f43f8e] rounded-2xl active:scale-95 transition-all duration-200 text-xs sm:text-sm font-black flex items-center justify-center space-x-2 cursor-pointer"
+							class="h-10 py-2 px-3 bg-white border-2 border-pink-200 hover:border-pink-300 hover:bg-pink-50 text-[#f43f8e] rounded-xl active:scale-95 transition-all duration-200 text-xs font-black flex items-center justify-center space-x-1.5 cursor-pointer whitespace-nowrap"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
 							</svg>
 							<span>Say Thanks in Chat</span>
@@ -939,9 +1029,9 @@
 					{:else}
 						<button
 							onclick={(e) => { playClickSound(); handleRespondSharedMemory(selectedMemoryToView, 'accept', e); }}
-							class="py-3 px-3 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 text-white rounded-2xl text-xs sm:text-sm font-black transition-all duration-200 flex items-center justify-center space-x-2 shadow-sm cursor-pointer"
+							class="h-10 py-2 px-3 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 text-white rounded-xl text-xs font-black transition-all duration-200 flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer whitespace-nowrap"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 							</svg>
 							<span>Accept Memory</span>
@@ -949,9 +1039,9 @@
 
 						<button
 							onclick={(e) => { playClickSound(); handleRespondSharedMemory(selectedMemoryToView, 'decline', e); }}
-							class="py-3 px-3 bg-white border-2 border-pink-200 hover:bg-rose-50 hover:border-rose-300 text-rose-500 active:scale-95 rounded-2xl text-xs sm:text-sm font-black transition-all duration-200 cursor-pointer"
+							class="h-10 py-2 px-3 bg-white border-2 border-pink-200 hover:bg-rose-50 hover:border-rose-300 text-rose-500 active:scale-95 rounded-xl text-xs font-black transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center justify-center"
 						>
-							Decline
+							<span>Decline</span>
 						</button>
 					{/if}
 				</div>
