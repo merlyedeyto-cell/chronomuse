@@ -371,7 +371,7 @@
 		onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 	>
 		<div
-			class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl max-w-lg w-full p-4 sm:p-5 relative transition-all duration-300 animate-modal-content my-auto max-h-[88vh] overflow-y-auto shadow-[0_10px_40px_rgba(244,114,182,0.2)]"
+			class="bg-white border border-pink-100 rounded-3xl max-w-lg w-full p-4 sm:p-5 relative transition-all duration-300 animate-modal-content my-auto max-h-[88vh] overflow-y-auto shadow-2xl"
 			class:opacity-0={isClosing}
 			class:scale-95={isClosing}
 			onclick={(e) => e.stopPropagation()}

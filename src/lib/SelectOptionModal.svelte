@@ -31,7 +31,7 @@
 	>
 		<!-- Modal Content Box matching Month popup -->
 		<div 
-			class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl p-4 sm:p-5 max-w-xs sm:max-w-sm w-full space-y-3 animate-modal-content max-h-[85vh] flex flex-col shadow-[0_10px_40px_rgba(244,114,182,0.2)]"
+			class="bg-white border border-pink-100 rounded-3xl p-4 sm:p-5 max-w-xs sm:max-w-sm w-full space-y-3 animate-modal-content max-h-[85vh] flex flex-col shadow-2xl"
 			onclick={(e) => e.stopPropagation()}
 			role="dialog"
 			aria-modal="true"

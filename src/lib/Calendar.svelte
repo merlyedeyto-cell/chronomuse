@@ -505,7 +505,7 @@
 		onclick={(e) => { if (e.target === e.currentTarget) showMonthMenu = false; }}
 		onkeydown={(e) => { if (e.key === 'Escape') showMonthMenu = false; }}
 	>
-		<div class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl p-4 sm:p-5 max-w-xs sm:max-w-sm w-full space-y-3 shadow-[0_10px_40px_rgba(244,114,182,0.2)] animate-modal-content">
+		<div class="bg-white border border-pink-100 rounded-3xl p-4 sm:p-5 max-w-xs sm:max-w-sm w-full space-y-3 shadow-2xl animate-modal-content">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2">
 				<div class="flex items-center space-x-1.5">
 					<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
@@ -556,7 +556,7 @@
 		onclick={(e) => { if (e.target === e.currentTarget) showYearMenu = false; }}
 		onkeydown={(e) => { if (e.key === 'Escape') showYearMenu = false; }}
 	>
-		<div class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl p-4 sm:p-5 max-w-xs sm:max-w-sm w-full space-y-3 shadow-[0_10px_40px_rgba(244,114,182,0.2)] animate-modal-content">
+		<div class="bg-white border border-pink-100 rounded-3xl p-4 sm:p-5 max-w-xs sm:max-w-sm w-full space-y-3 shadow-2xl animate-modal-content">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2">
 				<div class="flex items-center space-x-1.5">
 					<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">

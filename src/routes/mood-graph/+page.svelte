@@ -602,7 +602,7 @@
 			onkeydown={(e) => { if (e.key === 'Escape') showMoodListModal = false; }}
 		>
 			<div
-				class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl max-w-sm sm:max-w-md w-full p-4 sm:p-5 relative my-auto shadow-[0_10px_40px_rgba(244,114,182,0.2)] animate-scale-up"
+				class="bg-white border border-pink-100 rounded-3xl max-w-sm sm:max-w-md w-full p-4 sm:p-5 relative my-auto shadow-2xl animate-scale-up"
 			>
 				<!-- Close Button -->
 				<button

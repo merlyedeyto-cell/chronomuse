@@ -134,7 +134,7 @@
 	>
 		<!-- Modal Content -->
 		<div
-			class="bg-white/98 backdrop-blur-xl rounded-3xl p-5 border border-pink-100 transition-all duration-300 max-w-md w-full relative max-h-[85vh] overflow-hidden flex flex-col animate-modal-content shadow-[0_10px_40px_rgba(244,114,182,0.2)]"
+			class="bg-white rounded-3xl p-5 border border-pink-100 transition-all duration-300 max-w-md w-full relative max-h-[85vh] overflow-hidden flex flex-col animate-modal-content shadow-2xl"
 			class:opacity-0={isClosing}
 			class:scale-95={isClosing}
 			class:transform={isClosing}
@@ -239,7 +239,7 @@
 	<!-- Confirm Delete Modal -->
 	{#if showConfirmDelete}
 		<div class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-modal-backdrop font-sans">
-			<div class="bg-white/98 backdrop-blur-xl rounded-3xl p-5 max-w-xs w-full border border-pink-100 animate-modal-content shadow-[0_10px_40px_rgba(244,114,182,0.2)]">
+			<div class="bg-white rounded-3xl p-5 max-w-xs w-full border border-pink-100 animate-modal-content shadow-2xl">
 				<div class="text-center mb-3.5">
 					<div class="w-10 h-10 mx-auto mb-2 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 shadow-2xs">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">

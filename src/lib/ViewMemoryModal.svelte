@@ -703,7 +703,7 @@
 
 <!-- Backdrop Overlay -->
 <div
-	class="fixed inset-0 bg-black/30 backdrop-blur-xs z-40 transition-opacity duration-300"
+	class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity duration-300"
 	class:opacity-0={isClosing}
 	onclick={handleClose}
 ></div>
@@ -714,7 +714,7 @@
 	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 >
 	<div
-		class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl p-4 sm:p-5 relative transition-all duration-300 max-w-sm sm:max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col shadow-[0_10px_40px_rgba(244,114,182,0.2)]"
+		class="bg-white border border-pink-100 rounded-3xl p-4 sm:p-5 relative transition-all duration-300 max-w-sm sm:max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl"
 		class:opacity-0={isClosing}
 		class:scale-95={isClosing}
 		class:transform={isClosing}
@@ -927,7 +927,7 @@
 									<span>😊</span>
 								</button>
 								{#if showEmojiPicker}
-									<div class="absolute bottom-full right-0 mb-1.5 p-2 bg-white/98 backdrop-blur-md border border-pink-100 rounded-2xl z-10 max-w-[180px] shadow-lg">
+									<div class="absolute bottom-full right-0 mb-1.5 p-2 bg-white border border-pink-100 rounded-2xl z-10 max-w-[180px] shadow-lg">
 										<div class="grid grid-cols-6 gap-1">
 											{#each emojis as emoji}
 												<button
@@ -1198,7 +1198,7 @@
 		onclick={(e) => { if (e.target === e.currentTarget && !isTrimmingVideo) { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; } }}
 	>
 		<div
-			class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl max-w-md w-full p-4 sm:p-5 space-y-3.5 shadow-[0_10px_40px_rgba(244,114,182,0.2)] relative animate-modal-content"
+			class="bg-white border border-pink-100 rounded-3xl max-w-md w-full p-4 sm:p-5 space-y-3.5 shadow-2xl relative animate-modal-content"
 			onclick={(e) => e.stopPropagation()}
 		>
 			<!-- Top Header -->
@@ -1407,8 +1407,8 @@
 
 <!-- Share Memory Modal -->
 {#if showShareModal}
-	<div class="fixed inset-0 bg-black/30 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 font-sans">
-		<div class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl p-5 max-w-sm w-full relative animate-modal-content shadow-[0_10px_40px_rgba(244,114,182,0.2)]">
+	<div class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 font-sans">
+		<div class="bg-white border border-pink-100 rounded-3xl p-5 max-w-sm w-full relative animate-modal-content shadow-2xl">
 			<button
 				onclick={() => showShareModal = false}
 				class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
@@ -1496,7 +1496,7 @@
 		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in font-sans"
 		onclick={(e) => { if (e.target === e.currentTarget) { showDeleteConfirmModal = false; memoryToDeleteId = null; } }}
 	>
-		<div class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl max-w-xs w-full p-5 text-center animate-modal-content relative overflow-hidden shadow-[0_10px_40px_rgba(244,114,182,0.2)]">
+		<div class="bg-white border border-pink-100 rounded-3xl max-w-xs w-full p-5 text-center animate-modal-content relative overflow-hidden shadow-2xl">
 			<!-- Trash Bin Circle Icon -->
 			<div class="w-12 h-12 bg-rose-50 text-rose-500 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-2.5 shadow-2xs">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">

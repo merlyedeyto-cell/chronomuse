@@ -147,7 +147,7 @@
 	>
 		<!-- Modal Content -->
 		<div
-			class="bg-white/98 backdrop-blur-xl rounded-3xl p-5 border border-pink-100 transition-all duration-300 max-w-sm w-full relative max-h-[90vh] overflow-y-auto animate-modal-content shadow-[0_10px_40px_rgba(244,114,182,0.2)]"
+			class="bg-white rounded-3xl p-5 border border-pink-100 transition-all duration-300 max-w-sm w-full relative max-h-[90vh] overflow-y-auto animate-modal-content shadow-2xl"
 			class:opacity-0={isClosing}
 			class:scale-95={isClosing}
 			onclick={(e) => e.stopPropagation()}
