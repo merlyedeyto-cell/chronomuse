@@ -751,7 +751,7 @@
 	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 >
 	<div
-		class="bg-white border border-pink-100 rounded-[28px] p-3.5 sm:p-4 relative transition-all duration-300 max-w-[315px] sm:max-w-[335px] w-full max-h-[calc(100dvh-6.5rem)] sm:max-h-[82vh] overflow-hidden flex flex-col shadow-2xl"
+		class="bg-white border border-pink-100 rounded-[28px] p-4 sm:p-5 relative transition-all duration-300 max-w-[350px] sm:max-w-[380px] w-full max-h-[calc(100dvh-6.5rem)] sm:max-h-[82vh] overflow-hidden flex flex-col shadow-2xl"
 		class:opacity-0={isClosing}
 		class:scale-95={isClosing}
 		class:transform={isClosing}
@@ -787,8 +787,8 @@
 			</div>
 		</div>
 
-	<!-- Memories List - Scrollable -->
-	<div class="flex-1 overflow-y-auto pr-1 -mr-1">
+	<!-- Memories List - Scrollable (Hidden scrollbar) -->
+	<div class="flex-1 overflow-y-auto">
 	{#if memories.length === 0}
 		<div class="text-center py-6">
 			<div class="w-10 h-10 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-2 text-pink-300">
@@ -1626,23 +1626,16 @@
 />
 
 <style>
-	/* Custom scrollbar for memories list */
+	/* Hide scrollbar while preserving smooth scrolling */
 	.flex-1::-webkit-scrollbar {
-		width: 4px;
+		display: none;
+		width: 0px;
+		background: transparent;
 	}
 
-	.flex-1::-webkit-scrollbar-track {
-		background: #fdf2f6;
-		border-radius: 10px;
-	}
-
-	.flex-1::-webkit-scrollbar-thumb {
-		background: #f472b6;
-		border-radius: 10px;
-	}
-
-	.flex-1::-webkit-scrollbar-thumb:hover {
-		background: #ec4899;
+	.flex-1 {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
 	}
 
 	@keyframes modal-backdrop {
