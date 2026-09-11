@@ -703,18 +703,18 @@
 
 <!-- Backdrop Overlay -->
 <div
-	class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity duration-300"
+	class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300"
 	class:opacity-0={isClosing}
 	onclick={handleClose}
 ></div>
 
 <!-- Modal Content Container -->
 <div
-	class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 font-sans"
+	class="fixed inset-0 z-50 flex items-center justify-center p-3 pb-20 sm:p-4 sm:pb-4 font-sans"
 	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 >
 	<div
-		class="bg-white border border-pink-100 rounded-3xl p-4 sm:p-5 relative transition-all duration-300 max-w-sm sm:max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl"
+		class="bg-white border border-pink-100 rounded-3xl p-4 sm:p-5 relative transition-all duration-300 max-w-sm sm:max-w-md w-full max-h-[calc(100dvh-6.5rem)] sm:max-h-[82vh] overflow-hidden flex flex-col shadow-2xl"
 		class:opacity-0={isClosing}
 		class:scale-95={isClosing}
 		class:transform={isClosing}
@@ -1194,11 +1194,11 @@
 {#if showVideoTrimmerModal && rawVideoUrl}
 	<div
 		use:portal
-		class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fade-in font-sans"
+		class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 pb-20 sm:p-4 sm:pb-4 animate-fade-in font-sans"
 		onclick={(e) => { if (e.target === e.currentTarget && !isTrimmingVideo) { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; } }}
 	>
 		<div
-			class="bg-white border border-pink-100 rounded-3xl max-w-md w-full p-4 sm:p-5 space-y-3.5 shadow-2xl relative animate-modal-content"
+			class="bg-white border border-pink-100 rounded-3xl max-w-md w-full p-4 sm:p-5 space-y-3.5 shadow-2xl relative animate-modal-content max-h-[calc(100dvh-6.5rem)] sm:max-h-[85vh] overflow-y-auto"
 			onclick={(e) => e.stopPropagation()}
 		>
 			<!-- Top Header -->
@@ -1407,8 +1407,8 @@
 
 <!-- Share Memory Modal -->
 {#if showShareModal}
-	<div class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 font-sans">
-		<div class="bg-white border border-pink-100 rounded-3xl p-5 max-w-sm w-full relative animate-modal-content shadow-2xl">
+	<div class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 pb-20 sm:p-4 sm:pb-4 font-sans">
+		<div class="bg-white border border-pink-100 rounded-3xl p-5 max-w-sm w-full max-h-[calc(100dvh-6.5rem)] sm:max-h-[82vh] overflow-y-auto relative animate-modal-content shadow-2xl">
 			<button
 				onclick={() => showShareModal = false}
 				class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
@@ -1493,7 +1493,7 @@
 <!-- Delete Memory Confirmation Modal -->
 {#if showDeleteConfirmModal}
 	<div
-		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in font-sans"
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[70] flex items-center justify-center p-4 pb-20 sm:pb-4 animate-fade-in font-sans"
 		onclick={(e) => { if (e.target === e.currentTarget) { showDeleteConfirmModal = false; memoryToDeleteId = null; } }}
 	>
 		<div class="bg-white border border-pink-100 rounded-3xl max-w-xs w-full p-5 text-center animate-modal-content relative overflow-hidden shadow-2xl">

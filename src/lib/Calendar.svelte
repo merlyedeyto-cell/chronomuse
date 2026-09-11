@@ -498,14 +498,14 @@
 <!-- Custom Month Selection Popup -->
 {#if showMonthMenu}
 	<div
-		class="fixed inset-0 bg-black/30 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 pb-20 sm:p-4 sm:pb-4 animate-fade-in"
 		role="dialog"
 		aria-modal="true"
 		tabindex="-1"
 		onclick={(e) => { if (e.target === e.currentTarget) showMonthMenu = false; }}
 		onkeydown={(e) => { if (e.key === 'Escape') showMonthMenu = false; }}
 	>
-		<div class="bg-white border border-pink-100 rounded-3xl p-4 sm:p-5 max-w-xs sm:max-w-sm w-full space-y-3 shadow-2xl animate-modal-content">
+		<div class="bg-white border border-pink-100 rounded-3xl p-4 sm:p-5 max-w-xs sm:max-w-sm w-full space-y-3 shadow-2xl animate-modal-content max-h-[calc(100dvh-6.5rem)] overflow-y-auto">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2">
 				<div class="flex items-center space-x-1.5">
 					<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
@@ -549,14 +549,14 @@
 <!-- Custom Glassmorphic Year Selection Popup -->
 {#if showYearMenu}
 	<div
-		class="fixed inset-0 bg-black/30 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 pb-20 sm:p-4 sm:pb-4 animate-fade-in"
 		role="dialog"
 		aria-modal="true"
 		tabindex="-1"
 		onclick={(e) => { if (e.target === e.currentTarget) showYearMenu = false; }}
 		onkeydown={(e) => { if (e.key === 'Escape') showYearMenu = false; }}
 	>
-		<div class="bg-white border border-pink-100 rounded-3xl p-4 sm:p-5 max-w-xs sm:max-w-sm w-full space-y-3 shadow-2xl animate-modal-content">
+		<div class="bg-white border border-pink-100 rounded-3xl p-4 sm:p-5 max-w-xs sm:max-w-sm w-full space-y-3 shadow-2xl animate-modal-content max-h-[calc(100dvh-6.5rem)] overflow-y-auto">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2">
 				<div class="flex items-center space-x-1.5">
 					<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">

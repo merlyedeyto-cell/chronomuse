@@ -204,6 +204,13 @@
 		fullScreenMediaType = 'image';
 	}
 
+	function isVideo(url) {
+		if (!url) return false;
+		if (typeof url !== 'string') return false;
+		const clean = url.split('?')[0].toLowerCase();
+		return clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.mov') || clean.endsWith('.mkv') || clean.endsWith('.avi') || url.includes('/video/') || url.startsWith('data:video/');
+	}
+
 	function getMediaUrl(url) {
 		if (!url) return '';
 		if (url.startsWith('http://') || url.startsWith('https://')) return url;

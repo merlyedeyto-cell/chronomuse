@@ -365,13 +365,13 @@
 
 {#if isOpen}
 	<div
-		class="fixed inset-0 bg-black/30 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 animate-modal-backdrop overflow-y-auto font-sans"
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 pb-20 sm:p-4 sm:pb-4 animate-modal-backdrop overflow-y-auto font-sans"
 		class:opacity-0={isClosing}
 		class:pointer-events-none={isClosing}
 		onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 	>
 		<div
-			class="bg-white border border-pink-100 rounded-3xl max-w-lg w-full p-4 sm:p-5 relative transition-all duration-300 animate-modal-content my-auto max-h-[88vh] overflow-y-auto shadow-2xl"
+			class="bg-white border border-pink-100 rounded-3xl max-w-lg w-full p-4 sm:p-5 relative transition-all duration-300 animate-modal-content my-auto max-h-[calc(100dvh-6.5rem)] sm:max-h-[88vh] overflow-y-auto shadow-2xl"
 			class:opacity-0={isClosing}
 			class:scale-95={isClosing}
 			onclick={(e) => e.stopPropagation()}

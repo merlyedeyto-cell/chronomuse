@@ -23,7 +23,7 @@
 
 {#if isOpen}
 	<div 
-		class="fixed inset-0 z-[110] bg-black/30 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fade-in font-sans"
+		class="fixed inset-0 z-[110] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 pb-20 sm:p-4 sm:pb-4 animate-fade-in font-sans"
 		onclick={(e) => { if (e.target === e.currentTarget) onClose(); }}
 		role="button"
 		tabindex="0"
@@ -31,7 +31,7 @@
 	>
 		<!-- Modal Content Box matching Month popup -->
 		<div 
-			class="bg-white border border-pink-100 rounded-3xl p-4 sm:p-5 max-w-xs sm:max-w-sm w-full space-y-3 animate-modal-content max-h-[85vh] flex flex-col shadow-2xl"
+			class="bg-white border border-pink-100 rounded-3xl p-4 sm:p-5 max-w-xs sm:max-w-sm w-full space-y-3 animate-modal-content max-h-[calc(100dvh-6.5rem)] sm:max-h-[85vh] flex flex-col shadow-2xl"
 			onclick={(e) => e.stopPropagation()}
 			role="dialog"
 			aria-modal="true"
