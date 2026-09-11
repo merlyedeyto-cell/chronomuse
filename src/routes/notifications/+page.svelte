@@ -164,6 +164,17 @@
 		return desc.replace(/\s*\(Shared by @[^)\r\n]+\)\s*/gi, '').trim();
 	}
 
+	function getMemoryDisplayTitle(memory) {
+		if (!memory) return 'Special Memory';
+		if (memory.title && memory.title !== 'Untitled Memory' && memory.title !== 'Special Memory') {
+			return memory.title;
+		}
+		if (memory.memory_tag && memory.memory_tag !== 'Untitled Memory' && !memory.memory_tag.startsWith('Shared memory from')) {
+			return memory.memory_tag;
+		}
+		return 'Special Memory';
+	}
+
 	function formatTimeAgo(dateStr) {
 		if (!dateStr) return '';
 		const d = new Date(dateStr);
@@ -502,7 +513,7 @@
 												{/if}
 											</div>
 											<p class="text-xs font-black text-pink-950/80 mt-1 truncate">
-												{item.memory.memory_tag || item.memory.title || 'Special Memory'}
+												{getMemoryDisplayTitle(item.memory)}
 												<span class="text-pink-400 font-bold ml-1">• {formatDate(item.memory.date)}</span>
 											</p>
 										</div>
@@ -603,7 +614,7 @@
 												{/if}
 											</div>
 											<p class="text-xs font-black text-pink-950/80 mt-1 truncate">
-												{item.memory.memory_tag || item.memory.title || 'Special Memory'}
+												{getMemoryDisplayTitle(item.memory)}
 												<span class="text-pink-400 font-bold ml-1">• {formatDate(item.memory.date)}</span>
 											</p>
 										</div>
@@ -718,7 +729,7 @@
 												{/if}
 											</div>
 											<p class="text-xs font-black text-pink-950/80 mt-1 truncate">
-												{item.memory.memory_tag || item.memory.title || 'Special Memory'}
+												{getMemoryDisplayTitle(item.memory)}
 												<span class="text-pink-400 font-bold ml-1">• {formatDate(item.memory.date)}</span>
 											</p>
 										</div>
@@ -820,13 +831,19 @@
 										{selectedMemoryToView.memory.mood_tag}
 									</span>
 								{/if}
+
+								{#if selectedMemoryToView.memory.memory_tag && selectedMemoryToView.memory.memory_tag !== 'Untitled Memory' && selectedMemoryToView.memory.memory_tag !== 'Special Memory' && !selectedMemoryToView.memory.memory_tag.startsWith('Shared memory from')}
+									<span class="text-[11px] px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-700 border border-pink-200 font-black">
+										{selectedMemoryToView.memory.memory_tag}
+									</span>
+								{/if}
 							</div>
 						</div>
 
-						<!-- Memory Title -->
-						{#if selectedMemoryToView.memory.title || selectedMemoryToView.memory.memory_tag}
+						<!-- Custom Title only if user provided a specific title (e.g. "bshw") -->
+						{#if selectedMemoryToView.memory.title && selectedMemoryToView.memory.title !== 'Untitled Memory' && selectedMemoryToView.memory.title !== 'Special Memory' && selectedMemoryToView.memory.title !== selectedMemoryToView.memory.memory_tag}
 							<h3 class="text-base font-black text-pink-950">
-								{selectedMemoryToView.memory.title || selectedMemoryToView.memory.memory_tag}
+								{selectedMemoryToView.memory.title}
 							</h3>
 						{/if}
 
