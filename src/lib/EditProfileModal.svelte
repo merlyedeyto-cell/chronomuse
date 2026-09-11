@@ -104,7 +104,7 @@
 		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) isOpen = false; }}
 	>
-		<div class="bg-white border border-pink-100 rounded-2xl max-w-sm w-full p-4.5 sm:p-5 relative overflow-hidden space-y-3.5 shadow-xl animate-modal-content">
+		<div class="bg-white border border-pink-100 rounded-3xl max-w-sm sm:max-w-md w-full p-5 sm:p-6 relative shadow-2xl space-y-4 animate-modal-content">
 			<!-- Header -->
 			<div class="flex items-center justify-between pb-0.5">
 				<div class="flex items-center space-x-2">
@@ -125,7 +125,7 @@
 				</button>
 			</div>
 
-			<form onsubmit={handleSubmit} class="space-y-3">
+			<form onsubmit={handleSubmit} class="space-y-3.5">
 				<!-- Bio -->
 				<div>
 					<label class="block text-[11px] font-black text-[#f43f8e] mb-1">Bio / Status Quote</label>
@@ -133,7 +133,7 @@
 						bind:value={editBio}
 						rows="2"
 						placeholder="Share a short bio or status message..."
-						class="w-full px-3.5 py-2.5 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 transition-all resize-none"
+						class="w-full px-3.5 py-2.5 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 transition-all resize-none shadow-2xs"
 					></textarea>
 				</div>
 
@@ -143,7 +143,7 @@
 					<button
 						type="button"
 						onclick={openBirthdayModal}
-						class="w-full px-3.5 py-2.5 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer hover:border-pink-300 active:scale-[0.99]"
+						class="w-full px-3.5 py-2.5 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer hover:border-pink-300 active:scale-[0.99] shadow-2xs"
 					>
 						<span>{formatBirthdayDisplay(editBirthday)}</span>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
@@ -158,7 +158,7 @@
 					<button
 						type="button"
 						onclick={() => showRelationshipModal = true}
-						class="w-full px-3.5 py-2.5 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer hover:border-pink-300 active:scale-[0.99]"
+						class="w-full px-3.5 py-2.5 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer hover:border-pink-300 active:scale-[0.99] shadow-2xs"
 					>
 						<span>{editRelationshipStatus || 'Select status...'}</span>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
@@ -173,7 +173,7 @@
 					<button
 						type="button"
 						onclick={() => showGenderModal = true}
-						class="w-full px-3.5 py-2.5 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer hover:border-pink-300 active:scale-[0.99]"
+						class="w-full px-3.5 py-2.5 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer hover:border-pink-300 active:scale-[0.99] shadow-2xs"
 					>
 						<span>{editGender || 'Select gender...'}</span>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
@@ -183,7 +183,7 @@
 				</div>
 
 				<!-- Action Buttons -->
-				<div class="flex items-center space-x-2.5 pt-2">
+				<div class="flex items-center space-x-2.5 pt-2.5">
 					<button
 						type="button"
 						onclick={() => isOpen = false}
@@ -217,7 +217,7 @@
 		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[60] flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) showBirthdayModal = false; }}
 	>
-		<div class="bg-white border border-pink-100 rounded-2xl max-w-xs sm:max-w-sm w-full p-4.5 space-y-3 shadow-xl animate-modal-content">
+		<div class="bg-white border border-pink-100 rounded-3xl max-w-xs sm:max-w-sm w-full p-5 space-y-3.5 shadow-2xl animate-modal-content">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2">
 				<div class="flex items-center space-x-2">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
@@ -245,7 +245,7 @@
 							<button
 								type="button"
 								onclick={() => tempMonth = idx}
-								class="py-1 px-1 rounded-xl text-xs font-bold transition-all cursor-pointer border {tempMonth === idx ? 'bg-[#f43f8e] text-white border-[#e0337f]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-900 border-pink-200'}"
+								class="py-1.5 px-1 rounded-xl text-xs font-bold transition-all cursor-pointer border {tempMonth === idx ? 'bg-[#f43f8e] text-white border-[#e0337f]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-900 border-pink-200'}"
 							>
 								{mName.slice(0, 3)}
 							</button>
@@ -278,18 +278,18 @@
 					</div>
 				</div>
 
-				<div class="flex items-center space-x-2 pt-1.5">
+				<div class="flex items-center space-x-2 pt-2">
 					<button
 						type="button"
 						onclick={() => showBirthdayModal = false}
-						class="w-1/2 py-2 bg-pink-50 text-pink-700 rounded-xl font-bold text-xs cursor-pointer active:scale-95 border border-pink-100"
+						class="w-1/2 py-2.5 bg-pink-50 text-pink-700 rounded-xl font-bold text-xs cursor-pointer active:scale-95 border border-pink-100 hover:bg-pink-100 transition-all"
 					>
 						Cancel
 					</button>
 					<button
 						type="button"
 						onclick={saveBirthday}
-						class="w-1/2 py-2 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl font-bold text-xs active:scale-95 cursor-pointer shadow-xs"
+						class="w-1/2 py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl font-bold text-xs active:scale-95 cursor-pointer shadow-md transition-all"
 					>
 						Set Birthday
 					</button>
@@ -307,7 +307,7 @@
 		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[60] flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) showRelationshipModal = false; }}
 	>
-		<div class="bg-white border border-pink-100 rounded-2xl max-w-xs sm:max-w-sm w-full p-4.5 space-y-3 shadow-xl animate-modal-content">
+		<div class="bg-white border border-pink-100 rounded-3xl max-w-xs sm:max-w-sm w-full p-5 space-y-3.5 shadow-2xl animate-modal-content">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2">
 				<div class="flex items-center space-x-2">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
@@ -331,7 +331,7 @@
 					<button
 						type="button"
 						onclick={() => { editRelationshipStatus = option; showRelationshipModal = false; }}
-						class="w-full py-2 px-3 rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-between border {editRelationshipStatus === option ? 'bg-[#f43f8e] text-white border-[#e0337f]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-900 border-pink-200'}"
+						class="w-full py-2.5 px-3.5 rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-between border {editRelationshipStatus === option ? 'bg-[#f43f8e] text-white border-[#e0337f]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-900 border-pink-200'}"
 					>
 						<span>{option}</span>
 						{#if editRelationshipStatus === option}
@@ -354,7 +354,7 @@
 		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[60] flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) showGenderModal = false; }}
 	>
-		<div class="bg-white border border-pink-100 rounded-2xl max-w-xs sm:max-w-sm w-full p-4.5 space-y-3 shadow-xl animate-modal-content">
+		<div class="bg-white border border-pink-100 rounded-3xl max-w-xs sm:max-w-sm w-full p-5 space-y-3.5 shadow-2xl animate-modal-content">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2">
 				<div class="flex items-center space-x-2">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
@@ -378,7 +378,7 @@
 					<button
 						type="button"
 						onclick={() => { editGender = option; showGenderModal = false; }}
-						class="w-full py-2 px-3 rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-between border {editGender === option ? 'bg-[#f43f8e] text-white border-[#e0337f]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-900 border-pink-200'}"
+						class="w-full py-2.5 px-3.5 rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-between border {editGender === option ? 'bg-[#f43f8e] text-white border-[#e0337f]' : 'bg-pink-50/70 hover:bg-pink-100 text-pink-900 border-pink-200'}"
 					>
 						<span>{option}</span>
 						{#if editGender === option}

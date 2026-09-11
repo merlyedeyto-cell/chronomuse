@@ -1372,8 +1372,8 @@
 		{:else}
 			<!-- Top Hero Profile Card -->
 			<div class="bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(244,114,182,0.1)] border border-pink-100/90 relative">
-				<!-- Cover Banner Background -->
-				<div class="relative h-32 sm:h-36 w-full bg-gradient-to-tr from-[#3b82f6] via-[#ec4899] to-[#8b5cf6] overflow-hidden group">
+				<!-- Cover Banner Background (Roomier height so banners look complete) -->
+				<div class="relative h-52 sm:h-60 w-full bg-gradient-to-tr from-[#3b82f6] via-[#ec4899] to-[#8b5cf6] overflow-hidden group">
 					<!-- Cover Image if present -->
 					{#if profileData.user.cover_url}
 						<img src={profileData.user.cover_url} alt="Cover Banner" class="w-full h-full object-cover" />
@@ -1382,7 +1382,7 @@
 					<!-- Edit Cover Button on bottom right -->
 					{#if profileData.is_self}
 						<label
-							class="absolute bottom-2.5 right-2.5 px-2.5 py-1 bg-white/90 hover:bg-white text-[#f43f8e] text-[11px] font-black rounded-full border border-pink-200/80 shadow-xs flex items-center space-x-1 backdrop-blur-xs transition-all active:scale-95 cursor-pointer z-30"
+							class="absolute bottom-3 right-3 px-3 py-1.5 bg-white/90 hover:bg-white text-[#f43f8e] text-xs font-black rounded-full border border-pink-200/80 shadow-xs flex items-center space-x-1.5 backdrop-blur-xs transition-all active:scale-95 cursor-pointer z-30"
 							title="Upload Cover Photo"
 						>
 							<input
@@ -1392,10 +1392,10 @@
 								class="hidden"
 							/>
 							{#if isUploadingCover}
-								<div class="w-3 h-3 border-2 border-[#f43f8e] border-t-transparent rounded-full animate-spin"></div>
+								<div class="w-3.5 h-3.5 border-2 border-[#f43f8e] border-t-transparent rounded-full animate-spin"></div>
 								<span>Uploading...</span>
 							{:else}
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
 									<path d="M12 9a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" />
 									<path fill-rule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.24.383.645.643 1.11.71a41.402 41.402 0 016.581 1.764c.94.33 1.5 1.258 1.5 2.25v9.75c0 1.242-1.008 2.25-2.25 2.25H3.75A2.25 2.25 0 011.5 20.25v-9.75c0-.992.56-1.92 1.5-2.25a41.402 41.402 0 016.58-1.764c.466-.067.871-.327 1.111-.71l.821-1.317c.502-.805 1.365-1.338 2.332-1.39zM6.75 12.75a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0zm12-1.5a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
 								</svg>
@@ -1406,75 +1406,72 @@
 				</div>
 
 				<!-- Profile Info Section -->
-				<div class="px-4 sm:px-5 pb-5 sm:pb-6 pt-0 relative z-10">
+				<div class="px-5 sm:px-6 pb-5 sm:pb-6 pt-0 relative z-10">
 					<!-- Avatar & Note Row -->
-					<div class="flex items-end justify-between -mt-9 sm:-mt-10 mb-2">
-						<div class="relative">
+					<div class="flex items-end justify-between -mt-10 sm:-mt-12 mb-3">
+						<div class="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
 							<!-- Floating Note Speech Bubble on Top-Left of Avatar -->
 							{#if profileData.is_self}
 								{#if userNote}
 									<button 
 										type="button"
-										class="absolute -top-8 left-1 z-20 bg-white px-2.5 py-0.5 rounded-xl border border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-xs flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all"
+										class="absolute -top-8 left-0 z-20 bg-white px-2.5 py-0.5 rounded-xl border-2 border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-md flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
 										onclick={openNoteModal}
 										title="Click to edit status note"
 									>
 										<span class="max-w-[120px] truncate">{userNote}</span>
-										<div class="absolute -bottom-1 left-4 w-2 h-2 bg-white border-r border-b border-pink-200 rotate-45"></div>
+										<div class="absolute -bottom-1.5 left-4 w-2 h-2 bg-white border-r-2 border-b-2 border-pink-200 rotate-45"></div>
 									</button>
 								{/if}
 							{:else}
 								{#if userNote}
 									<button
 										type="button"
-										class="absolute -top-8 left-1 z-20 bg-white px-2.5 py-0.5 rounded-xl border border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-xs flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all"
+										class="absolute -top-8 left-0 z-20 bg-white px-2.5 py-0.5 rounded-xl border-2 border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-md flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
 										onclick={() => viewingUserNote = true}
 										title="View note"
 									>
 										<span class="max-w-[120px] truncate">{userNote}</span>
-										<div class="absolute -bottom-1 left-4 w-2 h-2 bg-white border-r border-b border-pink-200 rotate-45"></div>
+										<div class="absolute -bottom-1.5 left-4 w-2 h-2 bg-white border-r-2 border-b-2 border-pink-200 rotate-45"></div>
 									</button>
 								{/if}
 							{/if}
 
-							<!-- Avatar Container + Camera Badge -->
-							<div class="relative flex-shrink-0">
-								<!-- Avatar Circular Picture -->
-								<div class="w-20 h-20 sm:w-22 sm:h-22 rounded-full border-4 border-white shadow-md bg-[#fef08a] flex items-center justify-center text-2xl font-black overflow-hidden relative flex-shrink-0">
-									{#if profileData.user.avatar_url}
-										<img
-											src={profileData.user.avatar_url}
-											alt={profileData.user.username}
-											class="w-full h-full object-cover"
-										/>
-									{:else}
-										<span class="text-3xl">🤪</span>
-									{/if}
-								</div>
-
-								<!-- Avatar Camera Badge (Positioned outside overflow-hidden) -->
-								{#if profileData.is_self}
-									<label
-										class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#f43f8e] hover:bg-[#e0337f] text-white border-2 border-white flex items-center justify-center shadow-xs cursor-pointer z-30 transition-all active:scale-95"
-										title="Upload Profile Photo"
-									>
-										<input
-											type="file"
-											accept="image/*"
-											onchange={handleAvatarChange}
-											class="hidden"
-										/>
-										{#if isUploadingAvatar}
-											<div class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-										{:else}
-											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
-												<path d="M12 9a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" />
-												<path fill-rule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.24.383.645.643 1.11.71a41.402 41.402 0 016.581 1.764c.94.33 1.5 1.258 1.5 2.25v9.75c0 1.242-1.008 2.25-2.25 2.25H3.75A2.25 2.25 0 011.5 20.25v-9.75c0-.992.56-1.92 1.5-2.25a41.402 41.402 0 016.58-1.764c.466-.067.871-.327 1.111-.71l.821-1.317c.502-.805 1.365-1.338 2.332-1.39zM6.75 12.75a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0zm12-1.5a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
-											</svg>
-										{/if}
-									</label>
+							<!-- Avatar Circular Picture -->
+							<div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white shadow-md bg-[#fef08a] flex items-center justify-center text-3xl font-black overflow-hidden relative">
+								{#if profileData.user.avatar_url}
+									<img
+										src={profileData.user.avatar_url}
+										alt={profileData.user.username}
+										class="w-full h-full object-cover"
+									/>
+								{:else}
+									<span class="text-3xl">🤪</span>
 								{/if}
 							</div>
+
+							<!-- Avatar Camera Badge (Positioned outside overflow-hidden) -->
+							{#if profileData.is_self}
+								<label
+									class="absolute -bottom-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#f43f8e] hover:bg-[#e0337f] text-white border-2 border-white flex items-center justify-center shadow-md cursor-pointer z-30 transition-all active:scale-95"
+									title="Upload Profile Photo"
+								>
+									<input
+										type="file"
+										accept="image/*"
+										onchange={handleAvatarChange}
+										class="hidden"
+									/>
+									{#if isUploadingAvatar}
+										<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+									{:else}
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+											<path d="M12 9a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" />
+											<path fill-rule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.24.383.645.643 1.11.71a41.402 41.402 0 016.581 1.764c.94.33 1.5 1.258 1.5 2.25v9.75c0 1.242-1.008 2.25-2.25 2.25H3.75A2.25 2.25 0 011.5 20.25v-9.75c0-.992.56-1.92 1.5-2.25a41.402 41.402 0 016.58-1.764c.466-.067.871-.327 1.111-.71l.821-1.317c.502-.805 1.365-1.338 2.332-1.39zM6.75 12.75a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0zm12-1.5a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+										</svg>
+									{/if}
+								</label>
+							{/if}
 						</div>
 
 						<!-- Action buttons on other user profile -->
@@ -1903,22 +1900,24 @@
 			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
 			onclick={(e) => { if (e.target === e.currentTarget) showUnfriendModal = false; }}
 		>
-			<div class="bg-white border border-pink-100 rounded-2xl max-w-xs sm:max-w-sm w-full p-4.5 text-center animate-modal-content shadow-xl">
-				<div class="w-11 h-11 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-2 border border-rose-100 shadow-xs">
+			<div class="bg-white border border-pink-100 rounded-3xl max-w-sm w-full p-5 sm:p-6 text-center animate-modal-content shadow-2xl space-y-3.5">
+				<div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto border border-rose-100 shadow-xs">
 					<svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
 						<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.088 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 00-3.273 0C6.39 3.05 6 3.678 6 4.478v.113a49.488 49.488 0 0012 0v-.113c0-.8-.39-1.428-1.091-1.452a51.196 51.196 0 00-3.273 0zM9.75 9.75a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75zm4.5 0a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 					</svg>
 				</div>
-				<h3 class="text-sm sm:text-base font-black text-pink-950 mb-0.5">Unfriend @{unfriendTarget.username}?</h3>
-				<p class="text-xs text-pink-400 font-bold mb-4 leading-relaxed">
-					Are you sure you want to remove <span class="text-pink-950 font-black">@{unfriendTarget.username}</span> from your friends list?
-				</p>
+				<div>
+					<h3 class="text-sm sm:text-base font-black text-pink-950 mb-0.5">Unfriend @{unfriendTarget.username}?</h3>
+					<p class="text-xs text-pink-400 font-bold leading-relaxed">
+						Are you sure you want to remove <span class="text-pink-950 font-black">@{unfriendTarget.username}</span> from your friends list?
+					</p>
+				</div>
 
-				<div class="flex items-center space-x-2">
+				<div class="flex items-center space-x-2.5 pt-1">
 					<button
 						type="button"
 						onclick={() => showUnfriendModal = false}
-						class="w-1/2 py-2 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer border border-pink-100"
+						class="w-1/2 py-2.5 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer border border-pink-100"
 					>
 						Cancel
 					</button>
@@ -1926,7 +1925,7 @@
 						type="button"
 						onclick={confirmRemoveFriend}
 						disabled={isUnfriending}
-						class="w-1/2 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 shadow-xs"
+						class="w-1/2 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 shadow-md"
 					>
 						{#if isUnfriending}
 							<span>Removing...</span>
@@ -1947,22 +1946,24 @@
 			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
 			onclick={(e) => { if (e.target === e.currentTarget) showBlockModal = false; }}
 		>
-			<div class="bg-white border border-pink-100 rounded-2xl max-w-xs sm:max-w-sm w-full p-4.5 text-center animate-modal-content shadow-xl">
-				<div class="w-11 h-11 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-2 border border-rose-100 shadow-xs">
+			<div class="bg-white border border-pink-100 rounded-3xl max-w-sm w-full p-5 sm:p-6 text-center animate-modal-content shadow-2xl space-y-3.5">
+				<div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto border border-rose-100 shadow-xs">
 					<svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
 						<path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd" />
 					</svg>
 				</div>
-				<h3 class="text-sm sm:text-base font-black text-pink-950 mb-0.5">Block @{blockTarget.username || 'User'}?</h3>
-				<p class="text-xs text-pink-400 font-bold mb-4 leading-relaxed">
-					They will no longer be able to message you or see your profile.
-				</p>
+				<div>
+					<h3 class="text-sm sm:text-base font-black text-pink-950 mb-0.5">Block @{blockTarget.username || 'User'}?</h3>
+					<p class="text-xs text-pink-400 font-bold leading-relaxed">
+						They will no longer be able to message you or see your profile.
+					</p>
+				</div>
 
-				<div class="flex items-center space-x-2">
+				<div class="flex items-center space-x-2.5 pt-1">
 					<button
 						type="button"
 						onclick={() => showBlockModal = false}
-						class="w-1/2 py-2 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer border border-pink-100"
+						class="w-1/2 py-2.5 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer border border-pink-100"
 					>
 						Cancel
 					</button>
@@ -1970,7 +1971,7 @@
 						type="button"
 						onclick={confirmBlockUser}
 						disabled={isBlocking}
-						class="w-1/2 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 shadow-xs"
+						class="w-1/2 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 shadow-md"
 					>
 						{#if isBlocking}
 							<span>Blocking...</span>
@@ -2002,7 +2003,7 @@
 			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
 			onclick={(e) => { if (e.target === e.currentTarget) showNoteModal = false; }}
 		>
-			<div class="bg-white border border-pink-100 rounded-2xl max-w-xs sm:max-w-sm w-full p-4.5 text-center animate-modal-content relative overflow-hidden shadow-xl space-y-3">
+			<div class="bg-white border border-pink-100 rounded-3xl max-w-sm w-full p-5 sm:p-6 text-center animate-modal-content relative shadow-2xl space-y-3.5">
 				<!-- Chat Icon on Top -->
 				<div class="w-11 h-11 bg-pink-50 text-[#f43f8e] border border-pink-100 rounded-full flex items-center justify-center mx-auto shadow-xs">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
@@ -2011,16 +2012,16 @@
 				</div>
 
 				<div>
-					<h3 class="text-base font-black text-[#f43f8e]">
+					<h3 class="text-base sm:text-lg font-black text-[#f43f8e]">
 						{userNote ? 'Edit Note' : 'Add Note'}
 					</h3>
-					<p class="text-[11px] text-pink-400 font-bold mt-0.5 leading-relaxed">
+					<p class="text-xs text-pink-400 font-bold mt-0.5 leading-relaxed">
 						Share a quick thought that will float right above your profile photo!
 					</p>
 				</div>
 
 				<!-- 24h Expiration Timer -->
-				<div class="p-2.5 bg-white border border-pink-200 rounded-xl flex items-center justify-between shadow-2xs">
+				<div class="p-2.5 bg-pink-50/50 border border-pink-200/80 rounded-xl flex items-center justify-between shadow-2xs">
 					<span class="flex items-center gap-1.5 text-xs font-black text-[#f43f8e]">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -2035,7 +2036,7 @@
 						bind:value={noteInputText}
 						maxlength="60"
 						placeholder="Sad ako!"
-						class="w-full px-3 py-2 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 transition-all resize-none shadow-2xs"
+						class="w-full px-3.5 py-2.5 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 transition-all resize-none shadow-2xs"
 						rows="2"
 					></textarea>
 					<span class="block text-right text-[10px] text-pink-400 font-bold mt-0.5">
@@ -2043,12 +2044,12 @@
 					</span>
 				</div>
 
-				<div class="flex items-center space-x-2 pt-0.5">
+				<div class="flex items-center space-x-2 pt-1">
 					{#if userNote}
 						<button
 							type="button"
 							onclick={deleteUserNote}
-							class="flex-1 py-2 bg-pink-50 text-rose-500 hover:bg-rose-50 rounded-xl font-black text-xs transition-all cursor-pointer border border-pink-100 active:scale-95"
+							class="flex-1 py-2.5 bg-pink-50 text-rose-500 hover:bg-rose-100/70 rounded-xl font-black text-xs transition-all cursor-pointer border border-pink-100 active:scale-95"
 						>
 							Delete
 						</button>
@@ -2056,14 +2057,14 @@
 					<button
 						type="button"
 						onclick={() => showNoteModal = false}
-						class="flex-1 py-2 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-xl font-black text-xs transition-all cursor-pointer border border-pink-100 active:scale-95"
+						class="flex-1 py-2.5 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-xl font-black text-xs transition-all cursor-pointer border border-pink-100 active:scale-95"
 					>
 						Cancel
 					</button>
 					<button
 						type="button"
 						onclick={saveUserNote}
-						class="flex-1 py-2 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer shadow-xs"
+						class="flex-1 py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer shadow-md"
 					>
 						Save Note
 					</button>
