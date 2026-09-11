@@ -88,32 +88,56 @@
 	});
 </script>
 
-<div class="fixed right-0 top-20 sm:top-24 z-40 pointer-events-none md:hidden flex items-start {hideOnMobile ? 'hidden' : 'flex'}">
-	<!-- Toggle Arrow Button Tab -->
-	<button
-		type="button"
-		onclick={toggleSidebar}
-		class="pointer-events-auto w-6 h-11 mt-1 bg-white/95 backdrop-blur-md border-2 border-r-0 border-pink-200/90 rounded-l-2xl shadow-[-3px_4px_14px_rgba(0,0,0,0.08)] flex items-center justify-center text-pink-500 hover:text-[#f43f8e] active:scale-90 transition-all duration-200 cursor-pointer select-none"
-		aria-label={isOpen ? 'Collapse navigation' : 'Open navigation'}
-		title={isOpen ? 'Collapse navigation' : 'Open navigation'}
-	>
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke-width="3"
-			stroke="currentColor"
-			class="w-3.5 h-3.5 transition-transform duration-300 {isOpen ? 'rotate-180' : 'rotate-0'}"
+<div class="fixed right-0 top-20 sm:top-24 z-40 md:hidden select-none {hideOnMobile ? 'hidden' : 'block'}">
+	<!-- Collapsed Tab Handle (visible when !isOpen) -->
+	{#if !isOpen}
+		<button
+			type="button"
+			onclick={toggleSidebar}
+			class="w-5.5 h-10 bg-white/95 backdrop-blur-md border-2 border-r-0 border-pink-200/90 rounded-l-xl shadow-[-2px_3px_12px_rgba(0,0,0,0.08)] flex items-center justify-center text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-90 transition-all duration-200 cursor-pointer"
+			aria-label="Open navigation"
+			title="Open navigation"
 		>
-			<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-		</svg>
-	</button>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke-width="3"
+				stroke="currentColor"
+				class="w-3.5 h-3.5"
+			>
+				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+			</svg>
+		</button>
+	{/if}
 
 	<!-- Sliding Sidebar Dock Container -->
 	<nav
 		aria-label="Mobile Sidebar Navigation"
-		class="pointer-events-auto bg-white/95 backdrop-blur-md border-2 border-r-0 border-pink-200/90 rounded-l-2xl p-1.5 shadow-[-4px_4px_20px_rgba(0,0,0,0.08)] flex flex-col items-center space-y-1.5 select-none font-sans transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] {isOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'}"
+		class="bg-white/95 backdrop-blur-md border-2 border-r-0 border-pink-200/90 rounded-l-2xl p-1.5 shadow-[-4px_4px_20px_rgba(0,0,0,0.08)] flex flex-col items-center space-y-1 font-sans transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] {isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full opacity-0 pointer-events-none absolute right-0 top-0'}"
 	>
+		<!-- Collapse Button at top of dock -->
+		<button
+			type="button"
+			onclick={toggleSidebar}
+			class="w-8 h-6 rounded-lg text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50 flex items-center justify-center transition-colors cursor-pointer"
+			aria-label="Collapse navigation"
+			title="Collapse navigation"
+		>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke-width="3"
+				stroke="currentColor"
+				class="w-4 h-4"
+			>
+				<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+			</svg>
+		</button>
+
+		<div class="w-6 h-px bg-pink-100/80 my-0.5"></div>
+
 		{#each navItems as item, idx}
 			<button
 				type="button"
