@@ -4,6 +4,7 @@
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
+	import ViewMemoryModal from '$lib/ViewMemoryModal.svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 
@@ -291,68 +292,36 @@
 		}
 	}
 
-	function handleLogout() {
-		try {
-			supabase.removeAllChannels();
-		} catch (e) {}
-		localStorage.clear();
-		sessionStorage.clear();
-		if (typeof window !== 'undefined') {
-			window.dispatchEvent(new Event('chronomuse_auth_change'));
-		}
-		window.location.href = '/';
-	}
-
-	function handleSidebarLogout() {
-		try {
-			supabase.removeAllChannels();
-		} catch (e) {}
-		localStorage.clear();
-		sessionStorage.clear();
-		if (typeof window !== 'undefined') {
-			window.dispatchEvent(new Event('chronomuse_auth_change'));
-		}
-		goto('/');
-	}
-
-	function handleHome() {
-		goto('/dashboard');
-	}
-
-	function handleMoodGraph() {
-		// Already on mood graph page
-	}
-
 	function getMoodColor(mood) {
 		const colors = {
-			'Happy': 'bg-yellow-400 text-yellow-900 border-yellow-300',
+			'Happy': 'bg-amber-400 text-amber-900 border-amber-300',
 			'Sad': 'bg-blue-400 text-white border-blue-300',
 			'Excited': 'bg-orange-400 text-white border-orange-300',
-			'Angry': 'bg-red-400 text-white border-red-300',
-			'Calm': 'bg-green-400 text-white border-green-300',
+			'Angry': 'bg-rose-500 text-white border-rose-400',
+			'Calm': 'bg-emerald-400 text-white border-emerald-300',
 			'Anxious': 'bg-purple-400 text-white border-purple-300',
 			'Grateful': 'bg-pink-400 text-white border-pink-300',
-			'Lonely': 'bg-gray-400 text-white border-gray-300',
+			'Lonely': 'bg-slate-400 text-white border-slate-300',
 			'Love': 'bg-rose-400 text-white border-rose-300',
-			'Neutral': 'bg-slate-400 text-white border-slate-300'
+			'Neutral': 'bg-gray-400 text-white border-gray-300'
 		};
-		return colors[mood] || 'bg-pink-400 text-white border-pink-300';
+		return colors[mood] || 'bg-[#f43f8e] text-white border-pink-300';
 	}
 
 	function getMoodFillColor(mood) {
 		const colors = {
-			'Happy': '#FBBF24',
-			'Sad': '#60A5FA',
-			'Excited': '#FB923C',
-			'Angry': '#F87171',
-			'Calm': '#4ADE80',
-			'Anxious': '#A78BFA',
-			'Grateful': '#F472B6',
-			'Lonely': '#9CA3AF',
+			'Happy': '#F59E0B',
+			'Sad': '#3B82F6',
+			'Excited': '#F97316',
+			'Angry': '#F43F5E',
+			'Calm': '#10B981',
+			'Anxious': '#8B5CF6',
+			'Grateful': '#EC4899',
+			'Lonely': '#64748B',
 			'Love': '#FB7185',
 			'Neutral': '#94A3B8'
 		};
-		return colors[mood] || '#F472B6';
+		return colors[mood] || '#F43F8E';
 	}
 
 	function getMoodPercentage(mood) {
@@ -367,319 +336,336 @@
 	);
 </script>
 
-<div class="flex flex-col min-h-screen bg-pink-100 animate-fade-in">
+<svelte:head>
+	<title>Mood Graph - ChronoMuse</title>
+</svelte:head>
+
+<div class="flex flex-col min-h-screen bg-[#fff0f5] animate-fade-in font-sans">
 	<!-- Top Navigation -->
 	<AppHeader />
 
 	<!-- Main Content -->
-	<main class="flex-grow px-4 py-6 sm:py-8 pb-28 sm:pb-32 md:ml-0 overflow-hidden">
-			<div class="container mx-auto max-w-6xl">
-				<!-- Header Banner -->
-				<div class="bg-white border-2 border-pink-300 rounded-2xl p-3.5 sm:p-4 mb-4 sm:mb-5 animate-fade-in-up">
-					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-						<div>
-							<div class="flex items-center space-x-2 mb-0.5">
-								<button
-									onclick={() => goto('/dashboard')}
-									class="p-1 sm:p-1.5 text-pink-500 hover:text-pink-700 hover:bg-pink-100 rounded-lg transition-all duration-200"
-									title="Back to Dashboard"
-								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-									</svg>
-								</button>
-								<h1 class="text-base sm:text-lg font-extrabold text-pink-600">Mood Graph</h1>
-							</div>
-							<p class="text-[11px] sm:text-xs text-pink-400 ml-7 sm:ml-8">Track your emotional journey and mood trends over time</p>
-						</div>
-
-						<!-- Period Selector -->
-						<div class="flex items-center space-x-1 bg-pink-100 p-1 rounded-xl border border-pink-200 self-start sm:self-auto flex-wrap gap-1">
-							<button
-								onclick={() => changePeriod('all')}
-								class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 active:scale-95 text-center"
-								class:bg-pink-500={selectedPeriod === 'all'}
-								class:text-white={selectedPeriod === 'all'}
-								class:text-pink-600={selectedPeriod !== 'all'}
-								class:hover:bg-pink-200={selectedPeriod !== 'all'}
-							>
-								All Time
-							</button>
-							<button
-								onclick={() => changePeriod('week')}
-								class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 active:scale-95 text-center"
-								class:bg-pink-500={selectedPeriod === 'week'}
-								class:text-white={selectedPeriod === 'week'}
-								class:text-pink-600={selectedPeriod !== 'week'}
-								class:hover:bg-pink-200={selectedPeriod !== 'week'}
-							>
-								This Week
-							</button>
-							<button
-								onclick={() => changePeriod('month')}
-								class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 active:scale-95 text-center"
-								class:bg-pink-500={selectedPeriod === 'month'}
-								class:text-white={selectedPeriod === 'month'}
-								class:text-pink-600={selectedPeriod !== 'month'}
-								class:hover:bg-pink-200={selectedPeriod !== 'month'}
-							>
-								This Month
-							</button>
-							<button
-								onclick={() => changePeriod('year')}
-								class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 active:scale-95 text-center"
-								class:bg-pink-500={selectedPeriod === 'year'}
-								class:text-white={selectedPeriod === 'year'}
-								class:text-pink-600={selectedPeriod !== 'year'}
-								class:hover:bg-pink-200={selectedPeriod !== 'year'}
-							>
-								This Year
-							</button>
-						</div>
+	<main class="flex-grow container mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-24 sm:pb-28 max-w-4xl">
+		<!-- Header Banner -->
+		<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 mb-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up">
+			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+				<div>
+					<div class="flex items-center space-x-2 mb-0.5">
+						<button
+							onclick={() => goto('/dashboard')}
+							class="w-7 h-7 rounded-xl bg-pink-50 hover:bg-pink-100 text-[#f43f8e] border border-pink-100 flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-2xs"
+							title="Back to Dashboard"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+							</svg>
+						</button>
+						<h1 class="text-sm sm:text-base font-black text-[#f43f8e]">Mood Graph</h1>
 					</div>
+					<p class="text-[11px] text-pink-400 font-bold ml-9">Track your emotional journey and mood trends over time</p>
 				</div>
 
-				<!-- Mood Statistics Cards -->
-				<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 animate-fade-in-up" style="animation-delay: 0.3s">
-					<!-- Most Frequent Mood(s) - Handles Ties so no mood is left over -->
-					{#if mostFrequentMoods.length > 0}
-						{#each mostFrequentMoods as dominantMoodItem}
-							<button
-								onclick={() => openMoodListModal(dominantMoodItem)}
-								class="bg-pink-500 border-2 border-pink-600 rounded-2xl p-4 text-white transition-all duration-300 hover:-translate-y-1 text-left cursor-pointer"
-							>
-								<div class="flex items-center space-x-2 mb-2">
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0V5.625a1.125 1.125 0 011.125-1.125h2.25c1.052 0 2.125.703 2.125 2.25v0c0 1.125-.872 2.25-2.125 2.25h-2.25m-9 0h2.25c1.052 0 2.125-.703 2.125-2.25v0c0-1.125-.872-2.25-2.125-2.25H9.497m0 14.25V5.625a1.125 1.125 0 011.125-1.125h2.25c1.052 0 2.125.703 2.125 2.25v0c0 1.125-.872 2.25-2.125 2.25h-2.25" />
-									</svg>
-									<span class="text-xs font-medium">{mostFrequentMoods.length > 1 ? 'Dominant (Tied)' : 'Most Frequent'}</span>
-								</div>
-								<p class="text-xl font-bold">{dominantMoodItem}</p>
-								<p class="text-xs text-pink-100 mt-1">{mostFrequentMoodCount} {mostFrequentMoodCount === 1 ? 'memory' : 'memories'}</p>
-							</button>
-						{/each}
-					{/if}
+				<!-- Period Selector -->
+				<div class="flex items-center gap-1 bg-[#fdf2f6] p-1 rounded-2xl border border-pink-100 shadow-2xs self-start sm:self-auto flex-wrap">
+					<button
+						onclick={() => changePeriod('all')}
+						class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 text-center cursor-pointer {selectedPeriod === 'all' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-[#f43f8e] hover:bg-white/70'}"
+					>
+						All Time
+					</button>
+					<button
+						onclick={() => changePeriod('week')}
+						class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 text-center cursor-pointer {selectedPeriod === 'week' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-[#f43f8e] hover:bg-white/70'}"
+					>
+						This Week
+					</button>
+					<button
+						onclick={() => changePeriod('month')}
+						class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 text-center cursor-pointer {selectedPeriod === 'month' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-[#f43f8e] hover:bg-white/70'}"
+					>
+						This Month
+					</button>
+					<button
+						onclick={() => changePeriod('year')}
+						class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 text-center cursor-pointer {selectedPeriod === 'year' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-[#f43f8e] hover:bg-white/70'}"
+					>
+						This Year
+					</button>
+				</div>
+			</div>
+		</div>
 
-					<!-- Mood Cards (Only moods with memories > 0) -->
-					{#each Object.entries(moodStats) as [moodKey, count]}
-						{#if count > 0}
-							{@const moodName = moodKey.charAt(0).toUpperCase() + moodKey.slice(1)}
-							<button
-								onclick={() => openMoodListModal(moodName)}
-								class="bg-white border-2 rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1 text-left cursor-pointer"
-								style="border-color: {getMoodFillColor(moodName)};"
-							>
-								<div class="flex items-center justify-between mb-2">
+		<!-- Mood Statistics Cards (Compact Grid) -->
+		<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 sm:gap-3 mb-4 animate-fade-in-up" style="animation-delay: 0.1s">
+			<!-- Most Frequent Mood(s) -->
+			{#if mostFrequentMoods.length > 0}
+				{#each mostFrequentMoods as dominantMoodItem}
+					<button
+						onclick={() => openMoodListModal(dominantMoodItem)}
+						class="bg-gradient-to-br from-[#f43f8e] to-[#e0337f] border border-pink-400/40 rounded-2xl p-3 sm:p-3.5 text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-98 text-left cursor-pointer shadow-[0_4px_14px_rgba(244,63,142,0.25)] flex flex-col justify-between"
+					>
+						<div class="flex items-center space-x-1.5 mb-1 opacity-90">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0V5.625a1.125 1.125 0 011.125-1.125h2.25c1.052 0 2.125.703 2.125 2.25v0c0 1.125-.872 2.25-2.125 2.25h-2.25m-9 0h2.25c1.052 0 2.125-.703 2.125-2.25v0c0-1.125-.872-2.25-2.125-2.25H9.497m0 14.25V5.625a1.125 1.125 0 011.125-1.125h2.25c1.052 0 2.125.703 2.125 2.25v0c0 1.125-.872 2.25-2.125 2.25h-2.25" />
+							</svg>
+							<span class="text-[10px] font-bold uppercase tracking-wider">{mostFrequentMoods.length > 1 ? 'Dominant' : 'Frequent'}</span>
+						</div>
+						<div>
+							<p class="text-base sm:text-lg font-black leading-tight">{dominantMoodItem}</p>
+							<p class="text-[10px] text-pink-100 font-medium mt-0.5">{mostFrequentMoodCount} {mostFrequentMoodCount === 1 ? 'memory' : 'memories'}</p>
+						</div>
+					</button>
+				{/each}
+			{/if}
+
+			<!-- Mood Cards (Only moods with memories > 0) -->
+			{#each Object.entries(moodStats) as [moodKey, count]}
+				{#if count > 0}
+					{@const moodName = moodKey.charAt(0).toUpperCase() + moodKey.slice(1)}
+					<button
+						onclick={() => openMoodListModal(moodName)}
+						class="bg-white/95 border border-pink-100/90 rounded-2xl p-3 sm:p-3.5 transition-all duration-200 hover:-translate-y-0.5 active:scale-98 text-left cursor-pointer shadow-[0_2px_10px_rgba(244,114,182,0.06)] hover:border-pink-200 flex flex-col justify-between"
+					>
+						<div class="flex items-center justify-between mb-1.5">
+							<div class="flex items-center space-x-1.5 min-w-0">
+								<span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {getMoodFillColor(moodName)}"></span>
+								<span class="text-xs font-bold text-pink-950 truncate">{moodName}</span>
+							</div>
+							<span class="text-xs font-black" style="color: {getMoodFillColor(moodName)}">{getMoodPercentage(moodKey)}%</span>
+						</div>
+						<div>
+							<div class="w-full bg-pink-50 rounded-full h-1.5 overflow-hidden">
+								<div class="h-1.5 rounded-full transition-all duration-500" style="width: {getMoodPercentage(moodKey)}%; background-color: {getMoodFillColor(moodName)};"></div>
+							</div>
+							<p class="text-[10px] text-pink-600/80 font-medium mt-1.5">{count} {count === 1 ? 'memory' : 'memories'}</p>
+						</div>
+					</button>
+				{/if}
+			{/each}
+		</div>
+
+		<!-- Pie Chart and Mood Distribution (Compact side-by-side) -->
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 animate-fade-in-up" style="animation-delay: 0.2s">
+			<!-- Donut Chart -->
+			<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
+				<div class="flex items-center space-x-1.5 mb-3">
+					<div class="w-5 h-5 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+							<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+						</svg>
+					</div>
+					<h2 class="text-xs sm:text-sm font-black text-pink-950">Mood Breakdown</h2>
+				</div>
+
+				{#if totalMemories > 0}
+					<div class="flex flex-col items-center">
+						<!-- SVG Donut Chart -->
+						<div class="relative w-36 h-36 sm:w-40 sm:h-40 my-1">
+							<svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+								{#each getPieChartData() as segment}
+									<circle
+										cx="50"
+										cy="50"
+										r="35"
+										fill="none"
+										stroke={segment.color}
+										stroke-width="13"
+										stroke-dasharray={segment.strokeDasharray}
+										stroke-dashoffset={segment.strokeDashoffset}
+										class="transition-all duration-500 cursor-pointer hover:opacity-85 focus:outline-none"
+										role="button"
+										tabindex="0"
+										aria-label={`View ${segment.mood} memories`}
+										onclick={() => openMoodListModal(segment.mood)}
+										onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') openMoodListModal(segment.mood); }}
+									/>
+								{/each}
+							</svg>
+							<!-- Center text -->
+							<div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+								<span class="text-lg sm:text-xl font-black text-[#f43f8e]">{totalMemories}</span>
+								<span class="text-[9px] text-pink-400 font-bold uppercase tracking-wider">Total</span>
+							</div>
+						</div>
+
+						<!-- Legend with exact counts & percentages -->
+						<div class="mt-2.5 grid grid-cols-2 gap-1.5 w-full">
+							{#each getPieChartData() as segment}
+								<button
+									onclick={() => openMoodListModal(segment.mood)}
+									class="flex items-center justify-between p-1.5 rounded-xl bg-pink-50/50 hover:bg-pink-100/70 border border-pink-100/80 transition-all text-left group cursor-pointer active:scale-98"
+								>
 									<div class="flex items-center space-x-1.5 min-w-0">
-										<span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: {getMoodFillColor(moodName)}"></span>
-										<span class="text-xs font-bold text-pink-900 truncate">{moodName}</span>
+										<div class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {segment.color}"></div>
+										<span class="text-[11px] text-pink-900 capitalize font-bold truncate group-hover:text-[#f43f8e]">{segment.mood}</span>
 									</div>
-									<span class="text-xs font-black" style="color: {getMoodFillColor(moodName)}">{getMoodPercentage(moodKey)}%</span>
+									<div class="text-right flex-shrink-0 ml-1">
+										<span class="text-[11px] font-black text-[#f43f8e]">{segment.count}</span>
+										<span class="text-[9px] text-pink-400 ml-0.5">({Math.round(segment.percent)}%)</span>
+									</div>
+								</button>
+							{/each}
+						</div>
+					</div>
+				{:else}
+					<p class="text-center text-pink-400 py-8 text-xs font-medium">No mood data available for this period</p>
+				{/if}
+			</div>
+
+			<!-- Mood Distribution Bars -->
+			<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col">
+				<div class="flex items-center space-x-1.5 mb-3">
+					<div class="w-5 h-5 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+						</svg>
+					</div>
+					<h2 class="text-xs sm:text-sm font-black text-pink-950">Mood Distribution</h2>
+				</div>
+
+				<div class="space-y-2 flex-grow overflow-y-auto">
+					{#each Object.entries(moodStats) as [mood, count]}
+						{#if count > 0}
+							{@const moodName = mood.charAt(0).toUpperCase() + mood.slice(1)}
+							<button
+								onclick={() => openMoodListModal(mood)}
+								class="w-full flex items-center space-x-2 p-1.5 rounded-xl hover:bg-pink-50/70 border border-transparent hover:border-pink-100 transition-all text-left group cursor-pointer active:scale-99"
+							>
+								<span class="text-xs font-bold text-pink-900 w-16 capitalize group-hover:text-[#f43f8e] transition-colors">{mood}</span>
+								<div class="flex-1 bg-pink-50 rounded-full h-2.5 overflow-hidden">
+									<div
+										class="h-2.5 rounded-full transition-all duration-500 {getMoodColor(moodName)}"
+										style="width: {getMoodPercentage(mood)}%"
+									></div>
 								</div>
-								<div class="w-full bg-pink-100 rounded-full h-2 overflow-hidden">
-									<div class="h-2 rounded-full transition-all duration-300" style="width: {getMoodPercentage(moodKey)}%; background-color: {getMoodFillColor(moodName)};"></div>
-								</div>
-								<p class="text-xs text-pink-700 font-medium mt-2">{count} {count === 1 ? 'memory' : 'memories'}</p>
+								<span class="text-xs font-black text-[#f43f8e] w-8 text-right">{count}</span>
 							</button>
 						{/if}
 					{/each}
+					{#if totalMemories === 0}
+						<p class="text-center text-pink-400 py-8 text-xs font-medium">No mood data available for this period</p>
+					{/if}
 				</div>
+			</div>
+		</div>
 
-				<!-- Pie Chart and Mood Distribution -->
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 animate-fade-in-up" style="animation-delay: 0.4s">
-					<!-- Pie Chart -->
-					<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 transition-all duration-300">
-						<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide">Mood Breakdown</h2>
-						{#if totalMemories > 0}
-							<div class="flex flex-col items-center">
-								<!-- SVG Donut Chart -->
-								<div class="relative w-44 h-44 sm:w-52 sm:h-52">
-									<svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-										{#each getPieChartData() as segment}
-											<circle
-												cx="50"
-												cy="50"
-												r="35"
-												fill="none"
-												stroke={segment.color}
-												stroke-width="14"
-												stroke-dasharray={segment.strokeDasharray}
-												stroke-dashoffset={segment.strokeDashoffset}
-												class="transition-all duration-500 cursor-pointer hover:opacity-90 focus:outline-hidden"
-												role="button"
-												tabindex="0"
-												aria-label={`View ${segment.mood} memories`}
-												onclick={() => openMoodListModal(segment.mood)}
-												onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') openMoodListModal(segment.mood); }}
-											/>
-										{/each}
-									</svg>
-									<!-- Center text -->
-									<div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-										<span class="text-xl font-black text-pink-600">{totalMemories}</span>
-										<span class="text-[10px] text-pink-400 font-semibold uppercase">Total</span>
-									</div>
-								</div>
+		<!-- 10 Recent Memories Section -->
+		<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up" style="animation-delay: 0.3s">
+			<div class="flex items-center space-x-1.5 mb-3">
+				<div class="w-5 h-5 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+				</div>
+				<h2 class="text-xs sm:text-sm font-black text-pink-950">10 Recent Memories</h2>
+			</div>
 
-								<!-- Legend with exact counts & percentages -->
-								<div class="mt-3 grid grid-cols-2 gap-1.5 w-full">
-									{#each getPieChartData() as segment}
-										<button
-											onclick={() => openMoodListModal(segment.mood)}
-											class="flex items-center justify-between p-1.5 rounded-lg bg-pink-50 hover:bg-pink-100 border border-pink-200 transition-all duration-200 text-left group"
-										>
-											<div class="flex items-center space-x-1.5 min-w-0">
-												<div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: {segment.color}"></div>
-												<span class="text-[11px] text-pink-700 capitalize font-bold truncate group-hover:text-pink-600">{segment.mood}</span>
-											</div>
-											<div class="text-right flex-shrink-0 ml-1">
-												<span class="text-[11px] font-extrabold text-pink-600">{segment.count}</span>
-												<span class="text-[9px] text-pink-400 ml-0.5">({Math.round(segment.percent)}%)</span>
-											</div>
-										</button>
-									{/each}
-								</div>
+			{#if recentTenMemories.length > 0}
+				<div class="space-y-1.5 max-h-72 overflow-y-auto pr-1">
+					{#each recentTenMemories as memory}
+						<button
+							onclick={() => viewMemory(memory)}
+							class="w-full flex items-center space-x-2.5 p-2 sm:p-2.5 bg-[#fdf2f6]/60 border border-pink-100/80 hover:border-pink-200 rounded-xl transition-all duration-200 text-left cursor-pointer group hover:bg-[#fff5f8] active:scale-[0.99] shadow-2xs"
+						>
+							<div class="w-2.5 h-2.5 rounded-full {getMoodColor(memory.mood_tag)} flex-shrink-0"></div>
+							<div class="flex-1 min-w-0">
+								<p class="text-xs font-bold text-pink-950 truncate group-hover:text-[#f43f8e] transition-colors">
+									{memory.description || memory.memory_tag || 'Untitled Memory'}
+								</p>
+								<p class="text-[10px] text-pink-400 font-medium">{memory.date}</p>
 							</div>
-						{:else}
-							<p class="text-center text-pink-400 py-8 text-xs">No mood data available for this period</p>
-						{/if}
-					</div>
-
-					<!-- Mood Bars Chart -->
-					<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 transition-all duration-300">
-						<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide">Mood Distribution</h2>
-						<div class="space-y-2.5">
-							{#each Object.entries(moodStats) as [mood, count]}
-								{#if count > 0}
-									<button
-										onclick={() => openMoodListModal(mood)}
-										class="w-full flex items-center space-x-2.5 p-1 rounded-lg hover:bg-pink-50 transition-colors text-left group"
-									>
-										<span class="text-xs font-semibold text-pink-700 w-16 capitalize group-hover:font-bold">{mood}</span>
-										<div class="flex-1 bg-pink-100 rounded-full h-3">
-											<div
-												class="h-3 rounded-full transition-all duration-500 {getMoodColor(mood.charAt(0).toUpperCase() + mood.slice(1))}"
-												style="width: {getMoodPercentage(mood)}%"
-											></div>
-										</div>
-										<span class="text-xs font-bold text-pink-600 w-10 text-right">{count}</span>
-									</button>
-								{/if}
-							{/each}
-							{#if totalMemories === 0}
-								<p class="text-center text-pink-400 py-8 text-xs">No mood data available for this period</p>
+							{#if memory.mood_tag}
+								<span class="text-[9px] px-2 py-0.5 rounded-full bg-pink-100 text-[#f43f8e] font-bold border border-pink-200/80 flex-shrink-0">
+									{memory.mood_tag}
+								</span>
 							{/if}
-						</div>
-					</div>
+						</button>
+					{/each}
 				</div>
-
-				<!-- 10 Recent Memories Section -->
-				<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 animate-fade-in-up transition-all duration-300" style="animation-delay: 0.5s">
-					<h2 class="text-xs sm:text-sm font-bold text-pink-600 mb-3 uppercase tracking-wide">10 Recent Memories</h2>
-					{#if recentTenMemories.length > 0}
-						<div class="space-y-2 max-h-80 overflow-y-auto pr-1">
-							{#each recentTenMemories as memory}
-								<button
-									onclick={() => viewMemory(memory)}
-									class="w-full flex items-center space-x-2.5 p-2.5 bg-pink-50 border border-pink-200 hover:border-pink-300 rounded-xl transition-all duration-200 text-left cursor-pointer group hover:bg-pink-100"
-								>
-									<div class="w-3 h-3 rounded-full {getMoodColor(memory.mood_tag)} flex-shrink-0"></div>
-									<div class="flex-1 min-w-0">
-										<p class="text-xs font-semibold text-pink-700 truncate group-hover:text-pink-600 transition-colors">
-											{memory.description || memory.memory_tag || 'Untitled Memory'}
-										</p>
-										<p class="text-[10px] text-pink-400">{memory.date}</p>
-									</div>
-									{#if memory.mood_tag}
-										<span class="text-[10px] px-2 py-0.5 rounded-full bg-pink-200 text-pink-700 font-bold flex-shrink-0">{memory.mood_tag}</span>
-									{/if}
-								</button>
-							{/each}
-						</div>
-					{:else}
-						<div class="text-center py-6">
-							<p class="text-xs font-semibold text-pink-400">No memories recorded yet</p>
-						</div>
-					{/if}
+			{:else}
+				<div class="text-center py-6">
+					<p class="text-xs font-bold text-pink-400">No memories recorded yet</p>
 				</div>
-			</div>
-		</main>
+			{/if}
+		</div>
+	</main>
 
-		<!-- Mood List Modal Popup -->
-		{#if showMoodListModal}
+	<!-- Mood List Modal Popup -->
+	{#if showMoodListModal}
+		<div
+			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in overflow-y-auto"
+			role="dialog"
+			aria-modal="true"
+			tabindex="-1"
+			onclick={(e) => { if (e.target === e.currentTarget) showMoodListModal = false; }}
+			onkeydown={(e) => { if (e.key === 'Escape') showMoodListModal = false; }}
+		>
 			<div
-				class="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in overflow-y-auto"
-				role="dialog"
-				aria-modal="true"
-				tabindex="-1"
-				onclick={(e) => { if (e.target === e.currentTarget) showMoodListModal = false; }}
-				onkeydown={(e) => { if (e.key === 'Escape') showMoodListModal = false; }}
+				class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl max-w-sm sm:max-w-md w-full p-4 sm:p-5 relative my-auto shadow-[0_10px_40px_rgba(244,114,182,0.2)] animate-scale-up"
 			>
-				<div
-					class="bg-white border-2 border-pink-300 rounded-2xl max-w-md w-full p-4 sm:p-5 relative my-auto"
+				<!-- Close Button -->
+				<button
+					onclick={() => showMoodListModal = false}
+					class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+					title="Close"
 				>
-					<!-- Close Button -->
-					<button
-						onclick={() => showMoodListModal = false}
-						class="absolute top-3.5 right-3.5 p-1 text-pink-400 hover:text-pink-600 hover:bg-pink-100 rounded-lg transition-all duration-200"
-						title="Close"
-					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-						</svg>
-					</button>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
 
-					<!-- Modal Header -->
-					<div class="text-center mb-4 pr-6">
-						<h2 class="text-sm sm:text-base font-bold text-pink-600 flex items-center justify-center gap-2 capitalize">
-							<span>Memories Tagged as "{selectedMoodTag}"</span>
-						</h2>
-						<p class="text-[11px] text-pink-400 mt-0.5">Found {filteredMoodMemories.length} memories</p>
-					</div>
-
-					<!-- Memories List -->
-					{#if filteredMoodMemories.length > 0}
-						<div class="space-y-2 max-h-72 overflow-y-auto pr-1">
-							{#each filteredMoodMemories as memory}
-								<button
-									onclick={() => handleSelectMemoryFromMoodList(memory)}
-									class="w-full flex items-center space-x-2.5 p-2.5 bg-pink-50 border border-pink-200 hover:border-pink-300 rounded-xl transition-all duration-200 text-left cursor-pointer group hover:bg-pink-100"
-								>
-									<div class="w-3 h-3 rounded-full {getMoodColor(memory.mood_tag)} flex-shrink-0"></div>
-									<div class="flex-1 min-w-0">
-										<p class="text-xs font-semibold text-pink-700 truncate group-hover:text-pink-600 transition-colors">
-											{memory.description || memory.memory_tag || 'Untitled Memory'}
-										</p>
-										<p class="text-[10px] text-pink-400 mt-0.5">{memory.date}</p>
-									</div>
-									<span class="text-[10px] px-2 py-0.5 rounded-full bg-pink-200 text-pink-700 font-bold flex-shrink-0">
-										View Details →
-									</span>
-								</button>
-							{/each}
-						</div>
-					{:else}
-						<div class="text-center py-8 bg-pink-50 rounded-xl border border-pink-200">
-							<p class="text-sm font-semibold text-pink-500">No memories tagged with "{selectedMoodTag}" yet.</p>
-							<p class="text-xs text-pink-400 mt-1">Start capturing your moments on the dashboard!</p>
-						</div>
-					{/if}
+				<!-- Modal Header -->
+				<div class="text-center mb-3 pr-6">
+					<h2 class="text-sm sm:text-base font-black text-pink-950 flex items-center justify-center gap-1.5 capitalize">
+						<span>Memories Tagged as "{selectedMoodTag}"</span>
+					</h2>
+					<p class="text-[11px] text-pink-400 font-bold mt-0.5">Found {filteredMoodMemories.length} {filteredMoodMemories.length === 1 ? 'memory' : 'memories'}</p>
 				</div>
+
+				<!-- Memories List -->
+				{#if filteredMoodMemories.length > 0}
+					<div class="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+						{#each filteredMoodMemories as memory}
+							<button
+								onclick={() => handleSelectMemoryFromMoodList(memory)}
+								class="w-full flex items-center space-x-2.5 p-2 sm:p-2.5 bg-pink-50/50 hover:bg-pink-100/60 border border-pink-100/80 hover:border-pink-200 rounded-xl transition-all duration-200 text-left cursor-pointer group active:scale-[0.99] shadow-2xs"
+							>
+								<div class="w-2.5 h-2.5 rounded-full {getMoodColor(memory.mood_tag)} flex-shrink-0"></div>
+								<div class="flex-1 min-w-0">
+									<p class="text-xs font-bold text-pink-950 truncate group-hover:text-[#f43f8e] transition-colors">
+										{memory.description || memory.memory_tag || 'Untitled Memory'}
+									</p>
+									<p class="text-[10px] text-pink-400 font-medium">{memory.date}</p>
+								</div>
+								<span class="text-[9px] px-2 py-0.5 rounded-full bg-pink-100 text-[#f43f8e] font-bold border border-pink-200/80 flex-shrink-0 group-hover:bg-[#f43f8e] group-hover:text-white transition-colors">
+									View Details →
+								</span>
+							</button>
+						{/each}
+					</div>
+				{:else}
+					<div class="text-center py-6 bg-pink-50/50 rounded-2xl border border-pink-100">
+						<p class="text-xs font-bold text-pink-600">No memories tagged with "{selectedMoodTag}" yet.</p>
+						<p class="text-[11px] text-pink-400 font-medium mt-0.5">Start capturing your moments on the dashboard!</p>
+					</div>
+				{/if}
 			</div>
-		{/if}
+		</div>
+	{/if}
 
-		<!-- View Memory Modal -->
-		{#if showViewMemoryModal}
-			<ViewMemoryModal
-				selectedDate={selectedMemoryDate}
-				memories={memoriesForDate}
-				on:close={() => showViewMemoryModal = false}
-			/>
-		{/if}
+	<!-- View Memory Modal -->
+	{#if showViewMemoryModal}
+		<ViewMemoryModal
+			selectedDate={selectedMemoryDate}
+			memories={memoriesForDate}
+			on:close={() => showViewMemoryModal = false}
+		/>
+	{/if}
 
-		<!-- Bottom Navigation Bar (Footer) -->
-		<AppFooter />
-	</div>
+	<!-- Bottom Navigation Bar (Footer) -->
+	<AppFooter />
+</div>
 
 <style>
 	@keyframes fade-in {
@@ -692,28 +678,13 @@
 	}
 
 	.animate-fade-in {
-		animation: fade-in 0.6s ease-out;
-	}
-
-	@keyframes slide-down {
-		0% {
-			opacity: 0;
-			transform: translateY(-20px);
-		}
-		100% {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	.animate-slide-down {
-		animation: slide-down 0.5s ease-out;
+		animation: fade-in 0.4s ease-out;
 	}
 
 	@keyframes fade-in-up {
 		0% {
 			opacity: 0;
-			transform: translateY(30px);
+			transform: translateY(16px);
 		}
 		100% {
 			opacity: 1;
@@ -722,7 +693,21 @@
 	}
 
 	.animate-fade-in-up {
-		animation: fade-in-up 0.6s ease-out forwards;
-		opacity: 0;
+		animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+	}
+
+	@keyframes scale-up {
+		0% {
+			opacity: 0;
+			transform: scale(0.95);
+		}
+		100% {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	.animate-scale-up {
+		animation: scale-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 	}
 </style>
