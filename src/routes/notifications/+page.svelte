@@ -250,10 +250,16 @@
 	function toggleAudioPlay() {
 		playClickSound();
 		if (!modalAudioElement) return;
-		if (isAudioPlaying) {
-			modalAudioElement.pause();
+		if (modalAudioElement.paused) {
+			modalAudioElement.play().then(() => {
+				isAudioPlaying = true;
+			}).catch((err) => {
+				console.error('Audio play error:', err);
+				isAudioPlaying = false;
+			});
 		} else {
-			modalAudioElement.play().catch(() => {});
+			modalAudioElement.pause();
+			isAudioPlaying = false;
 		}
 	}
 
@@ -281,20 +287,37 @@
 		if (e) e.stopPropagation();
 		if (modalAudioElement) {
 			modalAudioElement.pause();
-			isAudioPlaying = false;
-			audioCurrentTime = 0;
+			modalAudioElement.currentTime = 0;
 		}
+		isAudioPlaying = false;
+		audioCurrentTime = 0;
+		audioDuration = 0;
 		selectedMemoryToView = item;
 		showViewMemoryModal = true;
 	}
 
+	function closeViewMemoryModal() {
+		playClickSound();
+		if (modalAudioElement) {
+			modalAudioElement.pause();
+			modalAudioElement.currentTime = 0;
+		}
+		isAudioPlaying = false;
+		audioCurrentTime = 0;
+		audioDuration = 0;
+		showViewMemoryModal = false;
+		selectedMemoryToView = null;
+	}
+
 	function goToCalendarDate(date, e) {
 		if (e) e.stopPropagation();
+		closeViewMemoryModal();
 		if (!date) return;
 		goto(`/dashboard?date=${date}`);
 	}
 
 	function handleOpenChat(senderId, senderUsername) {
+		closeViewMemoryModal();
 		goto(`/chat?friend_id=${senderId}&username=${encodeURIComponent(senderUsername)}`);
 	}
 
@@ -806,9 +829,11 @@
 
 	<!-- View Memories Preview Modal (Slim & proportionate) -->
 	{#if showViewMemoryModal && selectedMemoryToView}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in font-sans"
-			onclick={(e) => { if (e.target === e.currentTarget) { playClickSound(); showViewMemoryModal = false; } }}
+			onclick={(e) => { if (e.target === e.currentTarget) closeViewMemoryModal(); }}
 		>
 			<div
 				class="bg-white border border-pink-100 rounded-2xl p-4 sm:p-5 shadow-2xl relative max-w-xs sm:max-w-sm w-full max-h-[88vh] overflow-hidden flex flex-col animate-pop-in"
@@ -816,7 +841,7 @@
 			>
 				<!-- Close Button -->
 				<button
-					onclick={() => { playClickSound(); showViewMemoryModal = false; }}
+					onclick={closeViewMemoryModal}
 					class="absolute top-3.5 right-3.5 p-1 text-pink-400 hover:text-pink-600 hover:bg-pink-50 rounded-full transition-all cursor-pointer"
 					title="Close"
 				>
@@ -889,33 +914,16 @@
 
 						<!-- Media Attachment -->
 						{#if selectedMemoryToView.memory.photo_video}
-							{#if selectedMemoryToView.memory.photo_video_type === 'video' || (typeof selectedMemoryToView.memory.photo_video === 'string' && (selectedMemoryToView.memory.photo_video.endsWith('.mp4') || selectedMemoryToView.memory.photo_video.endsWith('.webm') || selectedMemoryToView.memory.photo_video.endsWith('.mov')))}
-								<div class="relative rounded-xl overflow-hidden bg-black flex flex-col items-center justify-center">
-									<video
-										src={getMediaUrl(selectedMemoryToView.memory.photo_video)}
-										class="w-full max-h-56 object-contain bg-black rounded-xl"
-										controls
-										playsinline
-										preload="metadata"
-										controlslist="nofullscreen nodownload noremoteplayback"
-										disablepictureinpicture
-										aria-label="Memory video"
-									></video>
-									<button
-										type="button"
-										onclick={() => openFullScreenImage(getMediaUrl(selectedMemoryToView.memory.photo_video), 'video')}
-										class="absolute top-2 right-2 bg-[#f43f8e]/90 hover:bg-[#f43f8e] text-white text-[10px] font-black px-2 py-0.5 rounded-lg backdrop-blur-xs flex items-center space-x-1 transition-all z-10 shadow-xs active:scale-95 cursor-pointer"
-										title="Full view"
-									>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-										</svg>
-										<span>Full view</span>
-									</button>
+							{#if isVideo(selectedMemoryToView.memory.photo_video)}
+								<div class="rounded-xl overflow-hidden border border-pink-200/80 bg-black/5 shadow-xs">
+									<!-- svelte-ignore a11y_media_has_caption -->
+									<video src={getMediaUrl(selectedMemoryToView.memory.photo_video)} controls class="w-full max-h-48 object-contain rounded-xl"></video>
 								</div>
 							{:else}
-								<div
-									class="relative rounded-xl overflow-hidden border border-pink-100 cursor-pointer group"
+								<!-- svelte-ignore a11y_click_events_have_key_events -->
+								<!-- svelte-ignore a11y_no_static_element_interactions -->
+								<div 
+									class="rounded-xl overflow-hidden border border-pink-200/80 shadow-xs cursor-pointer group"
 									onclick={() => openFullScreenImage(getMediaUrl(selectedMemoryToView.memory.photo_video), 'image')}
 								>
 									<img src={getMediaUrl(selectedMemoryToView.memory.photo_video)} alt="Memory Attachment" class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300 rounded-xl" />
@@ -982,6 +990,7 @@
 										onended={() => { isAudioPlaying = false; audioCurrentTime = 0; }}
 										onplay={() => { isAudioPlaying = true; }}
 										onpause={() => { isAudioPlaying = false; }}
+										onerror={() => { isAudioPlaying = false; }}
 										crossorigin="anonymous"
 										class="hidden"
 									></audio>
@@ -1003,7 +1012,7 @@
 					{#if selectedMemoryToView.status === 'accepted'}
 						<button
 							onclick={(e) => { playClickSound(); goToCalendarDate(selectedMemoryToView.memory.date, e); }}
-							class="h-8.5 py-1.5 px-2.5 bg-[#10b981] hover:bg-[#059669] text-white rounded-xl active:scale-95 transition-all duration-200 text-[11px] font-black flex items-center justify-center space-x-1 shadow-xs cursor-pointer whitespace-nowrap"
+							class="h-8 py-1.5 px-2.5 bg-[#10b981] hover:bg-[#059669] text-white rounded-xl active:scale-95 transition-all duration-200 text-[11px] font-black flex items-center justify-center space-x-1 shadow-xs cursor-pointer whitespace-nowrap"
 						>
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3 flex-shrink-0">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
@@ -1013,7 +1022,7 @@
 
 						<button
 							onclick={() => { playClickSound(); handleOpenChat(selectedMemoryToView.sender_id, selectedMemoryToView.sender_username); }}
-							class="h-8.5 py-1.5 px-2.5 bg-white border border-pink-200 hover:border-pink-300 hover:bg-pink-50 text-[#f43f8e] rounded-xl active:scale-95 transition-all duration-200 text-[11px] font-black flex items-center justify-center space-x-1 cursor-pointer whitespace-nowrap"
+							class="h-8 py-1.5 px-2.5 bg-white border border-pink-200 hover:border-pink-300 hover:bg-pink-50 text-[#f43f8e] rounded-xl active:scale-95 transition-all duration-200 text-[11px] font-black flex items-center justify-center space-x-1 cursor-pointer whitespace-nowrap"
 						>
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3 flex-shrink-0">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
@@ -1023,7 +1032,7 @@
 					{:else}
 						<button
 							onclick={(e) => { playClickSound(); handleRespondSharedMemory(selectedMemoryToView, 'accept', e); }}
-							class="h-8.5 py-1.5 px-2.5 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 text-white rounded-xl text-[11px] font-black transition-all duration-200 flex items-center justify-center space-x-1 shadow-xs cursor-pointer whitespace-nowrap"
+							class="h-8 py-1.5 px-2.5 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 text-white rounded-xl text-[11px] font-black transition-all duration-200 flex items-center justify-center space-x-1 shadow-xs cursor-pointer whitespace-nowrap"
 						>
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 flex-shrink-0">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -1033,7 +1042,7 @@
 
 						<button
 							onclick={(e) => { playClickSound(); handleRespondSharedMemory(selectedMemoryToView, 'decline', e); }}
-							class="h-8.5 py-1.5 px-2.5 bg-white border border-pink-200 hover:bg-rose-50 hover:border-rose-300 text-rose-500 active:scale-95 rounded-xl text-[11px] font-black transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center justify-center"
+							class="h-8 py-1.5 px-2.5 bg-white border border-pink-200 hover:bg-rose-50 hover:border-rose-300 text-rose-500 active:scale-95 rounded-xl text-[11px] font-black transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center justify-center"
 						>
 							<span>Decline</span>
 						</button>

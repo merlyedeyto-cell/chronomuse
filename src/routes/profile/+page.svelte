@@ -1440,7 +1440,7 @@
 							<!-- Avatar Container + Camera Badge -->
 							<div class="relative flex-shrink-0">
 								<!-- Avatar Circular Picture -->
-								<div class="w-18 h-18 sm:w-20 sm:h-20 rounded-full border-3 border-white shadow-sm bg-[#fef08a] flex items-center justify-center text-2xl font-black overflow-hidden relative">
+								<div class="w-20 h-20 sm:w-22 sm:h-22 rounded-full border-4 border-white shadow-md bg-[#fef08a] flex items-center justify-center text-2xl font-black overflow-hidden relative flex-shrink-0">
 									{#if profileData.user.avatar_url}
 										<img
 											src={profileData.user.avatar_url}
@@ -1455,7 +1455,7 @@
 								<!-- Avatar Camera Badge (Positioned outside overflow-hidden) -->
 								{#if profileData.is_self}
 									<label
-										class="absolute -bottom-0.5 -right-0.5 w-6.5 h-6.5 rounded-full bg-[#f43f8e] hover:bg-[#e0337f] text-white border-2 border-white flex items-center justify-center shadow-xs cursor-pointer z-30 transition-all active:scale-95"
+										class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#f43f8e] hover:bg-[#e0337f] text-white border-2 border-white flex items-center justify-center shadow-xs cursor-pointer z-30 transition-all active:scale-95"
 										title="Upload Profile Photo"
 									>
 										<input
@@ -1465,7 +1465,7 @@
 											class="hidden"
 										/>
 										{#if isUploadingAvatar}
-											<div class="w-2.5 h-2.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+											<div class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
 										{:else}
 											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
 												<path d="M12 9a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" />
