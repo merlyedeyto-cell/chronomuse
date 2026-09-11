@@ -94,35 +94,49 @@
 		<button
 			type="button"
 			onclick={toggleSidebar}
-			class="w-5.5 h-10 bg-white/95 backdrop-blur-md border-2 border-r-0 border-pink-200/90 rounded-l-xl shadow-[-2px_3px_12px_rgba(0,0,0,0.08)] flex items-center justify-center text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-90 transition-all duration-200 cursor-pointer"
-			aria-label="Open navigation"
-			title="Open navigation"
+			class="group/tab w-7 h-12 bg-white/95 backdrop-blur-md border-2 border-r-0 border-pink-300 rounded-l-2xl shadow-[-3px_4px_16px_rgba(244,63,142,0.2)] flex items-center justify-center text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-200 cursor-pointer"
+			aria-label="Open navigation menu"
+			title="Open menu"
 		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke-width="3"
-				stroke="currentColor"
-				class="w-3.5 h-3.5"
-			>
-				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-			</svg>
+			<div class="relative flex items-center justify-center">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="3"
+					stroke="currentColor"
+					class="w-4 h-4 transition-transform duration-200 group-hover/tab:-translate-x-0.5"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+				</svg>
+				{#if unreadChatsCount > 0}
+					<span class="absolute -top-3.5 -left-2 w-2.5 h-2.5 bg-[#f43f8e] border-2 border-white rounded-full animate-ping"></span>
+					<span class="absolute -top-3.5 -left-2 w-2.5 h-2.5 bg-[#f43f8e] border-2 border-white rounded-full"></span>
+				{/if}
+			</div>
+
+			<!-- Floating Tooltip on Tab Hover -->
+			<div class="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/tab:opacity-100 translate-x-1 group-hover/tab:translate-x-0 transition-all duration-200 pointer-events-none z-50">
+				<div class="relative bg-stone-900/90 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-md whitespace-nowrap">
+					Open Menu
+					<div class="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-stone-900/90"></div>
+				</div>
+			</div>
 		</button>
 	{/if}
 
 	<!-- Sliding Sidebar Dock Container -->
 	<nav
 		aria-label="Mobile Sidebar Navigation"
-		class="bg-white/95 backdrop-blur-md border-2 border-r-0 border-pink-200/90 rounded-l-2xl p-1.5 shadow-[-4px_4px_20px_rgba(0,0,0,0.08)] flex flex-col items-center space-y-1 font-sans transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] {isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full opacity-0 pointer-events-none absolute right-0 top-0'}"
+		class="bg-white/95 backdrop-blur-md border-2 border-r-0 border-pink-200/90 rounded-l-2xl p-1.5 shadow-[-4px_4px_24px_rgba(0,0,0,0.09)] flex flex-col items-center space-y-1.5 font-sans transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] {isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full opacity-0 pointer-events-none absolute right-0 top-0'}"
 	>
 		<!-- Collapse Button at top of dock -->
 		<button
 			type="button"
 			onclick={toggleSidebar}
-			class="w-8 h-6 rounded-lg text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50 flex items-center justify-center transition-colors cursor-pointer"
+			class="group/btn relative w-9 h-7 rounded-lg text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50 flex items-center justify-center transition-colors cursor-pointer"
 			aria-label="Collapse navigation"
-			title="Collapse navigation"
+			title="Collapse menu"
 		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -130,19 +144,27 @@
 				viewBox="0 0 24 24"
 				stroke-width="3"
 				stroke="currentColor"
-				class="w-4 h-4"
+				class="w-4 h-4 transition-transform duration-200 group-hover/btn:translate-x-0.5"
 			>
 				<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
 			</svg>
+
+			<!-- Tooltip -->
+			<div class="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/btn:opacity-100 translate-x-1 group-hover/btn:translate-x-0 transition-all duration-200 pointer-events-none z-50">
+				<div class="relative bg-stone-900/90 backdrop-blur-xs text-white text-[11px] font-bold px-2 py-0.5 rounded-lg shadow-md whitespace-nowrap">
+					Hide
+					<div class="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-stone-900/90"></div>
+				</div>
+			</div>
 		</button>
 
-		<div class="w-6 h-px bg-pink-100/80 my-0.5"></div>
+		<div class="w-6 h-px bg-pink-100/90 my-0.5"></div>
 
 		{#each navItems as item, idx}
 			<button
 				type="button"
 				onclick={() => handleNavigate(item.path)}
-				class="w-10 h-10 rounded-xl flex items-center justify-center relative transition-all duration-200 active:scale-90 cursor-pointer group select-none {activeIndex === idx ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50'}"
+				class="group/item relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer select-none {activeIndex === idx ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50'}"
 				aria-label={item.label}
 				title={item.label}
 			>
@@ -175,6 +197,19 @@
 							<path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
 						</svg>
 					{/if}
+				</div>
+
+				<!-- Floating Tooltip to the Left -->
+				<div class="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 translate-x-1 group-hover/item:translate-x-0 transition-all duration-200 pointer-events-none z-50">
+					<div class="relative bg-stone-900/90 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-md whitespace-nowrap flex items-center gap-1.5">
+						<span>{item.label}</span>
+						{#if item.id === 'chat' && unreadChatsCount > 0}
+							<span class="bg-[#f43f8e] text-white text-[9px] px-1 rounded-full font-black">
+								{unreadChatsCount}
+							</span>
+						{/if}
+						<div class="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-stone-900/90"></div>
+					</div>
 				</div>
 			</button>
 		{/each}
