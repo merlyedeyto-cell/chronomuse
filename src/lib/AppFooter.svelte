@@ -88,12 +88,12 @@
 	});
 </script>
 
-<div class="fixed right-0 top-1/2 -translate-y-1/2 z-40 pointer-events-none md:hidden flex items-center {hideOnMobile ? 'hidden' : 'flex'}">
+<div class="fixed right-0 top-20 sm:top-24 z-40 pointer-events-none md:hidden flex items-start {hideOnMobile ? 'hidden' : 'flex'}">
 	<!-- Toggle Arrow Button Tab -->
 	<button
 		type="button"
 		onclick={toggleSidebar}
-		class="pointer-events-auto w-6 h-12 bg-white/95 backdrop-blur-md border-2 border-r-0 border-pink-200/90 rounded-l-2xl shadow-[-3px_4px_14px_rgba(0,0,0,0.08)] flex items-center justify-center text-pink-500 hover:text-[#f43f8e] active:scale-90 transition-all duration-200 cursor-pointer select-none"
+		class="pointer-events-auto w-6 h-11 mt-1 bg-white/95 backdrop-blur-md border-2 border-r-0 border-pink-200/90 rounded-l-2xl shadow-[-3px_4px_14px_rgba(0,0,0,0.08)] flex items-center justify-center text-pink-500 hover:text-[#f43f8e] active:scale-90 transition-all duration-200 cursor-pointer select-none"
 		aria-label={isOpen ? 'Collapse navigation' : 'Open navigation'}
 		title={isOpen ? 'Collapse navigation' : 'Open navigation'}
 	>
