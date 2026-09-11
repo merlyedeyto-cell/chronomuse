@@ -1406,7 +1406,7 @@
 				</div>
 
 				<!-- Profile Info Section -->
-				<div class="px-4 sm:px-5 pb-4.5 pt-0 relative z-10">
+				<div class="px-4 sm:px-5 pb-5 sm:pb-6 pt-0 relative z-10">
 					<!-- Avatar & Note Row -->
 					<div class="flex items-end justify-between -mt-9 sm:-mt-10 mb-2">
 						<div class="relative">
@@ -1555,7 +1555,7 @@
 					{/if}
 
 					<!-- Pill Badges Row -->
-					<div class="flex items-center flex-wrap gap-1.5 pt-2.5">
+					<div class="flex items-center flex-wrap gap-1.5 pt-2.5 pb-1">
 						<button
 							type="button"
 							onclick={() => activeTab = 'friends'}
@@ -1626,7 +1626,7 @@
 
 			<!-- TAB 0: ABOUT YOU -->
 			{#if activeTab === 'about'}
-				<div class="bg-white rounded-2xl p-4 sm:p-4.5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
+				<div class="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
 					<div class="flex items-center space-x-2.5">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
@@ -1710,7 +1710,7 @@
 
 			<!-- TAB 1: FRIENDS LIST -->
 			{#if activeTab === 'friends'}
-				<div class="bg-white rounded-2xl p-4 sm:p-4.5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
+				<div class="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
 					<div>
 						<h3 class="text-sm font-black text-pink-950">
 							{profileData.is_self ? 'My Friends' : `@${profileData.user.username}'s Friends`}
@@ -1779,7 +1779,7 @@
 											</button>
 											<button
 												onclick={() => openChatWithUser(friend)}
-												class="w-7.5 h-7.5 rounded-lg bg-[#f43f8e] hover:bg-[#e0337f] text-white flex items-center justify-center shadow-2xs transition-all active:scale-95 cursor-pointer"
+												class="w-8 h-8 rounded-lg bg-[#f43f8e] hover:bg-[#e0337f] text-white flex items-center justify-center shadow-2xs transition-all active:scale-95 cursor-pointer"
 												title="Chat"
 											>
 												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
@@ -1797,7 +1797,7 @@
 
 			<!-- TAB 2: MUTUAL FRIENDS -->
 			{#if activeTab === 'mutual' && !profileData.is_self}
-				<div class="bg-white rounded-2xl p-4 sm:p-4.5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
+				<div class="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
 					<div>
 						<h3 class="text-sm font-black text-pink-950">Mutual Friends</h3>
 						<p class="text-[11px] text-pink-400 font-bold">You and @{profileData.user.username} both know these people</p>
@@ -1838,7 +1838,7 @@
 
 			<!-- TAB 3: MOOD SUMMARY -->
 			{#if activeTab === 'mood' && (profileData.is_self || !isTargetPrivate)}
-				<div class="bg-white rounded-2xl p-4 sm:p-4.5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
+				<div class="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
 					<div class="flex items-center justify-between gap-2">
 						<div class="min-w-0">
 							<h3 class="text-sm font-black text-pink-950 truncate">

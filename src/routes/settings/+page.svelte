@@ -880,7 +880,7 @@
 								<button
 									type="submit"
 									disabled={isSavingProfile}
-									class="h-8.5 py-1.5 px-4 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-black rounded-xl shadow-xs transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-50 cursor-pointer"
+									class="h-8 py-1.5 px-4 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-black rounded-xl shadow-xs transition-all flex items-center space-x-1.5 active:scale-95 disabled:opacity-50 cursor-pointer"
 								>
 									{#if isSavingProfile}
 										<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -893,7 +893,7 @@
 								<button
 									type="button"
 									onclick={() => showLogoutModal = true}
-									class="h-8.5 py-1.5 px-3 text-rose-600 hover:text-rose-800 hover:bg-rose-50 text-xs font-black rounded-xl transition-all cursor-pointer border border-rose-200"
+									class="h-8 py-1.5 px-3 text-rose-600 hover:text-rose-800 hover:bg-rose-50 text-xs font-black rounded-xl transition-all cursor-pointer border border-rose-200"
 								>
 									Log Out
 								</button>
@@ -913,7 +913,7 @@
 			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 animate-fade-in"
 			onclick={(e) => { if (e.target === e.currentTarget) showConfirmBlockModal = false; }}
 		>
-			<div class="bg-white border border-pink-200 rounded-2xl max-w-xs w-full p-4.5 text-center relative overflow-hidden shadow-2xl">
+			<div class="bg-white border border-pink-200 rounded-2xl max-w-xs w-full p-5 text-center relative overflow-hidden shadow-2xl">
 				<div class="w-12 h-12 rounded-full bg-[#f43f8e] text-white flex items-center justify-center font-black text-lg overflow-hidden mx-auto mb-2.5 shadow-xs">
 					{#if selectedUserToBlock.avatar_url}
 						<img src={selectedUserToBlock.avatar_url} alt={selectedUserToBlock.username} class="w-full h-full object-cover" />
@@ -957,7 +957,7 @@
 			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 animate-fade-in"
 			onclick={(e) => { if (e.target === e.currentTarget) showLogoutModal = false; }}
 		>
-			<div class="bg-white border border-pink-200 rounded-2xl max-w-xs w-full p-4.5 text-center relative overflow-hidden shadow-2xl">
+			<div class="bg-white border border-pink-200 rounded-2xl max-w-xs w-full p-5 text-center relative overflow-hidden shadow-2xl">
 				<h3 class="text-sm font-black text-pink-950 mb-1">Log Out of ChronoMuse?</h3>
 				<p class="text-[11px] text-pink-400 mb-4 font-bold">
 					Are you sure you want to log out of your account?
