@@ -365,13 +365,13 @@
 
 {#if isOpen}
 	<div
-		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 animate-modal-backdrop overflow-y-auto"
+		class="fixed inset-0 bg-black/30 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 animate-modal-backdrop overflow-y-auto font-sans"
 		class:opacity-0={isClosing}
 		class:pointer-events-none={isClosing}
 		onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 	>
 		<div
-			class="bg-white border-2 border-pink-300 rounded-2xl max-w-lg w-full p-4 sm:p-6 relative transition-all duration-300 animate-modal-content my-auto max-h-[90vh] overflow-y-auto"
+			class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl max-w-lg w-full p-4 sm:p-5 relative transition-all duration-300 animate-modal-content my-auto max-h-[88vh] overflow-y-auto shadow-[0_10px_40px_rgba(244,114,182,0.2)]"
 			class:opacity-0={isClosing}
 			class:scale-95={isClosing}
 			onclick={(e) => e.stopPropagation()}
@@ -379,28 +379,28 @@
 			<!-- Close Button -->
 			<button
 				onclick={handleClose}
-				class="absolute top-3.5 right-3.5 p-1 text-pink-400 hover:text-pink-600 hover:bg-pink-100 rounded-lg transition-all duration-200 cursor-pointer"
+				class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
 				title="Close"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 				</svg>
 			</button>
 
 			<!-- Header -->
 			<div class="text-center mb-4 pr-6">
-				<div class="w-12 h-12 bg-pink-100 rounded-2xl border border-pink-300 flex items-center justify-center mx-auto mb-2 text-pink-500">
+				<div class="w-12 h-12 bg-gradient-to-tr from-[#f43f8e] to-[#ec4899] rounded-2xl flex items-center justify-center mx-auto mb-2 text-white shadow-xs">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.765z" />
 					</svg>
 				</div>
-				<h2 class="text-base sm:text-lg font-bold text-pink-600">Find & Add Friends</h2>
-				<p class="text-[11px] sm:text-xs text-pink-400 mt-0.5">Search or discover registered users to connect on ChronoMuse</p>
+				<h2 class="text-base font-black text-pink-950 mb-0.5">Find & Add Friends</h2>
+				<p class="text-[11px] text-pink-400 font-bold">Search or discover registered users to connect on ChronoMuse</p>
 			</div>
 
 			<!-- Success Message -->
 			{#if successMessage}
-				<div class="mb-4 p-2.5 bg-emerald-50 border border-emerald-300 rounded-xl text-xs text-emerald-800 font-semibold flex items-center space-x-2">
+				<div class="mb-3.5 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-bold flex items-center space-x-2">
 					<svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
 						<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
 					</svg>
@@ -410,7 +410,7 @@
 
 			<!-- Error Message -->
 			{#if errorMessage}
-				<div class="mb-4 p-2.5 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-800 font-semibold flex items-center space-x-2">
+				<div class="mb-3.5 p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 font-bold flex items-center space-x-2">
 					<svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
 						<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
 					</svg>
@@ -419,11 +419,11 @@
 			{/if}
 
 			<!-- Search Bar -->
-			<div class="mb-4">
-				<label for="modal_friend_username" class="block text-xs font-bold text-pink-700 mb-1">Search by Username</label>
+			<div class="mb-3.5">
+				<label for="modal_friend_username" class="block text-[11px] font-black text-[#f43f8e] mb-1">Search by Username</label>
 				<div class="relative">
 					<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-pink-400">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
 						</svg>
 					</div>
@@ -433,16 +433,16 @@
 						bind:value={friendUsername}
 						oninput={handleSearchInput}
 						placeholder="Type friend's username..."
-						class="w-full pl-9 pr-9 py-2.5 bg-pink-50 border-2 border-pink-200 rounded-xl text-xs sm:text-sm font-semibold text-pink-700 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all"
+						class="w-full pl-8.5 pr-8 py-2 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs font-bold text-pink-950 placeholder:text-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 focus:border-[#f43f8e] focus:bg-white transition-all shadow-2xs"
 					/>
 					{#if friendUsername}
 						<button
 							type="button"
 							onclick={() => { friendUsername = ''; searchResults = []; hasSearched = false; }}
-							class="absolute right-3 top-2.5 p-1 text-pink-400 hover:text-pink-600 rounded-full"
+							class="absolute right-2.5 top-2 p-1 text-pink-400 hover:text-pink-600 rounded-full cursor-pointer"
 							title="Clear search"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
 								<path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
 							</svg>
 						</button>
@@ -453,26 +453,26 @@
 			<!-- Search Results List -->
 			{#if isSearching}
 				<div class="text-center py-6">
-					<div class="animate-spin h-6 w-6 border-3 border-pink-200 border-t-pink-500 rounded-full mx-auto mb-2"></div>
-					<p class="text-xs text-pink-400">Searching users...</p>
+					<div class="animate-spin h-6 w-6 border-3 border-pink-100 border-t-[#f43f8e] rounded-full mx-auto mb-2"></div>
+					<p class="text-xs text-pink-400 font-bold">Searching users...</p>
 				</div>
 			{:else if searchResults.length > 0}
-				<div class="mb-5 space-y-2">
+				<div class="mb-4 space-y-2">
 					<div class="flex items-center justify-between">
-						<h3 class="text-xs font-bold text-pink-600 uppercase tracking-wide">
+						<h3 class="text-xs font-black text-[#f43f8e] uppercase tracking-wide">
 							Search Results ({searchResults.length})
 						</h3>
 					</div>
 
 					<div class="space-y-2 max-h-52 overflow-y-auto pr-1">
 						{#each searchResults as targetUser (targetUser.id)}
-							<div class="p-2.5 bg-pink-50 border-2 border-pink-200 rounded-xl flex items-center justify-between gap-2">
+							<div class="p-2.5 bg-white border border-pink-100/90 rounded-2xl flex items-center justify-between gap-2 shadow-2xs hover:border-pink-200 transition-all">
 								<button
 									type="button"
 									onclick={() => handleViewUserProfile(targetUser.id)}
 									class="flex items-center space-x-2.5 min-w-0 text-left group cursor-pointer"
 								>
-									<div class="w-8 h-8 rounded-full bg-pink-500 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 overflow-hidden">
+									<div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#f43f8e] to-[#ec4899] text-white font-black text-xs flex items-center justify-center flex-shrink-0 overflow-hidden shadow-2xs">
 										{#if targetUser.avatar_url}
 											<img src={targetUser.avatar_url} alt={targetUser.username} class="w-full h-full object-cover" />
 										{:else}
@@ -480,11 +480,11 @@
 										{/if}
 									</div>
 									<div class="min-w-0">
-										<p class="text-xs font-bold text-pink-900 truncate group-hover:underline">@{targetUser.username}</p>
+										<p class="text-xs font-black text-[#e8367f] truncate group-hover:underline">@{targetUser.username}</p>
 										{#if targetUser.mutual_friends_count > 0}
-											<p class="text-[10px] text-pink-600 font-semibold">{targetUser.mutual_friends_count} mutual friend{targetUser.mutual_friends_count === 1 ? '' : 's'}</p>
+											<p class="text-[10px] text-pink-500 font-bold">{targetUser.mutual_friends_count} mutual friend{targetUser.mutual_friends_count === 1 ? '' : 's'}</p>
 										{:else}
-											<p class="text-[10px] text-pink-400 truncate">{targetUser.email}</p>
+											<p class="text-[10px] text-pink-950/60 truncate">{targetUser.email}</p>
 										{/if}
 									</div>
 								</button>
@@ -493,21 +493,21 @@
 									<button
 										type="button"
 										onclick={() => handleViewUserProfile(targetUser.id)}
-										class="px-2 py-1 bg-white border border-pink-300 hover:bg-pink-100 text-pink-600 text-[11px] font-semibold rounded-lg"
+										class="px-2.5 py-1 bg-pink-50 hover:bg-pink-100 text-[#f43f8e] border border-pink-100 text-xs font-bold rounded-xl cursor-pointer active:scale-95 transition-all"
 									>
 										Profile
 									</button>
 
 									{#if targetUser.relationship === 'self'}
-										<span class="px-2 py-1 bg-pink-100 text-pink-500 text-[11px] font-semibold rounded-lg">You</span>
+										<span class="px-2 py-1 bg-pink-50 text-pink-400 text-xs font-bold rounded-xl">You</span>
 									{:else if targetUser.relationship === 'friends'}
-										<span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-lg">Friends</span>
+										<span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-black rounded-xl">Friends</span>
 									{:else if targetUser.relationship === 'request_sent'}
 										<button
 											type="button"
 											onclick={() => handleCancelFriendRequestFromSearch(targetUser)}
 											disabled={isResponding}
-											class="px-2.5 py-1 bg-amber-50 hover:bg-red-50 text-amber-800 hover:text-red-600 border border-amber-300 hover:border-red-300 text-[11px] font-bold rounded-lg active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+											class="px-2.5 py-1 bg-white hover:bg-rose-50 text-pink-600 hover:text-rose-600 border border-pink-200 text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer disabled:opacity-50"
 										>
 											Cancel
 										</button>
@@ -515,7 +515,7 @@
 										<button
 											type="button"
 											onclick={() => handleRespond(targetUser.request_id, 'accept')}
-											class="px-2.5 py-1 bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-bold rounded-lg"
+											class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-xs"
 										>
 											Accept
 										</button>
@@ -524,9 +524,9 @@
 											type="button"
 											onclick={() => sendFriendRequestToUser(targetUser)}
 											disabled={isLoading}
-											class="px-2.5 py-1 bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-bold rounded-lg disabled:opacity-50"
+											class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-xs disabled:opacity-50"
 										>
-											Add Friend
+											+ Add Friend
 										</button>
 									{/if}
 								</div>
@@ -535,49 +535,49 @@
 					</div>
 				</div>
 			{:else if hasSearched && friendUsername.trim()}
-				<div class="mb-4 text-center py-4 bg-pink-50 rounded-xl border border-pink-200">
-					<p class="text-xs font-bold text-pink-700">No user found matching "@{friendUsername.trim()}"</p>
-					<p class="text-[10px] text-pink-400 mt-0.5">Please check the spelling and try again.</p>
+				<div class="mb-4 text-center py-3 bg-[#fdf2f6] rounded-2xl border border-pink-100">
+					<p class="text-xs font-bold text-pink-950">No user found matching "@{friendUsername.trim()}"</p>
+					<p class="text-[10px] text-pink-400 mt-0.5 font-medium">Please check the spelling and try again.</p>
 				</div>
 			{/if}
 
 			<!-- Suggested / Discover Random People Section (Lazy Loaded 20/batch) -->
-			<div class="mt-4 pt-4 border-t-2 border-pink-200">
-				<div class="flex items-center justify-between mb-3">
+			<div class="mt-3.5 pt-3.5 border-t border-pink-100">
+				<div class="flex items-center justify-between mb-2.5">
 					<div>
-						<h3 class="text-xs sm:text-sm font-bold text-pink-700 uppercase tracking-wide">
+						<h3 class="text-xs font-black text-pink-950 uppercase tracking-wide">
 							Discover People on ChronoMuse
 						</h3>
-						<p class="text-[10px] text-pink-400">Add people to share memories and chat</p>
+						<p class="text-[10px] text-pink-400 font-bold">Add people to share memories and chat</p>
 					</div>
 					<button
 						type="button"
 						onclick={() => loadSuggestedUsers(1, false)}
-						class="text-[11px] text-pink-600 hover:text-pink-800 font-bold underline cursor-pointer"
+						class="text-xs text-[#f43f8e] hover:text-[#e0337f] font-bold cursor-pointer"
 					>
 						Refresh
 					</button>
 				</div>
 
 				{#if suggestedUsers.length === 0 && isLoadingSuggested}
-					<div class="py-8 text-center">
-						<div class="animate-spin h-6 w-6 border-3 border-pink-200 border-t-pink-500 rounded-full mx-auto mb-2"></div>
-						<p class="text-xs text-pink-400">Loading suggested users...</p>
+					<div class="py-6 text-center">
+						<div class="animate-spin h-6 w-6 border-3 border-pink-100 border-t-[#f43f8e] rounded-full mx-auto mb-2"></div>
+						<p class="text-xs text-pink-400 font-bold">Loading suggested users...</p>
 					</div>
 				{:else if suggestedUsers.length === 0}
-					<div class="py-4 text-center bg-pink-50 rounded-xl border border-pink-200">
-						<p class="text-xs text-pink-500 font-semibold">No other registered accounts found.</p>
+					<div class="py-3 text-center bg-[#fdf2f6] rounded-2xl border border-pink-100">
+						<p class="text-xs text-pink-400 font-bold">No other registered accounts found.</p>
 					</div>
 				{:else}
-					<div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+					<div class="space-y-2 max-h-56 overflow-y-auto pr-1">
 						{#each suggestedUsers as sugUser (sugUser.id)}
-							<div class="p-2.5 bg-pink-50 border border-pink-200 rounded-xl flex items-center justify-between gap-2">
+							<div class="p-2.5 bg-white border border-pink-100/90 rounded-2xl flex items-center justify-between gap-2 shadow-2xs hover:border-pink-200 transition-all">
 								<button
 									type="button"
 									onclick={() => handleViewUserProfile(sugUser.id)}
 									class="flex items-center space-x-2.5 min-w-0 text-left group cursor-pointer"
 								>
-									<div class="w-8 h-8 rounded-full bg-pink-500 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 overflow-hidden">
+									<div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#f43f8e] to-[#ec4899] text-white font-black text-xs flex items-center justify-center flex-shrink-0 overflow-hidden shadow-2xs">
 										{#if sugUser.avatar_url}
 											<img src={sugUser.avatar_url} alt={sugUser.username} class="w-full h-full object-cover" />
 										{:else}
@@ -585,8 +585,8 @@
 										{/if}
 									</div>
 									<div class="min-w-0">
-										<p class="text-xs font-bold text-pink-900 truncate group-hover:underline">@{sugUser.username}</p>
-										<p class="text-[10px] text-pink-400 truncate">{sugUser.email || 'Member'}</p>
+										<p class="text-xs font-black text-[#e8367f] truncate group-hover:underline">@{sugUser.username}</p>
+										<p class="text-[10px] text-pink-950/60 truncate font-medium">{sugUser.email || 'Member'}</p>
 									</div>
 								</button>
 
@@ -594,19 +594,19 @@
 									<button
 										type="button"
 										onclick={() => handleViewUserProfile(sugUser.id)}
-										class="px-2 py-1 bg-white border border-pink-300 hover:bg-pink-100 text-pink-600 text-[11px] font-semibold rounded-lg"
+										class="px-2.5 py-1 bg-pink-50 hover:bg-pink-100 text-[#f43f8e] border border-pink-100 text-xs font-bold rounded-xl cursor-pointer active:scale-95 transition-all"
 									>
 										Profile
 									</button>
 
 									{#if sugUser.relationship === 'friends'}
-										<span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-lg">Friends</span>
+										<span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-black rounded-xl">Friends</span>
 									{:else if sugUser.relationship === 'request_sent'}
 										<button
 											type="button"
 											onclick={() => handleCancelFriendRequestFromSearch(sugUser)}
 											disabled={isResponding}
-											class="px-2.5 py-1 bg-amber-50 hover:bg-red-50 text-amber-800 hover:text-red-600 border border-amber-300 hover:border-red-300 text-[11px] font-bold rounded-lg active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+											class="px-2.5 py-1 bg-white hover:bg-rose-50 text-pink-600 hover:text-rose-600 border border-pink-200 text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer disabled:opacity-50"
 										>
 											Cancel
 										</button>
@@ -614,7 +614,7 @@
 										<button
 											type="button"
 											onclick={() => handleRespond(sugUser.request_id, 'accept')}
-											class="px-2.5 py-1 bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-bold rounded-lg"
+											class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-xs"
 										>
 											Accept
 										</button>
@@ -623,7 +623,7 @@
 											type="button"
 											onclick={() => sendFriendRequestToUser(sugUser)}
 											disabled={isLoading}
-											class="px-2.5 py-1 bg-pink-500 hover:bg-pink-600 text-white text-[11px] font-bold rounded-lg disabled:opacity-50"
+											class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-xs disabled:opacity-50"
 										>
 											+ Add Friend
 										</button>
@@ -639,7 +639,7 @@
 									type="button"
 									onclick={handleLoadMoreSuggested}
 									disabled={isLoadingSuggested}
-									class="px-4 py-1.5 bg-pink-100 hover:bg-pink-200 text-pink-700 rounded-xl text-xs font-bold border border-pink-300 transition-all cursor-pointer disabled:opacity-50"
+									class="px-3.5 py-1.5 bg-[#fdf2f6] hover:bg-pink-100 text-pink-950 rounded-xl text-xs font-bold border border-pink-200/80 transition-all cursor-pointer disabled:opacity-50 active:scale-95"
 								>
 									{#if isLoadingSuggested}
 										<span>Loading 20 more...</span>
@@ -655,17 +655,17 @@
 
 			<!-- Pending Requests Received Section -->
 			{#if pendingRequests.length > 0}
-				<div class="mt-5 pt-4 border-t-2 border-pink-200">
-					<h3 class="text-xs font-bold text-pink-700 mb-3 uppercase tracking-wide">Friend Requests Received ({pendingRequests.length})</h3>
+				<div class="mt-4 pt-3.5 border-t border-pink-100">
+					<h3 class="text-xs font-black text-pink-950 mb-2.5 uppercase tracking-wide">Friend Requests Received ({pendingRequests.length})</h3>
 					<div class="space-y-2 max-h-44 overflow-y-auto">
 						{#each pendingRequests as request (request.id)}
-							<div class="p-2.5 bg-pink-50 border border-pink-200 rounded-xl flex items-center justify-between">
+							<div class="p-2.5 bg-white border border-pink-100/90 rounded-2xl flex items-center justify-between shadow-2xs">
 								<button
 									type="button"
 									onclick={() => handleViewUserProfile(request.sender_id || request.id)}
 									class="flex items-center space-x-2.5 text-left group cursor-pointer min-w-0"
 								>
-									<div class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-white font-bold overflow-hidden flex-shrink-0">
+									<div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#f43f8e] to-[#ec4899] flex items-center justify-center text-white font-black text-xs overflow-hidden flex-shrink-0 shadow-2xs">
 										{#if request.avatar_url}
 											<img src={request.avatar_url} alt={request.username} class="w-full h-full object-cover" />
 										{:else}
@@ -673,22 +673,22 @@
 										{/if}
 									</div>
 									<div class="min-w-0">
-										<p class="text-xs font-semibold text-pink-700 truncate group-hover:underline">@{request.username}</p>
-										<p class="text-[10px] text-pink-400 truncate">{request.email}</p>
+										<p class="text-xs font-black text-[#e8367f] truncate group-hover:underline">@{request.username}</p>
+										<p class="text-[10px] text-pink-950/60 truncate font-medium">{request.email}</p>
 									</div>
 								</button>
 								<div class="flex items-center space-x-1.5 flex-shrink-0">
 									<button
 										onclick={() => handleRespond(request.id, 'accept')}
 										disabled={isResponding}
-										class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-xs font-bold disabled:opacity-50 cursor-pointer"
+										class="px-2.5 py-1 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 text-xs font-bold disabled:opacity-50 cursor-pointer active:scale-95 shadow-xs"
 									>
 										Accept
 									</button>
 									<button
 										onclick={() => handleRespond(request.id, 'decline')}
 										disabled={isResponding}
-										class="px-2.5 py-1 bg-rose-600 text-white rounded-lg hover:bg-rose-700 text-xs font-bold disabled:opacity-50 cursor-pointer"
+										class="px-2.5 py-1 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold disabled:opacity-50 cursor-pointer active:scale-95"
 									>
 										Decline
 									</button>
@@ -701,17 +701,17 @@
 
 			<!-- Sent Pending Requests Section -->
 			{#if sentRequests.length > 0}
-				<div class="mt-5 pt-4 border-t-2 border-pink-200">
-					<h3 class="text-xs font-bold text-pink-700 mb-3 uppercase tracking-wide">Sent Requests Pending ({sentRequests.length})</h3>
+				<div class="mt-4 pt-3.5 border-t border-pink-100">
+					<h3 class="text-xs font-black text-pink-950 mb-2.5 uppercase tracking-wide">Sent Requests Pending ({sentRequests.length})</h3>
 					<div class="space-y-2 max-h-40 overflow-y-auto">
 						{#each sentRequests as request (request.id)}
-							<div class="p-2.5 bg-pink-50 border border-pink-200 rounded-xl flex items-center justify-between">
+							<div class="p-2.5 bg-white border border-pink-100/90 rounded-2xl flex items-center justify-between shadow-2xs">
 								<button
 									type="button"
 									onclick={() => handleViewUserProfile(request.receiver_id || request.id)}
 									class="flex items-center space-x-2.5 text-left group cursor-pointer min-w-0"
 								>
-									<div class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-white font-bold overflow-hidden flex-shrink-0">
+									<div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#f43f8e] to-[#ec4899] flex items-center justify-center text-white font-black text-xs overflow-hidden flex-shrink-0 shadow-2xs">
 										{#if request.avatar_url}
 											<img src={request.avatar_url} alt={request.username} class="w-full h-full object-cover" />
 										{:else}
@@ -719,16 +719,16 @@
 										{/if}
 									</div>
 									<div class="min-w-0">
-										<p class="text-xs font-semibold text-pink-700 truncate group-hover:underline">@{request.username}</p>
-										<p class="text-[10px] text-pink-400">Waiting for response...</p>
+										<p class="text-xs font-black text-[#e8367f] truncate group-hover:underline">@{request.username}</p>
+										<p class="text-[10px] text-pink-400 font-bold">Waiting for response...</p>
 									</div>
 								</button>
 								<button
 									onclick={() => handleCancelSentRequest(request.id)}
 									disabled={isResponding}
-									class="px-2.5 py-1 bg-amber-50 hover:bg-red-50 border border-amber-300 hover:border-red-300 text-amber-800 hover:text-red-600 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer"
+									class="px-2.5 py-1 bg-white hover:bg-rose-50 border border-pink-200 text-pink-600 hover:text-rose-600 rounded-xl text-xs font-bold transition-all disabled:opacity-50 cursor-pointer active:scale-95"
 								>
-									Cancel Add
+									Cancel
 								</button>
 							</div>
 						{/each}

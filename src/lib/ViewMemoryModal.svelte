@@ -703,18 +703,18 @@
 
 <!-- Backdrop Overlay -->
 <div
-	class="fixed inset-0 bg-black/40 backdrop-blur-md z-40 transition-opacity duration-300"
+	class="fixed inset-0 bg-black/30 backdrop-blur-xs z-40 transition-opacity duration-300"
 	class:opacity-0={isClosing}
 	onclick={handleClose}
 ></div>
 
 <!-- Modal Content Container -->
 <div
-	class="fixed inset-0 z-50 flex items-center justify-center p-4"
+	class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 font-sans"
 	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 >
 	<div
-		class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 relative transition-all duration-300 max-w-sm sm:max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col"
+		class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl p-4 sm:p-5 relative transition-all duration-300 max-w-sm sm:max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col shadow-[0_10px_40px_rgba(244,114,182,0.2)]"
 		class:opacity-0={isClosing}
 		class:scale-95={isClosing}
 		class:transform={isClosing}
@@ -723,31 +723,31 @@
 		<!-- Close Button -->
 		<button
 			onclick={handleClose}
-			class="absolute top-3.5 right-3.5 p-1.5 text-pink-400 hover:text-pink-600 hover:bg-pink-100 rounded-lg transition-all duration-200"
+			class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
 			title="Close"
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 			</svg>
 		</button>
 
 	<!-- Header -->
-	<div class="text-center mb-4">
-		<h2 class="text-base sm:text-lg font-bold text-pink-600">View Memories</h2>
-		<p class="text-[11px] sm:text-xs text-pink-400 mt-0.5">Your special moments on this date</p>
+	<div class="text-center mb-3">
+		<h2 class="text-base font-black text-pink-950">View Memories</h2>
+		<p class="text-[11px] text-pink-400 font-bold mt-0.5">Your special moments on this date</p>
 	</div>
 
 	<!-- Selected Date Card -->
-	<div class="mb-3 p-3 bg-pink-400 rounded-xl text-white">
+	<div class="mb-3 p-2.5 bg-gradient-to-tr from-[#f43f8e] to-[#ec4899] rounded-2xl text-white shadow-xs">
 		<div class="flex items-center space-x-2.5">
-			<div class="p-1.5 bg-white/20 rounded-lg">
+			<div class="p-1.5 bg-white/20 rounded-xl">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
 				</svg>
 			</div>
 			<div>
-				<p class="text-[10px] text-pink-100 uppercase tracking-wide font-medium">Selected Date</p>
-				<p class="text-xs sm:text-sm font-bold">{formatDate(selectedDate)}</p>
+				<p class="text-[9px] text-pink-100 uppercase tracking-wider font-bold">Selected Date</p>
+				<p class="text-xs sm:text-sm font-black">{formatDate(selectedDate)}</p>
 			</div>
 		</div>
 	</div>
@@ -1211,11 +1211,11 @@
 {#if showVideoTrimmerModal && rawVideoUrl}
 	<div
 		use:portal
-		class="fixed inset-0 z-[80] bg-black/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in"
+		class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fade-in font-sans"
 		onclick={(e) => { if (e.target === e.currentTarget && !isTrimmingVideo) { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; } }}
 	>
 		<div
-			class="bg-white border-2 border-pink-300 rounded-3xl max-w-md w-full p-4 sm:p-5 space-y-3.5 shadow-2xl relative animate-modal-content"
+			class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl max-w-md w-full p-4 sm:p-5 space-y-3.5 shadow-[0_10px_40px_rgba(244,114,182,0.2)] relative animate-modal-content"
 			onclick={(e) => e.stopPropagation()}
 		>
 			<!-- Top Header -->
@@ -1424,33 +1424,33 @@
 
 <!-- Share Memory Modal -->
 {#if showShareModal}
-	<div class="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4">
-		<div class="bg-white border-2 border-pink-300 rounded-2xl p-6 max-w-sm w-full relative animate-modal-content">
+	<div class="fixed inset-0 bg-black/30 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 font-sans">
+		<div class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl p-5 max-w-sm w-full relative animate-modal-content shadow-[0_10px_40px_rgba(244,114,182,0.2)]">
 			<button
 				onclick={() => showShareModal = false}
-				class="absolute top-3 right-3 text-pink-400 hover:text-pink-600 p-1 rounded-lg"
+				class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
 			>
 				✕
 			</button>
-			<div class="text-center mb-4">
-				<h3 class="text-lg font-bold text-pink-600">Share Memory</h3>
-				<p class="text-xs text-pink-400">Select friends to tag/share this memory with so both of you can see it on this date!</p>
+			<div class="text-center mb-3">
+				<h3 class="text-base font-black text-pink-950">Share Memory</h3>
+				<p class="text-xs text-pink-400 font-bold">Select friends to tag/share this memory with so both of you can see it on this date!</p>
 			</div>
 
 			{#if shareSuccessMsg}
-				<div class="mb-4 p-2.5 bg-green-100 border border-green-300 text-green-700 rounded-xl text-xs text-center font-medium">
+				<div class="mb-3.5 p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs text-center font-bold">
 					{shareSuccessMsg}
 				</div>
 			{/if}
 
 			{#if friends.length === 0}
-				<p class="text-xs text-pink-400 text-center py-4">No friends found. Add friends first from the sidebar!</p>
+				<p class="text-xs text-pink-400 text-center py-4 font-bold">No friends found. Add friends first from the sidebar!</p>
 			{:else}
-				<div class="space-y-2 max-h-56 overflow-y-auto mb-5 p-1 pr-1.5">
+				<div class="space-y-2 max-h-56 overflow-y-auto mb-4 p-0.5 pr-1">
 					{#if isLoadingSharedRecipients}
 						<div class="py-3 text-center">
-							<div class="animate-spin w-5 h-5 border-2 border-pink-300 border-t-pink-500 rounded-full mx-auto mb-1"></div>
-							<span class="text-[11px] text-pink-400">Checking shared status...</span>
+							<div class="animate-spin w-5 h-5 border-2 border-pink-100 border-t-[#f43f8e] rounded-full mx-auto mb-1"></div>
+							<span class="text-[11px] text-pink-400 font-bold">Checking shared status...</span>
 						</div>
 					{/if}
 					{#each friends as friend (friend.friend_id)}
@@ -1462,10 +1462,10 @@
 							onclick={() => {
 								if (!isAlreadyShared) toggleShareFriend(friend.friend_id);
 							}}
-							class="w-full p-2.5 rounded-xl border-2 transition-all flex items-center justify-between text-left {isAlreadyShared ? 'bg-pink-50/70 border-pink-200/80 opacity-80 cursor-not-allowed' : isSelected ? 'border-pink-500 bg-pink-50/90 cursor-pointer' : 'border-pink-200 bg-white hover:bg-pink-50/40 hover:border-pink-300 cursor-pointer'}"
+							class="w-full p-2.5 rounded-2xl border transition-all flex items-center justify-between text-left {isAlreadyShared ? 'bg-[#fdf2f6]/70 border-pink-100 opacity-80 cursor-not-allowed' : isSelected ? 'border-[#f43f8e] bg-pink-50/90 cursor-pointer shadow-2xs' : 'border-pink-100 bg-white hover:bg-[#fdf2f6]/60 hover:border-pink-200 cursor-pointer'}"
 						>
 							<div class="flex items-center space-x-2.5 min-w-0">
-								<div class="w-8 h-8 rounded-full {isAlreadyShared ? 'bg-pink-300' : 'bg-pink-400'} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 overflow-hidden">
+								<div class="w-8 h-8 rounded-xl {isAlreadyShared ? 'bg-pink-300' : 'bg-gradient-to-tr from-[#f43f8e] to-[#ec4899]'} text-white font-black text-xs flex items-center justify-center flex-shrink-0 overflow-hidden shadow-2xs">
 									{#if friend.avatar_url}
 										<img src={friend.avatar_url} alt={friend.username} class="w-full h-full object-cover" />
 									{:else}
@@ -1473,26 +1473,23 @@
 									{/if}
 								</div>
 								<div class="min-w-0">
-									<span class="text-xs font-semibold text-pink-700 block truncate">@{friend.username}</span>
+									<span class="text-xs font-black text-[#e8367f] block truncate">@{friend.username}</span>
 									{#if isAlreadyShared}
-										<span class="text-[10px] text-pink-500 font-medium block leading-tight">You already shared this memory to this user</span>
+										<span class="text-[10px] text-pink-400 font-bold block leading-tight">Already shared</span>
 									{/if}
 								</div>
 							</div>
 							<div class="flex-shrink-0 ml-2">
 								{#if isAlreadyShared}
-									<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-600 border border-pink-200/90 flex items-center gap-1">
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-pink-500">
-											<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-										</svg>
+									<span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center gap-1">
 										<span>Shared</span>
 									</span>
 								{:else if isSelected}
-									<span class="w-5 h-5 rounded-full bg-pink-500 text-white flex items-center justify-center text-xs font-bold">
+									<span class="w-5 h-5 rounded-full bg-[#f43f8e] text-white flex items-center justify-center text-xs font-black shadow-xs">
 										✓
 									</span>
 								{:else}
-									<span class="w-5 h-5 rounded-full border-2 border-pink-300 bg-white"></span>
+									<span class="w-5 h-5 rounded-full border border-pink-300 bg-white"></span>
 								{/if}
 							</div>
 						</button>
@@ -1501,7 +1498,7 @@
 				<button
 					onclick={handleShareMemorySubmit}
 					disabled={selectedShareFriendIds.length === 0 || isSharing}
-					class="w-full py-2.5 bg-pink-400 text-white rounded-xl font-semibold text-sm hover:bg-pink-500 transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+					class="w-full py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl font-bold text-xs transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed shadow-xs active:scale-95"
 				>
 					{#if isSharing}Sharing...{:else}Share Memory{/if}
 				</button>
@@ -1513,33 +1510,33 @@
 <!-- Delete Memory Confirmation Modal -->
 {#if showDeleteConfirmModal}
 	<div
-		class="fixed inset-0 bg-black/50 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in"
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in font-sans"
 		onclick={(e) => { if (e.target === e.currentTarget) { showDeleteConfirmModal = false; memoryToDeleteId = null; } }}
 	>
-		<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-sm w-full p-6 text-center animate-modal-content relative overflow-hidden">
+		<div class="bg-white/98 backdrop-blur-xl border border-pink-100 rounded-3xl max-w-xs w-full p-5 text-center animate-modal-content relative overflow-hidden shadow-[0_10px_40px_rgba(244,114,182,0.2)]">
 			<!-- Trash Bin Circle Icon -->
-			<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+			<div class="w-12 h-12 bg-rose-50 text-rose-500 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-2.5 shadow-2xs">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
 					<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 				</svg>
 			</div>
-			<h3 class="text-base sm:text-lg font-black text-pink-950 mb-1.5">Delete Memory?</h3>
-			<p class="text-xs text-pink-600 mb-5 font-medium leading-relaxed">
+			<h3 class="text-sm font-black text-pink-950 mb-1">Delete Memory?</h3>
+			<p class="text-xs text-pink-950/70 mb-4 font-medium leading-relaxed">
 				Are you sure you want to delete this memory? This action cannot be undone.
 			</p>
 
-			<div class="flex items-center space-x-3">
+			<div class="flex items-center space-x-2">
 				<button
 					type="button"
 					onclick={() => { showDeleteConfirmModal = false; memoryToDeleteId = null; }}
-					class="w-1/2 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer"
+					class="w-1/2 py-2 px-3 bg-[#fdf2f6] text-pink-950 hover:bg-pink-100 rounded-xl font-bold text-xs transition-all cursor-pointer active:scale-95"
 				>
 					Cancel
 				</button>
 				<button
 					type="button"
 					onclick={confirmDeleteMemory}
-					class="w-1/2 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-xs sm:text-sm transition-all active:scale-95 cursor-pointer"
+					class="w-1/2 py-2 px-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-xs transition-all active:scale-95 cursor-pointer shadow-xs"
 				>
 					Delete
 				</button>
