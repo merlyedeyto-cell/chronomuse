@@ -5,6 +5,7 @@
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
 	import { broadcastFriendEvent, broadcastProfileEvent } from '$lib/realtimeBroadcast.js';
+	import { playClickSound } from '$lib/soundEffects.js';
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
 	import EditProfileModal from '$lib/EditProfileModal.svelte';
