@@ -13,6 +13,15 @@
 	let showSequentialTooltips = $state(false);
 	let tooltipTimer = null;
 
+	// Draggable Position & Side state
+	let side = $state('right'); // 'right' or 'left'
+	let topY = $state(96); // pixels from top
+	let isDragging = $state(false);
+	let startPointerX = 0;
+	let startPointerY = 0;
+	let initialTopY = 0;
+	let hasMoved = false;
+
 	const navItems = [
 		{ id: 'dashboard', label: 'Calendar', path: '/dashboard' },
 		{ id: 'moods', label: 'Moods', path: '/mood-graph' },
@@ -46,6 +55,60 @@
 		}
 	}
 
+	function handlePointerDown(e) {
+		startPointerX = e.clientX;
+		startPointerY = e.clientY;
+		initialTopY = topY;
+		hasMoved = false;
+
+		window.addEventListener('pointermove', handlePointerMove);
+		window.addEventListener('pointerup', handlePointerUp);
+		window.addEventListener('pointercancel', handlePointerUp);
+	}
+
+	function handlePointerMove(e) {
+		const deltaX = e.clientX - startPointerX;
+		const deltaY = e.clientY - startPointerY;
+
+		if (!hasMoved && Math.hypot(deltaX, deltaY) > 6) {
+			hasMoved = true;
+			isDragging = true;
+		}
+
+		if (hasMoved) {
+			if (typeof window !== 'undefined') {
+				const maxTop = Math.max(100, window.innerHeight - 300);
+				topY = Math.max(68, Math.min(maxTop, initialTopY + deltaY));
+				const midScreen = window.innerWidth / 2;
+				side = e.clientX < midScreen ? 'left' : 'right';
+			}
+		}
+	}
+
+	function handlePointerUp(e) {
+		window.removeEventListener('pointermove', handlePointerMove);
+		window.removeEventListener('pointerup', handlePointerUp);
+		window.removeEventListener('pointercancel', handlePointerUp);
+
+		if (hasMoved) {
+			if (typeof window !== 'undefined') {
+				const midScreen = window.innerWidth / 2;
+				side = e.clientX < midScreen ? 'left' : 'right';
+				const maxTop = Math.max(100, window.innerHeight - 300);
+				topY = Math.max(68, Math.min(maxTop, topY));
+				try {
+					localStorage.setItem('chronomuse_nav_pos', JSON.stringify({ side, topY }));
+				} catch (err) {}
+			}
+			setTimeout(() => {
+				isDragging = false;
+			}, 100);
+		} else {
+			isDragging = false;
+			toggleSidebar();
+		}
+	}
+
 	function fetchUnreadChats() {
 		if (typeof window === 'undefined') return;
 		try {
@@ -70,6 +133,7 @@
 	}
 
 	function handleNavigate(path) {
+		if (isDragging) return;
 		playClickSound();
 		if (path === '/profile') {
 			if (typeof window !== 'undefined') {
@@ -80,6 +144,17 @@
 	}
 
 	onMount(() => {
+		try {
+			const saved = localStorage.getItem('chronomuse_nav_pos');
+			if (saved) {
+				const parsed = JSON.parse(saved);
+				if (parsed.side === 'left' || parsed.side === 'right') side = parsed.side;
+				if (typeof parsed.topY === 'number') {
+					topY = Math.max(68, Math.min(window.innerHeight - 300, parsed.topY));
+				}
+			}
+		} catch (e) {}
+
 		fetchUnreadChats();
 		const interval = setInterval(fetchUnreadChats, 2500);
 
@@ -101,38 +176,65 @@
 	});
 </script>
 
-<div class="fixed right-0 top-20 sm:top-24 z-40 md:hidden select-none {hideOnMobile ? 'hidden' : 'block'}">
+<!-- Draggable Mobile Navigation Container -->
+<div
+	class="fixed z-40 md:hidden select-none touch-none {side === 'left' ? 'left-0' : 'right-0'} {hideOnMobile ? 'hidden' : 'block'} {isDragging ? 'transition-none cursor-grabbing opacity-90' : 'transition-all duration-300 ease-out'}"
+	style="top: {topY}px;"
+>
 	<!-- Collapsed Tab Handle (visible when !isOpen) -->
 	{#if !isOpen}
 		<button
 			type="button"
-			onclick={toggleSidebar}
-			class="group/tab w-7 h-12 bg-white/95 backdrop-blur-md border-2 border-r-0 border-pink-300 rounded-l-2xl shadow-[-3px_4px_16px_rgba(244,63,142,0.2)] flex items-center justify-center text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-200 cursor-pointer"
-			aria-label="Open navigation menu"
-			title="Open menu"
+			onpointerdown={handlePointerDown}
+			class="group/tab w-7.5 h-13 bg-white/95 backdrop-blur-md border-2 border-pink-300 shadow-[-3px_4px_16px_rgba(244,63,142,0.22)] flex flex-col items-center justify-center text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-200 cursor-grab active:cursor-grabbing {side === 'left' ? 'border-l-0 rounded-r-2xl shadow-[3px_4px_16px_rgba(244,63,142,0.22)]' : 'border-r-0 rounded-l-2xl'}"
+			aria-label="Drag or tap to open navigation"
+			title="Drag to move, tap to open"
 		>
 			<div class="relative flex items-center justify-center">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke-width="3"
-					stroke="currentColor"
-					class="w-4 h-4 transition-transform duration-200 group-hover/tab:-translate-x-0.5"
-				>
-					<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-				</svg>
+				{#if side === 'left'}
+					<!-- Left side arrow points right -->
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="3"
+						stroke="currentColor"
+						class="w-4 h-4 transition-transform duration-200 group-hover/tab:translate-x-0.5"
+					>
+						<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+					</svg>
+				{:else}
+					<!-- Right side arrow points left -->
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="3"
+						stroke="currentColor"
+						class="w-4 h-4 transition-transform duration-200 group-hover/tab:-translate-x-0.5"
+					>
+						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+					</svg>
+				{/if}
+
 				{#if unreadChatsCount > 0}
-					<span class="absolute -top-3.5 -left-2 w-2.5 h-2.5 bg-[#f43f8e] border-2 border-white rounded-full animate-ping"></span>
-					<span class="absolute -top-3.5 -left-2 w-2.5 h-2.5 bg-[#f43f8e] border-2 border-white rounded-full"></span>
+					<span class="absolute -top-3.5 {side === 'left' ? '-right-2' : '-left-2'} w-2.5 h-2.5 bg-[#f43f8e] border-2 border-white rounded-full animate-ping"></span>
+					<span class="absolute -top-3.5 {side === 'left' ? '-right-2' : '-left-2'} w-2.5 h-2.5 bg-[#f43f8e] border-2 border-white rounded-full"></span>
 				{/if}
 			</div>
 
+			<!-- Subtle drag grip dots -->
+			<div class="flex space-x-0.5 mt-1 opacity-40">
+				<span class="w-1 h-1 bg-pink-400 rounded-full"></span>
+				<span class="w-1 h-1 bg-pink-400 rounded-full"></span>
+			</div>
+
 			<!-- Floating Themed Tooltip on Tab Hover -->
-			<div class="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/tab:opacity-100 translate-x-1 group-hover/tab:translate-x-0 transition-all duration-200 pointer-events-none z-50">
-				<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2.5 py-1 rounded-xl shadow-[-2px_4px_12px_rgba(244,63,142,0.3)] border border-pink-200/40 whitespace-nowrap">
-					Open Menu
-					<div class="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-[#f43f8e]"></div>
+			<div class="absolute {side === 'left' ? 'left-full ml-2.5' : 'right-full mr-2.5'} top-1/2 -translate-y-1/2 opacity-0 group-hover/tab:opacity-100 {side === 'left' ? '-translate-x-1 group-hover/tab:translate-x-0' : 'translate-x-1 group-hover/tab:translate-x-0'} transition-all duration-200 pointer-events-none z-50">
+				<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2.5 py-1 rounded-xl shadow-[-2px_4px_12px_rgba(244,63,142,0.3)] border border-pink-200/40 whitespace-nowrap flex items-center gap-1">
+					<span>Open Menu</span>
+					<span class="text-[9px] opacity-80 font-normal">· Hold to drag</span>
+					<div class="absolute top-1/2 -translate-y-1/2 {side === 'left' ? 'right-full border-r-4 border-r-[#f43f8e]' : 'left-full border-l-4 border-l-[#f43f8e]'} w-0 h-0 border-y-4 border-y-transparent"></div>
 				</div>
 			</div>
 		</button>
@@ -141,32 +243,54 @@
 	<!-- Sliding Sidebar Dock Container -->
 	<nav
 		aria-label="Mobile Sidebar Navigation"
-		class="bg-white/95 backdrop-blur-md border-2 border-r-0 border-pink-200/90 rounded-l-2xl p-1.5 shadow-[-4px_4px_24px_rgba(0,0,0,0.09)] flex flex-col items-center space-y-1.5 font-sans transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] {isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full opacity-0 pointer-events-none absolute right-0 top-0'}"
+		class="bg-white/95 backdrop-blur-md border-2 border-pink-200/90 p-1.5 flex flex-col items-center space-y-1.5 font-sans transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] {side === 'left' ? 'border-l-0 rounded-r-2xl shadow-[4px_4px_24px_rgba(0,0,0,0.09)]' : 'border-r-0 rounded-l-2xl shadow-[-4px_4px_24px_rgba(0,0,0,0.09)]'} {isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : side === 'left' ? '-translate-x-full opacity-0 pointer-events-none absolute left-0 top-0' : 'translate-x-full opacity-0 pointer-events-none absolute right-0 top-0'}"
 	>
-		<!-- Collapse Button at top of dock -->
+		<!-- Collapse & Drag Grip Header Button at top of dock -->
 		<button
 			type="button"
-			onclick={toggleSidebar}
-			class="group/btn relative w-9 h-7 rounded-lg text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50 flex items-center justify-center transition-colors cursor-pointer"
-			aria-label="Collapse navigation"
-			title="Collapse menu"
+			onpointerdown={handlePointerDown}
+			class="group/btn relative w-9 h-7.5 rounded-lg text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50 flex flex-col items-center justify-center transition-colors cursor-grab active:cursor-grabbing"
+			aria-label="Drag to move or tap to collapse navigation"
+			title="Drag to move, tap to hide"
 		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke-width="3"
-				stroke="currentColor"
-				class="w-4 h-4 transition-transform duration-200 group-hover/btn:translate-x-0.5"
-			>
-				<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-			</svg>
+			{#if side === 'left'}
+				<!-- Left side collapse points left -->
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="3"
+					stroke="currentColor"
+					class="w-4 h-4 transition-transform duration-200 group-hover/btn:-translate-x-0.5"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+				</svg>
+			{:else}
+				<!-- Right side collapse points right -->
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="3"
+					stroke="currentColor"
+					class="w-4 h-4 transition-transform duration-200 group-hover/btn:translate-x-0.5"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+				</svg>
+			{/if}
+
+			<!-- Grip Dots -->
+			<div class="flex space-x-0.5 mt-0.5 opacity-40">
+				<span class="w-1 h-0.5 bg-pink-400 rounded-full"></span>
+				<span class="w-1 h-0.5 bg-pink-400 rounded-full"></span>
+			</div>
 
 			<!-- Themed Tooltip -->
-			<div class="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/btn:opacity-100 translate-x-1 group-hover/btn:translate-x-0 transition-all duration-200 pointer-events-none z-50">
-				<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2 py-0.5 rounded-lg shadow-[-2px_4px_12px_rgba(244,63,142,0.3)] border border-pink-200/40 whitespace-nowrap">
-					Hide
-					<div class="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-[#f43f8e]"></div>
+			<div class="absolute {side === 'left' ? 'left-full ml-2.5' : 'right-full mr-2.5'} top-1/2 -translate-y-1/2 opacity-0 group-hover/btn:opacity-100 {side === 'left' ? '-translate-x-1 group-hover/btn:translate-x-0' : 'translate-x-1 group-hover/btn:translate-x-0'} transition-all duration-200 pointer-events-none z-50">
+				<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2 py-0.5 rounded-lg shadow-[-2px_4px_12px_rgba(244,63,142,0.3)] border border-pink-200/40 whitespace-nowrap flex items-center gap-1">
+					<span>Hide</span>
+					<span class="text-[9px] opacity-80 font-normal">· Hold to drag</span>
+					<div class="absolute top-1/2 -translate-y-1/2 {side === 'left' ? 'right-full border-r-4 border-r-[#f43f8e]' : 'left-full border-l-4 border-l-[#f43f8e]'} w-0 h-0 border-y-4 border-y-transparent"></div>
 				</div>
 			</div>
 		</button>
@@ -214,7 +338,7 @@
 
 				<!-- Themed Floating Tooltip with Staggered Sequential Reveal -->
 				<div
-					class="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-50 {showSequentialTooltips ? 'opacity-100 translate-x-0 scale-100 pointer-events-auto' : 'opacity-0 translate-x-2 scale-95 pointer-events-none group-hover/item:opacity-100 group-hover/item:translate-x-0 group-hover/item:scale-100 group-hover/item:pointer-events-auto'}"
+					class="absolute {side === 'left' ? 'left-full ml-2.5' : 'right-full mr-2.5'} top-1/2 -translate-y-1/2 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-50 {showSequentialTooltips ? 'opacity-100 translate-x-0 scale-100 pointer-events-auto' : side === 'left' ? 'opacity-0 -translate-x-2 scale-95 pointer-events-none group-hover/item:opacity-100 group-hover/item:translate-x-0 group-hover/item:scale-100 group-hover/item:pointer-events-auto' : 'opacity-0 translate-x-2 scale-95 pointer-events-none group-hover/item:opacity-100 group-hover/item:translate-x-0 group-hover/item:scale-100 group-hover/item:pointer-events-auto'}"
 					style="transition-delay: {showSequentialTooltips ? `${(idx * 75) + 120}ms` : '0ms'};"
 				>
 					<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2.5 py-1 rounded-xl shadow-[-3px_4px_16px_rgba(244,63,142,0.32)] border border-pink-200/40 whitespace-nowrap flex items-center gap-1.5">
@@ -225,7 +349,7 @@
 							</span>
 						{/if}
 						<!-- Tooltip Arrow Pointer -->
-						<div class="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-[#f43f8e]"></div>
+						<div class="absolute top-1/2 -translate-y-1/2 {side === 'left' ? 'right-full border-r-4 border-r-[#f43f8e]' : 'left-full border-l-4 border-l-[#f43f8e]'} w-0 h-0 border-y-4 border-y-transparent"></div>
 					</div>
 				</div>
 			</button>
