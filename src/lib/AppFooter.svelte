@@ -10,6 +10,8 @@
 	let unreadChatsCount = $state(0);
 	let currentUserId = $state(null);
 	let isOpen = $state(true);
+	let showSequentialTooltips = $state(false);
+	let tooltipTimer = null;
 
 	const navItems = [
 		{ id: 'dashboard', label: 'Calendar', path: '/dashboard' },
@@ -32,6 +34,16 @@
 	function toggleSidebar() {
 		playClickSound();
 		isOpen = !isOpen;
+		if (isOpen) {
+			showSequentialTooltips = true;
+			if (tooltipTimer) clearTimeout(tooltipTimer);
+			tooltipTimer = setTimeout(() => {
+				showSequentialTooltips = false;
+			}, 2800);
+		} else {
+			showSequentialTooltips = false;
+			if (tooltipTimer) clearTimeout(tooltipTimer);
+		}
 	}
 
 	function fetchUnreadChats() {
@@ -81,6 +93,7 @@
 
 		return () => {
 			clearInterval(interval);
+			if (tooltipTimer) clearTimeout(tooltipTimer);
 			window.removeEventListener('chronomuse_new_message', handleRealtime);
 			window.removeEventListener('chronomuse_friend_change', handleRealtime);
 			window.removeEventListener('chronomuse_notification_change', handleRealtime);
@@ -115,11 +128,11 @@
 				{/if}
 			</div>
 
-			<!-- Floating Tooltip on Tab Hover -->
+			<!-- Floating Themed Tooltip on Tab Hover -->
 			<div class="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/tab:opacity-100 translate-x-1 group-hover/tab:translate-x-0 transition-all duration-200 pointer-events-none z-50">
-				<div class="relative bg-stone-900/90 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-md whitespace-nowrap">
+				<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2.5 py-1 rounded-xl shadow-[-2px_4px_12px_rgba(244,63,142,0.3)] border border-pink-200/40 whitespace-nowrap">
 					Open Menu
-					<div class="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-stone-900/90"></div>
+					<div class="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-[#f43f8e]"></div>
 				</div>
 			</div>
 		</button>
@@ -149,11 +162,11 @@
 				<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
 			</svg>
 
-			<!-- Tooltip -->
+			<!-- Themed Tooltip -->
 			<div class="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/btn:opacity-100 translate-x-1 group-hover/btn:translate-x-0 transition-all duration-200 pointer-events-none z-50">
-				<div class="relative bg-stone-900/90 backdrop-blur-xs text-white text-[11px] font-bold px-2 py-0.5 rounded-lg shadow-md whitespace-nowrap">
+				<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2 py-0.5 rounded-lg shadow-[-2px_4px_12px_rgba(244,63,142,0.3)] border border-pink-200/40 whitespace-nowrap">
 					Hide
-					<div class="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-stone-900/90"></div>
+					<div class="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-[#f43f8e]"></div>
 				</div>
 			</div>
 		</button>
@@ -175,7 +188,7 @@
 						</svg>
 					{:else if item.id === 'moods'}
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-							<path fill-rule="evenodd" d="M3.75 14.25a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25 2.25v5.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25v-5.25zm6.75-8.25a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25 2.25v13.5a2.25 2.25 0 01-2.25 2.25h-1.5a2.25 2.25 0 01-2.25-2.25V6zm6.75 4.5a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-1.5a2.25 2.25 0 01-2.25-2.25v-9z" clip-rule="evenodd" />
+							<path fill-rule="evenodd" d="M3.75 14.25a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25v5.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25v-5.25zm6.75-8.25a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25 2.25v13.5a2.25 2.25 0 01-2.25 2.25h-1.5a2.25 2.25 0 01-2.25-2.25V6zm6.75 4.5a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-1.5a2.25 2.25 0 01-2.25-2.25v-9z" clip-rule="evenodd" />
 						</svg>
 					{:else if item.id === 'friends'}
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
@@ -199,16 +212,20 @@
 					{/if}
 				</div>
 
-				<!-- Floating Tooltip to the Left -->
-				<div class="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 translate-x-1 group-hover/item:translate-x-0 transition-all duration-200 pointer-events-none z-50">
-					<div class="relative bg-stone-900/90 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-md whitespace-nowrap flex items-center gap-1.5">
+				<!-- Themed Floating Tooltip with Staggered Sequential Reveal -->
+				<div
+					class="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-50 {showSequentialTooltips ? 'opacity-100 translate-x-0 scale-100 pointer-events-auto' : 'opacity-0 translate-x-2 scale-95 pointer-events-none group-hover/item:opacity-100 group-hover/item:translate-x-0 group-hover/item:scale-100 group-hover/item:pointer-events-auto'}"
+					style="transition-delay: {showSequentialTooltips ? `${(idx * 75) + 120}ms` : '0ms'};"
+				>
+					<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2.5 py-1 rounded-xl shadow-[-3px_4px_16px_rgba(244,63,142,0.32)] border border-pink-200/40 whitespace-nowrap flex items-center gap-1.5">
 						<span>{item.label}</span>
 						{#if item.id === 'chat' && unreadChatsCount > 0}
-							<span class="bg-[#f43f8e] text-white text-[9px] px-1 rounded-full font-black">
+							<span class="bg-white text-[#f43f8e] text-[9px] px-1.5 py-0.2 rounded-full font-black shadow-2xs">
 								{unreadChatsCount}
 							</span>
 						{/if}
-						<div class="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-stone-900/90"></div>
+						<!-- Tooltip Arrow Pointer -->
+						<div class="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-[#f43f8e]"></div>
 					</div>
 				</div>
 			</button>
