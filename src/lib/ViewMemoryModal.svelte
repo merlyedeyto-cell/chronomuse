@@ -69,6 +69,43 @@
 	let fullScreenImageUrl = $state('');
 	let fullScreenMediaType = $state('image');
 
+	// Audio Player State per memory
+	let playingAudioId = $state(/** @type {any} */ (null));
+	let audioCurrentTimes = $state({});
+	let audioDurations = $state({});
+	let audioElements = {};
+
+	function togglePlayAudio(memId) {
+		const el = audioElements[memId];
+		if (!el) return;
+		if (playingAudioId === memId) {
+			el.pause();
+			playingAudioId = null;
+		} else {
+			if (playingAudioId && audioElements[playingAudioId]) {
+				audioElements[playingAudioId].pause();
+			}
+			el.play().then(() => {
+				playingAudioId = memId;
+			}).catch(() => {});
+		}
+	}
+
+	function handleAudioSeek(memId, e) {
+		const el = audioElements[memId];
+		if (!el) return;
+		const val = parseFloat(e.target.value);
+		el.currentTime = val;
+		audioCurrentTimes[memId] = val;
+	}
+
+	function formatAudioTime(seconds) {
+		if (!seconds || isNaN(seconds)) return '0:00';
+		const mins = Math.floor(seconds / 60);
+		const secs = Math.floor(seconds % 60);
+		return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+	}
+
 	function openFullScreenImage(url, type = 'image') {
 		fullScreenImageUrl = url;
 		fullScreenMediaType = type;
@@ -565,18 +602,18 @@
 
 	function getMoodColor(mood) {
 		const moodColors = {
-			'Happy': 'bg-yellow-100 text-yellow-700 border-yellow-300',
-			'Sad': 'bg-blue-100 text-blue-700 border-blue-300',
-			'Excited': 'bg-orange-100 text-orange-700 border-orange-300',
-			'Angry': 'bg-red-100 text-red-700 border-red-300',
-			'Calm': 'bg-green-100 text-green-700 border-green-300',
-			'Anxious': 'bg-purple-100 text-purple-700 border-purple-300',
-			'Grateful': 'bg-pink-100 text-pink-700 border-pink-300',
-			'Lonely': 'bg-gray-100 text-gray-700 border-gray-300',
-			'Love': 'bg-rose-100 text-rose-700 border-rose-300',
-			'Neutral': 'bg-slate-100 text-slate-700 border-slate-300'
+			'Happy': 'bg-emerald-50 text-emerald-600 border-emerald-200',
+			'Sad': 'bg-amber-50 text-amber-600 border-amber-200',
+			'Excited': 'bg-orange-50 text-orange-600 border-orange-200',
+			'Angry': 'bg-rose-50 text-rose-600 border-rose-200',
+			'Calm': 'bg-teal-50 text-teal-600 border-teal-200',
+			'Anxious': 'bg-purple-50 text-purple-600 border-purple-200',
+			'Grateful': 'bg-pink-50 text-pink-600 border-pink-200',
+			'Lonely': 'bg-slate-50 text-slate-600 border-slate-200',
+			'Love': 'bg-rose-50 text-rose-600 border-rose-200',
+			'Neutral': 'bg-stone-50 text-stone-600 border-stone-200'
 		};
-		return moodColors[mood] || 'bg-pink-100 text-pink-700 border-pink-300';
+		return moodColors[mood] || 'bg-pink-50 text-pink-600 border-pink-200';
 	}
 
 	function getMemoryDisplayDetails(memory) {
@@ -714,7 +751,7 @@
 	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 >
 	<div
-		class="bg-white border border-pink-100 rounded-3xl p-4 sm:p-5 relative transition-all duration-300 max-w-sm sm:max-w-md w-full max-h-[calc(100dvh-6.5rem)] sm:max-h-[82vh] overflow-hidden flex flex-col shadow-2xl"
+		class="bg-white border border-pink-100 rounded-[28px] p-3.5 sm:p-4 relative transition-all duration-300 max-w-[315px] sm:max-w-[335px] w-full max-h-[calc(100dvh-6.5rem)] sm:max-h-[82vh] overflow-hidden flex flex-col shadow-2xl"
 		class:opacity-0={isClosing}
 		class:scale-95={isClosing}
 		class:transform={isClosing}
@@ -723,29 +760,32 @@
 		<!-- Close Button -->
 		<button
 			onclick={handleClose}
-			class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
+			class="absolute top-3 right-3 w-6 h-6 rounded-full text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 flex items-center justify-center transition-colors cursor-pointer"
 			title="Close"
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 			</svg>
 		</button>
 
-	<!-- Header -->
-	<div class="text-center mb-2.5">
-		<h2 class="text-sm sm:text-base font-black text-pink-950">View Memories</h2>
-		<p class="text-[10px] text-pink-400 font-bold">Your special moments on this date</p>
-	</div>
-
-	<!-- Selected Date Card -->
-	<div class="mb-2.5 p-2 bg-[#fff0f5] border border-pink-200/80 rounded-2xl text-center shadow-2xs">
-		<div class="flex items-center justify-center space-x-1.5 text-xs font-black text-pink-950">
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-			</svg>
-			<span>{formatDate(selectedDate)}</span>
+		<!-- Header -->
+		<div class="text-center mb-2.5 pr-4 pl-4">
+			<h2 class="text-base font-black text-[#f43f8e]">View Memories</h2>
+			<p class="text-[10px] text-pink-400 font-bold">Your special moments on this date</p>
 		</div>
-	</div>
+
+		<!-- Selected Date Banner -->
+		<div class="mb-2.5 p-2.5 bg-gradient-to-r from-[#f43f8e] to-[#ec4899] text-white rounded-2xl text-left shadow-[0_4px_16px_rgba(244,63,94,0.22)] flex items-center space-x-2.5 flex-shrink-0">
+			<div class="w-7 h-7 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center flex-shrink-0 text-white shadow-inner">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+				</svg>
+			</div>
+			<div class="min-w-0">
+				<span class="text-[8px] font-black tracking-wider uppercase text-white/80 block leading-tight">SELECTED DATE</span>
+				<span class="text-xs font-black text-white block truncate leading-tight">{formatDate(selectedDate)}</span>
+			</div>
+		</div>
 
 	<!-- Memories List - Scrollable -->
 	<div class="flex-1 overflow-y-auto pr-1 -mr-1">
@@ -981,6 +1021,19 @@
 										</button>
 									{/if}
 
+									{#if details.isShared}
+										<button
+											type="button"
+											onclick={() => openShareModal(memory)}
+											class="text-[10px] px-2 py-0.5 rounded-full bg-pink-50 text-pink-600 border border-pink-200 font-bold whitespace-nowrap flex items-center space-x-1 cursor-pointer"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-[#f43f8e]" viewBox="0 0 20 20" fill="currentColor">
+												<path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 16v-1a3.987 3.987 0 00-1.07-2.77A5.992 5.992 0 0118 15v1h-2zM4 16v-1c0-.987.298-1.905.807-2.67A3.987 3.987 0 004 15v1H2z" />
+											</svg>
+											<span>Shared with @{details.senderName}</span>
+										</button>
+									{/if}
+
 									{#if memory.mood_tag}
 										<span class="text-[10px] px-2 py-0.5 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap">
 											{memory.mood_tag}
@@ -988,7 +1041,7 @@
 									{/if}
 
 									{#if details.cleanTag}
-										<span class="text-[10px] px-2 py-0.5 rounded-full bg-[#fff0f5] text-pink-900 border border-pink-200/80 font-bold whitespace-nowrap">
+										<span class="text-[10px] px-2 py-0.5 rounded-full bg-pink-50 text-pink-500 border border-pink-200 font-bold whitespace-nowrap">
 											{details.cleanTag}
 										</span>
 									{/if}
@@ -1000,7 +1053,7 @@
 										<!-- Share with Friend Button -->
 										<button
 											onclick={() => openShareModal(memory)}
-											class="p-1 text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all flex items-center space-x-1 active:scale-95 cursor-pointer"
+											class="p-1 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all flex items-center space-x-1 active:scale-95 cursor-pointer"
 											title="Share with Friend"
 										>
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
@@ -1010,7 +1063,7 @@
 
 										<button
 											onclick={() => handleEditMemory(memory)}
-											class="p-1 text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all active:scale-95 cursor-pointer"
+											class="p-1 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all active:scale-95 cursor-pointer"
 											title="Edit"
 										>
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
@@ -1033,23 +1086,20 @@
 
 							<!-- Clean Description Content -->
 							{#if details.cleanDesc}
-								<p class="text-xs font-bold text-pink-950 leading-relaxed whitespace-pre-wrap">{details.cleanDesc}</p>
+								<p class="text-xs font-bold text-pink-950 leading-relaxed whitespace-pre-wrap mt-1 mb-1.5">{details.cleanDesc}</p>
 							{/if}
 
 							<!-- Media -->
 							{#if memory.photo_video}
 								{#if (!memory.photo_video_type || memory.photo_video_type.startsWith('image/')) && !(typeof memory.photo_video === 'string' && (memory.photo_video.endsWith('.mp4') || memory.photo_video.endsWith('.webm') || memory.photo_video.endsWith('.mov')))}
-									<div class="relative rounded-xl overflow-hidden border border-pink-100/90 cursor-pointer hover:border-pink-300 transition-all duration-200 bg-[#fff0f5] shadow-2xs" onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'image')}>
-										<img src={getMediaUrl(memory.photo_video)} alt="Memory" class="w-full max-h-40 sm:max-h-48 object-cover hover:scale-105 transition-transform duration-300" />
-										<div class="absolute inset-0 bg-black/10 hover:bg-black/20 transition-all duration-200 flex items-center justify-center pointer-events-none">
-											<span class="text-white text-[10px] font-bold opacity-0 hover:opacity-100 bg-black/60 px-2 py-0.5 rounded-full">Enlarge</span>
-										</div>
+									<div class="relative rounded-2xl overflow-hidden border border-pink-100/90 cursor-pointer hover:border-pink-300 transition-all duration-200 bg-[#fff0f5] shadow-2xs" onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'image')}>
+										<img src={getMediaUrl(memory.photo_video)} alt="Memory" class="w-full max-h-36 sm:max-h-40 object-contain hover:scale-105 transition-transform duration-300 rounded-2xl" />
 									</div>
 								{:else}
-									<div class="relative rounded-xl overflow-hidden border border-pink-100/90 bg-[#1e1e24] flex flex-col items-center justify-center shadow-2xs max-h-48 sm:max-h-56">
+									<div class="relative rounded-2xl overflow-hidden border border-pink-100/90 bg-[#1e1e24] flex flex-col items-center justify-center shadow-2xs max-h-44 sm:max-h-48">
 										<video 
 											src={getMediaUrl(memory.photo_video)} 
-											class="w-full max-h-48 sm:max-h-56 object-contain" 
+											class="w-full max-h-44 sm:max-h-48 object-contain" 
 											controls 
 											playsinline 
 											preload="metadata"
@@ -1072,53 +1122,78 @@
 								{/if}
 							{/if}
 
+							<!-- Custom Pink Pill Audio Player -->
 							{#if memory.music}
-								<div class="rounded-xl overflow-hidden border border-pink-100 bg-[#fff0f5] p-2">
-									<div class="flex items-center space-x-1.5 mb-1 min-w-0">
-										<div class="w-5 h-5 rounded-md bg-pink-100 text-[#f43f8e] flex items-center justify-center shrink-0">
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
+								<div class="bg-pink-50/50 border border-pink-100 rounded-2xl p-2.5 mt-2 space-y-1.5">
+									<div class="flex items-center space-x-1.5 min-w-0">
+										<div class="w-5 h-5 rounded-full bg-[#f43f8e] text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
+											<svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
+												<path d="M19.95 2.1a1 1 0 00-.95.1L8 6.4a1 1 0 00-.8 1V17.5a3.5 3.5 0 102 3.14V11.2l9-3.6v6.9a3.5 3.5 0 102 3.14V3a1 1 0 00-.25-.9z" />
 											</svg>
 										</div>
-										<span class="text-[10px] font-bold text-pink-950 truncate" title={getMusicName(memory.music)}>{getMusicName(memory.music)}</span>
+										<p class="text-[11px] font-black text-pink-900 truncate" title={getMusicName(memory.music)}>
+											{getMusicName(memory.music)}
+										</p>
 									</div>
-									<div class="custom-audio-player">
-										<audio src={getMusicUrl(memory.music)} controls preload="metadata" class="w-full" crossorigin="anonymous"></audio>
+
+									<div class="bg-white rounded-full px-2.5 py-1 border border-pink-100 flex items-center space-x-1.5 shadow-2xs">
+										<button
+											type="button"
+											onclick={() => togglePlayAudio(memory.id)}
+											class="w-6 h-6 rounded-full bg-[#f43f8e] hover:bg-[#e0337f] text-white flex items-center justify-center flex-shrink-0 shadow-xs active:scale-95 transition-all cursor-pointer"
+											title={playingAudioId === memory.id ? 'Pause' : 'Play'}
+										>
+											{#if playingAudioId === memory.id}
+												<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+													<path fill-rule="evenodd" d="M6.75 5.25a.75.75 0 01.75.75v12a.75.75 0 01-1.5 0v-12a.75.75 0 01.75-.75zm10.5 0a.75.75 0 01.75.75v12a.75.75 0 01-1.5 0v-12a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+												</svg>
+											{:else}
+												<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 translate-x-0.5" viewBox="0 0 24 24" fill="currentColor">
+													<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
+												</svg>
+											{/if}
+										</button>
+
+										<span class="text-[9px] font-black text-pink-600 min-w-[22px] text-right tabular-nums">
+											{formatAudioTime(audioCurrentTimes[memory.id] || 0)}
+										</span>
+
+										<input
+											type="range"
+											min="0"
+											max={audioDurations[memory.id] || 100}
+											step="0.1"
+											value={audioCurrentTimes[memory.id] || 0}
+											oninput={(e) => handleAudioSeek(memory.id, e)}
+											class="flex-1 h-1 bg-pink-100 accent-[#f43f8e] rounded-full cursor-pointer"
+										/>
+
+										<span class="text-[9px] font-bold text-pink-400 min-w-[22px] tabular-nums">
+											{formatAudioTime(audioDurations[memory.id] || 0)}
+										</span>
+
+										<audio
+											bind:this={audioElements[memory.id]}
+											src={getMusicUrl(memory.music)}
+											preload="metadata"
+											onloadedmetadata={(e) => { audioDurations[memory.id] = e.currentTarget.duration || 0; }}
+											ontimeupdate={(e) => { audioCurrentTimes[memory.id] = e.currentTarget.currentTime || 0; }}
+											onended={() => { if (playingAudioId === memory.id) playingAudioId = null; audioCurrentTimes[memory.id] = 0; }}
+											onplay={() => { playingAudioId = memory.id; }}
+											onpause={() => { if (playingAudioId === memory.id) playingAudioId = null; }}
+											onerror={() => { if (playingAudioId === memory.id) playingAudioId = null; }}
+											crossorigin="anonymous"
+											class="hidden"
+										></audio>
 									</div>
-									<style>
-										.custom-audio-player audio {
-											width: 100%;
-											height: 30px;
-											border-radius: 9999px;
-										}
-										.custom-audio-player audio::-webkit-media-controls-panel {
-											background-color: #fdf2f6;
-											border-radius: 9999px;
-										}
-										.custom-audio-player audio::-webkit-media-controls-play-button {
-											background-color: #f43f8e;
-											border-radius: 50%;
-										}
-										.custom-audio-player audio::-webkit-media-controls-current-time-display,
-										.custom-audio-player audio::-webkit-media-controls-time-remaining-display {
-											color: #831843;
-											font-size: 9px;
-											font-weight: 700;
-										}
-									</style>
 								</div>
 							{/if}
 
 							<!-- Timestamp -->
-							<div class="flex items-center justify-between pt-1 border-t border-pink-50">
-								<span class="text-[9px] text-pink-400 font-medium">
+							<div class="pt-1.5 border-t border-pink-50">
+								<span class="text-[10px] text-pink-400 font-bold">
 									Created: {formatTime(memory.created_at)}
 								</span>
-								{#if memory.updated_at && memory.updated_at !== memory.created_at}
-									<span class="text-[9px] text-pink-300 font-medium">
-										Updated: {formatTime(memory.updated_at)}
-									</span>
-								{/if}
 							</div>
 						</div>
 					{/if}
