@@ -186,7 +186,7 @@
 		<button
 			type="button"
 			onpointerdown={handlePointerDown}
-			class="group/tab w-7.5 h-13 bg-white/95 backdrop-blur-md border-2 border-pink-300 shadow-[-3px_4px_16px_rgba(244,63,142,0.22)] flex flex-col items-center justify-center text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-200 cursor-grab active:cursor-grabbing {side === 'left' ? 'border-l-0 rounded-r-2xl shadow-[3px_4px_16px_rgba(244,63,142,0.22)]' : 'border-r-0 rounded-l-2xl'}"
+			class="group/tab w-8 h-12 bg-white/95 backdrop-blur-md border-2 border-pink-300 flex items-center justify-center text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-200 cursor-grab active:cursor-grabbing {side === 'left' ? 'border-l-0 rounded-r-2xl shadow-[3px_4px_16px_rgba(244,63,142,0.22)]' : 'border-r-0 rounded-l-2xl shadow-[-3px_4px_16px_rgba(244,63,142,0.22)]'}"
 			aria-label="Drag or tap to open navigation"
 			title="Drag to move, tap to open"
 		>
@@ -197,9 +197,9 @@
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
 						viewBox="0 0 24 24"
-						stroke-width="3"
+						stroke-width="2.5"
 						stroke="currentColor"
-						class="w-4 h-4 transition-transform duration-200 group-hover/tab:translate-x-0.5"
+						class="w-5 h-5 transition-transform duration-200 group-hover/tab:translate-x-0.5"
 					>
 						<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
 					</svg>
@@ -209,9 +209,9 @@
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
 						viewBox="0 0 24 24"
-						stroke-width="3"
+						stroke-width="2.5"
 						stroke="currentColor"
-						class="w-4 h-4 transition-transform duration-200 group-hover/tab:-translate-x-0.5"
+						class="w-5 h-5 transition-transform duration-200 group-hover/tab:-translate-x-0.5"
 					>
 						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
 					</svg>
@@ -221,12 +221,6 @@
 					<span class="absolute -top-3.5 {side === 'left' ? '-right-2' : '-left-2'} w-2.5 h-2.5 bg-[#f43f8e] border-2 border-white rounded-full animate-ping"></span>
 					<span class="absolute -top-3.5 {side === 'left' ? '-right-2' : '-left-2'} w-2.5 h-2.5 bg-[#f43f8e] border-2 border-white rounded-full"></span>
 				{/if}
-			</div>
-
-			<!-- Subtle drag grip dots -->
-			<div class="flex space-x-0.5 mt-1 opacity-40">
-				<span class="w-1 h-1 bg-pink-400 rounded-full"></span>
-				<span class="w-1 h-1 bg-pink-400 rounded-full"></span>
 			</div>
 
 			<!-- Floating Themed Tooltip on Tab Hover -->
@@ -249,7 +243,7 @@
 		<button
 			type="button"
 			onpointerdown={handlePointerDown}
-			class="group/btn relative w-9 h-7.5 rounded-lg text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50 flex flex-col items-center justify-center transition-colors cursor-grab active:cursor-grabbing"
+			class="group/btn relative w-9 h-8 rounded-xl text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50 flex items-center justify-center transition-colors cursor-grab active:cursor-grabbing"
 			aria-label="Drag to move or tap to collapse navigation"
 			title="Drag to move, tap to hide"
 		>
@@ -259,9 +253,9 @@
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"
 					viewBox="0 0 24 24"
-					stroke-width="3"
+					stroke-width="2.5"
 					stroke="currentColor"
-					class="w-4 h-4 transition-transform duration-200 group-hover/btn:-translate-x-0.5"
+					class="w-4.5 h-4.5 transition-transform duration-200 group-hover/btn:-translate-x-0.5"
 				>
 					<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
 				</svg>
@@ -271,19 +265,13 @@
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"
 					viewBox="0 0 24 24"
-					stroke-width="3"
+					stroke-width="2.5"
 					stroke="currentColor"
-					class="w-4 h-4 transition-transform duration-200 group-hover/btn:translate-x-0.5"
+					class="w-4.5 h-4.5 transition-transform duration-200 group-hover/btn:translate-x-0.5"
 				>
 					<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
 				</svg>
 			{/if}
-
-			<!-- Grip Dots -->
-			<div class="flex space-x-0.5 mt-0.5 opacity-40">
-				<span class="w-1 h-0.5 bg-pink-400 rounded-full"></span>
-				<span class="w-1 h-0.5 bg-pink-400 rounded-full"></span>
-			</div>
 
 			<!-- Themed Tooltip -->
 			<div class="absolute {side === 'left' ? 'left-full ml-2.5' : 'right-full mr-2.5'} top-1/2 -translate-y-1/2 opacity-0 group-hover/btn:opacity-100 {side === 'left' ? '-translate-x-1 group-hover/btn:translate-x-0' : 'translate-x-1 group-hover/btn:translate-x-0'} transition-all duration-200 pointer-events-none z-50">
@@ -312,7 +300,7 @@
 						</svg>
 					{:else if item.id === 'moods'}
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-							<path fill-rule="evenodd" d="M3.75 14.25a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25v5.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25v-5.25zm6.75-8.25a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25 2.25v13.5a2.25 2.25 0 01-2.25 2.25h-1.5a2.25 2.25 0 01-2.25-2.25V6zm6.75 4.5a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-1.5a2.25 2.25 0 01-2.25-2.25v-9z" clip-rule="evenodd" />
+							<path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z" />
 						</svg>
 					{:else if item.id === 'friends'}
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
