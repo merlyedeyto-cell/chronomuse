@@ -6,6 +6,8 @@ export { default as RegisterCard } from './RegisterCard.svelte';
 export { default as Calendar } from './Calendar.svelte';
 export { default as Sidebar } from './Sidebar.svelte';
 export { default as TopBar } from './TopBar.svelte';
+export { default as AppHeader } from './AppHeader.svelte';
+export { default as AppFooter } from './AppFooter.svelte';
 export { default as AddMemoryCard } from './AddMemoryCard.svelte';
 export { default as PinnedMemoryCard } from './PinnedMemoryCard.svelte';
 export { default as ViewMemoryModal } from './ViewMemoryModal.svelte';

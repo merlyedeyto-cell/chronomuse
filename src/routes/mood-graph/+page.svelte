@@ -2,9 +2,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
-	import { supabase } from '$lib/supabaseClient';
-	import Sidebar from '$lib/Sidebar.svelte';
-	import ViewMemoryModal from '$lib/ViewMemoryModal.svelte';
+	import AppHeader from '$lib/AppHeader.svelte';
+	import AppFooter from '$lib/AppFooter.svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 
@@ -370,62 +369,10 @@
 
 <div class="flex flex-col min-h-screen bg-pink-100 animate-fade-in">
 	<!-- Top Navigation -->
-	<nav class="bg-white border-b-2 border-pink-300 sticky top-0 z-50 animate-slide-down">
-			<div class="container mx-auto px-4 py-3 flex items-center justify-between">
-				<div class="flex items-center space-x-2.5">
-					<button
-						onclick={toggleSidebar}
-						class="p-1.5 sm:p-2 text-pink-500 hover:bg-pink-100 rounded-lg transition-colors flex-shrink-0 active:scale-95 relative"
-						aria-label="Toggle menu"
-						title="Toggle menu"
-					>
-						{#if sidebarOpen}
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-							</svg>
-						{:else}
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-							</svg>
-						{/if}
-						{#if hasNotifications}
-							<span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white animate-pulse"></span>
-						{/if}
-					</button>
-					<img src="/logo.png" alt="ChronoMuse" class="w-9 h-9 sm:w-10 sm:h-10 rounded-md object-contain flex-shrink-0" />
-					<span class="text-base sm:text-lg font-bold text-pink-600 truncate">ChronoMuse</span>
-				</div>
+	<AppHeader />
 
-				<div class="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 ml-2">
-					<button
-						onclick={() => goto('/profile')}
-						class="hidden md:block text-pink-700 hover:text-pink-900 transition-colors font-medium cursor-pointer text-left active:scale-95"
-						title="View Profile"
-					>
-						<span class="text-sm">Welcome, <strong>{user?.username}</strong></span>
-					</button>
-					<button
-						onclick={() => goto('/settings')}
-						class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-600 flex items-center justify-center transition-all cursor-pointer active:scale-95 flex-shrink-0"
-						title="Settings"
-					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
-							<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-						</svg>
-					</button>
-				</div>
-			</div>
-		</nav>
-
-		<!-- Sidebar -->
-		<Sidebar
-			bind:isOpen={sidebarOpen}
-			on:logout={handleLogout}
-		/>
-
-		<!-- Main Content -->
-		<main class="flex-grow px-4 py-8 md:ml-0 overflow-hidden">
+	<!-- Main Content -->
+	<main class="flex-grow px-4 py-6 sm:py-8 pb-28 sm:pb-32 md:ml-0 overflow-hidden">
 			<div class="container mx-auto max-w-6xl">
 				<!-- Header Banner -->
 				<div class="bg-white border-2 border-pink-300 rounded-2xl p-3.5 sm:p-4 mb-4 sm:mb-5 animate-fade-in-up">
@@ -730,14 +677,8 @@
 			/>
 		{/if}
 
-		<!-- Footer -->
-		<footer class="bg-white border-t-2 border-pink-300 animate-fade-in" style="animation-delay: 0.6s">
-			<div class="container mx-auto px-2 sm:px-4 py-2.5 sm:py-3 text-center flex items-center justify-center">
-				<p class="text-[10px] sm:text-xs text-pink-700 whitespace-nowrap font-medium tracking-tight sm:tracking-normal">
-					© 2026 CHRONOMUSE. All rights reserved. Developed by Merlye Deyto
-				</p>
-			</div>
-		</footer>
+		<!-- Bottom Navigation Bar (Footer) -->
+		<AppFooter />
 	</div>
 
 <style>

@@ -3,32 +3,25 @@
 	import TopBar from '$lib/TopBar.svelte';
 	import { onMount, tick } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 
-	let isLoginHighlight = $state(false);
-	let isAboutHighlight = $state(false);
-	let isContactHighlight = $state(false);
-	let aboutCard;
-	let contactCard;
+	let activeTab = $state('home');
 
 	function handleLogin(event) {
 		console.log('Login attempt:', event.detail);
 	}
 
+	function scrollToSection(sectionName) {
+		const target = document.getElementById(`${sectionName}-section`);
+		if (target) {
+			target.scrollIntoView({ behavior: 'smooth' });
+			activeTab = sectionName;
+		}
+	}
+
 	function handleNavigate(event) {
 		const section = event.detail;
-		if (section === 'login' || section === 'home') {
-			isLoginHighlight = true;
-			document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
-			setTimeout(() => { isLoginHighlight = false; }, 800);
-		} else if (section === 'about') {
-			isAboutHighlight = true;
-			document.getElementById('about-section')?.scrollIntoView({ behavior: 'smooth' });
-			setTimeout(() => { isAboutHighlight = false; }, 800);
-		} else if (section === 'contact') {
-			isContactHighlight = true;
-			document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' });
-			setTimeout(() => { isContactHighlight = false; }, 800);
-		}
+		scrollToSection(section);
 	}
 
 	onMount(() => {
@@ -43,89 +36,79 @@
 			} catch (e) {}
 		}
 
+		// Scroll to tab if specified in URL
+		const tabParam = $page.url.searchParams.get('tab');
+		if (tabParam) {
+			tick().then(() => {
+				scrollToSection(tabParam);
+			});
+		}
+
+		// Intersection Observer to update active tab as user scrolls
+		const sections = ['home', 'about', 'contact'];
 		const observer = new IntersectionObserver(
 			(entries) => {
 				entries.forEach((entry) => {
 					if (entry.isIntersecting) {
-						entry.target.classList.add('is-visible');
-					} else {
-						entry.target.classList.remove('is-visible');
+						const id = entry.target.id.replace('-section', '');
+						if (id) activeTab = id;
 					}
 				});
 			},
-			{ threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+			{ threshold: 0.4 }
 		);
 
-		tick().then(() => {
-			if (aboutCard) observer.observe(aboutCard);
-			if (contactCard) observer.observe(contactCard);
+		sections.forEach((sec) => {
+			const el = document.getElementById(`${sec}-section`);
+			if (el) observer.observe(el);
 		});
 
 		return () => observer.disconnect();
 	});
 </script>
 
-<TopBar on:navigate={handleNavigate}>
-	<div class="bg-pink-100 overflow-x-hidden">
-		<!-- Login / Home Section - Dedicated Full Viewport Section -->
-		<section id="login-section" class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-12 px-0 sm:px-4 transition-all duration-500" class:scale-105={isLoginHighlight}>
-			<div class="transition-all duration-500" class:ring-4={isLoginHighlight} class:ring-pink-400={isLoginHighlight} class:rounded-2xl={isLoginHighlight}>
+<TopBar {activeTab} on:navigate={handleNavigate}>
+	<div class="w-full flex flex-col items-center">
+		<!-- 1. Home / Login Section -->
+		<section
+			id="home-section"
+			class="w-full min-h-[calc(100vh-140px)] flex items-center justify-center py-10 px-4"
+		>
+			<div class="w-full flex justify-center">
 				<LoginCard on:login={handleLogin} />
 			</div>
 		</section>
 
-		<!-- About Section - Dedicated Full Viewport Section -->
+		<!-- 2. About Section -->
 		<section
 			id="about-section"
-			class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-12 px-4 transition-all duration-500"
+			class="w-full min-h-[calc(100vh-140px)] flex items-center justify-center py-10 px-4"
 		>
-			<div class="container mx-auto px-4">
-				<div class="max-w-sm sm:max-w-md md:max-w-lg mx-auto">
-					<div
-						bind:this={aboutCard}
-						class="reveal-card reveal-left bg-white/90 backdrop-blur-md border-2 border-pink-300 rounded-2xl p-5 sm:p-6 text-center hover:scale-105 hover: transition-all duration-300"
-						class:scale-105={isAboutHighlight}
-						class:ring-4={isAboutHighlight}
-						class:ring-pink-400={isAboutHighlight}
-					>
-						<h2 class="text-base sm:text-lg font-bold text-pink-600 mb-2.5">About CHRONOMUSE</h2>
-						<p class="text-pink-700 text-xs sm:text-sm leading-relaxed font-medium">
-							CHRONOMUSE is a personal memory system designed to help you remember and reflect on your daily life. It allows you to save memories, reactions, and meaningful moments in a beautiful and organized calendar.
-						</p>
-						<p class="text-pink-700 text-xs sm:text-sm leading-relaxed font-medium mt-2.5">
-							With CHRONOMUSE, users can easily look back on past experiences, track emotions over time, and preserve special events whether big milestones or simple everyday moments. It provides a personal digital space where time, memories, and reflection come together.
-						</p>
-					</div>
+			<div class="w-full max-w-[360px] sm:max-w-[440px] mx-auto">
+				<div class="bg-white rounded-[32px] sm:rounded-[38px] p-8 sm:p-10 shadow-[0_16px_50px_rgba(244,114,182,0.22)] border border-pink-100/90 text-center transition-transform hover:scale-[1.01] duration-300">
+					<h2 class="text-base sm:text-lg font-black text-pink-500 mb-4 tracking-wide uppercase">ABOUT CHRONOMUSE</h2>
+					<p class="text-xs sm:text-[13px] text-pink-900 font-semibold leading-relaxed">
+						CHRONOMUSE is a personal memory system designed to help you remember and reflect on your daily life. It allows you to save memories, reactions, and meaningful moments in a beautiful and organized calendar.
+					</p>
 				</div>
 			</div>
 		</section>
 
-		<!-- Contact Section - Dedicated Full Viewport Section -->
+		<!-- 3. Contact Section -->
 		<section
 			id="contact-section"
-			class="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center py-12 px-4 transition-all duration-500"
+			class="w-full min-h-[calc(100vh-140px)] flex items-center justify-center py-10 px-4"
 		>
-			<div class="container mx-auto px-4">
-				<div class="max-w-sm sm:max-w-md md:max-w-lg mx-auto">
-					<div
-						bind:this={contactCard}
-						class="reveal-card reveal-right bg-white/90 backdrop-blur-md border-2 border-pink-300 rounded-2xl p-5 sm:p-6 text-center hover:scale-105 hover: transition-all duration-300"
-						class:scale-105={isContactHighlight}
-						class:ring-4={isContactHighlight}
-						class:ring-pink-400={isContactHighlight}
-					>
-						<h2 class="text-base sm:text-lg font-bold text-pink-600 mb-2.5">Contact</h2>
-						<p class="text-pink-700 text-xs sm:text-sm leading-relaxed font-medium">
-							CHRONOMUSE is a personally developed system by Merlye Deyto.
-						</p>
-						<p class="text-pink-700 text-xs sm:text-sm leading-relaxed font-medium mt-2.5">
-							For inquiries, feedback, or system-related concerns, you may contact the developer through the following channels:
-						</p>
-						<div class="mt-3 text-xs sm:text-sm leading-relaxed space-y-1">
-							<p><strong class="text-pink-600 font-bold">Email:</strong> <a href="mailto:merlyedeyto@email.com" class="text-pink-700 hover:text-pink-900 font-semibold underline">merlyedeyto@email.com</a></p>
-							<p><strong class="text-pink-600 font-bold">Facebook:</strong> <a href="https://facebook.com/share/1CEdsrYWof" target="_blank" class="text-pink-700 hover:text-pink-900 font-semibold underline">facebook.com/share/1CEdsrYWof</a></p>
-							<p><strong class="text-pink-600 font-bold">Instagram:</strong> <a href="https://instagram.com/anzu_lye" target="_blank" class="text-pink-700 hover:text-pink-900 font-semibold underline">instagram.com/anzu_lye</a></p>
-						</div>
+			<div class="w-full max-w-[360px] sm:max-w-[440px] mx-auto">
+				<div class="bg-white rounded-[32px] sm:rounded-[38px] p-8 sm:p-10 shadow-[0_16px_50px_rgba(244,114,182,0.22)] border border-pink-100/90 text-center transition-transform hover:scale-[1.01] duration-300">
+					<h2 class="text-base sm:text-lg font-black text-pink-500 mb-4 tracking-wide uppercase">CONTACT</h2>
+					<p class="text-xs sm:text-[13px] text-pink-900 font-semibold leading-relaxed mb-6">
+						CHRONOMUSE is a personally developed system by Merlye Deyto.
+					</p>
+					<div class="space-y-2 text-xs sm:text-[13px] font-bold text-pink-600">
+						<p>Email: <a href="mailto:merlyedeyto@email.com" class="text-pink-600 hover:text-pink-800 underline">merlyedeyto@email.com</a></p>
+						<p>Facebook: <a href="https://facebook.com/share/1CEdsrYWof" target="_blank" class="text-pink-600 hover:text-pink-800 underline">facebook.com/share/1CEdsrYWof</a></p>
+						<p>Instagram: <a href="https://instagram.com/anzu_lye" target="_blank" class="text-pink-600 hover:text-pink-800 underline">instagram.com/anzu_lye</a></p>
 					</div>
 				</div>
 			</div>
@@ -133,22 +116,4 @@
 	</div>
 </TopBar>
 
-<style>
-	:global(.reveal-card) {
-		opacity: 0;
-		transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-	}
 
-	:global(.reveal-card.reveal-left) {
-		transform: translateX(-50px);
-	}
-
-	:global(.reveal-card.reveal-right) {
-		transform: translateX(50px);
-	}
-
-	:global(.reveal-card.is-visible) {
-		opacity: 1;
-		transform: translateX(0) !important;
-	}
-</style>
