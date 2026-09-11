@@ -133,39 +133,44 @@
 	}
 </script>
 
-<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 transition-all duration-300 hover:">
+<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans">
 	<!-- Header -->
-	<div class="flex items-center justify-between mb-4">
+	<div class="flex items-center justify-between mb-3">
 		<div class="flex items-center space-x-1.5">
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-pink-500">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
-			</svg>
-			<h3 class="text-xs sm:text-sm font-bold text-pink-500 uppercase tracking-wide">Pinned Memories</h3>
+			<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+				</svg>
+			</div>
+			<h3 class="text-xs sm:text-sm font-black text-pink-950">Pinned Memories</h3>
 		</div>
-		<span class="text-[11px] text-pink-400">{pinnedMemories.length} pinned</span>
+		<span class="text-[10px] bg-pink-100 text-[#f43f8e] px-2 py-0.5 rounded-full font-bold border border-pink-200/80">{pinnedMemories.length} pinned</span>
 	</div>
 
 	<!-- Pinned Memories List -->
 	{#if isLoading}
-		<div class="text-center py-8">
-			<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-pink-500 mx-auto"></div>
-			<p class="text-xs text-pink-400 mt-2">Loading...</p>
+		<div class="text-center py-6">
+			<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-[#f43f8e] mx-auto"></div>
+			<p class="text-xs text-pink-400 mt-1.5 font-medium">Loading...</p>
 		</div>
 	{:else if pinnedMemories.length === 0}
-		<div class="text-center py-8">
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-pink-200 mx-auto mb-2">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
-			</svg>
-			<p class="text-xs text-pink-400">No pinned memories yet</p>
+		<div class="text-center py-6">
+			<div class="w-10 h-10 rounded-2xl bg-pink-50 border border-pink-100 text-pink-300 flex items-center justify-center mx-auto mb-2">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+				</svg>
+			</div>
+			<p class="text-xs font-bold text-pink-400">No pinned memories yet</p>
+			<p class="text-[10px] text-pink-400/80 mt-0.5 font-medium">Long-press any date on calendar to pin</p>
 		</div>
 	{:else}
-		<div class="space-y-2 max-h-[300px] overflow-y-auto scrollbar-hide">
+		<div class="space-y-1.5 max-h-[280px] overflow-y-auto scrollbar-hide pr-0.5">
 			{#each pinnedMemories as pinned (pinned.pinned_id)}
-				<div class="flex items-center space-x-2.5 p-2.5 bg-pink-50 border border-pink-200 rounded-xl hover:border-pink-300 hover:bg-pink-100/80 transition-all duration-200 cursor-pointer" onclick={() => viewMemory(pinned)}>
+				<div class="flex items-center space-x-2 p-2 bg-[#fdf2f6]/60 border border-pink-100/80 rounded-xl hover:border-pink-200 hover:bg-[#fff5f8] transition-all duration-200 cursor-pointer shadow-2xs group active:scale-[0.99]" onclick={() => viewMemory(pinned)}>
 					<!-- Date Badge -->
-					<div class="flex flex-col items-center justify-center w-9 h-9 bg-pink-400 rounded-lg text-white flex-shrink-0">
-						<span class="text-[9px] font-semibold uppercase">{getDayName(pinned.date)}</span>
-						<span class="text-xs font-bold">{pinned.date.split('-')[2]}</span>
+					<div class="flex flex-col items-center justify-center w-8 h-8 bg-[#f43f8e] rounded-lg text-white flex-shrink-0 shadow-xs">
+						<span class="text-[8px] font-black uppercase leading-none">{getDayName(pinned.date)}</span>
+						<span class="text-xs font-black leading-none mt-0.5">{pinned.date.split('-')[2]}</span>
 					</div>
 
 					<!-- Date Info -->
@@ -174,7 +179,7 @@
 							<input
 								type="text"
 								bind:value={editingTitle}
-								class="w-full px-2 py-1 text-xs font-medium text-pink-700 bg-white border-2 border-pink-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-400"
+								class="w-full px-2 py-1 text-xs font-bold text-pink-950 bg-white border border-pink-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30"
 								onkeydown={(e) => {
 									if (e.key === 'Enter') saveEdit(pinned);
 									if (e.key === 'Escape') cancelEdit();
@@ -183,8 +188,8 @@
 								autofocus
 							/>
 						{:else}
-							<p class="text-xs font-medium text-pink-700 truncate">{pinned.title || 'Pinned Date'}</p>
-							<p class="text-[10px] text-pink-400">{formatDate(pinned.date)}</p>
+							<p class="text-xs font-bold text-pink-950 truncate group-hover:text-[#f43f8e] transition-colors">{pinned.title || 'Pinned Date'}</p>
+							<p class="text-[10px] text-pink-400 font-medium">{formatDate(pinned.date)}</p>
 						{/if}
 					</div>
 
@@ -192,38 +197,38 @@
 					{#if editingId === pinned.pinned_id}
 						<button
 							onclick={(e) => { e.stopPropagation(); saveEdit(pinned); }}
-							class="p-1.5 text-green-500 hover:text-green-600 hover:bg-green-50 rounded transition-all duration-200"
+							class="p-1 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
 							title="Save"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 							</svg>
 						</button>
 						<button
 							onclick={(e) => { e.stopPropagation(); cancelEdit(); }}
-							class="p-1.5 text-red-500 hover:text-red-600 hover:bg-red-50 rounded transition-all duration-200"
+							class="p-1 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
 							title="Cancel"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 							</svg>
 						</button>
 					{:else}
 						<button
 							onclick={(e) => { e.stopPropagation(); startEdit(pinned); }}
-							class="p-1.5 text-pink-400 hover:text-pink-600 hover:bg-pink-100 rounded transition-all duration-200"
+							class="p-1 text-pink-400 hover:text-[#f43f8e] hover:bg-pink-100 rounded-lg transition-colors cursor-pointer"
 							title="Edit title"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
 							</svg>
 						</button>
 						<button
 							onclick={(e) => { e.stopPropagation(); confirmDelete(pinned); }}
-							class="p-1.5 text-pink-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all duration-200"
+							class="p-1 text-pink-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
 							title="Unpin date"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
 							</svg>
 						</button>

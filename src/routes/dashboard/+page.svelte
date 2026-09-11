@@ -719,14 +719,14 @@
 	}
 </script>
 
-<div class="flex flex-col min-h-screen bg-pink-100 animate-fade-in">
+<div class="flex flex-col min-h-screen bg-[#fff0f5] font-sans animate-fade-in">
 	<!-- Top Navigation -->
 	<AppHeader />
 
 	<!-- Main Content -->
-	<main class="flex-grow px-4 py-6 sm:py-8 pb-28 sm:pb-32 md:ml-0 overflow-hidden">
+	<main class="flex-grow px-3 sm:px-4 py-4 sm:py-6 pb-28 sm:pb-32 md:ml-0 overflow-hidden">
 			<div class="flex justify-center">
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl w-full">
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 max-w-7xl w-full">
 					<!-- Left Column - Pinned Memories -->
 					<div class="animate-fade-in-up" style="animation-delay: 0.1s">
 						<PinnedMemoryCard bind:this={pinnedMemoryCardRef} userId={user?.id} on:deletePinnedDate={handleDeletePinnedDate} on:viewPinnedMemory={handleViewPinnedMemory} />
@@ -756,14 +756,14 @@
 								on:showToast={showMemoryToast}
 							/>
 						{:else}
-							<div class="bg-white border-2 border-pink-300 rounded-2xl p-4 sm:p-5 text-center transition-all duration-300 hover:">
-								<h3 class="text-base sm:text-lg font-bold text-pink-600 mb-1.5">Create & Capture Memories</h3>
-								<p class="text-[11px] sm:text-xs text-pink-400 mb-3.5 leading-relaxed font-medium">Click any date on the calendar to view or add new memories!</p>
+							<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 text-center shadow-[0_4px_20px_rgba(244,114,182,0.08)] transition-all duration-300">
+								<h3 class="text-xs sm:text-sm font-bold text-gray-800 mb-1">Create & Capture Memories</h3>
+								<p class="text-[11px] text-gray-500 mb-3 leading-relaxed font-medium">Click any date on the calendar to view or add new memories!</p>
 								<button
 									onclick={toggleAddMemory}
-									class="w-full py-2 px-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold flex items-center justify-center space-x-1.5"
+									class="w-full py-2 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md"
 								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
 									</svg>
 									<span>Open Add Memory Form</span>
