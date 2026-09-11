@@ -82,9 +82,9 @@
 	});
 </script>
 
-<div class="fixed bottom-3 sm:bottom-5 inset-x-0 z-40 px-3 flex justify-center pointer-events-none {hideOnMobile ? 'hidden md:flex' : 'flex'}">
+<div class="fixed bottom-3 sm:bottom-4 inset-x-0 z-40 px-3 flex justify-center pointer-events-none md:hidden {hideOnMobile ? 'hidden' : 'flex'}">
 	<!-- Floating Pill Bar Container -->
-	<nav aria-label="Bottom Navigation" class="pointer-events-auto w-full max-w-[390px] sm:max-w-[420px] h-[58px] sm:h-[60px] bg-white/95 backdrop-blur-md border-2 border-pink-200/90 rounded-full shadow-[0_10px_32px_rgba(244,114,182,0.22)] flex items-center relative select-none font-sans overflow-visible">
+	<nav aria-label="Bottom Navigation" class="pointer-events-auto w-full max-w-[390px] h-[58px] bg-white/95 backdrop-blur-md border-2 border-pink-200/90 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] flex items-center relative select-none font-sans overflow-visible">
 		
 		<!-- Inner 5-column container (shared by sliding bubble and buttons for exact alignment) -->
 		<div class="relative w-full h-full grid grid-cols-5">
@@ -95,7 +95,7 @@
 					class="absolute top-0 left-0 w-1/5 h-full flex flex-col items-center justify-start pointer-events-none transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-10"
 					style="transform: translateX({activeIndex * 100}%);"
 				>
-					<div class="w-[52px] h-[52px] sm:w-[54px] sm:h-[54px] -translate-y-3.5 sm:-translate-y-4 p-1 bg-white rounded-full shadow-[0_6px_20px_rgba(244,63,94,0.32)] border-2 border-pink-100 flex items-center justify-center">
+					<div class="w-[52px] h-[52px] -translate-y-3.5 p-1 bg-white rounded-full shadow-[0_3px_10px_rgba(0,0,0,0.12)] border-2 border-pink-100 flex items-center justify-center">
 						<div class="w-full h-full rounded-full bg-gradient-to-tr from-[#e11d48] via-[#f43f8e] to-[#fb7185] shadow-inner"></div>
 					</div>
 				</div>
