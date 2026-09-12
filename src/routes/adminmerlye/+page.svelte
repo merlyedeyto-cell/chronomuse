@@ -423,32 +423,32 @@
 
 <svelte:window onmouseup={onTableMouseUp} />
 
-<div class="min-h-screen bg-pink-100 text-pink-950 font-sans p-4 sm:p-6 flex flex-col antialiased">
+<div class="min-h-screen bg-[#fff0f5] text-pink-950 font-sans p-3 sm:p-6 flex flex-col antialiased">
 	{#if isCheckingAuth}
 		<div class="flex-1 flex items-center justify-center">
-			<div class="animate-spin h-8 w-8 border-3 border-pink-300 border-t-pink-600 rounded-full"></div>
+			<div class="animate-spin h-8 w-8 border-3 border-pink-200 border-t-[#f43f8e] rounded-full"></div>
 		</div>
 	{:else if !isAuthenticated}
 		<!-- Secret Admin Passcode Screen -->
 		<div class="flex-1 flex items-center justify-center p-4">
-			<div class="bg-white border-2 border-pink-300 shadow-md rounded-3xl max-w-sm w-full p-6 text-center">
+			<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 shadow-[0_8px_30px_rgba(244,114,182,0.12)] rounded-3xl max-w-sm w-full p-6 sm:p-7 text-center animate-fade-in">
 				<!-- ChronoMuse Brand Logo & Title -->
 				<div class="mb-5">
 					<img
 						src="/logo.png"
 						alt="ChronoMuse"
-						class="w-14 h-14 mx-auto mb-2 rounded-2xl object-contain border-2 border-pink-200 bg-white p-1 shadow-2xs hover:scale-105 transition-transform duration-300"
+						class="w-14 h-14 mx-auto mb-2.5 rounded-2xl object-contain border border-pink-100 bg-white p-1 shadow-2xs hover:scale-105 transition-transform duration-300"
 					/>
-					<h1 class="text-xl sm:text-2xl font-extrabold text-pink-600 mb-1 tracking-wider uppercase">CHRONOMUSE</h1>
-					<div class="inline-flex items-center gap-1.5 px-3 py-0.5 bg-pink-100 border border-pink-200 text-pink-800 rounded-full text-xs font-bold mb-1">
-						<span class="w-2 h-2 rounded-full bg-pink-500"></span>
+					<h1 class="text-xl sm:text-2xl font-black text-[#f43f8e] mb-1 tracking-wider uppercase">CHRONOMUSE</h1>
+					<div class="inline-flex items-center gap-1.5 px-3 py-0.5 bg-pink-50 border border-pink-100 text-[#f43f8e] rounded-full text-xs font-bold mb-1 shadow-2xs">
+						<span class="w-2 h-2 rounded-full bg-[#f43f8e] animate-pulse"></span>
 						<span>Administrative Access</span>
 					</div>
-					<p class="text-[11px] text-pink-500 font-medium">Central Platform Management Console</p>
+					<p class="text-[11px] text-pink-400 font-bold">Central Platform Management Console</p>
 				</div>
 
 				{#if authError}
-					<div class="mb-4 p-2.5 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-700 font-bold flex items-center gap-2 text-left">
+					<div class="mb-4 p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-bold flex items-center gap-2 text-left shadow-2xs">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 flex-shrink-0">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
 						</svg>
@@ -458,20 +458,20 @@
 
 				<form onsubmit={handlePasscodeSubmit} class="space-y-4">
 					<div>
-						<label for="passcode_input" class="block text-xs font-bold text-pink-700 text-left mb-1">Security Passcode</label>
+						<label for="passcode_input" class="block text-xs font-bold text-pink-900 text-left mb-1.5">Security Passcode</label>
 						<input
 							id="passcode_input"
 							type="password"
 							maxlength="12"
 							bind:value={passcodeInput}
 							placeholder="Enter passcode..."
-							class="w-full px-3.5 py-2.5 bg-pink-50 border-2 border-pink-200 rounded-xl text-center text-lg font-mono tracking-widest text-pink-900 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:bg-white"
+							class="w-full px-3.5 py-2.5 bg-pink-50/60 border border-pink-200/80 rounded-xl text-center text-lg font-mono tracking-widest text-pink-950 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:bg-white transition-all shadow-inner"
 						/>
 					</div>
 
 					<button
 						type="submit"
-						class="w-full py-2.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white font-bold text-sm rounded-xl shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+						class="w-full py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 text-white font-bold text-sm rounded-xl shadow-md shadow-pink-300/30 transition-all cursor-pointer flex items-center justify-center gap-2"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
@@ -482,7 +482,7 @@
 					<button
 						type="button"
 						onclick={() => goto('/dashboard')}
-						class="w-full py-2.5 bg-pink-100 hover:bg-pink-200 active:scale-98 text-pink-700 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+						class="w-full py-2.5 bg-pink-50 hover:bg-pink-100 active:scale-98 text-pink-700 font-bold text-xs rounded-xl border border-pink-100/80 shadow-2xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
@@ -493,15 +493,15 @@
 			</div>
 		</div>
 	{:else}
-		<!-- Authenticated Admin Dashboard (Pink Theme) -->
+		<!-- Authenticated Admin Dashboard (ChronoMuse Theme) -->
 		<div class="container mx-auto max-w-6xl space-y-4">
 			<!-- Header -->
-			<div class="bg-white border-2 border-pink-300 shadow-sm rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+			<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 shadow-[0_4px_20px_rgba(244,114,182,0.08)] rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
 				<div class="flex items-center space-x-3 min-w-0">
-					<img src="/logo.png" alt="ChronoMuse" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain border border-pink-200 flex-shrink-0 bg-white shadow-2xs" />
+					<img src="/logo.png" alt="ChronoMuse" class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl object-contain border border-pink-100 flex-shrink-0 bg-white shadow-2xs p-0.5" />
 					<div class="min-w-0 flex items-center gap-2 flex-wrap">
-						<h1 class="text-base sm:text-lg font-black text-pink-700 truncate">ChronoMuse Admin</h1>
-						<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[11px] font-bold border border-emerald-300 whitespace-nowrap">
+						<h1 class="text-base sm:text-lg font-black text-pink-950 truncate">ChronoMuse Admin</h1>
+						<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-black border border-emerald-200 shadow-2xs whitespace-nowrap">
 							<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
 							Connected
 						</span>
@@ -511,13 +511,13 @@
 				<div class="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
 					<button
 						onclick={() => goto('/dashboard')}
-						class="flex-1 sm:flex-initial px-3 py-2 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 font-bold text-xs rounded-xl transition-all cursor-pointer text-center whitespace-nowrap"
+						class="flex-1 sm:flex-initial px-3.5 py-2 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-100 font-bold text-xs rounded-xl shadow-2xs transition-all cursor-pointer text-center whitespace-nowrap active:scale-95"
 					>
 						Go to App
 					</button>
 					<button
 						onclick={handleLogout}
-						class="flex-1 sm:flex-initial px-3 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 whitespace-nowrap"
+						class="flex-1 sm:flex-initial px-3.5 py-2 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-bold text-xs rounded-xl shadow-md shadow-pink-300/30 transition-all cursor-pointer flex items-center justify-center gap-1 whitespace-nowrap active:scale-95"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
@@ -529,7 +529,7 @@
 
 			<!-- Notice Alerts -->
 			{#if actionMessage}
-				<div class="p-3 bg-emerald-100 border border-emerald-300 text-emerald-900 rounded-xl text-xs font-bold flex items-center gap-2">
+				<div class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-2xs animate-fade-in">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-emerald-600 flex-shrink-0">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 					</svg>
@@ -538,7 +538,7 @@
 			{/if}
 
 			{#if errorMessage}
-				<div class="p-3 bg-rose-100 border border-rose-300 text-rose-900 rounded-xl text-xs font-bold flex items-center gap-2">
+				<div class="p-3 bg-rose-50 border border-rose-200 text-rose-900 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-2xs animate-fade-in">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-rose-600 flex-shrink-0">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
 					</svg>
@@ -547,110 +547,110 @@
 			{/if}
 
 			<!-- Metric Cards Grid -->
-			<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+			<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
 				<!-- Registered Users -->
-				<div class="bg-white border-2 border-pink-300 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col justify-between shadow-2xs">
-					<div class="flex items-center justify-between mb-1 sm:mb-2">
-						<span class="text-[10px] sm:text-[11px] font-bold text-pink-600 uppercase tracking-wider">Users</span>
-						<div class="p-1 sm:p-1.5 bg-pink-100 text-pink-600 rounded-md sm:rounded-lg">
+				<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-[0_4px_20px_rgba(244,114,182,0.06)] hover:border-pink-200 transition-all">
+					<div class="flex items-center justify-between mb-1.5 sm:mb-2">
+						<span class="text-[10px] sm:text-[11px] font-black text-[#f43f8e] uppercase tracking-wider">Users</span>
+						<div class="p-1 sm:p-1.5 bg-pink-50 text-[#f43f8e] border border-pink-100/80 rounded-xl shadow-2xs">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
 							</svg>
 						</div>
 					</div>
 					<div>
-						<p class="text-xl sm:text-2xl font-black text-pink-900">{metrics.total_users}</p>
-						<p class="text-[9px] sm:text-[10px] text-pink-400 font-medium">Registered Accounts</p>
+						<p class="text-xl sm:text-2xl font-black text-pink-950">{metrics.total_users}</p>
+						<p class="text-[9px] sm:text-[10px] text-pink-400 font-bold">Registered Accounts</p>
 					</div>
 				</div>
 
 				<!-- Active Today -->
-				<div class="bg-white border-2 border-emerald-300 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col justify-between shadow-2xs">
-					<div class="flex items-center justify-between mb-1 sm:mb-2">
-						<span class="text-[10px] sm:text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Active (24h)</span>
-						<div class="p-1 sm:p-1.5 bg-emerald-100 text-emerald-600 rounded-md sm:rounded-lg">
+				<div class="bg-white/95 backdrop-blur-md border border-emerald-100/90 rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-[0_4px_20px_rgba(16,185,129,0.06)] hover:border-emerald-200 transition-all">
+					<div class="flex items-center justify-between mb-1.5 sm:mb-2">
+						<span class="text-[10px] sm:text-[11px] font-black text-emerald-700 uppercase tracking-wider">Active (24h)</span>
+						<div class="p-1 sm:p-1.5 bg-emerald-50 text-emerald-600 border border-emerald-100/80 rounded-xl shadow-2xs">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 							</svg>
 						</div>
 					</div>
 					<div>
-						<p class="text-xl sm:text-2xl font-black text-emerald-900">{metrics.active_today}</p>
-						<p class="text-[9px] sm:text-[10px] text-emerald-600 font-medium">Logged in 24h</p>
+						<p class="text-xl sm:text-2xl font-black text-emerald-950">{metrics.active_today}</p>
+						<p class="text-[9px] sm:text-[10px] text-emerald-600 font-bold">Logged in 24h</p>
 					</div>
 				</div>
 
 				<!-- Memories Recorded -->
-				<div class="bg-white border-2 border-pink-300 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col justify-between shadow-2xs">
-					<div class="flex items-center justify-between mb-1 sm:mb-2">
-						<span class="text-[10px] sm:text-[11px] font-bold text-pink-600 uppercase tracking-wider">Memories</span>
-						<div class="p-1 sm:p-1.5 bg-pink-100 text-pink-600 rounded-md sm:rounded-lg">
+				<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-[0_4px_20px_rgba(244,114,182,0.06)] hover:border-pink-200 transition-all">
+					<div class="flex items-center justify-between mb-1.5 sm:mb-2">
+						<span class="text-[10px] sm:text-[11px] font-black text-[#f43f8e] uppercase tracking-wider">Memories</span>
+						<div class="p-1 sm:p-1.5 bg-pink-50 text-[#f43f8e] border border-pink-100/80 rounded-xl shadow-2xs">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
 							</svg>
 						</div>
 					</div>
 					<div>
-						<p class="text-xl sm:text-2xl font-black text-pink-900">{metrics.total_memories}</p>
-						<p class="text-[9px] sm:text-[10px] text-pink-400 font-medium">Calendar Entries</p>
+						<p class="text-xl sm:text-2xl font-black text-pink-950">{metrics.total_memories}</p>
+						<p class="text-[9px] sm:text-[10px] text-pink-400 font-bold">Calendar Entries</p>
 					</div>
 				</div>
 
 				<!-- Pinned Dates -->
-				<div class="bg-white border-2 border-pink-300 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col justify-between shadow-2xs">
-					<div class="flex items-center justify-between mb-1 sm:mb-2">
-						<span class="text-[10px] sm:text-[11px] font-bold text-pink-600 uppercase tracking-wider">Pinned Dates</span>
-						<div class="p-1 sm:p-1.5 bg-pink-100 text-pink-600 rounded-md sm:rounded-lg">
+				<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-[0_4px_20px_rgba(244,114,182,0.06)] hover:border-pink-200 transition-all">
+					<div class="flex items-center justify-between mb-1.5 sm:mb-2">
+						<span class="text-[10px] sm:text-[11px] font-black text-[#f43f8e] uppercase tracking-wider">Pinned Dates</span>
+						<div class="p-1 sm:p-1.5 bg-pink-50 text-[#f43f8e] border border-pink-100/80 rounded-xl shadow-2xs">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
 							</svg>
 						</div>
 					</div>
 					<div>
-						<p class="text-xl sm:text-2xl font-black text-pink-900">{metrics.total_pinned_dates}</p>
-						<p class="text-[9px] sm:text-[10px] text-pink-400 font-medium">Pinned Days</p>
+						<p class="text-xl sm:text-2xl font-black text-pink-950">{metrics.total_pinned_dates}</p>
+						<p class="text-[9px] sm:text-[10px] text-pink-400 font-bold">Pinned Days</p>
 					</div>
 				</div>
 
 				<!-- Live Thoughts / Notes -->
-				<div class="bg-white border-2 border-pink-300 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col justify-between shadow-2xs">
-					<div class="flex items-center justify-between mb-1 sm:mb-2">
-						<span class="text-[10px] sm:text-[11px] font-bold text-pink-600 uppercase tracking-wider">Notes</span>
-						<div class="p-1 sm:p-1.5 bg-pink-100 text-pink-600 rounded-md sm:rounded-lg">
+				<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-[0_4px_20px_rgba(244,114,182,0.06)] hover:border-pink-200 transition-all">
+					<div class="flex items-center justify-between mb-1.5 sm:mb-2">
+						<span class="text-[10px] sm:text-[11px] font-black text-[#f43f8e] uppercase tracking-wider">Notes</span>
+						<div class="p-1 sm:p-1.5 bg-pink-50 text-[#f43f8e] border border-pink-100/80 rounded-xl shadow-2xs">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
 							</svg>
 						</div>
 					</div>
 					<div>
-						<p class="text-xl sm:text-2xl font-black text-pink-900">{metrics.total_notes}</p>
-						<p class="text-[9px] sm:text-[10px] text-pink-400 font-medium">Live Thoughts</p>
+						<p class="text-xl sm:text-2xl font-black text-pink-950">{metrics.total_notes}</p>
+						<p class="text-[9px] sm:text-[10px] text-pink-400 font-bold">Live Thoughts</p>
 					</div>
 				</div>
 
 				<!-- Messages Exchanged -->
-				<div class="bg-white border-2 border-pink-300 rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col justify-between shadow-2xs">
-					<div class="flex items-center justify-between mb-1 sm:mb-2">
-						<span class="text-[10px] sm:text-[11px] font-bold text-pink-600 uppercase tracking-wider">Messages</span>
-						<div class="p-1 sm:p-1.5 bg-pink-100 text-pink-600 rounded-md sm:rounded-lg">
+				<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-[0_4px_20px_rgba(244,114,182,0.06)] hover:border-pink-200 transition-all">
+					<div class="flex items-center justify-between mb-1.5 sm:mb-2">
+						<span class="text-[10px] sm:text-[11px] font-black text-[#f43f8e] uppercase tracking-wider">Messages</span>
+						<div class="p-1 sm:p-1.5 bg-pink-50 text-[#f43f8e] border border-pink-100/80 rounded-xl shadow-2xs">
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
 							</svg>
 						</div>
 					</div>
 					<div>
-						<p class="text-xl sm:text-2xl font-black text-pink-900">{metrics.total_messages}</p>
-						<p class="text-[9px] sm:text-[10px] text-pink-400 font-medium">Chat Transcripts</p>
+						<p class="text-xl sm:text-2xl font-black text-pink-950">{metrics.total_messages}</p>
+						<p class="text-[9px] sm:text-[10px] text-pink-400 font-bold">Chat Transcripts</p>
 					</div>
 				</div>
 			</div>
 
 			<!-- Users Management Directory -->
-			<div class="bg-white border-2 border-pink-300 shadow-sm rounded-2xl p-4 sm:p-5 space-y-4">
+			<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 shadow-[0_4px_20px_rgba(244,114,182,0.08)] rounded-2xl sm:rounded-3xl p-4 sm:p-5 space-y-4">
 				<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
 					<div>
-						<h2 class="text-base font-black text-pink-800">Platform Accounts Directory ({filteredUsers.length})</h2>
-						<p class="text-xs text-pink-500 font-medium">Search, reset passwords, and manage registered user profiles</p>
+						<h2 class="text-base font-black text-pink-950">Platform Accounts Directory ({filteredUsers.length})</h2>
+						<p class="text-xs text-pink-400 font-bold">Search, reset passwords, and manage registered user profiles</p>
 					</div>
 
 					<div class="relative w-full sm:w-72">
@@ -663,7 +663,7 @@
 							type="text"
 							bind:value={userSearchQuery}
 							placeholder="Search username, email, or ID..."
-							class="w-full pl-8 pr-3 py-1.5 bg-pink-50 border border-pink-300 rounded-xl text-xs font-bold text-pink-900 placeholder:text-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all"
+							class="w-full pl-8 pr-3 py-2 bg-pink-50/60 border border-pink-200/80 rounded-xl text-xs font-bold text-pink-950 placeholder:text-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:bg-white transition-all shadow-inner"
 						/>
 					</div>
 				</div>
@@ -680,44 +680,44 @@
 					role="region"
 					aria-label="Accounts table"
 					tabindex="0"
-					class="overflow-x-auto rounded-xl border border-pink-100 scrollbar-thin scroll-smooth {isTableDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}"
+					class="overflow-x-auto rounded-2xl border border-pink-100/90 scrollbar-thin scroll-smooth {isTableDragging ? 'cursor-grabbing select-none' : 'cursor-grab'}"
 				>
 					<table class="w-full min-w-[850px] text-left text-xs">
 						<thead>
-							<tr class="bg-pink-100 text-pink-800 border-b-2 border-pink-200">
-								<th class="py-2.5 px-3 font-bold whitespace-nowrap">User</th>
-								<th class="py-2.5 px-3 font-bold whitespace-nowrap">Email</th>
-								<th class="py-2.5 px-3 font-bold text-center whitespace-nowrap">Memories</th>
-								<th class="py-2.5 px-3 font-bold text-center whitespace-nowrap">Pinned</th>
-								<th class="py-2.5 px-3 font-bold text-center whitespace-nowrap">Notes</th>
-								<th class="py-2.5 px-3 font-bold text-center whitespace-nowrap">Messages</th>
-								<th class="py-2.5 px-3 font-bold whitespace-nowrap">Joined Date</th>
-								<th class="py-2.5 px-3 font-bold whitespace-nowrap">Last Active</th>
-								<th class="py-2.5 px-3 font-bold text-right whitespace-nowrap">Actions</th>
+							<tr class="bg-pink-50/80 text-pink-950 border-b border-pink-100">
+								<th class="py-3 px-3.5 font-black whitespace-nowrap">User</th>
+								<th class="py-3 px-3.5 font-black whitespace-nowrap">Email</th>
+								<th class="py-3 px-3.5 font-black text-center whitespace-nowrap">Memories</th>
+								<th class="py-3 px-3.5 font-black text-center whitespace-nowrap">Pinned</th>
+								<th class="py-3 px-3.5 font-black text-center whitespace-nowrap">Notes</th>
+								<th class="py-3 px-3.5 font-black text-center whitespace-nowrap">Messages</th>
+								<th class="py-3 px-3.5 font-black whitespace-nowrap">Joined Date</th>
+								<th class="py-3 px-3.5 font-black whitespace-nowrap">Last Active</th>
+								<th class="py-3 px-3.5 font-black text-right whitespace-nowrap">Actions</th>
 							</tr>
 						</thead>
-						<tbody class="divide-y divide-pink-100">
+						<tbody class="divide-y divide-pink-50">
 							{#if isLoadingData && usersList.length === 0}
 								<tr>
 									<td colspan="9" class="text-center py-8 text-pink-400 font-medium">
 										<div class="inline-flex items-center gap-2">
-											<div class="animate-spin h-4 w-4 border-2 border-pink-300 border-t-pink-600 rounded-full"></div>
+											<div class="animate-spin h-4 w-4 border-2 border-pink-200 border-t-[#f43f8e] rounded-full"></div>
 											<span>Loading registered accounts...</span>
 										</div>
 									</td>
 								</tr>
 							{:else if filteredUsers.length === 0}
 								<tr>
-									<td colspan="9" class="text-center py-8 text-pink-400 font-medium">
+									<td colspan="9" class="text-center py-8 text-pink-400 font-bold">
 										No user accounts found matching your search.
 									</td>
 								</tr>
 							{:else}
 								{#each filteredUsers as userRow (userRow.id)}
-									<tr class="hover:bg-pink-50/70 transition-colors">
-										<td class="py-2.5 px-3">
+									<tr class="hover:bg-pink-50/40 transition-colors">
+										<td class="py-3 px-3.5">
 											<div class="flex items-center space-x-2.5">
-												<div class="w-7 h-7 rounded-full bg-pink-400 text-white font-bold flex items-center justify-center overflow-hidden flex-shrink-0 text-xs">
+												<div class="w-7 h-7 rounded-full bg-pink-100 text-[#f43f8e] font-black flex items-center justify-center overflow-hidden flex-shrink-0 text-xs border border-pink-200/60 shadow-2xs">
 													{#if userRow.avatar_url}
 														<img src={userRow.avatar_url} alt="" class="w-full h-full object-cover" />
 													{:else}
@@ -725,36 +725,36 @@
 													{/if}
 												</div>
 												<div>
-													<span class="font-bold text-pink-900 block">@{userRow.username}</span>
-													<span class="text-[10px] text-pink-400 font-mono">ID: #{userRow.id}</span>
+													<span class="font-black text-pink-950 block">@{userRow.username}</span>
+													<span class="text-[10px] text-pink-400 font-mono font-bold">ID: #{userRow.id}</span>
 												</div>
 											</div>
 										</td>
-										<td class="py-2.5 px-3 text-pink-700 font-mono text-[11px]">{userRow.email || '—'}</td>
-										<td class="py-2.5 px-3 text-center">
-											<span class="px-2 py-0.5 bg-pink-100 text-pink-800 rounded-md font-bold text-[11px] border border-pink-200">
+										<td class="py-3 px-3.5 text-pink-700 font-mono text-[11px] font-bold">{userRow.email || '—'}</td>
+										<td class="py-3 px-3.5 text-center">
+											<span class="px-2.5 py-0.5 bg-pink-50 text-[#f43f8e] rounded-full font-bold text-[11px] border border-pink-100 shadow-2xs">
 												{userRow.memories_count || 0}
 											</span>
 										</td>
-										<td class="py-2.5 px-3 text-center">
-											<span class="px-2 py-0.5 bg-pink-100 text-pink-800 rounded-md font-bold text-[11px] border border-pink-200">
+										<td class="py-3 px-3.5 text-center">
+											<span class="px-2.5 py-0.5 bg-pink-50 text-[#f43f8e] rounded-full font-bold text-[11px] border border-pink-100 shadow-2xs">
 												{userRow.pinned_count || 0}
 											</span>
 										</td>
-										<td class="py-2.5 px-3 text-center">
-											<span class="px-2 py-0.5 bg-pink-100 text-pink-800 rounded-md font-bold text-[11px] border border-pink-200">
+										<td class="py-3 px-3.5 text-center">
+											<span class="px-2.5 py-0.5 bg-pink-50 text-[#f43f8e] rounded-full font-bold text-[11px] border border-pink-100 shadow-2xs">
 												{userRow.notes_count || 0}
 											</span>
 										</td>
-										<td class="py-2.5 px-3 text-center">
-											<span class="px-2 py-0.5 bg-pink-100 text-pink-800 rounded-md font-bold text-[11px] border border-pink-200">
+										<td class="py-3 px-3.5 text-center">
+											<span class="px-2.5 py-0.5 bg-pink-50 text-[#f43f8e] rounded-full font-bold text-[11px] border border-pink-100 shadow-2xs">
 												{userRow.messages_count || 0}
 											</span>
 										</td>
-										<td class="py-2.5 px-3 text-pink-700 font-medium whitespace-nowrap">
+										<td class="py-3 px-3.5 text-pink-700 font-medium whitespace-nowrap">
 											{formatDate(userRow.created_at)}
 										</td>
-										<td class="py-2.5 px-3 whitespace-nowrap">
+										<td class="py-3 px-3.5 whitespace-nowrap">
 											{#if !userRow.last_activity}
 												<span class="inline-flex items-center gap-1.5 text-slate-400 font-medium text-[11px]" title="No activity recorded">
 													<span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
@@ -773,15 +773,15 @@
 												</span>
 											{/if}
 										</td>
-										<td class="py-2.5 px-3 text-right">
+										<td class="py-3 px-3.5 text-right">
 											<div class="flex items-center justify-end gap-1.5">
 												<!-- Reset Password Button -->
 												<button
 													onclick={() => { selectedUserForPasswordReset = userRow; newPasswordInput = ''; }}
 													title="Reset Password"
-													class="px-2.5 py-1 text-pink-700 bg-pink-50 hover:bg-pink-100 rounded-lg transition-all cursor-pointer border border-pink-200 font-bold text-[11px] inline-flex items-center gap-1 shadow-2xs"
+													class="px-2.5 py-1 text-[#f43f8e] bg-pink-50 hover:bg-pink-100 rounded-lg transition-all cursor-pointer border border-pink-100 font-bold text-[11px] inline-flex items-center gap-1 shadow-2xs active:scale-95"
 												>
-													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-pink-500">
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
 														<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
 													</svg>
 													<span>Reset Password</span>
@@ -791,7 +791,7 @@
 												<button
 													onclick={() => { selectedUserForDelete = userRow; }}
 													title="Delete User"
-													class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-100 rounded-lg transition-all cursor-pointer border border-rose-200"
+													class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-all cursor-pointer border border-rose-100 active:scale-95"
 												>
 													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
 														<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -812,19 +812,26 @@
 
 <!-- Password Reset Modal -->
 {#if selectedUserForPasswordReset}
-	<div class="fixed inset-0 z-50 bg-black/10 backdrop-blur-[1.5px] flex items-center justify-center p-4 animate-fade-in">
-		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-xl max-w-sm w-full p-6 space-y-4">
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in font-sans"
+		onclick={(e) => { if (e.target === e.currentTarget) { selectedUserForPasswordReset = null; newPasswordInput = ''; } }}
+	>
+		<div class="bg-white border border-pink-100/90 rounded-3xl shadow-2xl max-w-sm w-full p-5 sm:p-6 space-y-4 animate-modal-content">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-3">
-				<div class="flex items-center gap-2 text-pink-900 font-black text-sm">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-pink-500">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
-					</svg>
+				<div class="flex items-center gap-2 text-pink-950 font-black text-sm">
+					<div class="w-7 h-7 rounded-lg bg-pink-50 text-[#f43f8e] border border-pink-100 flex items-center justify-center shadow-2xs">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+						</svg>
+					</div>
 					<span>Reset Password</span>
 				</div>
 				<button
 					onclick={() => { selectedUserForPasswordReset = null; newPasswordInput = ''; }}
 					aria-label="Close"
-					class="text-pink-400 hover:text-pink-600 cursor-pointer"
+					class="text-pink-400 hover:text-pink-600 p-1 rounded-lg hover:bg-pink-50 transition-colors cursor-pointer"
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -833,18 +840,18 @@
 			</div>
 
 			<p class="text-xs text-pink-600 font-medium">
-				Setting new password for <span class="font-bold text-pink-900">@{selectedUserForPasswordReset.username}</span>:
+				Setting new password for <span class="font-black text-pink-950">@{selectedUserForPasswordReset.username}</span>:
 			</p>
 
 			<form onsubmit={handleResetPassword} class="space-y-3">
 				<div>
-					<label for="new_pw_input" class="block text-xs font-bold text-pink-700 mb-1">New Password (min. 6 chars)</label>
+					<label for="new_pw_input" class="block text-xs font-bold text-pink-900 mb-1.5">New Password (min. 6 chars)</label>
 					<input
 						id="new_pw_input"
 						type="text"
 						bind:value={newPasswordInput}
 						placeholder="Enter new password..."
-						class="w-full px-3 py-2 bg-pink-50 border-2 border-pink-200 rounded-xl text-xs font-mono text-pink-900 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all"
+						class="w-full px-3.5 py-2.5 bg-pink-50/60 border border-pink-200/80 rounded-xl text-xs font-mono text-pink-950 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:bg-white transition-all shadow-inner"
 					/>
 				</div>
 
@@ -852,14 +859,14 @@
 					<button
 						type="button"
 						onclick={() => { selectedUserForPasswordReset = null; newPasswordInput = ''; }}
-						class="px-3.5 py-1.5 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+						class="px-3.5 py-2 bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-bold rounded-xl border border-pink-100/80 shadow-2xs transition-all cursor-pointer active:scale-95"
 					>
 						Cancel
 					</button>
 					<button
 						type="submit"
 						disabled={isResettingPassword || !newPasswordInput || newPasswordInput.trim().length < 6}
-						class="px-3.5 py-1.5 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+						class="px-4 py-2 bg-[#f43f8e] hover:bg-[#e0337f] disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md shadow-pink-300/30 transition-all cursor-pointer active:scale-95"
 					>
 						{isResettingPassword ? 'Saving...' : 'Save Password'}
 					</button>
@@ -871,26 +878,31 @@
 
 <!-- Confirm Delete User Modal -->
 {#if selectedUserForDelete}
-	<div class="fixed inset-0 z-50 bg-black/10 backdrop-blur-[1.5px] flex items-center justify-center p-4 animate-fade-in">
-		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-xl max-w-sm w-full p-6 space-y-4">
-			<div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl border border-rose-200 flex items-center justify-center mx-auto">
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in font-sans"
+		onclick={(e) => { if (e.target === e.currentTarget) { selectedUserForDelete = null; } }}
+	>
+		<div class="bg-white border border-pink-100/90 rounded-3xl shadow-2xl max-w-sm w-full p-5 sm:p-6 space-y-4 animate-modal-content text-center">
+			<div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-2xl border border-rose-100 flex items-center justify-center mx-auto shadow-xs">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
 				</svg>
 			</div>
 
-			<div class="text-center space-y-1">
-				<h3 class="text-sm font-black text-pink-950">Delete Account @{selectedUserForDelete.username}?</h3>
-				<p class="text-xs text-pink-600 font-medium leading-relaxed">
+			<div class="space-y-1">
+				<h3 class="text-sm sm:text-base font-black text-pink-950">Delete Account @{selectedUserForDelete.username}?</h3>
+				<p class="text-xs text-pink-600/90 font-medium leading-relaxed">
 					This action cannot be undone. All memories, notes, pinned dates, and friendships will be deleted permanently.
 				</p>
 			</div>
 
-			<div class="flex items-center justify-center gap-2 pt-2">
+			<div class="flex items-center justify-center gap-2.5 pt-1">
 				<button
 					type="button"
 					onclick={() => { selectedUserForDelete = null; }}
-					class="w-1/2 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+					class="w-1/2 py-2.5 bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-black rounded-xl border border-pink-100/80 shadow-2xs transition-all cursor-pointer active:scale-95"
 				>
 					Cancel
 				</button>
@@ -898,7 +910,7 @@
 					type="button"
 					onclick={handleDeleteUser}
 					disabled={isDeletingUser}
-					class="w-1/2 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+					class="w-1/2 py-2.5 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white text-xs font-black rounded-xl shadow-md shadow-rose-300/30 transition-all cursor-pointer active:scale-95"
 				>
 					{isDeletingUser ? 'Deleting...' : 'Confirm Delete'}
 				</button>
@@ -910,27 +922,27 @@
 <!-- Floating Install Admin Banner -->
 {#if !isAppInstalled && !isFloatingDismissed}
 	<div 
-		class="fixed bottom-4 right-4 z-40 max-w-[340px] bg-white/95 backdrop-blur-md border-2 border-pink-400 shadow-xl rounded-2xl p-3 flex items-center gap-3 animate-fade-in-up"
+		class="fixed bottom-4 right-4 z-40 max-w-[340px] bg-white/95 backdrop-blur-md border border-pink-200/90 shadow-[0_8px_30px_rgba(244,114,182,0.18)] rounded-2xl p-3 flex items-center gap-3 animate-fade-in-up"
 		role="region"
 		aria-label="Install Admin App"
 	>
 		<img 
 			src="/logo.png" 
 			alt="ChronoMuse" 
-			class="w-10 h-10 object-contain rounded-xl border border-pink-200 p-0.5 bg-pink-50 flex-shrink-0"
+			class="w-10 h-10 object-contain rounded-xl border border-pink-100 p-0.5 bg-pink-50 flex-shrink-0 shadow-2xs"
 		/>
 		<div class="min-w-0 flex-1">
 			<div class="flex items-center gap-1.5">
-				<span class="text-xs font-black text-pink-900 truncate">Install Admin App</span>
-				<span class="px-1.5 py-0.2 bg-pink-100 text-pink-700 rounded-md text-[9px] font-extrabold uppercase">App</span>
+				<span class="text-xs font-black text-pink-950 truncate">Install Admin App</span>
+				<span class="px-1.5 py-0.2 bg-pink-50 border border-pink-100 text-[#f43f8e] rounded-md text-[9px] font-extrabold uppercase">App</span>
 			</div>
-			<p class="text-[11px] text-pink-600 font-medium leading-tight truncate">Independent admin portal shortcut</p>
+			<p class="text-[11px] text-pink-400 font-bold leading-tight truncate">Independent admin portal shortcut</p>
 		</div>
 		<div class="flex items-center gap-1 flex-shrink-0">
 			<button
 				type="button"
 				onclick={handleInstallAdminApp}
-				class="px-2.5 py-1.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1"
+				class="px-2.5 py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm transition-all cursor-pointer flex items-center gap-1"
 				title="Install ChronoMuse Admin App"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
@@ -942,7 +954,7 @@
 				type="button"
 				onclick={dismissFloatingInstall}
 				aria-label="Close"
-				class="p-1.5 text-pink-400 hover:text-pink-700 hover:bg-pink-100 rounded-lg transition-colors cursor-pointer"
+				class="p-1.5 text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-colors cursor-pointer"
 				title="Close"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
@@ -955,25 +967,30 @@
 
 <!-- Install Admin App Instructions Modal -->
 {#if showInstallHelper}
-	<div class="fixed inset-0 z-50 bg-black/10 backdrop-blur-[1.5px] flex items-center justify-center p-4 animate-fade-in">
-		<div class="bg-white border-2 border-pink-300 rounded-3xl shadow-2xl max-w-sm w-full p-5 space-y-4 animate-modal-content">
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in font-sans"
+		onclick={(e) => { if (e.target === e.currentTarget) showInstallHelper = false; }}
+	>
+		<div class="bg-white border border-pink-100/90 rounded-3xl shadow-2xl max-w-sm w-full p-5 space-y-4 animate-modal-content">
 			<!-- Header -->
 			<div class="flex items-center justify-between border-b border-pink-100 pb-3">
 				<div class="flex items-center gap-2.5">
-					<div class="p-2 bg-pink-100 text-pink-600 rounded-xl">
+					<div class="p-2 bg-pink-50 text-[#f43f8e] rounded-xl border border-pink-100 shadow-2xs">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
 						</svg>
 					</div>
 					<div>
 						<h3 class="text-sm font-black text-pink-950">Install Admin App</h3>
-						<p class="text-[11px] text-pink-500 font-medium">Add to your Home Screen</p>
+						<p class="text-[11px] text-pink-400 font-bold">Add to your Home Screen</p>
 					</div>
 				</div>
 				<button
 					onclick={() => showInstallHelper = false}
 					aria-label="Close"
-					class="text-pink-400 hover:text-pink-600 cursor-pointer p-1 rounded-lg hover:bg-pink-50"
+					class="text-pink-400 hover:text-pink-600 cursor-pointer p-1 rounded-lg hover:bg-pink-50 transition-colors"
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -983,17 +1000,17 @@
 
 			<!-- Steps -->
 			<div class="space-y-3 py-1 text-left text-xs text-pink-950">
-				<div class="p-3 bg-pink-50/70 border border-pink-200 rounded-2xl space-y-2">
+				<div class="p-3 bg-pink-50/50 border border-pink-100 rounded-2xl space-y-2">
 					<div class="flex items-start gap-2.5">
-						<span class="w-5 h-5 rounded-full bg-pink-500 text-white font-bold flex items-center justify-center text-[10px] flex-shrink-0">1</span>
-						<p class="leading-relaxed">In your mobile browser menu (or Safari Share button <span class="font-bold text-pink-600">⎋</span> / Chrome menu <span class="font-bold text-pink-600">⋮</span>), tap <span class="font-bold text-pink-700">Share / Options</span>.</p>
+						<span class="w-5 h-5 rounded-full bg-[#f43f8e] text-white font-bold flex items-center justify-center text-[10px] flex-shrink-0 shadow-xs">1</span>
+						<p class="leading-relaxed">In your mobile browser menu (or Safari Share button <span class="font-bold text-[#f43f8e]">⎋</span> / Chrome menu <span class="font-bold text-[#f43f8e]">⋮</span>), tap <span class="font-bold text-pink-950">Share / Options</span>.</p>
 					</div>
 					<div class="flex items-start gap-2.5">
-						<span class="w-5 h-5 rounded-full bg-pink-500 text-white font-bold flex items-center justify-center text-[10px] flex-shrink-0">2</span>
-						<p class="leading-relaxed">Select <span class="font-bold text-pink-700">"Add to Home Screen"</span> or <span class="font-bold text-pink-700">"Install App"</span>.</p>
+						<span class="w-5 h-5 rounded-full bg-[#f43f8e] text-white font-bold flex items-center justify-center text-[10px] flex-shrink-0 shadow-xs">2</span>
+						<p class="leading-relaxed">Select <span class="font-bold text-[#f43f8e]">"Add to Home Screen"</span> or <span class="font-bold text-[#f43f8e]">"Install App"</span>.</p>
 					</div>
 					<div class="flex items-start gap-2.5">
-						<span class="w-5 h-5 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center text-[10px] flex-shrink-0">3</span>
+						<span class="w-5 h-5 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center text-[10px] flex-shrink-0 shadow-xs">3</span>
 						<p class="leading-relaxed"><span class="font-bold text-emerald-700">ChronoMuse Admin</span> will be installed as an independent standalone app icon on your home screen!</p>
 					</div>
 				</div>
@@ -1004,7 +1021,7 @@
 				<button
 					type="button"
 					onclick={() => showInstallHelper = false}
-					class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer"
+					class="px-4 py-2 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-bold text-xs rounded-xl shadow-md shadow-pink-300/30 transition-all cursor-pointer active:scale-95"
 				>
 					Got it!
 				</button>

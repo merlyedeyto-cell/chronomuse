@@ -476,4 +476,10 @@
 		position: absolute !important;
 		right: -9999px !important;
 	}
+
+	:global(*),
+	:global(*:focus),
+	:global(*:active) {
+		-webkit-tap-highlight-color: transparent !important;
+	}
 </style>

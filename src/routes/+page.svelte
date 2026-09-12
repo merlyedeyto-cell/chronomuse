@@ -18,7 +18,17 @@
 				if (parsed && parsed.id) {
 					isLoggedIn = true;
 					isCheckingAuth = false;
-					goto('/dashboard');
+					const urlParams = new URLSearchParams(window.location.search);
+					const paramRedirect = urlParams.get('redirect');
+					const sessionRedirect = sessionStorage.getItem('chronomuse_redirect_after_login');
+					let redirectTarget = '/dashboard';
+					if (paramRedirect) {
+						redirectTarget = decodeURIComponent(paramRedirect);
+					} else if (sessionRedirect) {
+						redirectTarget = sessionRedirect;
+					}
+					sessionStorage.removeItem('chronomuse_redirect_after_login');
+					goto(redirectTarget || '/dashboard');
 				}
 			}
 		} catch (e) {}

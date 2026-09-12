@@ -328,6 +328,29 @@
 		goto(`/chat?friend_id=${senderId}&username=${encodeURIComponent(senderUsername)}`);
 	}
 
+	function handleSayThanks(item) {
+		closeViewMemoryModal();
+		if (!item) return;
+		const dateStr = item?.memory?.date || '';
+		let formattedDate = dateStr;
+		if (dateStr && dateStr.includes('-')) {
+			const [y, m, d] = dateStr.split('-');
+			const dt = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+			formattedDate = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+		}
+		const memoryReplyData = {
+			sender_id: item.sender_id,
+			sender_username: item.sender_username,
+			memory_id: item.memory?.id || item.share_id,
+			memory_date: formattedDate,
+			memory_raw_date: dateStr
+		};
+		if (typeof window !== 'undefined') {
+			sessionStorage.setItem('chronomuse_memory_reply', JSON.stringify(memoryReplyData));
+		}
+		goto(`/chat?friend_id=${item.sender_id}&username=${encodeURIComponent(item.sender_username)}&memory_reply=1`);
+	}
+
 	async function handleRespondSharedMemory(item, action, e) {
 		if (e) e.stopPropagation();
 		if (!user || !user.id || isResponding) return;
@@ -1028,7 +1051,7 @@
 						</button>
 
 						<button
-							onclick={() => { playClickSound(); handleOpenChat(selectedMemoryToView.sender_id, selectedMemoryToView.sender_username); }}
+							onclick={() => { playClickSound(); handleSayThanks(selectedMemoryToView); }}
 							class="h-8 py-1.5 px-2.5 bg-white border border-pink-200 hover:border-pink-300 hover:bg-pink-50 text-[#f43f8e] rounded-xl active:scale-95 transition-all duration-200 text-[11px] font-black flex items-center justify-center space-x-1 cursor-pointer whitespace-nowrap"
 						>
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3 flex-shrink-0">

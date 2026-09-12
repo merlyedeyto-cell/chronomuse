@@ -501,6 +501,39 @@
 		}
 	}
 
+	let isCopiedLink = $state(false);
+	let copyLinkTimer = /** @type {any} */ (null);
+
+	async function handleCopyProfileLink() {
+		playClickSound();
+		if (!profileData?.user?.id || typeof window === 'undefined') return;
+		const profileUrl = `${window.location.origin}/profile?id=${profileData.user.id}`;
+		try {
+			if (navigator?.clipboard?.writeText) {
+				await navigator.clipboard.writeText(profileUrl);
+			} else {
+				const textArea = document.createElement('textarea');
+				textArea.value = profileUrl;
+				textArea.style.position = 'fixed';
+				textArea.style.opacity = '0';
+				document.body.appendChild(textArea);
+				textArea.focus();
+				textArea.select();
+				document.execCommand('copy');
+				document.body.removeChild(textArea);
+			}
+			isCopiedLink = true;
+			showNotification('Profile link copied to clipboard!', 'success');
+			if (copyLinkTimer) clearTimeout(copyLinkTimer);
+			copyLinkTimer = setTimeout(() => {
+				isCopiedLink = false;
+			}, 2500);
+		} catch (err) {
+			console.error('Failed to copy profile link:', err);
+			showNotification('Failed to copy profile link', 'error');
+		}
+	}
+
 	function handleLogout() {
 		try {
 			supabase.removeAllChannels();
@@ -576,7 +609,13 @@
 
 		const stored = typeof window !== 'undefined' ? localStorage.getItem('chronomuse_user') : null;
 		if (!stored) {
-			goto('/');
+			if (typeof window !== 'undefined') {
+				const returnUrl = window.location.pathname + window.location.search;
+				sessionStorage.setItem('chronomuse_redirect_after_login', returnUrl);
+				goto(`/?redirect=${encodeURIComponent(returnUrl)}`);
+			} else {
+				goto('/');
+			}
 			return;
 		}
 		currentUser = JSON.parse(stored);
@@ -1505,9 +1544,60 @@
 							{/if}
 						</div>
 
-						<!-- Action buttons on other user profile -->
-						{#if !profileData.is_self}
-							<div class="flex items-center gap-1.5">
+						<!-- Action buttons on own profile -->
+						{#if profileData.is_self}
+							<div class="flex items-center gap-1.5 flex-wrap">
+								<button
+									type="button"
+									onclick={handleCopyProfileLink}
+									class="px-3 py-1.5 bg-pink-50 hover:bg-pink-100 border border-pink-200/90 text-[#f43f8e] text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center space-x-1.5 cursor-pointer"
+									title="Copy link to your profile"
+								>
+									{#if isCopiedLink}
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-[#059669] flex-shrink-0">
+											<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+										</svg>
+										<span class="text-[#059669] font-black">Link Copied!</span>
+									{:else}
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+										</svg>
+										<span>Copy Link</span>
+									{/if}
+								</button>
+								<button
+									type="button"
+									onclick={openEditProfileModal}
+									class="px-3 py-1.5 bg-white hover:bg-pink-50 border border-pink-200 text-pink-700 text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center space-x-1 cursor-pointer"
+									title="Edit Profile Info"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+									</svg>
+									<span>Edit Profile</span>
+								</button>
+							</div>
+						{:else}
+							<!-- Action buttons on other user profile -->
+							<div class="flex items-center gap-1.5 flex-wrap">
+								<button
+									type="button"
+									onclick={handleCopyProfileLink}
+									class="px-2.5 py-1.5 bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-700 text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center space-x-1 cursor-pointer"
+									title="Share Profile Link"
+								>
+									{#if isCopiedLink}
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-[#059669] flex-shrink-0">
+											<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+										</svg>
+										<span class="text-[#059669] font-black">Copied!</span>
+									{:else}
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+										</svg>
+										<span class="hidden sm:inline">Share</span>
+									{/if}
+								</button>
 								{#if profileData.has_pending_request}
 									<span class="px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-black rounded-full">
 										Request Pending
@@ -1549,16 +1639,6 @@
 								<span class="px-1.5 py-0.2 bg-pink-50 text-[#f43f8e] border border-pink-200 text-[9px] font-black rounded-full uppercase">
 									You
 								</span>
-								<button
-									type="button"
-									onclick={openEditProfileModal}
-									class="text-pink-400 hover:text-[#f43f8e] transition-colors cursor-pointer"
-									title="Edit Profile Info"
-								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-									</svg>
-								</button>
 							{/if}
 						</div>
 						<p class="text-xs text-pink-400 font-bold">
@@ -1567,20 +1647,6 @@
 							<span>{profileData.total_memories !== null && profileData.total_memories !== undefined ? `${profileData.total_memories} memories` : '0 memories'}</span>
 						</p>
 					</div>
-
-					<!-- Full-Width Edit / Add Note Button -->
-					{#if profileData.is_self}
-						<button
-							type="button"
-							onclick={openNoteModal}
-							class="w-full py-2 bg-pink-50/60 hover:bg-pink-100/60 border border-pink-200/80 rounded-xl text-xs font-black text-[#f43f8e] flex items-center justify-center space-x-1.5 transition-all mt-2.5 cursor-pointer active:scale-[0.99]"
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.818-.818 5.969 5.969 0 011.057-3.035C4.646 15.657 4 13.916 4 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-							</svg>
-							<span>{userNote ? 'Edit Note' : '+ Add Note'}</span>
-						</button>
-					{/if}
 
 					<!-- Pill Badges Row -->
 					<div class="flex items-center flex-wrap gap-1.5 pt-2.5 pb-1">
@@ -1873,16 +1939,18 @@
 								Mood Insights & Reflection
 							</h3>
 							<p class="text-[11px] text-pink-400 font-bold truncate">
-								System feedback based on your overall mood logs
+								{profileData.is_self ? 'System feedback based on your overall mood logs' : 'System feedback based on overall mood logs'}
 							</p>
 						</div>
 
-						<button
-							onclick={() => goto('/mood-graph')}
-							class="px-3 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] rounded-lg shadow-2xs active:scale-95 transition-all cursor-pointer flex-shrink-0"
-						>
-							Full Graph
-						</button>
+						{#if profileData.is_self}
+							<button
+								onclick={() => goto('/mood-graph')}
+								class="px-3 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] rounded-lg shadow-2xs active:scale-95 transition-all cursor-pointer flex-shrink-0"
+							>
+								Full Graph
+							</button>
+						{/if}
 					</div>
 
 					<!-- Dominant Moods Container -->

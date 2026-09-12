@@ -166,6 +166,11 @@
 			}
 		}, 30000);
 
+		// Note expiration live countdown interval
+		noteCountdownInterval = setInterval(() => {
+			updateChatNoteCountdown();
+		}, 1000);
+
 		// Listen to visibility & focus to toggle Active/Offline
 		const handleVisibilityChange = () => {
 			const isAppVisible = typeof document !== 'undefined' && !document.hidden;
@@ -215,9 +220,29 @@
 			sessionStorage.removeItem('chronomuse_note_reply');
 		}
 
+		// Shared Memory "Say Thanks" reply handoff from notifications modal
+		let pendingMemoryReply = null;
+		if ($page.url.searchParams.get('memory_reply') === '1' && friendIdParam && typeof window !== 'undefined') {
+			try {
+				pendingMemoryReply = JSON.parse(sessionStorage.getItem('chronomuse_memory_reply') || 'null');
+			} catch (e) {}
+			sessionStorage.removeItem('chronomuse_memory_reply');
+		}
+
 		if (friendIdParam || usernameParam) {
 			const fid = friendIdParam ? Number(friendIdParam) : null;
-			if (pendingNoteReply) {
+			if (pendingMemoryReply) {
+				if (typeof window !== 'undefined') {
+					history.replaceState({ chatOpen: false }, '', '/chat');
+				}
+				triggerMemoryReply({
+					friend_id: pendingMemoryReply.sender_id || pendingMemoryReply.friend_id || fid,
+					username: pendingMemoryReply.sender_username || pendingMemoryReply.username || usernameParam || 'User',
+					avatar_url: null,
+					memory_id: pendingMemoryReply.memory_id,
+					memory_date: pendingMemoryReply.memory_date || ''
+				});
+			} else if (pendingNoteReply) {
 				// Open the chat immediately (no waiting for the chat list) with the reply bar
 				if (typeof window !== 'undefined') {
 					history.replaceState({ chatOpen: false }, '', '/chat');
@@ -428,6 +453,7 @@
 			}
 
 			if (heartbeatInterval) clearInterval(heartbeatInterval);
+			if (noteCountdownInterval) clearInterval(noteCountdownInterval);
 			if (pollInterval) clearInterval(pollInterval);
 			if (typingTimeout) clearTimeout(typingTimeout);
 			if (myTypingTimeout) clearTimeout(myTypingTimeout);
@@ -1123,9 +1149,9 @@
 		let formattedMessage = textToSend;
 		if (replyingTo && !textCustom) {
 			const replyPayloadText = replyingTo.isImage ? 'Photo' : replyingTo.text;
-			const replyId = replyingTo.kind === 'note' ? (replyingTo.id || `note-${replyingTo.user_id}`) : replyingTo.id;
-			const replyUser = replyingTo.kind === 'note' ? replyingTo.username : replyingTo.sender_name;
-			const replyTypeAttr = replyingTo.kind === 'note' ? ' type="note"' : '';
+			const replyId = replyingTo.kind === 'note' ? (replyingTo.id || `note-${replyingTo.user_id}`) : (replyingTo.kind === 'memory' ? (replyingTo.id || `memory-${replyingTo.memory_id}`) : replyingTo.id);
+			const replyUser = (replyingTo.kind === 'note' || replyingTo.kind === 'memory') ? replyingTo.username : replyingTo.sender_name;
+			const replyTypeAttr = replyingTo.kind === 'note' ? ' type="note"' : (replyingTo.kind === 'memory' ? ' type="memory"' : '');
 			formattedMessage = `[REPLY id="${replyId}" user="${encodeURIComponent(replyUser)}" text="${encodeURIComponent(replyPayloadText)}"${replyTypeAttr}]${textToSend}[/REPLY]`;
 			replyingTo = null;
 		}
@@ -1492,6 +1518,32 @@
 			isImage: false,
 			imageUrl: null
 		};
+		tick().then(() => {
+			if (messageInputRef) {
+				messageInputRef.focus();
+			}
+		});
+	}
+
+	// Opens the friend's chat and pre-fills a thanks reply quoting their shared memory
+	async function triggerMemoryReply(mr) {
+		if (!mr) return;
+		const targetFriend = [...friends, ...requests].find(f => Number(f.friend_id) === Number(mr.friend_id))
+			|| { friend_id: mr.friend_id, username: mr.username, avatar_url: mr.avatar_url || null };
+		viewingNote = null;
+		selectFriend(targetFriend);
+		replyingTo = {
+			kind: 'memory',
+			id: `memory-${mr.memory_id || Date.now()}`,
+			memory_id: mr.memory_id,
+			user_id: mr.friend_id,
+			username: mr.username,
+			sender_name: mr.username,
+			text: mr.memory_date,
+			isImage: false,
+			imageUrl: null
+		};
+		newMessageText = 'Thanks!';
 		tick().then(() => {
 			if (messageInputRef) {
 				messageInputRef.focus();
@@ -2088,13 +2140,17 @@
 	}
 
 	function openNoteModal() {
+		viewingNote = null;
 		noteInput = myNote?.note_text || '';
+		updateChatNoteCountdown();
 		showNoteModal = true;
 	}
 
 	let chatNoteCountdown = $state('24h 00m 00s');
+	let noteCountdownInterval = null;
 
 	function updateChatNoteCountdown() {
+		currentTime = Date.now();
 		const now = Date.now();
 		const targetId = viewingNote?.friend_id || viewingNote?.user_id || user?.id;
 		if (!targetId || (!myNote && !viewingNote)) {
@@ -2129,6 +2185,23 @@
 		}
 	}
 
+	function getMyNoteTimeRemaining() {
+		const _ = currentTime; // Reactive dependency
+		if (!myNote || !user?.id) return '';
+		const now = Date.now();
+		let noteTime = now;
+		if (typeof window !== 'undefined') {
+			const stored = localStorage.getItem(`chronomuse_note_time_${user.id}`);
+			if (stored) noteTime = parseInt(stored, 10);
+		}
+		const diff = (noteTime + 24 * 60 * 60 * 1000) - now;
+		if (diff <= 0) return 'Expired';
+		const h = Math.floor(diff / (1000 * 60 * 60));
+		const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+		if (h > 0) return `${h}h left`;
+		return `${Math.max(1, m)}m left`;
+	}
+
 	function getNoteTimeLeft() {
 		return chatNoteCountdown;
 	}
@@ -2147,53 +2220,53 @@
 		<AppHeader />
 	</div>
 
-	<!-- Chat Body Container -->
-	<div class="flex-grow flex flex-col md:flex-row overflow-hidden {activeFriend !== null ? 'p-0 w-full h-full max-w-full md:container md:mx-auto md:px-6 md:py-4 md:max-w-7xl 2xl:max-w-[1600px] md:gap-4 md:h-[calc(100vh-5.5rem)]' : 'container mx-auto px-3 sm:px-6 py-3 sm:py-4 max-w-7xl 2xl:max-w-[1600px] gap-3 sm:gap-4 h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5.5rem)]'}">
+	<!-- Chat Body Container (Sized consistent with Friends page: max-w-4xl lg:max-w-6xl xl:max-w-7xl) -->
+	<div class="flex-grow flex flex-col md:flex-row overflow-hidden {activeFriend !== null ? 'p-0 w-full h-full max-w-full md:container md:mx-auto md:px-6 lg:md:px-8 md:py-4 md:max-w-4xl md:lg:max-w-6xl md:xl:max-w-7xl md:gap-4 md:h-[calc(100vh-5.5rem)]' : 'container mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 max-w-4xl lg:max-w-6xl xl:max-w-7xl gap-3 sm:gap-4 h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5.5rem)]'}">
 		
-		<!-- Left Panel: Friends & Search -->
+		<!-- Left Panel: Friends & Search (Consistent Sizing) -->
 		<div class="w-full md:w-80 lg:w-96 flex-shrink-0 bg-white/95 backdrop-blur-md border border-pink-100 rounded-2xl sm:rounded-3xl shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col overflow-hidden animate-fade-in-up" class:hidden={activeFriend !== null} class:md:flex={true} style="animation-delay: 0.05s">
 			<!-- Conversations Header -->
-			<div class="p-3 sm:p-3.5 bg-[#fdf2f6] text-pink-950 border-b border-pink-100 font-bold text-xs sm:text-sm flex items-center justify-between">
+			<div class="p-3.5 sm:p-4 bg-[#fdf2f6] text-pink-950 border-b border-pink-100 font-black text-xs sm:text-sm flex items-center justify-between">
 				<div class="flex items-center space-x-2">
-					<div class="w-6 h-6 rounded-lg bg-[#f43f8e]/10 text-[#f43f8e] flex items-center justify-center">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+					<div class="w-7 h-7 rounded-xl bg-[#f43f8e]/10 text-[#f43f8e] flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
 						</svg>
 					</div>
-					<span class="font-black text-pink-950">Messages</span>
+					<span class="font-black text-pink-950 text-sm">Messages</span>
 				</div>
-				<span class="text-[10px] bg-pink-100 text-[#f43f8e] px-2 py-0.5 rounded-full font-bold border border-pink-200/80">{friends.length + requests.length}</span>
+				<span class="text-[10px] bg-pink-100 text-[#f43f8e] px-2.5 py-0.5 rounded-full font-black border border-pink-200/80">{friends.length + requests.length}</span>
 			</div>
 
 			<!-- Search Bar -->
-			<div class="p-2 sm:p-2.5 border-b border-pink-100/80 bg-[#fff5f8]/50 space-y-1.5">
+			<div class="p-2.5 sm:p-3 border-b border-pink-100/80 bg-[#fff5f8]/50 space-y-1.5">
 				<div class="relative">
 					<input
 						type="text"
 						bind:value={searchQuery}
 						placeholder="Search conversations..."
-						class="w-full pl-7 pr-2.5 py-1.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-pink-900 placeholder-pink-400/60 text-xs focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 focus:border-[#f43f8e] focus:bg-white transition-all font-medium"
+						class="w-full pl-8 pr-3 py-2 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-pink-900 placeholder-pink-400/70 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 focus:border-[#f43f8e] focus:bg-white transition-all shadow-2xs"
 					/>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-pink-400 absolute left-2.5 top-2">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-pink-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
 					</svg>
 				</div>
 			</div>
 
-			<!-- iMessage-style Notes Row -->
+			<!-- iMessage-style Notes Row with Expiration Time Count -->
 			{#if myNote || friendNotes.length > 0 || (!isLoadingChatList)}
-			<div class="px-2 sm:px-2.5 pt-2 pb-1">
+			<div class="px-2.5 sm:px-3 pt-2.5 pb-1.5">
 				<div
 					bind:this={notesScrollRef}
-					class="flex gap-2.5 overflow-x-auto pb-1.5 notes-scroll-row"
+					class="flex gap-2.5 overflow-x-auto pb-1.5 notes-scroll-row items-start"
 					style="scrollbar-width: none; -ms-overflow-style: none;"
 				>
-					<!-- "Your Note" pill -->
+					<!-- "Your Note" pill with live expiration count -->
 					<button
 						onclick={openNoteModal}
 						class="flex flex-col items-center flex-shrink-0 group cursor-pointer select-none"
-						style="min-width: 60px; max-width: 68px;"
-						title="{myNote ? 'Edit your note' : 'Add a note'}"
+						style="min-width: 68px; max-width: 80px;"
+						title="{myNote ? `Edit your note (Expires in ${chatNoteCountdown})` : 'Add a note'}"
 					>
 						<!-- Speech bubble -->
 						<div class="relative mb-1.5 w-full">
@@ -2209,15 +2282,25 @@
 								<div class="w-2.5 h-2.5 bg-white border-b border-r border-pink-200 rotate-45 translate-y-[-50%]"></div>
 							</div>
 						</div>
-						<!-- Avatar -->
-						<div class="w-9 h-9 rounded-full bg-pink-100 border border-pink-200 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
-							{#if user?.avatar_url}
-								<img src={user.avatar_url} alt="You" class="w-full h-full object-cover" />
-							{:else}
-								<span class="text-[#f43f8e] font-bold text-sm">{user?.username?.charAt(0).toUpperCase() || '?'}</span>
-							{/if}
+						<!-- Avatar & Expiration Indicator -->
+						<div class="relative">
+							<div class="w-10 h-10 rounded-2xl bg-pink-100 border-2 border-pink-200 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform shadow-2xs">
+								{#if user?.avatar_url}
+									<img src={user.avatar_url} alt="You" class="w-full h-full object-cover" />
+								{:else}
+									<span class="text-[#f43f8e] font-black text-sm">{user?.username?.charAt(0).toUpperCase() || '?'}</span>
+								{/if}
+							</div>
 						</div>
-						<span class="text-[9px] font-semibold text-pink-700 mt-0.5 truncate w-full text-center">Your note</span>
+						<span class="text-[9px] font-bold text-pink-800 mt-1 truncate w-full text-center">Your note</span>
+						{#if myNote}
+							<span class="text-[8px] font-black text-[#f43f8e] tracking-tight bg-pink-50 border border-pink-200/80 px-1.5 py-0.5 rounded-full mt-0.5 shadow-2xs flex items-center gap-0.5">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-2 h-2">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
+								<span>{getMyNoteTimeRemaining()}</span>
+							</span>
+						{/if}
 					</button>
 
 					<!-- Divider -->
@@ -2228,9 +2311,9 @@
 					<!-- Friends' Notes -->
 					{#each friendNotes as fn (fn.user_id)}
 						<button
-							onclick={() => { viewingNote = fn; }}
+							onclick={() => { viewingNote = fn; updateChatNoteCountdown(); }}
 							class="flex flex-col items-center flex-shrink-0 group cursor-pointer select-none"
-							style="min-width: 60px; max-width: 68px;"
+							style="min-width: 64px; max-width: 72px;"
 							title="{fn.username}'s note"
 						>
 							<!-- Speech bubble -->
@@ -2244,14 +2327,14 @@
 								</div>
 							</div>
 							<!-- Avatar -->
-							<div class="w-9 h-9 rounded-full bg-pink-50 border border-pink-200 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
+							<div class="w-10 h-10 rounded-2xl bg-pink-50 border-2 border-pink-200 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform shadow-2xs">
 								{#if fn.avatar_url}
 									<img src={fn.avatar_url} alt={fn.username} class="w-full h-full object-cover" />
 								{:else}
-									<span class="text-[#f43f8e] font-bold text-sm">{fn.username.charAt(0).toUpperCase()}</span>
+									<span class="text-[#f43f8e] font-black text-sm">{fn.username.charAt(0).toUpperCase()}</span>
 								{/if}
 							</div>
-							<span class="text-[9px] font-medium text-pink-600 mt-0.5 truncate w-full text-center">@{fn.username}</span>
+							<span class="text-[9px] font-bold text-pink-700 mt-1 truncate w-full text-center">@{fn.username}</span>
 						</button>
 					{/each}
 				</div>
@@ -2455,11 +2538,11 @@
 					</div>
 				{:else}
 					<!-- Active Chat Normal Header -->
-					<div class="p-2.5 sm:p-3 bg-[#fdf2f6] backdrop-blur-md border-b border-pink-100 text-pink-950 flex items-center justify-between flex-shrink-0 sticky top-0 z-30">
-						<div class="flex items-center space-x-2 min-w-0">
+					<div class="px-3 sm:px-5 py-2.5 sm:py-3 min-h-[64px] sm:min-h-[68px] bg-white/95 backdrop-blur-md border-b border-pink-100 text-pink-950 flex items-center justify-between flex-shrink-0 sticky top-0 z-30 shadow-2xs">
+						<div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
 							<button
 								onclick={handleBackToChatList}
-								class="md:hidden p-1 bg-white hover:bg-pink-50 border border-pink-200 rounded-lg text-pink-700 transition-colors flex-shrink-0 active:scale-95 cursor-pointer"
+								class="md:hidden p-2 bg-white hover:bg-pink-50 border-2 border-pink-200/90 rounded-2xl text-pink-500 shadow-sm transition-all flex-shrink-0 active:scale-95 cursor-pointer"
 								title="Back to Chat List"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
@@ -2468,11 +2551,11 @@
 							</button>
 							<a
 								href="/profile?id={activeFriend.friend_id}"
-								class="flex items-center space-x-2 min-w-0 hover:opacity-95 transition-opacity group cursor-pointer"
+								class="flex items-center space-x-2.5 min-w-0 hover:opacity-95 transition-opacity group cursor-pointer"
 								title="View @{activeFriend.username}'s Profile"
 							>
 								<div class="relative flex-shrink-0">
-									<div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-pink-100 border border-pink-200 flex items-center justify-center text-[#f43f8e] font-bold text-xs sm:text-sm overflow-hidden group-hover:scale-105 transition-transform">
+									<div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-pink-100 border-2 border-pink-200 flex items-center justify-center text-[#f43f8e] font-black text-sm sm:text-base overflow-hidden group-hover:scale-105 transition-transform shadow-xs">
 										{#if activeFriend.avatar_url}
 											<img src={activeFriend.avatar_url} alt={activeFriend.username} class="w-full h-full object-cover" />
 										{:else}
@@ -2480,21 +2563,21 @@
 										{/if}
 									</div>
 									{#if isRecentActive(activeFriend)}
-										<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full animate-pulse" title="Active"></span>
+										<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full animate-pulse" title="Active"></span>
 									{:else}
-										<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-slate-300 border-2 border-white rounded-full" title="Offline"></span>
+										<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-slate-300 border-2 border-white rounded-full" title="Offline"></span>
 									{/if}
 								</div>
 								<div class="min-w-0">
-									<h3 class="font-bold text-xs sm:text-sm leading-tight text-pink-950 truncate group-hover:underline flex items-center gap-1">
+									<h3 class="font-black text-xs sm:text-sm leading-tight text-pink-950 truncate group-hover:underline flex items-center gap-1">
 										<span>@{activeFriend.username}</span>
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-[#f43f8e] opacity-70 group-hover:opacity-100">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] opacity-70 group-hover:opacity-100">
 											<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 111.04-1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
 										</svg>
 									</h3>
 									<div class="text-[10px] text-pink-600 flex items-center gap-1 mt-0.5">
 										{#if isOtherUserTyping}
-											<span class="font-semibold italic text-[#f43f8e] flex items-center gap-1">
+											<span class="font-bold italic text-[#f43f8e] flex items-center gap-1">
 												<span>typing</span>
 												<span class="inline-flex gap-0.5">
 													<span class="w-1 h-1 rounded-full bg-[#f43f8e] animate-bounce" style="animation-delay: 0ms"></span>
@@ -2518,34 +2601,34 @@
 							</a>
 						</div>
 
-						<!-- Header Actions (Pill Buttons) -->
-						<div class="flex items-center space-x-1 sm:space-x-1.5 flex-shrink-0">
+						<!-- Header Actions (Themed Pill Buttons Matching App Theme) -->
+						<div class="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
 							<a
 								href="/profile?id={activeFriend.friend_id}"
-								class="px-2 py-1 bg-white hover:bg-pink-50 border border-pink-200 text-pink-700 rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 cursor-pointer shadow-2xs"
+								class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-white hover:bg-pink-50 border-2 border-pink-200/90 text-pink-600 hover:text-[#f43f8e] rounded-xl sm:rounded-2xl transition-all text-xs font-black flex items-center space-x-1.5 cursor-pointer shadow-sm active:scale-95"
 								title="View Profile"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-pink-500">
+									<path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
 								</svg>
 								<span class="hidden sm:inline">Profile</span>
 							</a>
 							<button
 								onclick={() => promptToggleBlockUser(activeFriend)}
-								class="px-2 py-1 bg-white hover:bg-pink-50 border border-pink-200 {isCurrentFriendBlockedByMe ? 'text-emerald-700 hover:text-emerald-800' : 'text-rose-600 hover:text-rose-700'} rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 cursor-pointer shadow-2xs"
+								class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-white hover:bg-pink-50 border-2 border-pink-200/90 {isCurrentFriendBlockedByMe ? 'text-emerald-600 hover:text-emerald-700' : 'text-rose-500 hover:text-rose-600'} rounded-xl sm:rounded-2xl transition-all text-xs font-black flex items-center space-x-1.5 cursor-pointer shadow-sm active:scale-95"
 								title={isCurrentFriendBlockedByMe ? "Unblock User" : "Block User"}
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3.5 h-3.5">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
 								</svg>
 								<span class="hidden sm:inline">{isCurrentFriendBlockedByMe ? 'Unblock' : 'Block'}</span>
 							</button>
 							<button
 								onclick={() => showClearModal = true}
-								class="px-2 py-1 bg-white hover:bg-pink-50 border border-pink-200 text-pink-700 rounded-lg transition-colors text-xs font-semibold flex items-center space-x-1 cursor-pointer shadow-2xs"
+								class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-white hover:bg-pink-50 border-2 border-pink-200/90 text-pink-600 hover:text-[#f43f8e] rounded-xl sm:rounded-2xl transition-all text-xs font-black flex items-center space-x-1.5 cursor-pointer shadow-sm active:scale-95"
 								title="Clear Chat History"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-pink-500">
 									<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 								</svg>
 								<span class="hidden sm:inline">Clear</span>
@@ -2759,40 +2842,44 @@
 												<div
 													role="button"
 													tabindex="0"
-													onclick={(e) => { e.stopPropagation(); if (parsed.reply.type !== 'note') scrollToMessage(parsed.reply.id); }}
-													onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); if (parsed.reply.type !== 'note') scrollToMessage(parsed.reply.id); } }}
-													class="mb-1 px-2 py-0.5 rounded-lg text-[10px] border-l-2 bg-pink-100/90 text-pink-900 border-[#f43f8e] max-w-full flex items-center space-x-1 cursor-pointer hover:bg-pink-200/90 hover:border-pink-600 active:scale-95 transition-all group/reply shadow-2xs"
+													onclick={(e) => { e.stopPropagation(); if (parsed.reply.type !== 'note' && parsed.reply.type !== 'memory') scrollToMessage(parsed.reply.id); }}
+													onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); if (parsed.reply.type !== 'note' && parsed.reply.type !== 'memory') scrollToMessage(parsed.reply.id); } }}
+													class="mb-1 px-2.5 py-1 rounded-xl text-[10px] border-l-3 bg-pink-100/90 text-pink-900 border-[#f43f8e] max-w-full flex items-center space-x-1 cursor-pointer hover:bg-pink-200/90 hover:border-pink-600 active:scale-95 transition-all group/reply shadow-2xs"
 													class:self-end={isUserSender}
 													class:self-start={!isUserSender}
-													title="{parsed.reply.type === 'note' ? 'Replied to this note' : 'Click to jump to replied message'}"
+													title="{parsed.reply.type === 'note' ? 'Replied to note' : parsed.reply.type === 'memory' ? 'Replied to shared memory' : 'Click to jump to replied message'}"
 												>
 													<span class="font-bold text-[#f43f8e] flex items-center gap-1 group-hover/reply:text-pink-900 transition-colors">
-														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-2.5 h-2.5 text-[#f43f8e] group-hover/reply:-translate-x-0.5 transition-transform">
+														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-2.5 h-2.5 text-[#f43f8e] group-hover/reply:-translate-x-0.5 transition-transform flex-shrink-0">
 															<path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
 														</svg>
-														{#if parsed.reply.type === 'note'}
+														{#if parsed.reply.type === 'memory'}
+															<span>Replied to memory you shared on {parsed.reply.text}</span>
+														{:else if parsed.reply.type === 'note'}
 															{#if user && String(parsed.reply.user).toLowerCase() === String(user.username).toLowerCase()}
-																Replied to your note
+																<span>Replied to your note:</span>
 															{:else}
-																Replied to @{parsed.reply.user}'s note
+																<span>Replied to @{parsed.reply.user}'s note:</span>
 															{/if}
 														{:else}
-															@{parsed.reply.user}:
+															<span>@{parsed.reply.user}:</span>
 														{/if}
 													</span>
-													{#if replyDetails.isImage}
-														<div class="inline-flex items-center space-x-1 bg-white/80 px-1 py-0.2 rounded-xs border border-pink-200">
-															{#if replyDetails.imageUrl}
-																<img src={replyDetails.imageUrl} alt="Replying photo" class="w-3.5 h-3.5 rounded-xs object-cover border border-pink-200 flex-shrink-0" />
-															{:else}
-																<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3 h-3 text-pink-700 flex-shrink-0">
-																	<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-																</svg>
-															{/if}
-															<span class="font-bold text-pink-700 text-[9px]">Photo</span>
-														</div>
-													{:else}
-														<span class="italic opacity-85 truncate">{replyDetails.text}</span>
+													{#if parsed.reply.type !== 'memory'}
+														{#if replyDetails.isImage}
+															<div class="inline-flex items-center space-x-1 bg-white/80 px-1 py-0.2 rounded-xs border border-pink-200">
+																{#if replyDetails.imageUrl}
+																	<img src={replyDetails.imageUrl} alt="Replying photo" class="w-3.5 h-3.5 rounded-xs object-cover border border-pink-200 flex-shrink-0" />
+																{:else}
+																	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3 h-3 text-pink-700 flex-shrink-0">
+																		<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+																	</svg>
+																{/if}
+																<span class="font-bold text-pink-700 text-[9px]">Photo</span>
+															</div>
+														{:else}
+															<span class="italic opacity-85 truncate">{replyDetails.text}</span>
+														{/if}
 													{/if}
 												</div>
 											{/if}
@@ -2912,10 +2999,14 @@
 								<div class="min-w-0">
 									{#if replyingTo.kind === 'note'}
 										<p class="font-bold text-[#f43f8e] text-[11px]">Replying to @{replyingTo.username}'s note</p>
+										<p class="text-pink-900/80 truncate text-[10px] font-medium">{replyingTo.text}</p>
+									{:else if replyingTo.kind === 'memory'}
+										<p class="font-bold text-[#f43f8e] text-[11px]">Replying to shared memory</p>
+										<p class="text-pink-900/80 truncate text-[10px] font-medium">Memory on {replyingTo.text}</p>
 									{:else}
 										<p class="font-bold text-[#f43f8e] text-[11px]">Replying to @{replyingTo.sender_name}</p>
+										<p class="text-pink-900/80 truncate text-[10px] font-medium">{replyingTo.text}</p>
 									{/if}
-									<p class="text-pink-900/80 truncate text-[10px] font-medium">{replyingTo.text}</p>
 								</div>
 							</div>
 						</div>
@@ -3381,6 +3472,17 @@
 				<div class="flex items-center justify-between mt-1 px-1">
 					<span class="text-[10px] text-pink-400 font-medium">{noteInput.length}/60 characters</span>
 				</div>
+				{#if myNote}
+					<div class="flex items-center justify-between px-3 py-1.5 bg-[#fdf2f6] rounded-xl border border-pink-200/80 text-[11px] font-bold text-pink-700 mt-2.5">
+						<span class="flex items-center gap-1.5">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+							<span>Expires in:</span>
+						</span>
+						<span class="font-mono text-pink-900 bg-white px-2 py-0.5 rounded-md border border-pink-200 shadow-2xs font-bold">{chatNoteCountdown}</span>
+					</div>
+				{/if}
 			</div>
 
 			<!-- Action Buttons -->

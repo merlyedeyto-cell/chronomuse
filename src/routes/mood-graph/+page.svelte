@@ -5,6 +5,7 @@
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
 	import ViewMemoryModal from '$lib/ViewMemoryModal.svelte';
+	import { playClickSound } from '$lib/soundEffects.js';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 
@@ -68,13 +69,25 @@
 	let mostFrequentMoods = $state([]);
 	let mostFrequentMoodCount = $state(0);
 
+	let showPositiveRatioModal = $state(false);
+
 	// Computed Metrics
+	let totalLoggedMoods = $derived(
+		Object.values(moodStats).reduce((sum, count) => sum + count, 0)
+	);
+
 	let positiveCount = $derived(
 		(moodStats.happy || 0) + (moodStats.excited || 0) + (moodStats.grateful || 0) + (moodStats.love || 0) + (moodStats.calm || 0)
 	);
 
+	let negativeCount = $derived(
+		(moodStats.sad || 0) + (moodStats.angry || 0) + (moodStats.anxious || 0) + (moodStats.lonely || 0)
+	);
+
+	let neutralCount = $derived(moodStats.neutral || 0);
+
 	let positivePercentage = $derived(
-		totalMemories > 0 ? Math.round((positiveCount / totalMemories) * 100) : 0
+		totalLoggedMoods > 0 ? Math.round((positiveCount / totalLoggedMoods) * 100) : 0
 	);
 
 	let uniqueMoodsCount = $derived(
@@ -472,11 +485,20 @@
 						</div>
 					</div>
 
-					<!-- Positive Mood Ratio (1 col) -->
-					<div class="col-span-1 bg-white/95 border border-pink-100/90 rounded-2xl p-3.5 sm:p-4 shadow-[0_2px_12px_rgba(244,114,182,0.06)] flex flex-col justify-between">
+					<!-- Positive Mood Ratio (1 col - Clickable for details) -->
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<div
+						onclick={() => { playClickSound(); showPositiveRatioModal = true; }}
+						class="col-span-1 bg-white/95 border border-pink-100/90 rounded-2xl p-3.5 sm:p-4 shadow-[0_2px_12px_rgba(244,114,182,0.06)] flex flex-col justify-between cursor-pointer hover:border-pink-300 hover:shadow-md transition-all active:scale-[0.99] group select-none"
+						title="Click to view positive ratio breakdown & formula"
+					>
 						<div class="flex items-center justify-between mb-2 text-pink-500">
-							<span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-pink-400">Positive Ratio</span>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
+							<div class="flex items-center space-x-1">
+								<span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-pink-400 group-hover:text-[#f43f8e] transition-colors">Positive Ratio</span>
+								<span class="w-3.5 h-3.5 rounded-full bg-pink-50 border border-pink-200 text-[#f43f8e] text-[9px] font-black flex items-center justify-center group-hover:bg-[#f43f8e] group-hover:text-white transition-colors" title="Info">?</span>
+							</div>
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 text-[#f43f8e] group-hover:scale-110 transition-transform">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
 							</svg>
 						</div>
@@ -521,7 +543,7 @@
 							<!-- Donut Chart on Left of the card (5 Cols) -->
 							<div class="md:col-span-5 flex flex-col items-center justify-center py-1">
 								<div class="relative w-36 h-36 sm:w-40 sm:h-40 my-1">
-									<svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90 drop-shadow-xs">
+									<svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90 drop-shadow-xs outline-none focus:outline-none select-none" style="outline: none !important; -webkit-tap-highlight-color: transparent !important;">
 										{#each getPieChartData() as segment}
 											<circle
 												cx="50"
@@ -532,7 +554,8 @@
 												stroke-width="13"
 												stroke-dasharray={segment.strokeDasharray}
 												stroke-dashoffset={segment.strokeDashoffset}
-												class="transition-all duration-300 cursor-pointer hover:opacity-85 hover:stroke-[15] focus:outline-none"
+												class="transition-all duration-300 cursor-pointer hover:opacity-85 hover:stroke-[15] outline-none focus:outline-none focus:ring-0 select-none"
+												style="outline: none !important; -webkit-tap-highlight-color: transparent !important; -webkit-focus-ring-color: transparent !important;"
 												role="button"
 												tabindex="0"
 												aria-label={`View ${segment.mood} memories`}
@@ -542,7 +565,7 @@
 										{/each}
 									</svg>
 									<!-- Center text -->
-									<div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+									<div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none select-none">
 										<span class="text-xl sm:text-2xl font-black text-[#f43f8e]">{totalMemories}</span>
 										<span class="text-[9px] text-pink-400 font-bold uppercase tracking-wider">Memories</span>
 									</div>
@@ -750,6 +773,127 @@
 		/>
 	{/if}
 
+	<!-- Positive Ratio Explanation Modal -->
+	{#if showPositiveRatioModal}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in font-sans"
+			onclick={(e) => { if (e.target === e.currentTarget) showPositiveRatioModal = false; }}
+		>
+			<div class="bg-white border border-pink-100/90 rounded-3xl shadow-2xl max-w-sm w-full p-5 sm:p-6 space-y-4 animate-modal-content">
+				<!-- Header -->
+				<div class="flex items-center justify-between border-b border-pink-100 pb-3">
+					<div class="flex items-center space-x-2.5">
+						<div class="w-8 h-8 rounded-xl bg-pink-50 text-[#f43f8e] border border-pink-100 flex items-center justify-center shadow-2xs">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-[#f43f8e]">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+							</svg>
+						</div>
+						<div>
+							<h3 class="text-sm font-black text-pink-950">Positive Ratio</h3>
+							<p class="text-[10px] text-pink-400 font-bold">Calculation Breakdown</p>
+						</div>
+					</div>
+					<button
+						onclick={() => { playClickSound(); showPositiveRatioModal = false; }}
+						aria-label="Close"
+						class="text-pink-400 hover:text-pink-600 p-1 rounded-lg hover:bg-pink-50 transition-colors cursor-pointer"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+				</div>
+
+				<!-- Ratio Score Hero -->
+				<div class="p-3.5 bg-gradient-to-br from-pink-50/80 to-[#fff0f5] border border-pink-100 rounded-2xl text-center space-y-1 shadow-2xs">
+					<span class="text-[10px] font-black uppercase tracking-wider text-pink-400">YOUR SCORE ({selectedPeriod === 'all' ? 'All Time' : selectedPeriod === 'week' ? 'Past 7 Days' : selectedPeriod === 'month' ? 'Past 30 Days' : 'Past Year'})</span>
+					<p class="text-3xl font-black text-[#f43f8e]">{positivePercentage}%</p>
+					<p class="text-xs text-pink-900 font-medium leading-tight">
+						{#if positivePercentage >= 70}
+							Outstanding! You're keeping high positive energy and appreciation.
+						{:else if positivePercentage >= 50}
+							Good balance! You maintain a positive outlook overall.
+						{:else if totalLoggedMoods > 0}
+							Reflecting and acknowledging every emotion helps build resilience.
+						{:else}
+							Log more memories to generate your positivity ratio score.
+						{/if}
+					</p>
+				</div>
+
+				<!-- Formula Card -->
+				<div class="p-3 bg-pink-50/60 border border-pink-100/80 rounded-2xl space-y-1.5">
+					<div class="flex items-center justify-between text-[11px] font-bold text-pink-950">
+						<span class="flex items-center gap-1.5">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M4.745 3A23.933 23.933 0 003 12c0 3.183.62 6.22 1.745 9M19.255 3c1.125 2.78 1.745 5.817 1.745 9 0 3.183-.62 6.22-1.745 9m-1.5-12.75h-10.5m10.5 7.5h-10.5" />
+							</svg>
+							<span>Formula Used</span>
+						</span>
+						<span class="text-[10px] text-[#f43f8e] font-black uppercase tracking-wide">Accurate Calculation</span>
+					</div>
+					<div class="p-2 bg-white rounded-xl border border-pink-100 text-center font-mono text-xs font-bold text-pink-900 shadow-2xs">
+						(Positive Moods ÷ Total Logged Moods) × 100%
+					</div>
+					<p class="text-[10px] text-pink-600 font-medium leading-relaxed">
+						Formula: <strong class="text-pink-900">({positiveCount} ÷ {totalLoggedMoods}) × 100%</strong> = <strong class="text-[#f43f8e]">{positivePercentage}%</strong>.
+					</p>
+				</div>
+
+				<!-- Moods Breakdown -->
+				<div class="space-y-1.5">
+					<span class="text-[11px] font-bold text-pink-950 flex items-center gap-1.5">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+						</svg>
+						<span>Breakdown of Logged Moods ({totalLoggedMoods} total)</span>
+					</span>
+
+					<div class="space-y-1">
+						<div class="flex items-center justify-between p-2 bg-emerald-50/70 border border-emerald-100 rounded-xl">
+							<span class="font-bold text-emerald-800 text-[11px] flex items-center gap-1.5">
+								<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+								<span>Positive Moods</span>
+							</span>
+							<span class="font-black text-emerald-900 text-xs">{positiveCount} logs ({positivePercentage}%)</span>
+						</div>
+						<p class="text-[9px] text-emerald-600 font-medium pl-2">Happy ({moodStats.happy || 0}), Relaxed ({moodStats.relaxed || 0}), Excited ({moodStats.excited || 0}), In Love ({moodStats.in_love || 0}), Grateful ({moodStats.grateful || 0}), Motivated ({moodStats.motivated || 0}), Peaceful ({moodStats.peaceful || 0}), Confident ({moodStats.confident || 0}), Playful ({moodStats.playful || 0})</p>
+
+						<div class="flex items-center justify-between p-2 bg-pink-50/70 border border-pink-100 rounded-xl mt-1">
+							<span class="font-bold text-pink-800 text-[11px] flex items-center gap-1.5">
+								<span class="w-2 h-2 rounded-full bg-pink-400"></span>
+								<span>Neutral Moods</span>
+							</span>
+							<span class="font-black text-pink-900 text-xs">{neutralCount} logs</span>
+						</div>
+
+						<div class="flex items-center justify-between p-2 bg-rose-50/70 border border-rose-100 rounded-xl mt-1">
+							<span class="font-bold text-rose-800 text-[11px] flex items-center gap-1.5">
+								<span class="w-2 h-2 rounded-full bg-rose-500"></span>
+								<span>Negative Moods</span>
+							</span>
+							<span class="font-black text-rose-900 text-xs">{negativeCount} logs</span>
+						</div>
+						<p class="text-[9px] text-rose-500 font-medium pl-2">Sad ({moodStats.sad || 0}), Angry ({moodStats.angry || 0}), Anxious ({moodStats.anxious || 0}), Lonely ({moodStats.lonely || 0})</p>
+					</div>
+				</div>
+
+				<!-- Footer -->
+				<div class="border-t border-pink-100 pt-3 flex justify-end">
+					<button
+						type="button"
+						onclick={() => { playClickSound(); showPositiveRatioModal = false; }}
+						class="w-full py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-bold text-xs rounded-xl shadow-md shadow-pink-300/30 transition-all cursor-pointer active:scale-95 text-center"
+					>
+						Got it!
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+
 	<!-- Bottom Navigation Bar (Footer) -->
 	<AppFooter />
 </div>
@@ -796,5 +940,18 @@
 
 	.animate-scale-up {
 		animation: scale-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+	}
+
+	:global(svg),
+	:global(svg *),
+	:global(circle),
+	:global(circle:focus),
+	:global(circle:active),
+	:global(path),
+	:global(path:focus) {
+		outline: none !important;
+		-webkit-tap-highlight-color: transparent !important;
+		-webkit-focus-ring-color: transparent !important;
+		box-shadow: none !important;
 	}
 </style>

@@ -39,6 +39,17 @@
 			} else {
 				isClicked = true;
 				dispatch('login', data.data);
+				let redirectTarget = '/dashboard';
+				if (typeof window !== 'undefined') {
+					const urlParams = new URLSearchParams(window.location.search);
+					const paramRedirect = urlParams.get('redirect');
+					const sessionRedirect = sessionStorage.getItem('chronomuse_redirect_after_login');
+					if (paramRedirect) {
+						redirectTarget = decodeURIComponent(paramRedirect);
+					} else if (sessionRedirect) {
+						redirectTarget = sessionRedirect;
+					}
+				}
 				localStorage.clear();
 				sessionStorage.clear();
 				localStorage.setItem('chronomuse_user', JSON.stringify(data.data.user));
@@ -46,7 +57,7 @@
 					window.dispatchEvent(new Event('chronomuse_auth_change'));
 				}
 				setTimeout(() => {
-					goto('/dashboard');
+					goto(redirectTarget || '/dashboard');
 				}, 300);
 			}
 		})

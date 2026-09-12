@@ -736,7 +736,7 @@
 		document.body.style.overflow = '';
 		setTimeout(() => {
 			dispatch('close');
-		}, 300);
+		}, 120);
 	}
 
 	function insertEmoji(emoji) {

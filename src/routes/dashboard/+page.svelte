@@ -311,10 +311,15 @@
 		const memory = event.detail;
 		if (memory && memory.date) {
 			selectedDate = memory.date;
+			memoriesForDate = memoriesData[memory.date] || [memory];
+			showViewMemory = true;
+			showViewMemoryModalWrapper = true;
+			showAddMemory = false;
+			// Refresh memories in background without delaying modal presentation
 			loadMemoriesForDate(memory.date).then(() => {
-				memoriesForDate = memoriesData[memory.date] || [memory];
-				showViewMemory = true;
-				showAddMemory = false;
+				if (memoriesData[memory.date]) {
+					memoriesForDate = memoriesData[memory.date];
+				}
 			});
 		}
 	}
@@ -813,15 +818,6 @@
 									userId={user?.id}
 									{memoriesData}
 								/>
-
-								<!-- Mobile Only: Memory Flashback at the very bottom of the page -->
-								<div class="block md:hidden">
-									<DashboardFlashback
-										userId={user?.id}
-										{memoriesData}
-										on:viewMemory={handleViewStatsMemory}
-									/>
-								</div>
 							</div>
 						{/if}
 					</div>
@@ -845,28 +841,35 @@
 
 		<!-- Unpin Date Modal -->
 		{#if showDeletePinnedModal}
-			<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-				<div class="bg-white border-2 border-pink-300 rounded-3xl max-w-sm w-full p-6 text-center animate-modal-content relative overflow-hidden">
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div
+				class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in font-sans"
+				onclick={(e) => { if (e.target === e.currentTarget) closeDeletePinnedModal(); }}
+			>
+				<div class="bg-white border border-pink-100/90 rounded-3xl max-w-sm w-full p-5 sm:p-6 text-center animate-modal-content shadow-2xl space-y-4">
 					<!-- Unpin Circle Icon -->
-					<div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+					<div class="w-12 h-12 bg-pink-50 text-[#f43f8e] rounded-2xl flex items-center justify-center mx-auto border border-pink-100/80 shadow-xs">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
 						</svg>
 					</div>
-					<h3 class="text-base sm:text-lg font-black text-pink-950 mb-1.5">Unpin Date?</h3>
-					<p class="text-xs sm:text-sm text-pink-600 mb-5 font-medium leading-relaxed">Are you sure you want to unpin this date from your pinned memories?</p>
+					<div>
+						<h3 class="text-base sm:text-lg font-black text-pink-950">Unpin Date?</h3>
+						<p class="text-xs sm:text-sm text-pink-600/90 mt-1 font-medium leading-relaxed">Are you sure you want to unpin this date from your pinned memories?</p>
+					</div>
 
 					<!-- Modal Actions -->
-					<div class="flex items-center space-x-3">
+					<div class="flex items-center space-x-2.5 pt-1">
 						<button
 							onclick={closeDeletePinnedModal}
-							class="w-1/2 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer"
+							class="w-1/2 py-2.5 bg-pink-50 hover:bg-pink-100 text-pink-700 font-black text-xs sm:text-sm rounded-xl transition-all cursor-pointer border border-pink-100 shadow-2xs active:scale-95"
 						>
 							Cancel
 						</button>
 						<button
 							onclick={deletePinnedDate}
-							class="w-1/2 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-xs sm:text-sm transition-all -rose-200 active:scale-95 cursor-pointer"
+							class="w-1/2 py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-xs sm:text-sm rounded-xl transition-all cursor-pointer shadow-md shadow-pink-300/40 active:scale-95"
 						>
 							Unpin
 						</button>
@@ -1036,7 +1039,7 @@
 	@keyframes smooth-reveal {
 		0% {
 			opacity: 0;
-			transform: translateY(12px) scale(0.985);
+			transform: translateY(6px) scale(0.99);
 		}
 		100% {
 			opacity: 1;
@@ -1045,7 +1048,7 @@
 	}
 
 	.animate-smooth-reveal {
-		animation: smooth-reveal 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+		animation: smooth-reveal 0.15s ease-out forwards;
 		will-change: opacity, transform;
 	}
 </style>

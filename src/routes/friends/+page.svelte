@@ -651,17 +651,29 @@
 						</h2>
 					</div>
 
-					<!-- Search Friends -->
-					<div class="relative max-w-xs w-full">
+					<!-- Search Friends (Full-width on mobile, flexible & generous on desktop, never truncated) -->
+					<div class="relative w-full sm:w-80 md:w-96 flex-shrink-0 min-w-0">
 						<input
 							type="text"
 							bind:value={friendsSearchQuery}
-							placeholder="Search friends..."
-							class="w-full pl-8 pr-3 py-1.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs font-medium text-pink-950 placeholder-pink-400/60 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/20 focus:border-[#f43f8e] transition-all duration-200 focus:bg-white shadow-2xs"
+							placeholder="Search friends by name..."
+							class="w-full pl-9 pr-9 py-2.5 bg-[#fdf2f6] border border-pink-200/90 rounded-2xl text-xs font-bold text-pink-950 placeholder-pink-400/70 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/25 focus:border-[#f43f8e] transition-all duration-200 focus:bg-white shadow-2xs"
 						/>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-pink-400 absolute left-2.5 top-2.5">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-pink-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
 						</svg>
+						{#if friendsSearchQuery}
+							<button
+								type="button"
+								onclick={() => friendsSearchQuery = ''}
+								class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-pink-400 hover:text-pink-600 rounded-full cursor-pointer transition-colors"
+								title="Clear search"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
+									<path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+								</svg>
+							</button>
+						{/if}
 					</div>
 				</div>
 
