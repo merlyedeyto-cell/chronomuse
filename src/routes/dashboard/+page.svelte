@@ -239,10 +239,17 @@
 		loadMemoriesForMonth(month, year || currentCalendarYear);
 
 		if (typeof window !== 'undefined') {
-			const calEl = document.getElementById('calendar-section');
-			if (calEl && window.innerWidth < 1024) {
-				calEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-			}
+			setTimeout(() => {
+				const calEl = document.getElementById('calendar-section');
+				if (calEl) {
+					const yOffset = -20; // 20px buffer from the top
+					const y = calEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
+					window.scrollTo({
+						top: y > 0 ? y : 0,
+						behavior: 'smooth'
+					});
+				}
+			}, 60);
 		}
 	}
 
