@@ -780,7 +780,7 @@
 					{/if}
 
 					{#if addFriendSuccess}
-						<div class="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-600 text-xs rounded-xl font-bold text-center animate-fade-in shadow-2xs">
+						<div class="p-2.5 bg-pink-50 border border-pink-200 text-[#f43f8e] text-xs rounded-xl font-bold text-center animate-fade-in shadow-2xs">
 							{addFriendSuccess}
 						</div>
 					{/if}
@@ -1212,13 +1212,13 @@
 			onclick={(e) => { if (e.target === e.currentTarget) showNotificationModalPopup = false; }}
 		>
 			<div class="bg-white border border-pink-100 rounded-3xl p-5 sm:p-6 max-w-xs sm:max-w-sm w-full text-center space-y-3.5 animate-modal-content shadow-2xl">
-				<div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto {notificationModalType === 'error' ? 'bg-rose-50 text-rose-500 border border-rose-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'} shadow-xs">
+				<div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto {notificationModalType === 'error' ? 'bg-rose-50 text-rose-500 border border-rose-100' : 'bg-pink-50 text-[#f43f8e] border border-pink-200'} shadow-xs">
 					{#if notificationModalType === 'error'}
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zM12 15.75h.007v.008H12v-.008z" />
 						</svg>
 					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6 text-[#f43f8e]">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 						</svg>
 					{/if}
@@ -1228,7 +1228,7 @@
 					<h3 class="text-sm sm:text-base font-black text-pink-950 mb-0.5">
 						{notificationModalType === 'error' ? 'Notice' : 'Success!'}
 					</h3>
-					<p class="text-xs text-pink-400 font-bold leading-relaxed">
+					<p class="text-xs text-pink-700 font-bold leading-relaxed">
 						{notificationModalMessage}
 					</p>
 				</div>

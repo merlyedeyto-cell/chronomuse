@@ -164,7 +164,7 @@
 			</button>
 
 			{#if messageText}
-				<div class="mb-3.5 p-2.5 rounded-xl text-xs font-bold transition-all border {messageType === 'error' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}">
+				<div class="mb-3.5 p-2.5 rounded-xl text-xs font-bold transition-all border {messageType === 'error' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-pink-50 text-[#f43f8e] border border-pink-200'}">
 					{messageText}
 				</div>
 			{/if}

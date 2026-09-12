@@ -1555,10 +1555,10 @@
 									aria-label="Copy Profile Link"
 								>
 									{#if isCopiedLink}
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#059669] flex-shrink-0">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0">
 											<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
 										</svg>
-										<span class="text-[#059669] font-black hidden sm:inline">Link Copied!</span>
+										<span class="text-[#f43f8e] font-black hidden sm:inline">Link Copied!</span>
 									{:else}
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -1590,10 +1590,10 @@
 									aria-label="Share Profile Link"
 								>
 									{#if isCopiedLink}
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#059669] flex-shrink-0">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0">
 											<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
 										</svg>
-										<span class="text-[#059669] font-black hidden sm:inline">Copied!</span>
+										<span class="text-[#f43f8e] font-black hidden sm:inline">Copied!</span>
 									{:else}
 										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -2243,7 +2243,7 @@
 	<!-- Toast Notification Banner -->
 	{#if showToast}
 		<div class="fixed bottom-24 right-5 z-50 animate-bounce">
-			<div class="px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-2.5 {toastType === 'error' ? 'bg-rose-500 text-white' : 'bg-emerald-600 text-white'}">
+			<div class="px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-2.5 {toastType === 'error' ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white border border-rose-300/40 shadow-pink-500/20' : 'bg-gradient-to-r from-[#f43f8e] to-pink-500 text-white border border-pink-300/40 shadow-pink-500/20'}">
 				<span class="text-xs sm:text-sm font-black">{toastMessage}</span>
 			</div>
 		</div>

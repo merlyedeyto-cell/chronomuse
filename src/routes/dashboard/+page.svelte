@@ -882,19 +882,18 @@
 		{#if showToast}
 			<div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-bounce-in">
 				<div
-					class="px-6 py-3 rounded-xl border-2 flex items-center space-x-3"
-					class:text-white={toastType === 'success'}
+					class="px-6 py-3 rounded-2xl border flex items-center space-x-3 shadow-xl {toastType === 'success' ? 'bg-gradient-to-r from-[#f43f8e] to-pink-500 border-pink-300/40 text-white shadow-pink-500/20' : 'bg-gradient-to-r from-rose-500 to-pink-600 border-rose-400 text-white shadow-pink-500/20'}"
 				>
 					{#if toastType === 'success'}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-white flex-shrink-0">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
 						</svg>
 					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-white flex-shrink-0">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
 						</svg>
 					{/if}
-					<span class="text-sm font-semibold">{toastMessage}</span>
+					<span class="text-sm font-black">{toastMessage}</span>
 				</div>
 			</div>
 		{/if}
@@ -909,14 +908,14 @@
 				onclick={(e) => { if (e.target === e.currentTarget) showNotificationModalPopup = false; }}
 				onkeydown={(e) => { if (e.key === 'Escape') showNotificationModalPopup = false; }}
 			>
-				<div class="bg-white border-2 border-pink-300 rounded-3xl p-6 max-w-xs sm:max-w-sm w-full text-center space-y-4 animate-modal-content">
-					<div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto {notificationModalType === 'error' ? 'bg-rose-100 text-rose-600 border border-rose-200' : 'bg-emerald-100 text-emerald-600 border border-emerald-200'}">
+				<div class="bg-white border-2 border-pink-200 rounded-3xl p-6 max-w-xs sm:max-w-sm w-full text-center space-y-4 shadow-2xl animate-modal-content">
+					<div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto {notificationModalType === 'error' ? 'bg-rose-50 text-rose-500 border border-rose-100' : 'bg-pink-50 text-[#f43f8e] border border-pink-200'} shadow-xs">
 						{#if notificationModalType === 'error'}
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zM12 15.75h.007v.008H12v-.008z" />
 							</svg>
 						{:else}
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7 text-[#f43f8e]">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 							</svg>
 						{/if}
@@ -934,7 +933,7 @@
 					<button
 						type="button"
 						onclick={() => showNotificationModalPopup = false}
-						class="w-full py-2.5 bg-pink-500 hover:bg-pink-600 text-white rounded-2xl font-bold text-xs sm:text-sm transition-all active:scale-95 cursor-pointer"
+						class="w-full py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-2xl font-black text-xs sm:text-sm transition-all active:scale-95 cursor-pointer shadow-md"
 					>
 						OK
 					</button>

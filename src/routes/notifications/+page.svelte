@@ -589,7 +589,7 @@
 												>
 													@{item.sender_username}
 												</button>
-												<span class="bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-full inline-flex items-center space-x-1">
+												<span class="bg-pink-50 text-[#f43f8e] border border-pink-200 text-[10px] font-black px-2 py-0.5 rounded-full inline-flex items-center space-x-1">
 													<span>✓ Saved to Calendar</span>
 												</span>
 												{#if item.memory.mood_tag}
@@ -800,7 +800,7 @@
 													Shared with @{item.recipient_username}
 												</span>
 												{#if item.status === 'accepted'}
-													<span class="bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-full inline-flex items-center space-x-1">
+													<span class="bg-pink-50 text-[#f43f8e] border border-pink-200 text-[10px] font-black px-2 py-0.5 rounded-full inline-flex items-center space-x-1">
 														<span>✓ Accepted</span>
 													</span>
 												{:else}

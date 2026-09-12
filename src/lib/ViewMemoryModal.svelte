@@ -1499,7 +1499,7 @@
 			</div>
 
 			{#if shareSuccessMsg}
-				<div class="mb-3.5 p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs text-center font-bold">
+				<div class="mb-3.5 p-2.5 bg-pink-50 border border-pink-200 text-[#f43f8e] rounded-xl text-xs text-center font-bold">
 					{shareSuccessMsg}
 				</div>
 			{/if}

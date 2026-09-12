@@ -996,7 +996,7 @@
 	<!-- Toast Notification Banner -->
 	{#if showToast}
 		<div class="fixed bottom-24 right-5 z-50 animate-bounce">
-			<div class="px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-2.5 {toastType === 'error' ? 'bg-rose-500 text-white' : 'bg-emerald-600 text-white'}">
+			<div class="px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-2.5 {toastType === 'error' ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white border border-rose-300/40 shadow-pink-500/20' : 'bg-gradient-to-r from-[#f43f8e] to-pink-500 text-white border border-pink-300/40 shadow-pink-500/20'}">
 				<span class="text-xs sm:text-sm font-black">{toastMessage}</span>
 			</div>
 		</div>
