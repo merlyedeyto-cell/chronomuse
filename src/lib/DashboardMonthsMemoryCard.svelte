@@ -220,12 +220,12 @@
 
 	<!-- Months Interactive Grid (Only Months with Memories) -->
 	{#if isLoading && allMemories.length === 0}
-		<div class="py-6 text-center space-y-1.5">
+		<div class="h-[142px] flex flex-col items-center justify-center text-center space-y-1.5">
 			<div class="w-5 h-5 border-2 border-pink-200 border-t-[#f43f8e] rounded-full animate-spin mx-auto"></div>
 			<p class="text-[11px] text-pink-400 font-bold">Scanning memories...</p>
 		</div>
 	{:else if displayedMonths.length === 0}
-		<div class="py-6 text-center">
+		<div class="h-[142px] flex flex-col items-center justify-center text-center">
 			<div class="w-9 h-9 rounded-2xl bg-pink-50 border border-pink-100 text-pink-300 flex items-center justify-center mx-auto mb-1.5">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
@@ -235,43 +235,45 @@
 			<p class="text-[10px] text-pink-400/80 mt-0.5 font-medium">Add a memory on the calendar to see it here</p>
 		</div>
 	{:else}
-		<div class="grid grid-cols-4 gap-1.5 max-h-[175px] sm:max-h-[185px] overflow-y-auto custom-pinned-scroll pr-0.5">
-			{#each displayedMonths as month}
-				<button
-					type="button"
-					onclick={() => handleMonthClick(month.index)}
-					class="p-1.5 rounded-xl border transition-all duration-200 flex flex-col items-center justify-between text-center relative group cursor-pointer active:scale-95 shadow-2xs
-						{month.isCurrentSelected
-							? 'bg-gradient-to-b from-pink-100 to-pink-50 border-[#f43f8e] ring-2 ring-[#f43f8e]/40 shadow-xs'
-							: 'bg-white hover:bg-pink-50/90 border-pink-200/90 hover:border-[#f43f8e] hover:shadow-xs'}"
-					title="Jump to {month.name} {selectedYear} ({month.count} memories)"
-				>
-					<!-- Month Name -->
-					<span class="text-[11px] font-black text-pink-950 group-hover:text-[#f43f8e] transition-colors">
-						{month.shortName}
-					</span>
-
-					<!-- Memory Count Badge -->
-					<div class="mt-0.5">
-						<span class="text-[8.5px] font-black px-1.5 py-0.5 rounded-full bg-[#f43f8e] text-white shadow-2xs inline-flex items-center gap-0.5">
-							<span>{month.count}</span>
-							<span class="text-[7px] opacity-90">{month.count === 1 ? 'mem' : 'mems'}</span>
+		<div class="h-[142px] overflow-y-auto custom-pinned-scroll pr-0.5">
+			<div class="grid grid-cols-4 gap-1.5 content-start">
+				{#each displayedMonths as month}
+					<button
+						type="button"
+						onclick={() => handleMonthClick(month.index)}
+						class="p-1.5 rounded-xl border transition-all duration-200 flex flex-col items-center justify-between text-center relative group cursor-pointer active:scale-95 shadow-2xs
+							{month.isCurrentSelected
+								? 'bg-gradient-to-b from-pink-100 to-pink-50 border-[#f43f8e] ring-2 ring-[#f43f8e]/40 shadow-xs'
+								: 'bg-white hover:bg-pink-50/90 border-pink-200/90 hover:border-[#f43f8e] hover:shadow-xs'}"
+						title="Jump to {month.name} {selectedYear} ({month.count} memories)"
+					>
+						<!-- Month Name -->
+						<span class="text-[11px] font-black text-pink-950 group-hover:text-[#f43f8e] transition-colors">
+							{month.shortName}
 						</span>
-					</div>
 
-					<!-- Indicator dot if active selected month in main calendar -->
-					{#if month.isCurrentSelected}
-						<span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#f43f8e]"></span>
-					{/if}
-				</button>
-			{/each}
+						<!-- Memory Count Badge -->
+						<div class="mt-0.5">
+							<span class="text-[8.5px] font-black px-1.5 py-0.5 rounded-full bg-[#f43f8e] text-white shadow-2xs inline-flex items-center gap-0.5">
+								<span>{month.count}</span>
+								<span class="text-[7px] opacity-90">{month.count === 1 ? 'mem' : 'mems'}</span>
+							</span>
+						</div>
+
+						<!-- Indicator dot if active selected month in main calendar -->
+						{#if month.isCurrentSelected}
+							<span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#f43f8e]"></span>
+						{/if}
+					</button>
+				{/each}
+			</div>
 		</div>
 	{/if}
 {/snippet}
 
 {#if isEmbedded}
 	<!-- Embedded Mode (e.g. inside PinnedMemoryCard on mobile): No extra card container -->
-	<div class="w-full font-sans">
+	<div class="w-full h-[180px] font-sans flex flex-col justify-between">
 		{@render monthsContent()}
 	</div>
 {:else}
