@@ -11,10 +11,8 @@
 		currentMonth = new Date().getMonth()
 	} = $props();
 
-	let selectedYear = $state(currentYear);
 	let allMemories = $state([]);
 	let isLoading = $state(true);
-	let filterOnlyWithMemories = $state(false);
 
 	const monthNames = [
 		'January', 'February', 'March', 'April', 'May', 'June',
@@ -25,13 +23,6 @@
 		'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 		'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 	];
-
-	// Keep selectedYear in sync when prop changes from calendar
-	$effect(() => {
-		if (currentYear && currentYear !== selectedYear) {
-			selectedYear = currentYear;
-		}
-	});
 
 	$effect(() => {
 		if (userId) {
@@ -69,10 +60,10 @@
 		}
 	}
 
-	// Calculate counts for each month in the selected year
+	// Calculate stats and filter ONLY months with memories for currentYear
 	let monthlyStats = $derived.by(() => {
 		const counts = Array(12).fill(0);
-		const yearStr = String(selectedYear);
+		const yearStr = String(currentYear);
 
 		(allMemories || []).forEach(m => {
 			const dateStr = m.date || (m.created_at ? m.created_at.split('T')[0] : '');
@@ -93,33 +84,26 @@
 			shortName: monthShortNames[index],
 			count,
 			hasMemories: count > 0,
-			isCurrentSelected: selectedYear === currentYear && currentMonth === index
+			isCurrentSelected: currentMonth === index
 		}));
 	});
 
+	// Only show months that have memories
+	let displayedMonths = $derived(
+		monthlyStats.filter(m => m.hasMemories)
+	);
+
 	let totalMemoriesInYear = $derived(
-		monthlyStats.reduce((sum, m) => sum + m.count, 0)
+		displayedMonths.reduce((sum, m) => sum + m.count, 0)
 	);
 
 	let monthsWithMemoriesCount = $derived(
-		monthlyStats.filter(m => m.hasMemories).length
+		displayedMonths.length
 	);
-
-	let displayedMonths = $derived(
-		filterOnlyWithMemories
-			? monthlyStats.filter(m => m.hasMemories)
-			: monthlyStats
-	);
-
-	function changeYear(delta) {
-		playClickSound();
-		selectedYear += delta;
-		dispatch('yearChanged', { year: selectedYear });
-	}
 
 	function handleMonthClick(monthIndex) {
 		playClickSound();
-		dispatch('monthSelected', { month: monthIndex, year: selectedYear });
+		dispatch('monthSelected', { month: monthIndex, year: currentYear });
 	}
 </script>
 
@@ -138,31 +122,9 @@
 			</div>
 		</div>
 
-		<!-- Year Switcher -->
-		<div class="flex items-center space-x-1 bg-pink-50/80 p-1 rounded-xl border border-pink-200/80 shadow-2xs">
-			<button
-				type="button"
-				onclick={() => changeYear(-1)}
-				class="p-1 text-pink-600 hover:text-[#f43f8e] hover:bg-white rounded-lg transition-all cursor-pointer active:scale-95"
-				title="Previous Year"
-				aria-label="Previous Year"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-				</svg>
-			</button>
-			<span class="text-xs font-black text-[#f43f8e] px-1.5 select-none">{selectedYear}</span>
-			<button
-				type="button"
-				onclick={() => changeYear(1)}
-				class="p-1 text-pink-600 hover:text-[#f43f8e] hover:bg-white rounded-lg transition-all cursor-pointer active:scale-95"
-				title="Next Year"
-				aria-label="Next Year"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-					<path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-				</svg>
-			</button>
+		<!-- Year Badge (Synced with Main Calendar) -->
+		<div class="flex items-center px-3 py-1 bg-pink-50 text-[#f43f8e] font-black text-xs sm:text-sm rounded-xl border border-pink-200 shadow-2xs select-none">
+			{currentYear}
 		</div>
 	</div>
 
@@ -171,44 +133,27 @@
 		<div class="flex items-center gap-1.5 flex-wrap">
 			<span class="px-2.5 py-0.5 rounded-full font-black bg-pink-50 text-[#f43f8e] border border-pink-200 shadow-2xs inline-flex items-center gap-1">
 				<span class="w-1.5 h-1.5 rounded-full bg-[#f43f8e] animate-pulse"></span>
-				<span>{monthsWithMemoriesCount} {monthsWithMemoriesCount === 1 ? 'month' : 'months'} active in {selectedYear}</span>
+				<span>{monthsWithMemoriesCount} {monthsWithMemoriesCount === 1 ? 'month' : 'months'} active in {currentYear}</span>
 			</span>
 			{#if totalMemoriesInYear > 0}
 				<span class="text-[10px] font-bold text-pink-400">({totalMemoriesInYear} memories total)</span>
 			{/if}
 		</div>
-
-		<!-- Filter Toggle (Only Active vs All) -->
-		<button
-			type="button"
-			onclick={() => { playClickSound(); filterOnlyWithMemories = !filterOnlyWithMemories; }}
-			class="text-[10px] font-black px-2 py-0.5 rounded-lg border transition-all cursor-pointer active:scale-95 {filterOnlyWithMemories ? 'bg-[#f43f8e] text-white border-[#f43f8e] shadow-2xs' : 'bg-white hover:bg-pink-50 text-pink-600 border-pink-200'}"
-			title="Toggle filter"
-		>
-			{filterOnlyWithMemories ? 'Showing Active' : 'Show All'}
-		</button>
 	</div>
 
-	<!-- 12-Month Interactive Grid -->
+	<!-- Months Interactive Grid (Only Months with Memories) -->
 	{#if isLoading}
-		<div class="py-8 text-center space-y-2">
+		<div class="py-6 text-center space-y-2">
 			<div class="w-5 h-5 border-2 border-pink-200 border-t-[#f43f8e] rounded-full animate-spin mx-auto"></div>
-			<p class="text-xs text-pink-400 font-bold">Scanning memories for {selectedYear}...</p>
+			<p class="text-xs text-pink-400 font-bold">Scanning memories for {currentYear}...</p>
 		</div>
 	{:else if displayedMonths.length === 0}
-		<div class="py-6 text-center bg-pink-50/40 rounded-2xl border border-dashed border-pink-200">
-			<p class="text-xs font-black text-pink-600">No memories recorded for {selectedYear}</p>
-			<p class="text-[10px] text-pink-400 font-medium mt-0.5">Click any date on the calendar above to start!</p>
-			<button
-				type="button"
-				onclick={() => { filterOnlyWithMemories = false; }}
-				class="mt-2.5 px-3 py-1 bg-white hover:bg-pink-50 border border-pink-200 text-xs font-bold text-[#f43f8e] rounded-xl transition-all cursor-pointer shadow-2xs"
-			>
-				View All Months
-			</button>
+		<div class="py-5 text-center bg-pink-50/40 rounded-2xl border border-dashed border-pink-200">
+			<p class="text-xs font-black text-pink-600">No memories recorded for {currentYear}</p>
+			<p class="text-[10px] text-pink-400 font-medium mt-0.5">Add a memory on the calendar above to see it here!</p>
 		</div>
 	{:else}
-		<div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+		<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
 			{#each displayedMonths as month}
 				<button
 					type="button"
@@ -216,31 +161,23 @@
 					class="p-2 sm:p-2.5 rounded-2xl border transition-all duration-200 flex flex-col items-center justify-between text-center relative group cursor-pointer active:scale-95 shadow-2xs
 						{month.isCurrentSelected
 							? 'bg-gradient-to-b from-pink-100 to-pink-50 border-[#f43f8e] ring-2 ring-[#f43f8e]/40 shadow-xs'
-							: month.hasMemories
-							? 'bg-white hover:bg-pink-50/90 border-pink-200/90 hover:border-[#f43f8e] hover:shadow-xs'
-							: 'bg-pink-50/20 hover:bg-pink-50/60 border-pink-100/60 opacity-75'}"
-					title="Navigate to {month.name} {selectedYear} ({month.count} memories)"
+							: 'bg-white hover:bg-pink-50/90 border-pink-200/90 hover:border-[#f43f8e] hover:shadow-xs'}"
+					title="Navigate to {month.name} {currentYear} ({month.count} memories)"
 				>
 					<!-- Month Name -->
-					<span class="text-xs font-black {month.hasMemories ? 'text-pink-950 group-hover:text-[#f43f8e]' : 'text-pink-400'} transition-colors">
+					<span class="text-xs font-black text-pink-950 group-hover:text-[#f43f8e] transition-colors">
 						{month.shortName}
 					</span>
 
-					<!-- Memory Count Badge or Empty Indicator -->
+					<!-- Memory Count Badge -->
 					<div class="mt-1">
-						{#if month.hasMemories}
-							<span class="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-[#f43f8e] text-white shadow-2xs inline-flex items-center gap-0.5">
-								<span>{month.count}</span>
-								<span class="text-[8px] opacity-90">{month.count === 1 ? 'mem' : 'mems'}</span>
-							</span>
-						{:else}
-							<span class="text-[9px] font-semibold text-pink-300">
-								-
-							</span>
-						{/if}
+						<span class="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-[#f43f8e] text-white shadow-2xs inline-flex items-center gap-0.5">
+							<span>{month.count}</span>
+							<span class="text-[8px] opacity-90">{month.count === 1 ? 'mem' : 'mems'}</span>
+						</span>
 					</div>
 
-					<!-- Indicator dot if active selected month -->
+					<!-- Indicator dot if active selected month in main calendar -->
 					{#if month.isCurrentSelected}
 						<span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#f43f8e]"></span>
 					{/if}
