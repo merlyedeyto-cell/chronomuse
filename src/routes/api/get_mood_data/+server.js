@@ -5,6 +5,7 @@ export async function GET({ url }) {
 	try {
 		const userId = url.searchParams.get('user_id');
 		const period = url.searchParams.get('period') || 'all';
+		const moodOnly = url.searchParams.get('mood_only') === 'true';
 
 		if (!userId) {
 			return json({ error: 'User ID is required' }, { status: 400 });
@@ -14,9 +15,11 @@ export async function GET({ url }) {
 			.from('chronomuse_memories')
 			.select('*')
 			.eq('user_id', userId)
-			.not('mood_tag', 'is', null) // only memories with a mood
-			.neq('mood_tag', '')        // and not empty
 			.order('date', { ascending: false });
+
+		if (moodOnly) {
+			query = query.not('mood_tag', 'is', null).neq('mood_tag', '');
+		}
 
 		if (period !== 'all') {
 			let days = 7;
@@ -38,7 +41,7 @@ export async function GET({ url }) {
 
 		return json({
 			success: true,
-			data: memories
+			data: memories || []
 		});
 	} catch (err) {
 		return json({ error: 'An error occurred: ' + err.message }, { status: 500 });

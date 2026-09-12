@@ -489,8 +489,9 @@
 				showNotificationModal('Memory saved successfully!');
 				resetAddMemoryForm = true; // Trigger form reset
 				showAddMemory = false;
-				// Refresh memories data for this date
+				// Refresh memories data for this date and month
 				await loadMemoriesForDate(selectedDate);
+				await loadMemoriesForMonth(currentCalendarMonth, currentCalendarYear);
 				if (typeof window !== 'undefined') {
 					window.dispatchEvent(new CustomEvent('chronomuse_memory_change'));
 				}

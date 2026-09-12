@@ -104,10 +104,24 @@
 	async function loadAllMemories() {
 		if (!userId) return;
 		try {
+			// Direct Supabase query for immediate results
+			const { data, error } = await supabase
+				.from('chronomuse_memories')
+				.select('id, user_id, date, created_at, mood_tag, memory_tag, title')
+				.eq('user_id', userId)
+				.order('date', { ascending: false });
+
+			if (!error && Array.isArray(data)) {
+				allMemories = data;
+				isLoading = false;
+				return;
+			}
+
+			// Fallback to API endpoint
 			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${userId}&period=all&_t=${Date.now()}`, { cache: 'no-store' });
-			const data = await res.json();
-			if (data.success && Array.isArray(data.data)) {
-				allMemories = data.data;
+			const resData = await res.json();
+			if (resData.success && Array.isArray(resData.data)) {
+				allMemories = resData.data;
 			}
 		} catch (err) {
 			console.error('Error loading memories for month card:', err);
