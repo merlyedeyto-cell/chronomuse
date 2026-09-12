@@ -184,7 +184,7 @@
 
 		<button
 			onclick={viewThrowback}
-			class="w-full py-1.5 px-3 bg-pink-50 hover:bg-pink-100 text-[#f43f8e] font-bold text-xs rounded-xl transition-all flex items-center justify-center space-x-1.5 cursor-pointer active:scale-98 border border-pink-100/90 shadow-2xs"
+			class="w-full py-2.5 px-3 bg-pink-50 hover:bg-pink-100 text-[#f43f8e] font-semibold sm:font-bold text-xs rounded-xl transition-all duration-200 flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95 border border-pink-200/80 shadow-sm hover:shadow-md"
 		>
 			<span>View Flashback</span>
 			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">

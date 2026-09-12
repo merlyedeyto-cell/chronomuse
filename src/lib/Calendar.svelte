@@ -487,9 +487,9 @@
 
 	<!-- Selected Date Info -->
 	{#if selectedDate}
-		<div class="mt-2.5 p-2 bg-[#fff0f5] border border-pink-200/80 rounded-xl text-center shadow-2xs">
-			<p class="text-[11px] text-pink-900 font-bold">
-				Selected: <span class="text-[#e0337f]">{selectedDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+		<div class="mt-2.5 py-2.5 px-3 bg-[#fff0f5] border border-pink-200/80 rounded-xl text-center shadow-2xs flex items-center justify-center">
+			<p class="text-xs sm:text-[13px] text-pink-900 font-bold">
+				Selected: <span class="text-[#e0337f] font-extrabold">{selectedDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
 			</p>
 		</div>
 	{/if}
