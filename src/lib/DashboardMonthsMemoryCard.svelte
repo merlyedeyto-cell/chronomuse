@@ -254,9 +254,8 @@
 
 						<!-- Memory Count Badge -->
 						<div class="mt-0.5">
-							<span class="text-[7.5px] sm:text-[8px] font-black px-1 py-0.5 rounded-full bg-[#f43f8e] text-white shadow-2xs inline-flex items-center gap-0.5">
-								<span>{month.count}</span>
-								<span class="text-[6px] sm:text-[6.5px] opacity-90">{month.count === 1 ? 'm' : 'mems'}</span>
+							<span class="text-[8.5px] sm:text-[9px] font-black min-w-[17px] h-[15px] px-1 rounded-full bg-[#f43f8e] text-white shadow-2xs inline-flex items-center justify-center leading-none">
+								{month.count}
 							</span>
 						</div>
 
