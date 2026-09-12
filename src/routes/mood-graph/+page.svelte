@@ -6,6 +6,7 @@
 	import AppFooter from '$lib/AppFooter.svelte';
 	import ViewMemoryModal from '$lib/ViewMemoryModal.svelte';
 	import { playClickSound } from '$lib/soundEffects.js';
+	import { broadcastMemoryEvent } from '$lib/realtimeBroadcast.js';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 
@@ -44,11 +45,182 @@
 		viewMemory(memory);
 	}
 
-	function viewMemory(memory) {
+	async function viewMemory(memory) {
 		selectedMemoryDate = memory.date || memory.created_at?.split('T')[0] || new Date().toISOString().split('T')[0];
-		const sameDateMemories = moodData.filter(m => m.date === selectedMemoryDate);
+		const sameDateMemories = moodData.filter(m => (m.date || m.created_at?.split('T')[0]) === selectedMemoryDate);
 		memoriesForDate = sameDateMemories.length > 0 ? sameDateMemories : [memory];
 		showViewMemoryModal = true;
+
+		// Fetch fresh full memory records including comments, reactions, and uploads
+		if (user?.id && selectedMemoryDate) {
+			try {
+				const response = await fetch(`${API_ENDPOINTS.getMemoriesByDate}?date=${selectedMemoryDate}&user_id=${user.id}`, { cache: 'no-store' });
+				const data = await response.json();
+				if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+					memoriesForDate = data.data;
+				}
+			} catch (e) {}
+		}
+	}
+
+	async function handleDeleteMemory(event) {
+		const { memoryId } = event.detail || {};
+		if (!memoryId) return;
+
+		try {
+			const response = await fetch(API_ENDPOINTS.deleteMemory, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ memory_id: memoryId })
+			});
+			const data = await response.json();
+
+			if (data.success) {
+				// Remove memory from all local state arrays
+				allMemoriesRaw = allMemoriesRaw.filter(m => String(m.id) !== String(memoryId));
+				moodData = moodData.filter(m => String(m.id) !== String(memoryId));
+				filteredMoodMemories = filteredMoodMemories.filter(m => String(m.id) !== String(memoryId));
+				memoriesForDate = memoriesForDate.filter(m => String(m.id) !== String(memoryId));
+
+				// Update cached mood data in localStorage
+				if (user?.id) {
+					try {
+						localStorage.setItem(`chronomuse_mood_cache_${user.id}_all`, JSON.stringify(allMemoriesRaw));
+					} catch (e) {}
+				}
+
+				// Recalculate mood stats
+				calculateMoodStats();
+
+				// If no more memories for this date, close the ViewMemoryModal
+				if (memoriesForDate.length === 0) {
+					showViewMemoryModal = false;
+				}
+
+				// If no more memories for this mood, close the mood list modal
+				if (filteredMoodMemories.length === 0) {
+					showMoodListModal = false;
+				}
+
+				// Notify other windows/tabs & dashboard
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_memory_change'));
+					window.dispatchEvent(new CustomEvent('chronomuse_pinned_change'));
+				}
+			} else {
+				console.error('Failed to delete memory:', data.error);
+			}
+		} catch (error) {
+			console.error('Error deleting memory from mood graph:', error);
+		}
+	}
+
+	function handleUpdateMemory(event) {
+		const { memoryId, description, moodTag, memoryTag } = event.detail || {};
+		if (!memoryId) return;
+		updateMemoryInDatabase(memoryId, { description, mood_tag: moodTag, memory_tag: memoryTag });
+	}
+
+	function handleUpdateMemoryWithFiles(event) {
+		const { memory, formData, description, moodTag, memoryTag } = event.detail || {};
+		if (!memory?.id) return;
+		updateMemoryWithFilesInDatabase(memory, formData, { description, mood_tag: moodTag, memory_tag: memoryTag });
+	}
+
+	async function updateMemoryInDatabase(memoryId, updateData) {
+		try {
+			const response = await fetch(API_ENDPOINTS.updateMemory, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ memory_id: memoryId, ...updateData })
+			});
+			const data = await response.json();
+
+			if (data.success) {
+				const updater = m => (String(m.id) === String(memoryId) ? { ...m, ...updateData } : m);
+				allMemoriesRaw = allMemoriesRaw.map(updater);
+				moodData = moodData.map(updater);
+				filteredMoodMemories = filteredMoodMemories.map(updater);
+				memoriesForDate = memoriesForDate.map(updater);
+
+				if (user?.id) {
+					try {
+						localStorage.setItem(`chronomuse_mood_cache_${user.id}_all`, JSON.stringify(allMemoriesRaw));
+					} catch (e) {}
+				}
+
+				calculateMoodStats();
+
+				if (data.shared_with && data.shared_with.length > 0) {
+					for (const fid of data.shared_with) {
+						broadcastMemoryEvent(user.id, fid, 'shared_memory_update', data.data);
+					}
+				}
+
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_memory_change'));
+				}
+			}
+		} catch (error) {
+			console.error('Error updating memory:', error);
+		}
+	}
+
+	async function updateMemoryWithFilesInDatabase(memory, formData, updateData) {
+		try {
+			const response = await fetch(API_ENDPOINTS.updateMemory, {
+				method: 'POST',
+				body: formData
+			});
+			const data = await response.json();
+
+			if (data.success) {
+				const updatedFields = {
+					...updateData,
+					photo_video: data.data?.photo_video || memory.photo_video,
+					photo_video_type: data.data?.photo_video_type || memory.photo_video_type,
+					music: data.data?.music || memory.music
+				};
+				const updater = m => (String(m.id) === String(memory.id) ? { ...m, ...updatedFields } : m);
+				allMemoriesRaw = allMemoriesRaw.map(updater);
+				moodData = moodData.map(updater);
+				filteredMoodMemories = filteredMoodMemories.map(updater);
+				memoriesForDate = memoriesForDate.map(updater);
+
+				if (user?.id) {
+					try {
+						localStorage.setItem(`chronomuse_mood_cache_${user.id}_all`, JSON.stringify(allMemoriesRaw));
+					} catch (e) {}
+				}
+
+				calculateMoodStats();
+
+				if (data.shared_with && data.shared_with.length > 0) {
+					for (const fid of data.shared_with) {
+						broadcastMemoryEvent(user.id, fid, 'shared_memory_update', data.data);
+					}
+				}
+
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_memory_change'));
+				}
+			}
+		} catch (error) {
+			console.error('Error updating memory with files:', error);
+		}
+	}
+
+	async function handleRefreshMemories() {
+		if (selectedMemoryDate && user?.id) {
+			try {
+				const response = await fetch(`${API_ENDPOINTS.getMemoriesByDate}?date=${selectedMemoryDate}&user_id=${user.id}`, { cache: 'no-store' });
+				const data = await response.json();
+				if (data.success && Array.isArray(data.data)) {
+					memoriesForDate = data.data;
+				}
+			} catch (e) {}
+		}
+		loadMoodData(true);
 	}
 
 	// Mood statistics
@@ -770,6 +942,10 @@
 			selectedDate={selectedMemoryDate}
 			memories={memoriesForDate}
 			on:close={() => showViewMemoryModal = false}
+			on:deleteMemory={handleDeleteMemory}
+			on:updateMemory={handleUpdateMemory}
+			on:updateMemoryWithFiles={handleUpdateMemoryWithFiles}
+			on:refresh={handleRefreshMemories}
 		/>
 	{/if}
 
