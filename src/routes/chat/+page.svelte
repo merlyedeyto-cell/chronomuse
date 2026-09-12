@@ -2799,7 +2799,7 @@
 
 											<!-- Main Chat Bubble with Clear Visible Styling & Tail -->
 											<div
-												class="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl text-xs sm:text-sm font-semibold transition-all duration-300 relative leading-relaxed shadow-2xs {highlightedMessageId === String(msg.id) ? 'bg-pink-200 text-pink-950 border-2 border-[#f43f8e] ring-4 ring-[#f43f8e]/40 scale-[1.03] animate-pulse z-20' : isUnsent ? 'bg-pink-50/70 text-pink-400/90 border border-pink-200/80 italic' : isUserSender ? 'bg-[#f43f8e] text-white border border-[#f43f8e]' : 'bg-white text-gray-900 border border-pink-100'}"
+												class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-[13px] sm:text-sm font-semibold transition-all duration-300 relative leading-relaxed shadow-2xs {highlightedMessageId === String(msg.id) ? 'bg-pink-200 text-pink-950 border-2 border-[#f43f8e] ring-4 ring-[#f43f8e]/40 scale-[1.03] animate-pulse z-20' : isUnsent ? 'bg-pink-50/70 text-pink-400/90 border border-pink-200/80 italic' : isUserSender ? 'bg-[#f43f8e] text-white border border-[#f43f8e]' : 'bg-white text-gray-900 border border-pink-100'}"
 												class:ring-2={isSelected && highlightedMessageId !== String(msg.id)}
 												class:ring-[#f43f8e]={isSelected && highlightedMessageId !== String(msg.id)}
 											>
@@ -2811,15 +2811,15 @@
 
 												<div class="relative z-10">
 													{#if isUnsent}
-														<p class="italic text-[11px] sm:text-xs text-pink-400/90 flex items-center gap-1 select-none font-medium">
-															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3 h-3 opacity-70 flex-shrink-0">
+														<p class="italic text-xs sm:text-sm text-pink-400/90 flex items-center gap-1 select-none font-medium">
+															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5 opacity-70 flex-shrink-0">
 																<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
 															</svg>
 															<span>{isUserSender ? 'You unsent a message' : `${activeFriend?.username || 'User'} unsent a message`}</span>
 														</p>
 													{:else if parsed.isImage}
 														<div 
-															class="relative group/img rounded-xl overflow-hidden max-w-[180px] sm:max-w-[210px] border border-pink-200/80 cursor-pointer active:scale-98 transition-all my-0.5 shadow-2xs"
+															class="relative group/img rounded-xl overflow-hidden max-w-[200px] sm:max-w-[230px] border border-pink-200/80 cursor-pointer active:scale-98 transition-all my-0.5 shadow-2xs"
 															onclick={(e) => { e.stopPropagation(); openImageViewer(parsed.imageUrl); }}
 															role="button"
 															tabindex="0"
@@ -2829,7 +2829,7 @@
 															<img 
 																src={parsed.imageUrl} 
 																alt="Chat Attachment" 
-																class="w-full max-h-48 sm:max-h-56 object-cover rounded-xl transition-transform duration-200 group-hover/img:scale-105" 
+																class="w-full max-h-52 sm:max-h-60 object-cover rounded-xl transition-transform duration-200 group-hover/img:scale-105" 
 																loading="lazy" 
 															/>
 															<div class="absolute inset-0 bg-pink-950/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-1 text-white">
@@ -2846,19 +2846,19 @@
 												</div>
 											</div>
 											<!-- Message Status & Time -->
-											<div class="flex items-center gap-1 mt-0.5 px-1 text-[9px] font-bold {isUserSender ? 'text-pink-600 justify-end' : 'text-pink-600 justify-start'}">
+											<div class="flex items-center gap-1 mt-0.5 px-1 text-[11px] sm:text-xs font-bold {isUserSender ? 'text-pink-600 justify-end' : 'text-pink-600 justify-start'}">
 												<span>{formatTime(msg.created_at)}</span>
 												{#if isUserSender && !isUnsent}
 													{#if msg.is_read}
 														<span class="inline-flex items-center gap-0.5 text-[#f43f8e] font-semibold" title="Seen by @{activeFriend?.username}">
-															<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-[#f43f8e]">
+															<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
 																<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
 															</svg>
 															<span>Seen</span>
 														</span>
 													{:else}
-														<span class="inline-flex items-center gap-0.5 text-pink-400/90" title="Sent">
-															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-2.5 h-2.5 text-pink-400">
+														<span class="inline-flex items-center gap-0.5 text-pink-500 font-bold" title="Sent">
+															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-pink-500">
 																<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 															</svg>
 															<span>Sent</span>
@@ -2964,13 +2964,13 @@
 						<span>You cannot message @{activeFriend.username} because you have been blocked.</span>
 					</div>
 				{:else}
-					<form onsubmit={(e) => { e.preventDefault(); sendMessage(); }} class="p-1.5 sm:p-2 bg-white border-t border-pink-100 flex items-center space-x-1.5 w-full min-w-0 flex-shrink-0 sticky bottom-0 z-20">
+					<form onsubmit={(e) => { e.preventDefault(); sendMessage(); }} class="p-2 sm:p-2.5 bg-white border-t border-pink-100 flex items-center space-x-2 w-full min-w-0 flex-shrink-0 sticky bottom-0 z-20">
 						<!-- Upload Photo Button -->
-						<label class="p-1 sm:p-1.5 text-[#f43f8e] hover:bg-pink-50 rounded-lg cursor-pointer transition-colors flex-shrink-0" title="Attach Photo" onclick={() => { if (isSelectionMode) { isSelectionMode = false; selectedMessageIds = new Set(); } }}>
+						<label class="p-1.5 sm:p-2 text-[#f43f8e] hover:bg-pink-50 rounded-xl cursor-pointer transition-colors flex-shrink-0 active:scale-95" title="Attach Photo" onclick={() => { if (isSelectionMode) { isSelectionMode = false; selectedMessageIds = new Set(); } }}>
 							{#if isUploadingImage}
-								<div class="animate-spin w-4 h-4 border-2 border-pink-300 border-t-[#f43f8e] rounded-full"></div>
+								<div class="animate-spin w-5 h-5 border-2 border-pink-300 border-t-[#f43f8e] rounded-full"></div>
 							{:else}
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
 								</svg>
 							{/if}
@@ -2994,18 +2994,18 @@
 								oninput={handleInputTyping}
 								onfocus={handleInputFocus}
 								onblur={handleInputBlur}
-								placeholder="Type a message... (swipe to reply, hold to select)"
-								class="w-full pl-2.5 pr-8 py-1.5 sm:py-2 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-gray-800 text-xs sm:text-sm placeholder-pink-400/60 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/20 focus:border-[#f43f8e] focus:bg-white transition-all font-medium"
+								placeholder="Type a message..."
+								class="w-full pl-3.5 pr-10 py-2 sm:py-2.5 bg-[#fdf2f6] border border-pink-200/80 rounded-2xl text-gray-800 text-sm sm:text-base placeholder-pink-400/60 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/20 focus:border-[#f43f8e] focus:bg-white transition-all font-medium"
 							/>
 							<!-- Emoji Picker Toggle Button -->
 							<button
 								type="button"
 								bind:this={emojiButtonRef}
 								onclick={() => showEmojiPicker = !showEmojiPicker}
-								class="absolute right-1.5 p-1 text-pink-400 hover:text-[#f43f8e] rounded-md transition-colors cursor-pointer flex items-center justify-center"
+								class="absolute right-2 p-1.5 text-pink-400 hover:text-[#f43f8e] rounded-lg transition-colors cursor-pointer flex items-center justify-center active:scale-95"
 								title="Emojis"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
 								</svg>
 							</button>
@@ -3015,10 +3015,10 @@
 						<button
 							type="submit"
 							disabled={!newMessageText.trim() || isSending}
-							class="py-1.5 sm:py-2 px-3 sm:px-3.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl font-bold text-xs sm:text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 flex-shrink-0 active:scale-95 group cursor-pointer shadow-xs"
+							class="py-2 sm:py-2.5 px-3.5 sm:px-4 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-2xl font-bold text-sm sm:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1.5 flex-shrink-0 active:scale-95 group cursor-pointer shadow-xs"
 						>
 							<span>Send</span>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0 group-hover:translate-x-0.5 transition-transform duration-200">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 flex-shrink-0 group-hover:translate-x-0.5 transition-transform duration-200">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
 							</svg>
 						</button>
