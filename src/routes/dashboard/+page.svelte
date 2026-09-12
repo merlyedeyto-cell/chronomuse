@@ -242,14 +242,15 @@
 			setTimeout(() => {
 				const calEl = document.getElementById('calendar-section');
 				if (calEl) {
-					const yOffset = -20; // 20px buffer from the top
-					const y = calEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
+					const headerEl = document.querySelector('header');
+					const headerHeight = headerEl ? headerEl.offsetHeight : 70;
+					const targetPosition = calEl.getBoundingClientRect().top + window.pageYOffset - headerHeight - 12;
 					window.scrollTo({
-						top: y > 0 ? y : 0,
+						top: Math.max(0, targetPosition),
 						behavior: 'smooth'
 					});
 				}
-			}, 60);
+			}, 80);
 		}
 	}
 
