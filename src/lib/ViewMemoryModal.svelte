@@ -747,7 +747,7 @@
 
 <!-- Backdrop Overlay -->
 <div
-	class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300"
+	class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 transition-opacity duration-300"
 	class:opacity-0={isClosing}
 	onclick={handleClose}
 ></div>
