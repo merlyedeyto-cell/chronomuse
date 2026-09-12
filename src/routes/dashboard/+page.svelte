@@ -796,8 +796,13 @@
 						<PinnedMemoryCard
 							bind:this={pinnedMemoryCardRef}
 							userId={user?.id}
+							currentYear={currentCalendarYear}
+							currentMonth={currentCalendarMonth}
+							{memoriesData}
 							on:deletePinnedDate={handleDeletePinnedDate}
 							on:viewPinnedMemory={handleViewPinnedMemory}
+							on:monthSelected={handleNavigateToMonthFromCard}
+							on:yearChanged={handleYearChangedFromMonthCard}
 						/>
 						<!-- Desktop Only: Memory Flashback & Live Clock in Left Column -->
 						<div class="hidden md:block space-y-4">
@@ -858,14 +863,17 @@
 									{memoriesData}
 								/>
 
-								<DashboardMonthsMemoryCard
-									userId={user?.id}
-									currentYear={currentCalendarYear}
-									currentMonth={currentCalendarMonth}
-									{memoriesData}
-									on:monthSelected={handleNavigateToMonthFromCard}
-									on:yearChanged={handleYearChangedFromMonthCard}
-								/>
+								<!-- Desktop only: Months with Memories in Right Column -->
+								<div class="hidden md:block">
+									<DashboardMonthsMemoryCard
+										userId={user?.id}
+										currentYear={currentCalendarYear}
+										currentMonth={currentCalendarMonth}
+										{memoriesData}
+										on:monthSelected={handleNavigateToMonthFromCard}
+										on:yearChanged={handleYearChangedFromMonthCard}
+									/>
+								</div>
 							</div>
 						{/if}
 					</div>

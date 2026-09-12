@@ -1,14 +1,23 @@
 <script>
 	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
+	import { playClickSound } from '$lib/soundEffects.js';
+	import DashboardMonthsMemoryCard from '$lib/DashboardMonthsMemoryCard.svelte';
 
 	const dispatch = createEventDispatcher();
 
-	let { userId = null } = $props();
+	let {
+		userId = null,
+		currentYear = new Date().getFullYear(),
+		currentMonth = new Date().getMonth(),
+		memoriesData = {}
+	} = $props();
+
 	let pinnedMemories = $state([]);
 	let isLoading = $state(true);
 	let editingId = $state(null);
 	let editingTitle = $state('');
+	let showMonthsFilter = $state(false);
 
 	$effect(() => {
 		if (userId) {
@@ -99,31 +108,23 @@
 			},
 			body: JSON.stringify({
 				pinned_id: pinned.pinned_id,
-				title: editingTitle,
-				user_id: userId
+				title: editingTitle
 			})
 		})
 		.then(response => response.json())
 		.then(data => {
 			if (data.success) {
-				// Update local state
-				const index = pinnedMemories.findIndex(p => p.pinned_id === pinned.pinned_id);
-				if (index !== -1) {
-					pinnedMemories[index].title = editingTitle;
-				}
+				pinned.title = editingTitle;
 				editingId = null;
-				editingTitle = '';
-			} else {
-				console.error('Error updating title:', data.error);
 			}
 		})
 		.catch(error => {
-			console.error('Error updating title:', error);
+			console.error('Error updating pinned date title:', error);
 		});
 	}
 
-	function confirmDelete(pinned) {
-		// Dispatch event to parent to show delete modal
+	function deletePinned(pinned) {
+		// Dispatch event to parent to handle unpinning
 		dispatch('deletePinnedDate', pinned);
 	}
 
@@ -135,7 +136,7 @@
 
 <div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans">
 	<!-- Header -->
-	<div class="flex items-center justify-between mb-3">
+	<div class="flex items-center justify-between mb-3 border-b border-pink-100/80 pb-2">
 		<div class="flex items-center space-x-1.5">
 			<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
@@ -144,8 +145,41 @@
 			</div>
 			<h3 class="text-xs sm:text-sm font-black text-pink-950">Pinned Memories</h3>
 		</div>
-		<span class="text-[10px] bg-pink-100 text-[#f43f8e] px-2 py-0.5 rounded-full font-bold border border-pink-200/80">{pinnedMemories.length} pinned</span>
+		<div class="flex items-center space-x-1.5">
+			<!-- Mobile Only: Months with Memories Filter Toggle Button -->
+			<button
+				type="button"
+				onclick={() => { playClickSound(); showMonthsFilter = !showMonthsFilter; }}
+				class="md:hidden px-2.5 py-0.5 rounded-full text-[10px] font-black border transition-all active:scale-95 flex items-center space-x-1 cursor-pointer {showMonthsFilter ? 'bg-[#f43f8e] text-white border-[#f43f8e] shadow-2xs' : 'bg-pink-50 hover:bg-pink-100 text-[#f43f8e] border-pink-200'}"
+				title="Toggle Months Filter"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+				</svg>
+				<span>Months Filter</span>
+			</button>
+
+			<span class="text-[10px] bg-pink-100 text-[#f43f8e] px-2 py-0.5 rounded-full font-bold border border-pink-200/80 select-none">{pinnedMemories.length} pinned</span>
+		</div>
 	</div>
+
+	<!-- Mobile Only: Expandable Months with Memories Filter -->
+	{#if showMonthsFilter}
+		<div class="md:hidden mb-3 animate-smooth-reveal">
+			<DashboardMonthsMemoryCard
+				{userId}
+				{currentYear}
+				{currentMonth}
+				{memoriesData}
+				on:monthSelected={(e) => {
+					dispatch('monthSelected', e.detail);
+				}}
+				on:yearChanged={(e) => {
+					dispatch('yearChanged', e.detail);
+				}}
+			/>
+		</div>
+	{/if}
 
 	<!-- Pinned Memories List -->
 	{#if isLoading}
