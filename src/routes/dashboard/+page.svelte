@@ -15,9 +15,12 @@
 	import DashboardStatsCard from '$lib/DashboardStatsCard.svelte';
 	import DashboardFlashback from '$lib/DashboardFlashback.svelte';
 	import DashboardClock from '$lib/DashboardClock.svelte';
+	import DashboardMonthsMemoryCard from '$lib/DashboardMonthsMemoryCard.svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let isLoading = $state(false);
+	let currentCalendarMonth = $state(new Date().getMonth());
+	let currentCalendarYear = $state(new Date().getFullYear());
 	let showAddMemory = $state(false);
 	let showViewMemory = $state(false);
 	let selectedDate = $state('');
@@ -224,7 +227,29 @@
 
 	function handleMonthChanged(event) {
 		const { month, year } = event.detail;
+		currentCalendarMonth = month;
+		if (year) currentCalendarYear = year;
 		loadMemoriesForMonth(month, year);
+	}
+
+	function handleNavigateToMonthFromCard(event) {
+		const { month, year } = event.detail;
+		currentCalendarMonth = month;
+		if (year) currentCalendarYear = year;
+		loadMemoriesForMonth(month, year || currentCalendarYear);
+
+		if (typeof window !== 'undefined') {
+			const calEl = document.getElementById('calendar-section');
+			if (calEl && window.innerWidth < 1024) {
+				calEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+		}
+	}
+
+	function handleYearChangedFromMonthCard(event) {
+		const { year } = event.detail;
+		currentCalendarYear = year;
+		loadMemoriesForMonth(currentCalendarMonth, year);
 	}
 
 	function handlePinDate(event) {
@@ -774,11 +799,13 @@
 					</div>
 
 					<!-- Center Column - Calendar -->
-					<div class="animate-fade-in-up" style="animation-delay: 0.2s">
+					<div id="calendar-section" class="animate-fade-in-up" style="animation-delay: 0.2s">
 						<Calendar
 							{memoriesData}
 							{pinnedDates}
 							selectedDateStr={selectedDate}
+							bind:currentMonth={currentCalendarMonth}
+							bind:currentYear={currentCalendarYear}
 							on:dateSelected={handleDateSelected}
 							on:dateWithMemoriesSelected={handleDateWithMemoriesSelected}
 							on:monthChanged={handleMonthChanged}
@@ -786,7 +813,7 @@
 						/>
 					</div>
 
-					<!-- Right Column - Add Memory Form / Daily Affirmation & Streak -->
+					<!-- Right Column - Add Memory Form / Daily Affirmation & Streak / Months Explorer -->
 					<div bind:this={addMemoryContainerRef} class="space-y-4 animate-fade-in-up" style="animation-delay: 0.3s">
 						{#if showAddMemory}
 							<div class="animate-smooth-reveal">
@@ -817,6 +844,14 @@
 								<DashboardStatsCard
 									userId={user?.id}
 									{memoriesData}
+								/>
+
+								<DashboardMonthsMemoryCard
+									userId={user?.id}
+									currentYear={currentCalendarYear}
+									currentMonth={currentCalendarMonth}
+									on:monthSelected={handleNavigateToMonthFromCard}
+									on:yearChanged={handleYearChangedFromMonthCard}
 								/>
 							</div>
 						{/if}

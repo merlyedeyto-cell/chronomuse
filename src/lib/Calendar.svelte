@@ -3,12 +3,16 @@
 
 	const dispatch = createEventDispatcher();
 
-	let { memoriesData = {}, pinnedDates = [], selectedDateStr = '' } = $props();
+	let {
+		memoriesData = {},
+		pinnedDates = [],
+		selectedDateStr = '',
+		currentMonth = $bindable(new Date().getMonth()),
+		currentYear = $bindable(new Date().getFullYear())
+	} = $props();
 
 	let currentDate = $state(new Date());
 	let selectedDate = $state(null);
-	let currentMonth = $state(currentDate.getMonth());
-	let currentYear = $state(currentDate.getFullYear());
 	let showMonthMenu = $state(false);
 	let showYearMenu = $state(false);
 	let yearInput = $state('');
