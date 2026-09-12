@@ -490,7 +490,7 @@
 </script>
 
 <div
-	class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 relative transition-all duration-300 animate-modal-content max-w-lg mx-auto shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans"
+	class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 relative transition-all duration-300 animate-modal-content max-w-lg mx-auto shadow-[0_4px_24px_rgba(244,114,182,0.12)] font-sans"
 	class:opacity-0={isOpening || isClosing}
 	class:scale-95={isOpening || isClosing}
 	class:transform={isOpening || isClosing}
@@ -498,7 +498,7 @@
 	<!-- Close Button -->
 	<button
 		onclick={handleClose}
-		class="absolute top-3 right-3 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+		class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
 		title="Close"
 	>
 		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
@@ -507,16 +507,16 @@
 	</button>
 
 	<!-- Header -->
-	<div class="text-center mb-2.5">
+	<div class="text-center mb-3 sm:mb-3.5">
 		<h2 class="text-sm sm:text-base font-black text-[#f43f8e]">Add New Memory</h2>
 		<p class="text-[11px] text-pink-400 font-medium mt-0.5">Capture your special moments (Photos & 15s Video Clips)</p>
 	</div>
 
 	<!-- Selected Date Mini Card -->
-	<div class="mb-2.5 p-2 bg-gradient-to-r from-[#f43f8e] to-[#e0337f] rounded-xl text-white shadow-xs">
-		<div class="flex items-center space-x-2">
-			<div class="p-1 bg-white/20 rounded-lg">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
+	<div class="mb-3 sm:mb-3.5 p-2.5 bg-gradient-to-r from-[#f43f8e] to-[#e0337f] rounded-xl text-white shadow-xs">
+		<div class="flex items-center space-x-2.5">
+			<div class="p-1.5 bg-white/20 rounded-lg">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
 				</svg>
 			</div>
@@ -528,13 +528,13 @@
 	</div>
 
 	<!-- Form -->
-	<div class="space-y-2">
+	<div class="space-y-3 sm:space-y-3.5">
 		<!-- Upload Photo / Video & Upload Music Side-by-Side -->
-		<div class="grid grid-cols-2 gap-2">
+		<div class="grid grid-cols-2 gap-2.5 sm:gap-3">
 			<!-- Upload Photo / Video -->
 			<div>
-				<label class="block text-[11px] font-bold text-pink-900 mb-0.5">Photo / Video (15s Max)</label>
-				<label class="flex flex-col items-center justify-center w-full h-14 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/60 cursor-pointer hover:bg-pink-100/70 transition-all duration-200 overflow-hidden relative shadow-2xs">
+				<label class="block text-[11px] font-bold text-pink-900 mb-1">Photo / Video (15s Max)</label>
+				<label class="flex flex-col items-center justify-center w-full h-16 sm:h-18 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/60 cursor-pointer hover:bg-pink-100/70 transition-all duration-200 overflow-hidden relative shadow-2xs">
 					{#if photoVideoPreview}
 						{#if isVideo}
 							<div class="flex items-center space-x-1.5 py-1 px-2 text-center">
@@ -566,8 +566,8 @@
 
 			<!-- Upload Music -->
 			<div>
-				<label class="block text-[11px] font-bold text-pink-900 mb-0.5">Music (Optional)</label>
-				<label class="flex flex-col items-center justify-center w-full h-14 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/60 cursor-pointer hover:bg-pink-100/70 transition-all duration-200 overflow-hidden shadow-2xs">
+				<label class="block text-[11px] font-bold text-pink-900 mb-1">Music (Optional)</label>
+				<label class="flex flex-col items-center justify-center w-full h-16 sm:h-18 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/60 cursor-pointer hover:bg-pink-100/70 transition-all duration-200 overflow-hidden shadow-2xs">
 					<div class="flex items-center space-x-1.5 py-1 px-2 w-full max-w-full min-w-0 overflow-hidden justify-center">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4 text-[#f43f8e] flex-shrink-0">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
@@ -590,19 +590,19 @@
 		</div>
 
 		<!-- Memory Tag and Mood Tag Row -->
-		<div class="grid grid-cols-2 gap-2">
+		<div class="grid grid-cols-2 gap-2.5 sm:gap-3">
 			<!-- Memory Tag Field -->
 			<div>
-				<label class="block text-[11px] font-bold text-pink-900 mb-0.5">Memory Tag</label>
+				<label class="block text-[11px] font-bold text-pink-900 mb-1">Memory Tag</label>
 				<button
 					type="button"
 					onclick={() => showMemoryTagModal = true}
-					class="w-full px-2.5 py-1.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 font-medium cursor-pointer transition-colors hover:bg-pink-100 shadow-2xs"
+					class="w-full px-3 py-2 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 font-medium cursor-pointer transition-colors hover:bg-pink-100 shadow-2xs"
 				>
 					<span class={memoryTag ? 'text-pink-950 font-bold truncate' : 'text-pink-400 truncate'}>
 						{memoryTag || 'Select a tag'}
 					</span>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-[#f43f8e] flex-shrink-0 ml-1">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 					</svg>
 				</button>
@@ -610,16 +610,16 @@
 
 			<!-- Mood Tag Field -->
 			<div>
-				<label class="block text-[11px] font-bold text-pink-900 mb-0.5">Mood Tag</label>
+				<label class="block text-[11px] font-bold text-pink-900 mb-1">Mood Tag</label>
 				<button
 					type="button"
 					onclick={() => showMoodTagModal = true}
-					class="w-full px-2.5 py-1.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 font-medium cursor-pointer transition-colors hover:bg-pink-100 shadow-2xs"
+					class="w-full px-3 py-2 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 font-medium cursor-pointer transition-colors hover:bg-pink-100 shadow-2xs"
 				>
 					<span class={moodTag ? 'text-pink-950 font-bold truncate' : 'text-pink-400 truncate'}>
 						{moodTag || 'How are you feeling?'}
 					</span>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-[#f43f8e] flex-shrink-0 ml-1">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 					</svg>
 				</button>
@@ -627,7 +627,7 @@
 		</div>
 
 		<!-- Direct Share with Friends Section (Hidden / Collapsed by default) -->
-		<div class="border border-pink-100/90 rounded-2xl p-2 bg-[#fdf2f6]/70 transition-all shadow-2xs">
+		<div class="border border-pink-100/90 rounded-2xl p-2.5 sm:p-3 bg-[#fdf2f6]/70 transition-all shadow-2xs">
 			<div class="flex items-center justify-between">
 				<button
 					type="button"
@@ -656,7 +656,7 @@
 
 			<!-- Selected Friends Chips Preview (visible if any selected) -->
 			{#if selectedFriendIds.length > 0}
-				<div class="flex flex-wrap gap-1 mt-1.5">
+				<div class="flex flex-wrap gap-1.5 mt-2">
 					{#each selectedFriendIds as fid}
 						{@const f = friends.find(item => Number(item.friend_id) === fid || Number(item.id) === fid)}
 						{#if f}
@@ -670,9 +670,9 @@
 			{/if}
 
 			{#if showFriendSelector}
-				<div class="mt-2 pt-2 border-t border-pink-200/80 space-y-1.5">
+				<div class="mt-2.5 pt-2.5 border-t border-pink-200/80 space-y-2">
 					{#if isLoadingFriends}
-						<div class="py-2 text-center text-[10px] text-pink-400 font-bold flex items-center justify-center space-x-1.5">
+						<div class="py-2.5 text-center text-[10px] text-pink-400 font-bold flex items-center justify-center space-x-1.5">
 							<div class="w-3 h-3 border-2 border-[#f43f8e] border-t-transparent rounded-full animate-spin"></div>
 							<span>Loading friends...</span>
 						</div>
@@ -684,10 +684,10 @@
 								type="text"
 								bind:value={friendSearchQuery}
 								placeholder="Search friends..."
-								class="w-full px-2.5 py-1 bg-white border border-pink-200 rounded-lg text-xs text-pink-900 placeholder-pink-300 focus:outline-none focus:ring-1 focus:ring-[#f43f8e]"
+								class="w-full px-2.5 py-1.5 bg-white border border-pink-200 rounded-lg text-xs text-pink-900 placeholder-pink-300 focus:outline-none focus:ring-1 focus:ring-[#f43f8e]"
 							/>
 						{/if}
-						<div class="grid grid-cols-2 gap-1 max-h-32 overflow-y-auto pr-0.5">
+						<div class="grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto pr-0.5">
 							{#each filteredFriends as friend}
 								{@const isSelected = selectedFriendIds.includes(Number(friend.friend_id || friend.id))}
 								<button
@@ -740,19 +740,19 @@
 
 		<!-- Memory Description with Emoji Picker -->
 		<div>
-			<label class="block text-[11px] font-bold text-pink-900 mb-0.5">Description</label>
+			<label class="block text-[11px] font-bold text-pink-900 mb-1">Description</label>
 			<div class="relative">
 				<textarea
 					bind:value={memoryDescription}
 					placeholder="Write about this memory..."
 					rows="2"
-					class="w-full px-2.5 py-1.5 pr-8 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-pink-950 placeholder-pink-400/60 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/20 focus:border-[#f43f8e] focus:bg-white text-xs resize-none font-medium transition-all shadow-2xs"
+					class="w-full px-3 py-2 pr-8 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-pink-950 placeholder-pink-400/60 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/20 focus:border-[#f43f8e] focus:bg-white text-xs resize-none font-medium transition-all shadow-2xs"
 				></textarea>
 				<!-- Emoji Button -->
 				<button
 					onclick={() => showEmojiPicker = !showEmojiPicker}
 					type="button"
-					class="absolute bottom-2 right-2 text-pink-400 hover:text-[#f43f8e] transition-transform hover:scale-110 cursor-pointer"
+					class="absolute bottom-2.5 right-2.5 text-pink-400 hover:text-[#f43f8e] transition-transform hover:scale-110 cursor-pointer"
 					title="Add emoji"
 				>
 					<span class="text-sm leading-none">😊</span>
@@ -778,17 +778,17 @@
 		</div>
 
 		<!-- Action Buttons Row -->
-		<div class="flex space-x-1.5 pt-1">
+		<div class="flex space-x-2 pt-1.5 sm:pt-2">
 			<button
 				onclick={handleClearInputs}
 				type="button"
-				class="w-1/3 py-1.5 px-3 bg-white border border-pink-200 text-pink-700 hover:text-[#f43f8e] rounded-xl hover:bg-pink-50 transition-all text-xs font-bold shadow-2xs active:scale-95 cursor-pointer"
+				class="w-1/3 py-2 px-3 bg-white border border-pink-200 text-pink-700 hover:text-[#f43f8e] rounded-xl hover:bg-pink-50 transition-all text-xs font-bold shadow-2xs active:scale-95 cursor-pointer"
 			>
 				Clear
 			</button>
 
 			{#if isFutureDate()}
-				<div class="w-2/3 p-1.5 bg-amber-50 border border-amber-200 rounded-xl text-center">
+				<div class="w-2/3 p-2 bg-amber-50 border border-amber-200 rounded-xl text-center">
 					<p class="text-[10px] text-amber-800 font-bold leading-tight">
 						Select today or a past date.
 					</p>
@@ -797,7 +797,7 @@
 				<button
 					onclick={handleSaveMemory}
 					disabled={isSaving || !selectedDate || isDescriptionEmpty()}
-					class="w-2/3 py-1.5 px-3.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl transition-all text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-1 shadow-xs active:scale-95 cursor-pointer"
+					class="w-2/3 py-2 px-3.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl transition-all text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-1.5 shadow-xs active:scale-95 cursor-pointer"
 				>
 					{#if isSaving}
 						<svg class="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

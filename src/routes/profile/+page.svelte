@@ -2066,7 +2066,7 @@
 					<textarea
 						bind:value={noteInputText}
 						maxlength="60"
-						placeholder="Sad ako!"
+						placeholder="Add a note..."
 						class="w-full px-3.5 py-2.5 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 transition-all resize-none shadow-2xs"
 						rows="2"
 					></textarea>

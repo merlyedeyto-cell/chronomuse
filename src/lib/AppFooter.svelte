@@ -8,10 +8,11 @@
 	let { hideOnMobile = false } = $props();
 
 	let unreadChatsCount = $state(0);
+	let pendingFriendRequestsCount = $state(0);
 	let currentUserId = $state(null);
-	let isOpen = $state(true);
-	let showSequentialTooltips = $state(false);
-	let tooltipTimer = null;
+	let isOpen = $state(false); // Collapsed by default on mobile for cleaner view
+	let showMenuCallout = $state(false);
+	let lastPathname = $state('');
 
 	// Draggable Position & Side state - read synchronously to prevent jumping on mount
 	function getStoredNavPos() {
@@ -55,11 +56,31 @@
 		return 0;
 	});
 
+	// Auto-collapse sidebar when route/pathname changes
+	$effect(() => {
+		const currentPath = $page?.url?.pathname || '';
+		if (lastPathname && currentPath !== lastPathname) {
+			isOpen = false;
+		}
+		lastPathname = currentPath;
+	});
+
+	function dismissMenuCallout() {
+		showMenuCallout = false;
+		if (typeof window !== 'undefined') {
+			try {
+				sessionStorage.setItem('chronomuse_menu_callout_seen', 'true');
+			} catch (e) {}
+		}
+	}
+
 	function toggleSidebar() {
+		dismissMenuCallout();
 		isOpen = !isOpen;
 	}
 
 	function handlePointerDown(e) {
+		dismissMenuCallout();
 		startPointerX = e.clientX;
 		startPointerY = e.clientY;
 		initialTopY = topY;
@@ -113,7 +134,7 @@
 		}
 	}
 
-	function fetchUnreadChats() {
+	function fetchBadgeCounts() {
 		if (typeof window === 'undefined') return;
 		try {
 			const currentUser = localStorage.getItem('chronomuse_user');
@@ -121,6 +142,7 @@
 			if (!user || !user.id) return;
 			currentUserId = user.id;
 
+			// Fetch unread chats count
 			fetch(API_ENDPOINTS.getChatList, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -133,12 +155,28 @@
 				}
 			})
 			.catch(() => {});
+
+			// Fetch pending friend requests count
+			fetch(API_ENDPOINTS.getFriendRequestsCount, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: user.id })
+			})
+			.then(r => r.json())
+			.then(data => {
+				if (data?.data) {
+					pendingFriendRequestsCount = data.data.pending_count || 0;
+				}
+			})
+			.catch(() => {});
 		} catch (e) {}
 	}
 
 	function handleNavigate(path) {
 		if (isDragging) return;
 		playClickSound();
+		dismissMenuCallout();
+		isOpen = false; // Automatically close sidebar on mobile navigation
 		if (path === '/profile') {
 			if (typeof window !== 'undefined') {
 				window.dispatchEvent(new CustomEvent('chronomuse_go_self_profile'));
@@ -148,11 +186,28 @@
 	}
 
 	onMount(() => {
-		fetchUnreadChats();
-		const interval = setInterval(fetchUnreadChats, 2500);
+		lastPathname = $page?.url?.pathname || '';
+		fetchBadgeCounts();
+		const interval = setInterval(fetchBadgeCounts, 2500);
+
+		// Show 1-time per login "Open Menu" callout prompt
+		if (typeof window !== 'undefined') {
+			try {
+				const calloutSeen = sessionStorage.getItem('chronomuse_menu_callout_seen');
+				if (!calloutSeen) {
+					const timer = setTimeout(() => {
+						showMenuCallout = true;
+						// Auto dismiss after 4.5 seconds
+						setTimeout(() => {
+							dismissMenuCallout();
+						}, 4500);
+					}, 700);
+				}
+			} catch (e) {}
+		}
 
 		const handleRealtime = () => {
-			fetchUnreadChats();
+			fetchBadgeCounts();
 		};
 
 		window.addEventListener('chronomuse_new_message', handleRealtime);
@@ -161,7 +216,6 @@
 
 		return () => {
 			clearInterval(interval);
-			if (tooltipTimer) clearTimeout(tooltipTimer);
 			window.removeEventListener('chronomuse_new_message', handleRealtime);
 			window.removeEventListener('chronomuse_friend_change', handleRealtime);
 			window.removeEventListener('chronomuse_notification_change', handleRealtime);
@@ -210,17 +264,21 @@
 					</svg>
 				{/if}
 
-				{#if unreadChatsCount > 0}
-					<span class="absolute -top-3.5 {side === 'left' ? '-right-2' : '-left-2'} w-2.5 h-2.5 bg-[#f43f8e] border-2 border-white rounded-full animate-ping"></span>
-					<span class="absolute -top-3.5 {side === 'left' ? '-right-2' : '-left-2'} w-2.5 h-2.5 bg-[#f43f8e] border-2 border-white rounded-full"></span>
+				<!-- Combined Activity Indicator Badge on Collapsed Tab -->
+				{#if (unreadChatsCount + pendingFriendRequestsCount) > 0}
+					<span class="absolute -top-3.5 {side === 'left' ? '-right-2' : '-left-2'} min-w-3.5 h-3.5 px-0.5 bg-[#f43f8e] text-white border-2 border-white text-[8px] font-black rounded-full flex items-center justify-center shadow-xs animate-pulse">
+						{(unreadChatsCount + pendingFriendRequestsCount) > 9 ? '9+' : (unreadChatsCount + pendingFriendRequestsCount)}
+					</span>
 				{/if}
 			</div>
 
-			<!-- Floating Themed Tooltip on Tab Hover -->
-			<div class="absolute {side === 'left' ? 'left-full ml-2.5' : 'right-full mr-2.5'} top-1/2 -translate-y-1/2 opacity-0 group-hover/tab:opacity-100 {side === 'left' ? '-translate-x-1 group-hover/tab:translate-x-0' : 'translate-x-1 group-hover/tab:translate-x-0'} transition-all duration-200 ease-out pointer-events-none z-50">
-				<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2.5 py-1 rounded-xl shadow-[-2px_4px_12px_rgba(244,63,142,0.3)] border border-pink-200/40 whitespace-nowrap flex items-center gap-1">
+			<!-- 1x Per Login "Open Menu" Callout Bubble OR Hover Tooltip -->
+			<div
+				class="absolute {side === 'left' ? 'left-full ml-2.5' : 'right-full mr-2.5'} top-1/2 -translate-y-1/2 transition-all duration-200 ease-out z-50 {showMenuCallout ? 'opacity-100 pointer-events-auto scale-100 animate-bounce' : 'opacity-0 pointer-events-none group-hover/tab:opacity-100 group-hover/tab:pointer-events-auto'}"
+			>
+				<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2.5 py-1 rounded-xl shadow-[-2px_4px_14px_rgba(244,63,142,0.35)] border border-pink-200/40 whitespace-nowrap flex items-center gap-1">
 					<span>Open Menu</span>
-					<span class="text-[9px] opacity-80 font-normal">· Hold to drag</span>
+					<span class="text-[9px] opacity-85 font-normal">· Hold to drag</span>
 					<div class="absolute top-1/2 -translate-y-1/2 {side === 'left' ? 'right-full border-r-4 border-r-[#f43f8e]' : 'left-full border-l-4 border-l-[#f43f8e]'} w-0 h-0 border-y-4 border-y-transparent"></div>
 				</div>
 			</div>
@@ -296,16 +354,23 @@
 							<path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z" />
 						</svg>
 					{:else if item.id === 'friends'}
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-							<path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.122a.75.75 0 01-.749.75H4a.75.75 0 01-.749-.75l-.001-.122v-.003zM18.75 6.75a.75.75 0 00-.75.75v1.5h-1.5a.75.75 0 000 1.5h1.5v1.5a.75.75 0 001.5 0v-1.5h1.5a.75.75 0 000-1.5h-1.5v-1.5a.75.75 0 00-.75-.75z" />
-						</svg>
+						<div class="relative flex items-center justify-center">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+								<path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.122a.75.75 0 01-.749.75H4a.75.75 0 01-.749-.75l-.001-.122v-.003zM18.75 6.75a.75.75 0 00-.75.75v1.5h-1.5a.75.75 0 000 1.5h1.5v1.5a.75.75 0 001.5 0v-1.5h1.5a.75.75 0 000-1.5h-1.5v-1.5a.75.75 0 00-.75-.75z" />
+							</svg>
+							{#if pendingFriendRequestsCount > 0}
+								<span class="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 px-0.5 bg-amber-400 text-rose-900 border border-white text-[8px] font-black rounded-full flex items-center justify-center shadow-2xs animate-pulse">
+									{pendingFriendRequestsCount > 9 ? '9+' : pendingFriendRequestsCount}
+								</span>
+							{/if}
+						</div>
 					{:else if item.id === 'chat'}
 						<div class="relative flex items-center justify-center">
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
 								<path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.523 0 10-4.03 10-9s-4.477-9-10-9-10 4.03-10 9c0 2.215.88 4.25 2.377 5.797l-1.077 3.32a.75.75 0 00.904.927zM7.5 12a1 1 0 112 0 1 1 0 01-2 0zm3.5 0a1 1 0 112 0 1 1 0 01-2 0zm4.5-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
 							</svg>
 							{#if unreadChatsCount > 0}
-								<span class="absolute -top-1 -right-1 min-w-3.5 h-3.5 px-0.5 bg-amber-400 text-rose-900 border border-white text-[8px] font-black rounded-full flex items-center justify-center shadow-2xs animate-pulse">
+								<span class="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 px-0.5 bg-amber-400 text-rose-900 border border-white text-[8px] font-black rounded-full flex items-center justify-center shadow-2xs animate-pulse">
 									{unreadChatsCount > 9 ? '9+' : unreadChatsCount}
 								</span>
 							{/if}
@@ -317,13 +382,17 @@
 					{/if}
 				</div>
 
-				<!-- Themed Floating Tooltip (Shows smoothly on hover, no bounce or sequential jump on navigation) -->
+				<!-- Themed Floating Tooltip -->
 				<div
 					class="absolute {side === 'left' ? 'left-full ml-2.5' : 'right-full mr-2.5'} top-1/2 -translate-y-1/2 transition-opacity duration-150 z-50 opacity-0 pointer-events-none group-hover/item:opacity-100 group-hover/item:pointer-events-auto"
 				>
 					<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2.5 py-1 rounded-xl shadow-[-3px_4px_16px_rgba(244,63,142,0.32)] border border-pink-200/40 whitespace-nowrap flex items-center gap-1.5">
 						<span>{item.label}</span>
-						{#if item.id === 'chat' && unreadChatsCount > 0}
+						{#if item.id === 'friends' && pendingFriendRequestsCount > 0}
+							<span class="bg-white text-[#f43f8e] text-[9px] px-1.5 py-0.2 rounded-full font-black shadow-2xs">
+								{pendingFriendRequestsCount}
+							</span>
+						{:else if item.id === 'chat' && unreadChatsCount > 0}
 							<span class="bg-white text-[#f43f8e] text-[9px] px-1.5 py-0.2 rounded-full font-black shadow-2xs">
 								{unreadChatsCount}
 							</span>
@@ -336,6 +405,7 @@
 		{/each}
 	</nav>
 </div>
+
 
 
 
