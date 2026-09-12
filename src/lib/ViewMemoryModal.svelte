@@ -1011,26 +1011,13 @@
 										<button
 											type="button"
 											onclick={() => { handleClose(); goto(`/profile?id=${encodeURIComponent(details.senderName)}`); }}
-											class="text-[10px] px-2 py-0.5 rounded-full bg-[#fff0f5] text-[#e0337f] border border-pink-200/80 font-bold inline-flex items-center space-x-1 cursor-pointer transition-all active:scale-95 shadow-2xs"
+											class="text-[10px] px-2.5 py-0.5 rounded-full bg-[#fff0f5] text-[#e0337f] border border-pink-200/80 font-bold inline-flex items-center space-x-1 cursor-pointer transition-all active:scale-95 shadow-2xs"
 											title="View @{details.senderName}'s Profile"
 										>
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-[#e0337f] flex-shrink-0">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a5.97 5.97 0 00-.942 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
 											</svg>
 											<span>Shared by @{details.senderName}</span>
-										</button>
-									{/if}
-
-									{#if details.isShared}
-										<button
-											type="button"
-											onclick={() => openShareModal(memory)}
-											class="text-[10px] px-2 py-0.5 rounded-full bg-pink-50 text-pink-600 border border-pink-200 font-bold whitespace-nowrap flex items-center space-x-1 cursor-pointer"
-										>
-											<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-[#f43f8e]" viewBox="0 0 20 20" fill="currentColor">
-												<path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 16v-1a3.987 3.987 0 00-1.07-2.77A5.992 5.992 0 0118 15v1h-2zM4 16v-1c0-.987.298-1.905.807-2.67A3.987 3.987 0 004 15v1H2z" />
-											</svg>
-											<span>Shared with @{details.senderName}</span>
 										</button>
 									{/if}
 
@@ -1269,34 +1256,34 @@
 {#if showVideoTrimmerModal && rawVideoUrl}
 	<div
 		use:portal
-		class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fade-in font-sans"
+		class="fixed inset-0 z-[120] bg-transparent flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in font-sans select-none"
 		onclick={(e) => { if (e.target === e.currentTarget && !isTrimmingVideo) { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; } }}
 	>
 		<div
-			class="bg-white border border-pink-100 rounded-3xl max-w-md w-full p-4 sm:p-5 space-y-3.5 shadow-2xl relative animate-modal-content max-h-[85vh] overflow-y-auto my-auto"
+			class="bg-white border border-pink-100 rounded-3xl max-w-md w-full p-4 sm:p-5 space-y-3.5 shadow-2xl relative animate-modal-content max-h-[88vh] overflow-y-auto my-auto"
 			onclick={(e) => e.stopPropagation()}
 		>
 			<!-- Top Header -->
-			<div class="flex items-center justify-between pb-2 border-b border-pink-100">
+			<div class="flex items-center justify-between pb-2.5 border-b border-pink-100">
 				<div class="flex items-center space-x-2">
-					<div class="w-8 h-8 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center font-bold">
+					<div class="w-8 h-8 rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center font-bold shadow-2xs">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
 							<path d="M6 3.75a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm12-1.5a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM9.545 10.379l-4.59 7.87a.75.75 0 101.3.758l4.086-7.006 4.085 7.006a.75.75 0 001.3-.758l-4.59-7.87a.75.75 0 00-1.591 0z" />
 						</svg>
 					</div>
 					<div>
-						<h3 class="text-sm sm:text-base font-extrabold text-pink-950 leading-tight">Trim Video Clip</h3>
-						<p class="text-[11px] text-pink-400">15 seconds max clip</p>
+						<h3 class="text-sm sm:text-base font-black text-pink-950 leading-tight">Trim Video Clip</h3>
+						<p class="text-[11px] text-pink-400 font-bold">15 seconds max clip</p>
 					</div>
 				</div>
 
 				<!-- Live Timer Pill Badge -->
-				<div class="flex items-center space-x-1.5 bg-pink-50 border-2 border-pink-200 px-3 py-1 rounded-full">
-					<span class="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
-					<span class="font-mono font-black text-xs text-pink-900">
+				<div class="flex items-center space-x-1.5 bg-[#fdf2f6] border border-pink-100 px-3 py-1 rounded-full shadow-2xs">
+					<span class="w-2 h-2 rounded-full bg-[#f43f8e] animate-pulse"></span>
+					<span class="font-mono font-black text-xs text-pink-950">
 						{formatTimeDisplay(videoCurrentTime)}
 					</span>
-					<span class="text-[10px] text-pink-400 font-semibold">
+					<span class="text-[10px] text-pink-400 font-bold">
 						/ {formatTimeDisplay(videoEndTime - videoStartTime)}
 					</span>
 				</div>
@@ -1306,18 +1293,18 @@
 					type="button"
 					onclick={() => { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; }}
 					disabled={isTrimmingVideo}
-					class="p-1.5 text-pink-400 hover:text-pink-700 hover:bg-pink-100 rounded-full transition-all"
+					class="w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
 					title="Cancel"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-						<path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 					</svg>
 				</button>
 			</div>
 
 			<!-- Center: Video Player Viewport -->
 			<div
-				class="relative w-full rounded-2xl overflow-hidden bg-black border-2 border-pink-200 flex items-center justify-center cursor-pointer group max-h-56"
+				class="relative w-full rounded-2xl overflow-hidden bg-black border border-pink-100 flex items-center justify-center cursor-pointer group max-h-56 shadow-xs"
 				onclick={togglePlayTrimVideo}
 			>
 				<video
@@ -1331,8 +1318,8 @@
 
 				<!-- Play/Pause Overlay Icon -->
 				{#if !isPlayingTrimVideo}
-					<div class="absolute inset-0 bg-black/25 flex items-center justify-center transition-all">
-						<div class="w-12 h-12 rounded-full bg-pink-500 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
+					<div class="absolute inset-0 bg-black/30 flex items-center justify-center transition-all">
+						<div class="w-12 h-12 rounded-full bg-[#f43f8e] text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 ml-0.5">
 								<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
 							</svg>
@@ -1342,17 +1329,17 @@
 			</div>
 
 			<!-- Messenger Storyboard Filmstrip Scrubber Tool -->
-			<div class="bg-pink-50 border-2 border-pink-200 rounded-2xl p-3 space-y-2.5">
-				<div class="flex items-center justify-between text-xs font-bold">
-					<span class="text-pink-600">Storyboard Timeline</span>
-					<span class="text-pink-800">
+			<div class="bg-[#fdf2f6]/70 border border-pink-100 rounded-2xl p-3.5 space-y-2.5">
+				<div class="flex items-center justify-between text-xs font-black">
+					<span class="text-[#f43f8e]">Storyboard Timeline</span>
+					<span class="text-pink-950 font-black">
 						Duration: {(videoEndTime - videoStartTime).toFixed(1)}s (Max 15s)
 					</span>
 				</div>
 
 				<!-- Filmstrip Scrubber Track -->
 				<div
-					class="relative w-full h-14 rounded-xl overflow-hidden bg-pink-100 border-2 border-pink-300 select-none cursor-pointer"
+					class="relative w-full h-14 rounded-xl overflow-hidden bg-pink-100/60 border-2 border-pink-200 select-none cursor-pointer"
 					style="touch-action: none;"
 					bind:this={filmstripElement}
 					onclick={handleFilmstripTrackClick}
@@ -1366,7 +1353,7 @@
 								</div>
 							{/each}
 						{:else}
-							<div class="w-full h-full flex items-center justify-center text-pink-400 text-[10px] font-semibold">
+							<div class="w-full h-full flex items-center justify-center text-pink-400 text-[10px] font-bold">
 								Generating frames...
 							</div>
 						{/if}
@@ -1392,13 +1379,13 @@
 
 						<!-- Active Pink Selection Box -->
 						<div
-							class="absolute top-0 bottom-0 border-y-3 border-pink-500 bg-pink-500/25 cursor-grab active:cursor-grabbing flex items-center justify-between"
+							class="absolute top-0 bottom-0 border-y-3 border-[#f43f8e] bg-[#f43f8e]/25 cursor-grab active:cursor-grabbing flex items-center justify-between"
 							style="left: {leftPercent}%; width: {widthPercent}%; touch-action: none;"
 							onpointerdown={(e) => handlePointerDown(e, 'window')}
 						>
 							<!-- Left Drag Handle -->
 							<div
-								class="w-6 h-full bg-pink-500 hover:bg-pink-600 text-white cursor-ew-resize flex items-center justify-center rounded-l-md active:scale-95 transition-transform"
+								class="w-6 h-full bg-[#f43f8e] hover:bg-[#e0337f] text-white cursor-ew-resize flex items-center justify-center rounded-l-md active:scale-95 transition-transform"
 								style="touch-action: none;"
 								onpointerdown={(e) => handlePointerDown(e, 'left')}
 							>
@@ -1407,7 +1394,7 @@
 
 							<!-- Right Drag Handle -->
 							<div
-								class="w-6 h-full bg-pink-500 hover:bg-pink-600 text-white cursor-ew-resize flex items-center justify-center rounded-r-md active:scale-95 transition-transform"
+								class="w-6 h-full bg-[#f43f8e] hover:bg-[#e0337f] text-white cursor-ew-resize flex items-center justify-center rounded-r-md active:scale-95 transition-transform"
 								style="touch-action: none;"
 								onpointerdown={(e) => handlePointerDown(e, 'right')}
 							>
@@ -1420,7 +1407,7 @@
 							class="absolute top-0 bottom-0 w-1 bg-white pointer-events-none z-20"
 							style="left: {currentPercent}%;"
 						>
-							<div class="w-2.5 h-2.5 -ml-0.75 bg-pink-600 border border-white rounded-full -mt-1"></div>
+							<div class="w-2.5 h-2.5 -ml-0.75 bg-[#f43f8e] border border-white rounded-full -mt-1 shadow-xs"></div>
 						</div>
 					{/if}
 				</div>
@@ -1428,9 +1415,9 @@
 				<!-- Fine-tuning Range Slider -->
 				{#if videoDuration > 15}
 					<div class="pt-1">
-						<div class="flex items-center justify-between text-[11px] font-bold text-pink-700 mb-1">
+						<div class="flex items-center justify-between text-[11px] font-black text-pink-950 mb-1">
 							<span>Slide position:</span>
-							<span>{videoStartTime.toFixed(1)}s - {videoEndTime.toFixed(1)}s</span>
+							<span class="text-[#f43f8e]">{videoStartTime.toFixed(1)}s - {videoEndTime.toFixed(1)}s</span>
 						</div>
 						<input
 							type="range"
@@ -1439,12 +1426,12 @@
 							step="0.2"
 							value={videoStartTime}
 							oninput={(e) => handleRangeSliderChange(e.target.value)}
-							class="w-full accent-pink-500 cursor-pointer h-1.5 bg-pink-200 rounded-lg"
+							class="w-full accent-[#f43f8e] cursor-pointer h-1.5 bg-pink-200 rounded-lg"
 						/>
 					</div>
 				{/if}
 
-				<p class="text-[11px] text-center text-pink-500 font-medium">
+				<p class="text-[11px] text-center text-pink-400 font-bold">
 					Hold and drag the box or handles, tap on the timeline, or use the slider to move the 15s clip.
 				</p>
 			</div>
@@ -1455,7 +1442,7 @@
 					type="button"
 					onclick={() => { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; }}
 					disabled={isTrimmingVideo}
-					class="w-1/3 py-2.5 bg-pink-100 text-pink-700 hover:bg-pink-200 border border-pink-300 rounded-xl font-bold text-xs sm:text-sm active:scale-95 transition-all"
+					class="w-1/3 py-2.5 bg-pink-50 text-pink-700 hover:bg-pink-100 border border-pink-100 rounded-xl font-black text-xs sm:text-sm active:scale-95 transition-all cursor-pointer"
 				>
 					Cancel
 				</button>
@@ -1463,7 +1450,7 @@
 					type="button"
 					onclick={confirmTrimmedVideo}
 					disabled={isTrimmingVideo}
-					class="w-2/3 py-2.5 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all cursor-pointer disabled:opacity-50"
+					class="w-2/3 py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 text-white rounded-xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
 				>
 					{#if isTrimmingVideo}
 						<div class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>

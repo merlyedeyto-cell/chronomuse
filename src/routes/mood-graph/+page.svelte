@@ -345,7 +345,7 @@
 	<AppHeader />
 
 	<!-- Main Content -->
-	<main class="flex-grow container mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-24 sm:pb-28 max-w-4xl">
+	<main class="flex-grow container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-24 sm:pb-28 max-w-4xl lg:max-w-6xl xl:max-w-7xl">
 		<!-- Header Banner -->
 		<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 mb-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up">
 			<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

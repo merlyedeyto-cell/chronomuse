@@ -172,6 +172,24 @@ export async function POST({ request }) {
 			updatedUser = userFull;
 		}
 
+		// Also synchronize chronomuse_user_notes table
+		if (note !== undefined) {
+			const trimmedNote = (note || '').trim();
+			if (trimmedNote) {
+				try {
+					await supabase.from('chronomuse_user_notes').upsert({
+						user_id: Number(user_id),
+						note_text: trimmedNote.slice(0, 60),
+						created_at: new Date().toISOString()
+					}, { onConflict: 'user_id' });
+				} catch (nErr) {}
+			} else {
+				try {
+					await supabase.from('chronomuse_user_notes').delete().eq('user_id', Number(user_id));
+				} catch (nErr) {}
+			}
+		}
+
 		return json({
 			success: true,
 			user: updatedUser,

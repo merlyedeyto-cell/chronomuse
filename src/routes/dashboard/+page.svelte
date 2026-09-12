@@ -724,9 +724,9 @@
 	<AppHeader />
 
 	<!-- Main Content -->
-	<main class="flex-grow px-3 sm:px-4 py-4 sm:py-6 pb-28 sm:pb-32 md:ml-0 overflow-hidden">
+	<main class="flex-grow px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-28 sm:pb-32 md:ml-0 overflow-hidden">
 			<div class="flex justify-center">
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 max-w-7xl w-full">
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 xl:gap-8 max-w-7xl 2xl:max-w-[1600px] w-full">
 					<!-- Left Column - Pinned Memories -->
 					<div class="animate-fade-in-up" style="animation-delay: 0.1s">
 						<PinnedMemoryCard bind:this={pinnedMemoryCardRef} userId={user?.id} on:deletePinnedDate={handleDeletePinnedDate} on:viewPinnedMemory={handleViewPinnedMemory} />
@@ -757,8 +757,8 @@
 							/>
 						{:else}
 							<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 text-center shadow-[0_4px_20px_rgba(244,114,182,0.08)] transition-all duration-300">
-								<h3 class="text-xs sm:text-sm font-bold text-gray-800 mb-1">Create & Capture Memories</h3>
-								<p class="text-[11px] text-gray-500 mb-3 leading-relaxed font-medium">Click any date on the calendar to view or add new memories!</p>
+								<h3 class="text-xs sm:text-sm font-black text-pink-950 mb-1">Create & Capture Memories</h3>
+								<p class="text-[11px] text-pink-400 mb-3 leading-relaxed font-bold">Click any date on the calendar to view or add new memories!</p>
 								<button
 									onclick={toggleAddMemory}
 									class="w-full py-2 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md"

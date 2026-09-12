@@ -56,11 +56,17 @@ export function setSoundEnabled(enabled) {
 	} catch (e) {}
 }
 
+let lastClickSoundTime = 0;
+
 /**
  * Play a subtle, tactile UI click sound on button/element press
  */
 export function playClickSound(force = false) {
 	if (!force && !isSoundEnabled()) return;
+	const now = Date.now();
+	if (now - lastClickSoundTime < 70) return;
+	lastClickSoundTime = now;
+
 	try {
 		const ctx = getAudioContext();
 		if (!ctx) return;

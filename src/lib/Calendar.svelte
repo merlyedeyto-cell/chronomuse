@@ -498,7 +498,7 @@
 <!-- Custom Month Selection Popup -->
 {#if showMonthMenu}
 	<div
-		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in"
+		class="fixed inset-0 bg-transparent z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in"
 		role="dialog"
 		aria-modal="true"
 		tabindex="-1"
@@ -549,7 +549,7 @@
 <!-- Custom Glassmorphic Year Selection Popup -->
 {#if showYearMenu}
 	<div
-		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in"
+		class="fixed inset-0 bg-transparent z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in"
 		role="dialog"
 		aria-modal="true"
 		tabindex="-1"

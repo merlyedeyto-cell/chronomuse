@@ -37,7 +37,15 @@
 
 			const cachedAbout = JSON.parse(localStorage.getItem(`chronomuse_about_${u.id}`) || '{}');
 			const savedCover = localStorage.getItem(`chronomuse_cover_${u.id}`) || null;
-			const savedNote = localStorage.getItem(`chronomuse_note_${u.id}`) || '';
+			let savedNote = localStorage.getItem(`chronomuse_note_${u.id}`) || '';
+			const savedNoteTime = localStorage.getItem(`chronomuse_note_time_${u.id}`);
+			if (savedNoteTime && (parseInt(savedNoteTime, 10) + 24 * 60 * 60 * 1000) <= Date.now()) {
+				savedNote = '';
+				try {
+					localStorage.removeItem(`chronomuse_note_${u.id}`);
+					localStorage.removeItem(`chronomuse_note_time_${u.id}`);
+				} catch (e) {}
+			}
 			return {
 				user: {
 					id: u.id,
@@ -45,7 +53,7 @@
 					email: u.email || '',
 					avatar_url: u.avatar_url || null,
 					cover_url: u.cover_url || savedCover || null,
-					note: u.note !== undefined ? u.note : savedNote,
+					note: u.note !== undefined ? (savedNoteTime && (parseInt(savedNoteTime, 10) + 24 * 60 * 60 * 1000) <= Date.now() ? '' : u.note) : savedNote,
 					bio: u.bio !== undefined && u.bio !== null ? u.bio : (cachedAbout.bio || null),
 					birthday: u.birthday !== undefined && u.birthday !== null ? u.birthday : (cachedAbout.birthday || null),
 					relationship_status: u.relationship_status !== undefined && u.relationship_status !== null ? u.relationship_status : (cachedAbout.relationship_status || null),
@@ -108,11 +116,14 @@
 		if (profileData?.user) {
 			profileData.user.note = trimmed;
 		}
+		const nowTimestamp = Date.now();
 		if (typeof window !== 'undefined') {
 			if (trimmed) {
 				localStorage.setItem(`chronomuse_note_${effectiveId}`, trimmed);
+				localStorage.setItem(`chronomuse_note_time_${effectiveId}`, nowTimestamp.toString());
 			} else {
 				localStorage.removeItem(`chronomuse_note_${effectiveId}`);
+				localStorage.removeItem(`chronomuse_note_time_${effectiveId}`);
 			}
 		}
 
@@ -129,7 +140,7 @@
 			} catch (e) {}
 
 			try {
-				broadcastProfileEvent(currentUser.id, { note: trimmed });
+				broadcastProfileEvent(currentUser.id, { note: trimmed, note_time: nowTimestamp });
 			} catch (e) {}
 		}
 
@@ -148,6 +159,7 @@
 		}
 		if (typeof window !== 'undefined') {
 			localStorage.removeItem(`chronomuse_note_${effectiveId}`);
+			localStorage.removeItem(`chronomuse_note_time_${effectiveId}`);
 		}
 		if (currentUser?.id) {
 			try {
@@ -1271,27 +1283,46 @@
 
 	function updateNoteTimer() {
 		const now = Date.now();
+		const targetId = profileData?.user?.id || targetUserId || currentUser?.id;
+		if (!targetId || !userNote) {
+			noteCountdownTimer = '24h 00m 00s';
+			return;
+		}
+
 		let noteTime = null;
-		const targetId = profileData?.user?.id || user?.id;
 		if (typeof window !== 'undefined' && targetId) {
 			const stored = localStorage.getItem(`chronomuse_note_time_${targetId}`);
 			if (stored) {
 				noteTime = parseInt(stored, 10);
+			} else {
+				noteTime = now;
+				localStorage.setItem(`chronomuse_note_time_${targetId}`, noteTime.toString());
 			}
 		}
-		if (!noteTime) {
-			const midnight = new Date();
-			midnight.setHours(24, 0, 0, 0);
-			const diff = Math.max(0, midnight.getTime() - now);
-			const h = Math.floor(diff / (1000 * 60 * 60));
-			const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-			const s = Math.floor((diff % (1000 * 60)) / 1000);
-			noteCountdownTimer = `${String(h).padStart(2, '0')}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
-			return;
-		}
+
 		const diff = (noteTime + 24 * 60 * 60 * 1000) - now;
 		if (diff <= 0) {
 			noteCountdownTimer = 'Expired';
+			// Note expired: Wipe it out so user can write a new one
+			userNote = '';
+			noteInputText = '';
+			if (profileData?.user) {
+				profileData.user.note = '';
+			}
+			if (typeof window !== 'undefined') {
+				localStorage.removeItem(`chronomuse_note_${targetId}`);
+				localStorage.removeItem(`chronomuse_note_time_${targetId}`);
+			}
+			if (profileData?.is_self && currentUser?.id) {
+				try {
+					fetch(API_ENDPOINTS.updateProfile, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ user_id: currentUser.id, note: '' })
+					});
+					broadcastProfileEvent(currentUser.id, { note: '' });
+				} catch (e) {}
+			}
 		} else {
 			const h = Math.floor(diff / (1000 * 60 * 60));
 			const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -1310,7 +1341,7 @@
 	<AppHeader />
 
 	<!-- Main Profile Container -->
-	<main class="flex-grow container mx-auto px-3.5 sm:px-4 py-4 sm:py-5 pb-24 sm:pb-28 max-w-lg space-y-3">
+	<main class="flex-grow container mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-24 sm:pb-28 max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl space-y-3.5 sm:space-y-4">
 		{#if !profileData && (isLoading || !isProfileNotFound)}
 			<div class="flex flex-col items-center justify-center py-20 space-y-2.5">
 				<div class="w-8 h-8 border-3 border-[#f43f8e] border-t-transparent rounded-full animate-spin"></div>
@@ -1537,7 +1568,7 @@
 						</p>
 					</div>
 
-					<!-- Full-Width Edit Note Button -->
+					<!-- Full-Width Edit / Add Note Button -->
 					{#if profileData.is_self}
 						<button
 							type="button"
@@ -1547,7 +1578,7 @@
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.818-.818 5.969 5.969 0 011.057-3.035C4.646 15.657 4 13.916 4 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
 							</svg>
-							<span>Edit Note</span>
+							<span>{userNote ? 'Edit Note' : '+ Add Note'}</span>
 						</button>
 					{/if}
 

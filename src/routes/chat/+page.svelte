@@ -1982,9 +1982,23 @@
 	function fetchNotes() {
 		if (!user) return;
 		// Own note: load from localStorage (set by profile page) or from user object
-		const storedNote = typeof window !== 'undefined'
+		let storedNote = typeof window !== 'undefined'
 			? (localStorage.getItem(`chronomuse_note_${user.id}`) || user.note || '')
 			: (user.note || '');
+		const storedNoteTime = typeof window !== 'undefined'
+			? localStorage.getItem(`chronomuse_note_time_${user.id}`)
+			: null;
+		if (storedNote && storedNoteTime) {
+			const diff = (parseInt(storedNoteTime, 10) + 24 * 60 * 60 * 1000) - Date.now();
+			if (diff <= 0) {
+				storedNote = '';
+				if (typeof window !== 'undefined') {
+					localStorage.removeItem(`chronomuse_note_${user.id}`);
+					localStorage.removeItem(`chronomuse_note_time_${user.id}`);
+				}
+				deleteNote();
+			}
+		}
 		myNote = storedNote ? { note_text: storedNote } : null;
 
 		// Friends' notes: derived from friends/requests list (note field from get_chat_list API)
@@ -2004,6 +2018,7 @@
 		isSavingNote = true;
 		try {
 			const noteText = noteInput.trim().slice(0, 60);
+			const nowTimestamp = Date.now();
 			// Update note via profile API — same as Profile page
 			await fetch(API_ENDPOINTS.updateProfile, {
 				method: 'POST',
@@ -2014,8 +2029,10 @@
 			if (typeof window !== 'undefined') {
 				if (noteText) {
 					localStorage.setItem(`chronomuse_note_${user.id}`, noteText);
+					localStorage.setItem(`chronomuse_note_time_${user.id}`, nowTimestamp.toString());
 				} else {
 					localStorage.removeItem(`chronomuse_note_${user.id}`);
+					localStorage.removeItem(`chronomuse_note_time_${user.id}`);
 				}
 				// Update stored user object too
 				try {
@@ -2031,7 +2048,7 @@
 			noteInput = '';
 			// Broadcast note change so Profile page and other devices update in realtime
 			try {
-				broadcastProfileEvent(user.id, { note: noteText });
+				broadcastProfileEvent(user.id, { note: noteText, note_time: nowTimestamp });
 			} catch (e) {}
 		} catch (err) {
 			console.error('Error saving note:', err);
@@ -2050,6 +2067,7 @@
 			});
 			if (typeof window !== 'undefined') {
 				localStorage.removeItem(`chronomuse_note_${user.id}`);
+				localStorage.removeItem(`chronomuse_note_time_${user.id}`);
 				try {
 					const storedUser = localStorage.getItem('chronomuse_user');
 					if (storedUser) {
@@ -2078,27 +2096,31 @@
 
 	function updateChatNoteCountdown() {
 		const now = Date.now();
-		let noteTime = null;
 		const targetId = viewingNote?.friend_id || viewingNote?.user_id || user?.id;
-		if (typeof window !== 'undefined' && targetId) {
+		if (!targetId || (!myNote && !viewingNote)) {
+			chatNoteCountdown = '24h 00m 00s';
+			return;
+		}
+
+		let noteTime = null;
+		if (typeof window !== 'undefined') {
 			const stored = localStorage.getItem(`chronomuse_note_time_${targetId}`);
 			if (stored) {
 				noteTime = parseInt(stored, 10);
+			} else {
+				noteTime = now;
+				localStorage.setItem(`chronomuse_note_time_${targetId}`, noteTime.toString());
 			}
 		}
-		if (!noteTime) {
-			const midnight = new Date();
-			midnight.setHours(24, 0, 0, 0);
-			const diff = Math.max(0, midnight.getTime() - now);
-			const h = Math.floor(diff / (1000 * 60 * 60));
-			const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-			const s = Math.floor((diff % (1000 * 60)) / 1000);
-			chatNoteCountdown = `${String(h).padStart(2, '0')}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
-			return;
-		}
+
 		const diff = (noteTime + 24 * 60 * 60 * 1000) - now;
 		if (diff <= 0) {
 			chatNoteCountdown = 'Expired';
+			// Auto clear note when expired so user can write a new one
+			if (user?.id && (String(targetId) === String(user.id) || !viewingNote)) {
+				myNote = null;
+				deleteNote();
+			}
 		} else {
 			const h = Math.floor(diff / (1000 * 60 * 60));
 			const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -2126,10 +2148,10 @@
 	</div>
 
 	<!-- Chat Body Container -->
-	<div class="flex-grow flex flex-col md:flex-row overflow-hidden {activeFriend !== null ? 'p-0 w-full h-full max-w-full md:container md:mx-auto md:px-4 md:py-4 md:max-w-7xl md:gap-4 md:h-[calc(100vh-5rem)]' : 'container mx-auto px-3 sm:px-4 py-3 sm:py-4 max-w-7xl gap-3 sm:gap-4 h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5rem)]'}">
+	<div class="flex-grow flex flex-col md:flex-row overflow-hidden {activeFriend !== null ? 'p-0 w-full h-full max-w-full md:container md:mx-auto md:px-6 md:py-4 md:max-w-7xl 2xl:max-w-[1600px] md:gap-4 md:h-[calc(100vh-5.5rem)]' : 'container mx-auto px-3 sm:px-6 py-3 sm:py-4 max-w-7xl 2xl:max-w-[1600px] gap-3 sm:gap-4 h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5.5rem)]'}">
 		
 		<!-- Left Panel: Friends & Search -->
-		<div class="w-full md:w-80 lg:w-84 flex-shrink-0 bg-white/95 backdrop-blur-md border border-pink-100 rounded-2xl sm:rounded-3xl shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col overflow-hidden animate-fade-in-up" class:hidden={activeFriend !== null} class:md:flex={true} style="animation-delay: 0.05s">
+		<div class="w-full md:w-80 lg:w-96 flex-shrink-0 bg-white/95 backdrop-blur-md border border-pink-100 rounded-2xl sm:rounded-3xl shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col overflow-hidden animate-fade-in-up" class:hidden={activeFriend !== null} class:md:flex={true} style="animation-delay: 0.05s">
 			<!-- Conversations Header -->
 			<div class="p-3 sm:p-3.5 bg-[#fdf2f6] text-pink-950 border-b border-pink-100 font-bold text-xs sm:text-sm flex items-center justify-between">
 				<div class="flex items-center space-x-2">

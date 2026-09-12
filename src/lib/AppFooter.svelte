@@ -13,9 +13,24 @@
 	let showSequentialTooltips = $state(false);
 	let tooltipTimer = null;
 
-	// Draggable Position & Side state
-	let side = $state('right'); // 'right' or 'left'
-	let topY = $state(96); // pixels from top
+	// Draggable Position & Side state - read synchronously to prevent jumping on mount
+	function getStoredNavPos() {
+		if (typeof window === 'undefined') return { side: 'right', topY: 96 };
+		try {
+			const saved = localStorage.getItem('chronomuse_nav_pos');
+			if (saved) {
+				const parsed = JSON.parse(saved);
+				const s = (parsed.side === 'left' || parsed.side === 'right') ? parsed.side : 'right';
+				const y = typeof parsed.topY === 'number' ? Math.max(68, Math.min(window.innerHeight - 300, parsed.topY)) : 96;
+				return { side: s, topY: y };
+			}
+		} catch (e) {}
+		return { side: 'right', topY: 96 };
+	}
+
+	const initialNavPos = getStoredNavPos();
+	let side = $state(initialNavPos.side); // 'right' or 'left'
+	let topY = $state(initialNavPos.topY); // pixels from top
 	let isDragging = $state(false);
 	let startPointerX = 0;
 	let startPointerY = 0;
@@ -41,18 +56,7 @@
 	});
 
 	function toggleSidebar() {
-		playClickSound();
 		isOpen = !isOpen;
-		if (isOpen) {
-			showSequentialTooltips = true;
-			if (tooltipTimer) clearTimeout(tooltipTimer);
-			tooltipTimer = setTimeout(() => {
-				showSequentialTooltips = false;
-			}, 2800);
-		} else {
-			showSequentialTooltips = false;
-			if (tooltipTimer) clearTimeout(tooltipTimer);
-		}
 	}
 
 	function handlePointerDown(e) {
@@ -144,17 +148,6 @@
 	}
 
 	onMount(() => {
-		try {
-			const saved = localStorage.getItem('chronomuse_nav_pos');
-			if (saved) {
-				const parsed = JSON.parse(saved);
-				if (parsed.side === 'left' || parsed.side === 'right') side = parsed.side;
-				if (typeof parsed.topY === 'number') {
-					topY = Math.max(68, Math.min(window.innerHeight - 300, parsed.topY));
-				}
-			}
-		} catch (e) {}
-
 		fetchUnreadChats();
 		const interval = setInterval(fetchUnreadChats, 2500);
 
@@ -178,7 +171,7 @@
 
 <!-- Draggable Mobile Navigation Container -->
 <div
-	class="fixed z-40 md:hidden select-none touch-none {side === 'left' ? 'left-0' : 'right-0'} {hideOnMobile ? 'hidden' : 'block'} {isDragging ? 'transition-none cursor-grabbing opacity-90' : 'transition-all duration-300 ease-out'}"
+	class="fixed z-40 md:hidden select-none touch-none {side === 'left' ? 'left-0' : 'right-0'} {hideOnMobile ? 'hidden' : 'block'} {isDragging ? 'cursor-grabbing opacity-90' : ''}"
 	style="top: {topY}px;"
 >
 	<!-- Collapsed Tab Handle (visible when !isOpen) -->
@@ -186,7 +179,7 @@
 		<button
 			type="button"
 			onpointerdown={handlePointerDown}
-			class="group/tab w-8 h-12 bg-white/95 backdrop-blur-md border-2 border-pink-300 flex items-center justify-center text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-200 cursor-grab active:cursor-grabbing {side === 'left' ? 'border-l-0 rounded-r-2xl shadow-[3px_4px_16px_rgba(244,63,142,0.22)]' : 'border-r-0 rounded-l-2xl shadow-[-3px_4px_16px_rgba(244,63,142,0.22)]'}"
+			class="group/tab w-8 h-12 bg-white/95 backdrop-blur-md border-2 border-pink-300 flex items-center justify-center text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-colors duration-150 cursor-grab active:cursor-grabbing {side === 'left' ? 'border-l-0 rounded-r-2xl shadow-[3px_4px_16px_rgba(244,63,142,0.22)]' : 'border-r-0 rounded-l-2xl shadow-[-3px_4px_16px_rgba(244,63,142,0.22)]'}"
 			aria-label="Drag or tap to open navigation"
 			title="Drag to move, tap to open"
 		>
@@ -224,7 +217,7 @@
 			</div>
 
 			<!-- Floating Themed Tooltip on Tab Hover -->
-			<div class="absolute {side === 'left' ? 'left-full ml-2.5' : 'right-full mr-2.5'} top-1/2 -translate-y-1/2 opacity-0 group-hover/tab:opacity-100 {side === 'left' ? '-translate-x-1 group-hover/tab:translate-x-0' : 'translate-x-1 group-hover/tab:translate-x-0'} transition-all duration-200 pointer-events-none z-50">
+			<div class="absolute {side === 'left' ? 'left-full ml-2.5' : 'right-full mr-2.5'} top-1/2 -translate-y-1/2 opacity-0 group-hover/tab:opacity-100 {side === 'left' ? '-translate-x-1 group-hover/tab:translate-x-0' : 'translate-x-1 group-hover/tab:translate-x-0'} transition-all duration-200 ease-out pointer-events-none z-50">
 				<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2.5 py-1 rounded-xl shadow-[-2px_4px_12px_rgba(244,63,142,0.3)] border border-pink-200/40 whitespace-nowrap flex items-center gap-1">
 					<span>Open Menu</span>
 					<span class="text-[9px] opacity-80 font-normal">· Hold to drag</span>
@@ -237,7 +230,7 @@
 	<!-- Sliding Sidebar Dock Container -->
 	<nav
 		aria-label="Mobile Sidebar Navigation"
-		class="bg-white/95 backdrop-blur-md border-2 border-pink-200/90 p-1.5 flex flex-col items-center space-y-1.5 font-sans transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] {side === 'left' ? 'border-l-0 rounded-r-2xl shadow-[4px_4px_24px_rgba(0,0,0,0.09)]' : 'border-r-0 rounded-l-2xl shadow-[-4px_4px_24px_rgba(0,0,0,0.09)]'} {isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : side === 'left' ? '-translate-x-full opacity-0 pointer-events-none absolute left-0 top-0' : 'translate-x-full opacity-0 pointer-events-none absolute right-0 top-0'}"
+		class="bg-white/95 backdrop-blur-md border-2 border-pink-200/90 p-1.5 flex flex-col items-center space-y-1.5 font-sans transition-all duration-200 ease-out {side === 'left' ? 'border-l-0 rounded-r-2xl shadow-[4px_4px_24px_rgba(0,0,0,0.09)]' : 'border-r-0 rounded-l-2xl shadow-[-4px_4px_24px_rgba(0,0,0,0.09)]'} {isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : side === 'left' ? '-translate-x-full opacity-0 pointer-events-none absolute left-0 top-0' : 'translate-x-full opacity-0 pointer-events-none absolute right-0 top-0'}"
 	>
 		<!-- Collapse & Drag Grip Header Button at top of dock -->
 		<button
@@ -274,7 +267,7 @@
 			{/if}
 
 			<!-- Themed Tooltip -->
-			<div class="absolute {side === 'left' ? 'left-full ml-2.5' : 'right-full mr-2.5'} top-1/2 -translate-y-1/2 opacity-0 group-hover/btn:opacity-100 {side === 'left' ? '-translate-x-1 group-hover/btn:translate-x-0' : 'translate-x-1 group-hover/btn:translate-x-0'} transition-all duration-200 pointer-events-none z-50">
+			<div class="absolute {side === 'left' ? 'left-full ml-2.5' : 'right-full mr-2.5'} top-1/2 -translate-y-1/2 opacity-0 group-hover/btn:opacity-100 {side === 'left' ? '-translate-x-1 group-hover/btn:translate-x-0' : 'translate-x-1 group-hover/btn:translate-x-0'} transition-all duration-200 ease-out pointer-events-none z-50">
 				<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2 py-0.5 rounded-lg shadow-[-2px_4px_12px_rgba(244,63,142,0.3)] border border-pink-200/40 whitespace-nowrap flex items-center gap-1">
 					<span>Hide</span>
 					<span class="text-[9px] opacity-80 font-normal">· Hold to drag</span>
@@ -289,11 +282,11 @@
 			<button
 				type="button"
 				onclick={() => handleNavigate(item.path)}
-				class="group/item relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer select-none {activeIndex === idx ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50'}"
+				class="group/item relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-150 cursor-pointer select-none {activeIndex === idx ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-400 hover:text-[#f43f8e] hover:bg-pink-50'}"
 				aria-label={item.label}
 				title={item.label}
 			>
-				<div class="w-5 h-5 flex items-center justify-center transition-transform duration-200 {activeIndex === idx ? 'scale-105' : 'scale-100'}">
+				<div class="w-5 h-5 flex items-center justify-center">
 					{#if item.id === 'dashboard'}
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
 							<path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75A3.75 3.75 0 0122.5 8.25v10.5A3.75 3.75 0 0118.75 22.5H5.25A3.75 3.75 0 011.5 18.75V8.25A3.75 3.75 0 015.25 4.5H6V3a.75.75 0 01.75-.75zm12 6.75H5.25a2.25 2.25 0 00-2.25 2.25v7.5a2.25 2.25 0 002.25 2.25h13.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25zM6.75 12.75a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H7.5a.75.75 0 01-.75-.75zm4.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H12a.75.75 0 01-.75-.75zm4.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H16.5a.75.75 0 01-.75-.75zm-9 3.75a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H7.5a.75.75 0 01-.75-.75zm4.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H12a.75.75 0 01-.75-.75zm4.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H16.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
@@ -324,10 +317,9 @@
 					{/if}
 				</div>
 
-				<!-- Themed Floating Tooltip with Staggered Sequential Reveal -->
+				<!-- Themed Floating Tooltip (Shows smoothly on hover, no bounce or sequential jump on navigation) -->
 				<div
-					class="absolute {side === 'left' ? 'left-full ml-2.5' : 'right-full mr-2.5'} top-1/2 -translate-y-1/2 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-50 {showSequentialTooltips ? 'opacity-100 translate-x-0 scale-100 pointer-events-auto' : side === 'left' ? 'opacity-0 -translate-x-2 scale-95 pointer-events-none group-hover/item:opacity-100 group-hover/item:translate-x-0 group-hover/item:scale-100 group-hover/item:pointer-events-auto' : 'opacity-0 translate-x-2 scale-95 pointer-events-none group-hover/item:opacity-100 group-hover/item:translate-x-0 group-hover/item:scale-100 group-hover/item:pointer-events-auto'}"
-					style="transition-delay: {showSequentialTooltips ? `${(idx * 75) + 120}ms` : '0ms'};"
+					class="absolute {side === 'left' ? 'left-full ml-2.5' : 'right-full mr-2.5'} top-1/2 -translate-y-1/2 transition-opacity duration-150 z-50 opacity-0 pointer-events-none group-hover/item:opacity-100 group-hover/item:pointer-events-auto"
 				>
 					<div class="relative bg-gradient-to-r from-pink-500 to-[#f43f8e] text-white text-[11px] font-black px-2.5 py-1 rounded-xl shadow-[-3px_4px_16px_rgba(244,63,142,0.32)] border border-pink-200/40 whitespace-nowrap flex items-center gap-1.5">
 						<span>{item.label}</span>

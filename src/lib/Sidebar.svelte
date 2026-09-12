@@ -214,8 +214,7 @@
 			<!-- Home Button -->
 			<button
 				onclick={handleHome}
-				class="w-full py-2 px-4 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 animate-slide-in-right"
-				style="animation-delay: 0.05s"
+				class="w-full py-2 px-4 rounded-lg transition-colors duration-150 text-sm font-medium flex items-center justify-center space-x-2"
 				class:bg-pink-500={isActive('/dashboard')}
 				class:text-white={isActive('/dashboard')}
 				class:bg-pink-100={!isActive('/dashboard')}
@@ -231,8 +230,7 @@
 			<!-- Mood Graph Button -->
 			<button
 				onclick={handleMoodGraph}
-				class="w-full py-2 px-4 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 animate-slide-in-right"
-				style="animation-delay: 0.1s"
+				class="w-full py-2 px-4 rounded-lg transition-colors duration-150 text-sm font-medium flex items-center justify-center space-x-2"
 				class:bg-pink-500={isActive('/mood-graph')}
 				class:text-white={isActive('/mood-graph')}
 				class:bg-pink-100={!isActive('/mood-graph')}
@@ -248,8 +246,7 @@
 			<!-- Chat Button -->
 			<button
 				onclick={handleChat}
-				class="w-full py-2 px-4 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 relative animate-slide-in-right"
-				style="animation-delay: 0.15s"
+				class="w-full py-2 px-4 rounded-lg transition-colors duration-150 text-sm font-medium flex items-center justify-center space-x-2 relative"
 				class:bg-pink-500={isActive('/chat')}
 				class:text-white={isActive('/chat')}
 				class:bg-pink-100={!isActive('/chat')}
@@ -273,8 +270,7 @@
 			<!-- Friends Button (Navigates to /friends section) -->
 			<button
 				onclick={handleFriends}
-				class="w-full py-2 px-4 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 relative animate-slide-in-right"
-				style="animation-delay: 0.25s"
+				class="w-full py-2 px-4 rounded-lg transition-colors duration-150 text-sm font-medium flex items-center justify-center space-x-2 relative"
 				class:bg-pink-500={isActive('/friends')}
 				class:text-white={isActive('/friends')}
 				class:bg-pink-100={!isActive('/friends')}
@@ -295,8 +291,7 @@
 			<!-- Notifications Button (Shared Memories & Alerts) -->
 			<button
 				onclick={handleNotifications}
-				class="w-full py-2 px-4 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 relative animate-slide-in-right"
-				style="animation-delay: 0.3s"
+				class="w-full py-2 px-4 rounded-lg transition-colors duration-150 text-sm font-medium flex items-center justify-center space-x-2 relative"
 				class:bg-pink-500={isActive('/notifications')}
 				class:text-white={isActive('/notifications')}
 				class:bg-pink-100={!isActive('/notifications')}
@@ -317,8 +312,7 @@
 			<!-- Profile Button -->
 			<button
 				onclick={handleProfile}
-				class="w-full py-2 px-4 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 animate-slide-in-right"
-				style="animation-delay: 0.35s"
+				class="w-full py-2 px-4 rounded-lg transition-colors duration-150 text-sm font-medium flex items-center justify-center space-x-2"
 				class:bg-pink-500={isActive('/profile')}
 				class:text-white={isActive('/profile')}
 				class:bg-pink-100={!isActive('/profile')}
@@ -332,10 +326,10 @@
 			</button>
 
 			<!-- Logout Button (Available on all devices) -->
-			<div class="pt-4 mt-4 border-t border-pink-200 animate-fade-in-up" style="animation-delay: 0.4s">
+			<div class="pt-4 mt-4 border-t border-pink-200">
 				<button
 					onclick={handleLogout}
-					class="w-full py-2 px-4 bg-pink-400 text-white rounded-lg hover:bg-pink-500 transition-all duration-200 text-sm font-semibold flex items-center justify-center space-x-2"
+					class="w-full py-2 px-4 bg-pink-400 text-white rounded-lg hover:bg-pink-500 transition-colors duration-150 text-sm font-semibold flex items-center justify-center space-x-2"
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
