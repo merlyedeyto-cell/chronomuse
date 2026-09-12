@@ -758,7 +758,7 @@
 	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 >
 	<div
-		class="bg-white border border-pink-100 rounded-[28px] p-4 sm:p-6 md:p-7 relative transition-all duration-300 max-w-[360px] sm:max-w-[500px] md:max-w-[580px] lg:max-w-[640px] w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl my-auto"
+		class="bg-[#fff0f5] border border-pink-200/90 rounded-[28px] p-4 sm:p-5 relative transition-all duration-300 max-w-[360px] sm:max-w-[440px] md:max-w-[460px] w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl my-auto"
 		class:opacity-0={isClosing}
 		class:scale-95={isClosing}
 		class:transform={isClosing}
@@ -767,7 +767,7 @@
 		<!-- Close Button -->
 		<button
 			onclick={handleClose}
-			class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 flex items-center justify-center transition-colors cursor-pointer"
+			class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full text-pink-400 hover:text-[#f43f8e] bg-white/80 hover:bg-white border border-pink-200/80 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
 			title="Close"
 		>
 			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
@@ -798,7 +798,7 @@
 	<div class="flex-1 overflow-y-auto">
 	{#if memories.length === 0}
 		<div class="text-center py-6">
-			<div class="w-10 h-10 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-2 text-pink-300">
+			<div class="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-2 text-pink-300 border border-pink-100 shadow-2xs">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
 				</svg>
@@ -816,7 +816,7 @@
 		<div class="space-y-2.5">
 			{#each memories as memory (memory.id)}
 				{@debug memory}
-				<div class="p-3 bg-white border border-pink-100/90 rounded-2xl shadow-2xs hover:border-pink-200 transition-all">
+				<div class="p-3.5 bg-white border border-pink-100/90 rounded-2xl shadow-2xs hover:border-pink-200 transition-all">
 					{#if isEditing && memory.id}
 						<!-- Edit Mode -->
 						<div class="space-y-2.5">
@@ -1082,14 +1082,29 @@
 							<!-- Media -->
 							{#if memory.photo_video}
 								{#if (!memory.photo_video_type || memory.photo_video_type.startsWith('image/')) && !(typeof memory.photo_video === 'string' && (memory.photo_video.endsWith('.mp4') || memory.photo_video.endsWith('.webm') || memory.photo_video.endsWith('.mov')))}
-									<div class="relative rounded-2xl overflow-hidden border border-pink-100/90 cursor-pointer hover:border-pink-300 transition-all duration-200 bg-[#fff0f5] shadow-2xs" onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'image')}>
-										<img src={getMediaUrl(memory.photo_video)} alt="Memory" class="w-full max-h-48 sm:max-h-60 md:max-h-72 object-contain hover:scale-105 transition-transform duration-300 rounded-2xl" />
+									<div 
+										class="relative rounded-2xl overflow-hidden border border-pink-100/90 cursor-pointer hover:border-pink-300 transition-all duration-200 bg-pink-50/50 shadow-2xs group" 
+										onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'image')}
+									>
+										<img 
+											src={getMediaUrl(memory.photo_video)} 
+											alt="Memory" 
+											class="w-full h-44 sm:h-48 md:h-52 object-cover group-hover:scale-105 transition-transform duration-300 rounded-2xl" 
+										/>
+										<div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
+											<span class="bg-black/60 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-xs flex items-center space-x-1.5 shadow-sm">
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+												</svg>
+												<span>Full view</span>
+											</span>
+										</div>
 									</div>
 								{:else}
-									<div class="relative rounded-2xl overflow-hidden border border-pink-100/90 bg-[#1e1e24] flex flex-col items-center justify-center shadow-2xs max-h-52 sm:max-h-64 md:max-h-80">
+									<div class="relative rounded-2xl overflow-hidden border border-pink-100/90 bg-black shadow-2xs group">
 										<video 
 											src={getMediaUrl(memory.photo_video)} 
-											class="w-full max-h-52 sm:max-h-64 md:max-h-80 object-contain" 
+											class="w-full h-44 sm:h-48 md:h-52 object-cover" 
 											controls 
 											playsinline 
 											preload="metadata"
@@ -1192,7 +1207,7 @@
 	</div>
 
 	<!-- Add Memory Button - Fixed at Bottom -->
-	<div class="mt-3 pt-3 border-t border-pink-100 flex-shrink-0">
+	<div class="mt-3 pt-3 border-t border-pink-200/70 flex-shrink-0">
 		<button
 			onclick={() => dispatch('addMemory')}
 			class="w-full py-2.5 sm:py-3 px-4 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold text-white rounded-xl flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer"
