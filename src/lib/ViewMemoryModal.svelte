@@ -653,6 +653,13 @@
 		};
 	}
 
+	function handleSenderClick(senderName) {
+		handleClose();
+		if (senderName) {
+			goto(`/profile?id=${encodeURIComponent(senderName)}`);
+		}
+	}
+
 	function handleDeleteMemory(memoryId) {
 		memoryToDeleteId = memoryId;
 		showDeleteConfirmModal = true;
@@ -751,7 +758,7 @@
 	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 >
 	<div
-		class="bg-white border border-pink-100 rounded-[28px] p-4 sm:p-5 relative transition-all duration-300 max-w-[350px] sm:max-w-[380px] w-full max-h-[82vh] overflow-hidden flex flex-col shadow-2xl my-auto"
+		class="bg-white border border-pink-100 rounded-[28px] p-4 sm:p-6 md:p-7 relative transition-all duration-300 max-w-[360px] sm:max-w-[500px] md:max-w-[580px] lg:max-w-[640px] w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl my-auto"
 		class:opacity-0={isClosing}
 		class:scale-95={isClosing}
 		class:transform={isClosing}
@@ -760,30 +767,30 @@
 		<!-- Close Button -->
 		<button
 			onclick={handleClose}
-			class="absolute top-3 right-3 w-6 h-6 rounded-full text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 flex items-center justify-center transition-colors cursor-pointer"
+			class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 flex items-center justify-center transition-colors cursor-pointer"
 			title="Close"
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 			</svg>
 		</button>
 
 		<!-- Header -->
-		<div class="text-center mb-2.5 pr-4 pl-4">
-			<h2 class="text-base font-black text-[#f43f8e]">View Memories</h2>
-			<p class="text-[10px] text-pink-400 font-bold">Your special moments on this date</p>
+		<div class="text-center mb-3 pr-4 pl-4">
+			<h2 class="text-base sm:text-lg md:text-xl font-black text-[#f43f8e]">View Memories</h2>
+			<p class="text-[10px] sm:text-xs text-pink-400 font-bold">Your special moments on this date</p>
 		</div>
 
 		<!-- Selected Date Banner -->
-		<div class="mb-2.5 p-2.5 bg-gradient-to-r from-[#f43f8e] to-[#ec4899] text-white rounded-2xl text-left shadow-[0_4px_16px_rgba(244,63,94,0.22)] flex items-center space-x-2.5 flex-shrink-0">
-			<div class="w-7 h-7 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center flex-shrink-0 text-white shadow-inner">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
+		<div class="mb-3 p-3 sm:p-3.5 bg-gradient-to-r from-[#f43f8e] to-[#ec4899] text-white rounded-2xl text-left shadow-[0_4px_16px_rgba(244,63,94,0.22)] flex items-center space-x-3 flex-shrink-0">
+			<div class="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center flex-shrink-0 text-white shadow-inner">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
 				</svg>
 			</div>
 			<div class="min-w-0">
-				<span class="text-[8px] font-black tracking-wider uppercase text-white/80 block leading-tight">SELECTED DATE</span>
-				<span class="text-xs font-black text-white block truncate leading-tight">{formatDate(selectedDate)}</span>
+				<span class="text-[9px] sm:text-[10px] font-black tracking-wider uppercase text-white/80 block leading-tight">SELECTED DATE</span>
+				<span class="text-xs sm:text-sm md:text-base font-black text-white block truncate leading-tight">{formatDate(selectedDate)}</span>
 			</div>
 		</div>
 
@@ -1010,50 +1017,46 @@
 									{#if details.isShared && details.senderName}
 										<button
 											type="button"
-											onclick={() => { handleClose(); goto(`/profile?id=${encodeURIComponent(details.senderName)}`); }}
-											class="text-[10px] px-2.5 py-0.5 rounded-full bg-[#fff0f5] text-[#e0337f] border border-pink-200/80 font-bold inline-flex items-center space-x-1 cursor-pointer transition-all active:scale-95 shadow-2xs"
-											title="View @{details.senderName}'s Profile"
+											onclick={() => handleSenderClick(details.senderName)}
+											class="text-[10px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full bg-pink-500 text-white font-bold flex items-center space-x-1 shadow-2xs hover:bg-pink-600 transition-colors cursor-pointer"
 										>
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-[#e0337f] flex-shrink-0">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a5.97 5.97 0 00-.942 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-											</svg>
 											<span>Shared by @{details.senderName}</span>
 										</button>
 									{/if}
 
 									{#if memory.mood_tag}
-										<span class="text-[10px] px-2 py-0.5 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap">
+										<span class="text-[10px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap">
 											{memory.mood_tag}
 										</span>
 									{/if}
 
 									{#if details.cleanTag}
-										<span class="text-[10px] px-2 py-0.5 rounded-full bg-pink-50 text-pink-500 border border-pink-200 font-bold whitespace-nowrap">
+										<span class="text-[10px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full bg-pink-50 text-pink-500 border border-pink-200 font-bold whitespace-nowrap">
 											{details.cleanTag}
 										</span>
 									{/if}
 								</div>
 
 								<!-- Action Toolbar on Right -->
-								<div class="flex items-center space-x-1 flex-shrink-0">
+								<div class="flex items-center space-x-1.5 flex-shrink-0">
 									{#if !details.isShared}
 										<!-- Share with Friend Button -->
 										<button
 											onclick={() => openShareModal(memory)}
-											class="p-1 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all flex items-center space-x-1 active:scale-95 cursor-pointer"
+											class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all flex items-center space-x-1 active:scale-95 cursor-pointer"
 											title="Share with Friend"
 										>
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zm0-12a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
 											</svg>
 										</button>
 
 										<button
 											onclick={() => handleEditMemory(memory)}
-											class="p-1 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all active:scale-95 cursor-pointer"
+											class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all active:scale-95 cursor-pointer"
 											title="Edit"
 										>
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
 											</svg>
 										</button>
@@ -1061,10 +1064,10 @@
 
 									<button
 										onclick={() => handleDeleteMemory(memory.id)}
-										class="p-1 text-pink-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all active:scale-95 cursor-pointer"
+										class="p-1.5 text-pink-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all active:scale-95 cursor-pointer"
 										title="Delete"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
 											<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 										</svg>
 									</button>
@@ -1073,20 +1076,20 @@
 
 							<!-- Clean Description Content -->
 							{#if details.cleanDesc}
-								<p class="text-xs font-bold text-pink-950 leading-relaxed whitespace-pre-wrap mt-1 mb-1.5">{details.cleanDesc}</p>
+								<p class="text-xs sm:text-sm md:text-[15px] font-bold text-pink-950 leading-relaxed whitespace-pre-wrap mt-1 mb-2">{details.cleanDesc}</p>
 							{/if}
 
 							<!-- Media -->
 							{#if memory.photo_video}
 								{#if (!memory.photo_video_type || memory.photo_video_type.startsWith('image/')) && !(typeof memory.photo_video === 'string' && (memory.photo_video.endsWith('.mp4') || memory.photo_video.endsWith('.webm') || memory.photo_video.endsWith('.mov')))}
 									<div class="relative rounded-2xl overflow-hidden border border-pink-100/90 cursor-pointer hover:border-pink-300 transition-all duration-200 bg-[#fff0f5] shadow-2xs" onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'image')}>
-										<img src={getMediaUrl(memory.photo_video)} alt="Memory" class="w-full max-h-36 sm:max-h-40 object-contain hover:scale-105 transition-transform duration-300 rounded-2xl" />
+										<img src={getMediaUrl(memory.photo_video)} alt="Memory" class="w-full max-h-48 sm:max-h-60 md:max-h-72 object-contain hover:scale-105 transition-transform duration-300 rounded-2xl" />
 									</div>
 								{:else}
-									<div class="relative rounded-2xl overflow-hidden border border-pink-100/90 bg-[#1e1e24] flex flex-col items-center justify-center shadow-2xs max-h-44 sm:max-h-48">
+									<div class="relative rounded-2xl overflow-hidden border border-pink-100/90 bg-[#1e1e24] flex flex-col items-center justify-center shadow-2xs max-h-52 sm:max-h-64 md:max-h-80">
 										<video 
 											src={getMediaUrl(memory.photo_video)} 
-											class="w-full max-h-44 sm:max-h-48 object-contain" 
+											class="w-full max-h-52 sm:max-h-64 md:max-h-80 object-contain" 
 											controls 
 											playsinline 
 											preload="metadata"
@@ -1097,10 +1100,10 @@
 										<button
 											type="button"
 											onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'video')}
-											class="absolute top-2 right-2 bg-[#f43f8e]/90 hover:bg-[#e0337f] text-white text-[10px] font-bold px-2 py-0.5 rounded-lg backdrop-blur-xs flex items-center space-x-1 transition-all z-10 shadow-xs active:scale-95 cursor-pointer"
+											class="absolute top-2.5 right-2.5 bg-[#f43f8e]/90 hover:bg-[#e0337f] text-white text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-lg backdrop-blur-xs flex items-center space-x-1 transition-all z-10 shadow-xs active:scale-95 cursor-pointer"
 											title="Full view"
 										>
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3">
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
 											</svg>
 											<span>Full view</span>
@@ -1111,37 +1114,35 @@
 
 							<!-- Custom Pink Pill Audio Player -->
 							{#if memory.music}
-								<div class="bg-pink-50/50 border border-pink-100 rounded-2xl p-2.5 mt-2 space-y-1.5">
-									<div class="flex items-center space-x-1.5 min-w-0">
-										<div class="w-5 h-5 rounded-full bg-[#f43f8e] text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
-											<svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
+								<div class="bg-pink-50/50 border border-pink-100 rounded-2xl p-2.5 sm:p-3 mt-2 space-y-1.5">
+									<div class="flex items-center space-x-2 min-w-0">
+										<div class="w-6 h-6 rounded-full bg-[#f43f8e] text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
+											<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
 												<path d="M19.95 2.1a1 1 0 00-.95.1L8 6.4a1 1 0 00-.8 1V17.5a3.5 3.5 0 102 3.14V11.2l9-3.6v6.9a3.5 3.5 0 102 3.14V3a1 1 0 00-.25-.9z" />
 											</svg>
 										</div>
-										<p class="text-[11px] font-black text-pink-900 truncate" title={getMusicName(memory.music)}>
-											{getMusicName(memory.music)}
-										</p>
+										<p class="text-xs sm:text-sm font-bold text-pink-950 truncate flex-1">{getMusicName(memory.music)}</p>
 									</div>
 
-									<div class="bg-white rounded-full px-2.5 py-1 border border-pink-100 flex items-center space-x-1.5 shadow-2xs">
+									<!-- Player Controls -->
+									<div class="flex items-center space-x-2">
 										<button
 											type="button"
 											onclick={() => togglePlayAudio(memory.id)}
-											class="w-6 h-6 rounded-full bg-[#f43f8e] hover:bg-[#e0337f] text-white flex items-center justify-center flex-shrink-0 shadow-xs active:scale-95 transition-all cursor-pointer"
-											title={playingAudioId === memory.id ? 'Pause' : 'Play'}
+											class="w-6 h-6 rounded-full bg-[#f43f8e] hover:bg-[#e0337f] text-white flex items-center justify-center flex-shrink-0 transition-all active:scale-95 shadow-2xs cursor-pointer"
 										>
 											{#if playingAudioId === memory.id}
-												<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-													<path fill-rule="evenodd" d="M6.75 5.25a.75.75 0 01.75.75v12a.75.75 0 01-1.5 0v-12a.75.75 0 01.75-.75zm10.5 0a.75.75 0 01.75.75v12a.75.75 0 01-1.5 0v-12a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+												<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
+													<path fill-rule="evenodd" d="M6.75 5.25a.75.75 0 01.75.75v12a.75.75 0 01-1.5 0v-12a.75.75 0 01.75-.75zm9 0a.75.75 0 01.75.75v12a.75.75 0 01-1.5 0v-12a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 												</svg>
 											{:else}
-												<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 translate-x-0.5" viewBox="0 0 24 24" fill="currentColor">
+												<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
 													<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
 												</svg>
 											{/if}
 										</button>
 
-										<span class="text-[9px] font-black text-pink-600 min-w-[22px] text-right tabular-nums">
+										<span class="text-[10px] font-black text-pink-600 min-w-[26px] text-right tabular-nums">
 											{formatAudioTime(audioCurrentTimes[memory.id] || 0)}
 										</span>
 
@@ -1152,10 +1153,10 @@
 											step="0.1"
 											value={audioCurrentTimes[memory.id] || 0}
 											oninput={(e) => handleAudioSeek(memory.id, e)}
-											class="flex-1 h-1 bg-pink-100 accent-[#f43f8e] rounded-full cursor-pointer"
+											class="flex-1 h-1.5 bg-pink-100 accent-[#f43f8e] rounded-full cursor-pointer"
 										/>
 
-										<span class="text-[9px] font-bold text-pink-400 min-w-[22px] tabular-nums">
+										<span class="text-[10px] font-bold text-pink-400 min-w-[26px] tabular-nums">
 											{formatAudioTime(audioDurations[memory.id] || 0)}
 										</span>
 
@@ -1177,8 +1178,8 @@
 							{/if}
 
 							<!-- Timestamp -->
-							<div class="pt-1.5 border-t border-pink-50">
-								<span class="text-[10px] text-pink-400 font-bold">
+							<div class="pt-2 border-t border-pink-50">
+								<span class="text-[10px] sm:text-xs text-pink-400 font-bold">
 									Created: {formatTime(memory.created_at)}
 								</span>
 							</div>
@@ -1191,12 +1192,12 @@
 	</div>
 
 	<!-- Add Memory Button - Fixed at Bottom -->
-	<div class="mt-2.5 pt-2.5 border-t border-pink-100 flex-shrink-0">
+	<div class="mt-3 pt-3 border-t border-pink-100 flex-shrink-0">
 		<button
 			onclick={() => dispatch('addMemory')}
-			class="w-full py-2 px-3 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs font-bold text-white rounded-xl flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer"
+			class="w-full py-2.5 sm:py-3 px-4 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold text-white rounded-xl flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer"
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
 			</svg>
 			<span>Add Another Memory</span>

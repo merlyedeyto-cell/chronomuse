@@ -12,6 +12,9 @@
 	import AddMemoryCard from '$lib/AddMemoryCard.svelte';
 	import PinnedMemoryCard from '$lib/PinnedMemoryCard.svelte';
 	import ViewMemoryModal from '$lib/ViewMemoryModal.svelte';
+	import DashboardStatsCard from '$lib/DashboardStatsCard.svelte';
+	import DashboardFlashback from '$lib/DashboardFlashback.svelte';
+	import DashboardClock from '$lib/DashboardClock.svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let isLoading = $state(false);
@@ -102,7 +105,13 @@
 					loadMemoriesForMonth(now.getMonth(), now.getFullYear());
 				}
 			} else {
-				loadMemoriesForMonth(now.getMonth(), now.getFullYear());
+				const y = now.getFullYear();
+				const m = String(now.getMonth() + 1).padStart(2, '0');
+				const d = String(now.getDate()).padStart(2, '0');
+				selectedDate = `${y}-${m}-${d}`;
+				loadMemoriesForMonth(now.getMonth(), now.getFullYear()).then(() => {
+					memoriesForDate = memoriesData[selectedDate] || [];
+				});
 			}
 
 			loadPinnedDates();
@@ -271,6 +280,7 @@
 			const month = String(date.getMonth() + 1).padStart(2, '0');
 			const day = String(date.getDate()).padStart(2, '0');
 			selectedDate = `${year}-${month}-${day}`;
+			memoriesForDate = memoriesData[selectedDate] || [];
 		}
 		document.body.style.overflow = '';
 		showAddMemory = true;
@@ -290,11 +300,23 @@
 			const month = String(date.getMonth() + 1).padStart(2, '0');
 			const day = String(date.getDate()).padStart(2, '0');
 			selectedDate = `${year}-${month}-${day}`;
-			memoriesForDate = memories;
+			memoriesForDate = memories || memoriesData[selectedDate] || [];
 		}
 		showViewMemory = true;
 		showViewMemoryModalWrapper = true;
 		showAddMemory = false;
+	}
+
+	function handleViewStatsMemory(event) {
+		const memory = event.detail;
+		if (memory && memory.date) {
+			selectedDate = memory.date;
+			loadMemoriesForDate(memory.date).then(() => {
+				memoriesForDate = memoriesData[memory.date] || [memory];
+				showViewMemory = true;
+				showAddMemory = false;
+			});
+		}
 	}
 
 	function handleSaveMemory(event) {
@@ -694,7 +716,7 @@
 
 			if (data.success && data.data) {
 				memoriesData = { ...memoriesData, [date]: data.data };
-				if (showViewMemory && selectedDate === date) {
+				if (selectedDate === date) {
 					memoriesForDate = data.data;
 				}
 			}
@@ -727,9 +749,23 @@
 	<main class="flex-grow px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-28 sm:pb-32 md:ml-0 overflow-hidden">
 			<div class="flex justify-center">
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 xl:gap-8 max-w-7xl 2xl:max-w-[1600px] w-full">
-					<!-- Left Column - Pinned Memories -->
-					<div class="animate-fade-in-up" style="animation-delay: 0.1s">
-						<PinnedMemoryCard bind:this={pinnedMemoryCardRef} userId={user?.id} on:deletePinnedDate={handleDeletePinnedDate} on:viewPinnedMemory={handleViewPinnedMemory} />
+					<!-- Left Column - Pinned Memories & Memory Flashback -->
+					<div class="space-y-4 animate-fade-in-up" style="animation-delay: 0.1s">
+						<PinnedMemoryCard
+							bind:this={pinnedMemoryCardRef}
+							userId={user?.id}
+							on:deletePinnedDate={handleDeletePinnedDate}
+							on:viewPinnedMemory={handleViewPinnedMemory}
+						/>
+						<!-- Desktop Only: Memory Flashback & Live Clock in Left Column -->
+						<div class="hidden md:block space-y-4">
+							<DashboardFlashback
+								userId={user?.id}
+								{memoriesData}
+								on:viewMemory={handleViewStatsMemory}
+							/>
+							<DashboardClock />
+						</div>
 					</div>
 
 					<!-- Center Column - Calendar -->
@@ -745,8 +781,8 @@
 						/>
 					</div>
 
-					<!-- Right Column - Add Memory Form / Info Card (Sa Gilid) -->
-					<div bind:this={addMemoryContainerRef} class="animate-fade-in-up" style="animation-delay: 0.3s">
+					<!-- Right Column - Add Memory Form / Daily Affirmation & Streak -->
+					<div bind:this={addMemoryContainerRef} class="space-y-4 animate-fade-in-up" style="animation-delay: 0.3s">
 						{#if showAddMemory}
 							<AddMemoryCard
 								{selectedDate}
@@ -761,13 +797,27 @@
 								<p class="text-[11px] text-pink-400 mb-3 leading-relaxed font-bold">Click any date on the calendar to view or add new memories!</p>
 								<button
 									onclick={toggleAddMemory}
-									class="w-full py-2 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md"
+									class="w-full py-2.5 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md cursor-pointer"
 								>
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
 									</svg>
 									<span>Open Add Memory Form</span>
 								</button>
+							</div>
+
+							<DashboardStatsCard
+								userId={user?.id}
+								{memoriesData}
+							/>
+
+							<!-- Mobile Only: Memory Flashback at the very bottom of the page -->
+							<div class="block md:hidden">
+								<DashboardFlashback
+									userId={user?.id}
+									{memoriesData}
+									on:viewMemory={handleViewStatsMemory}
+								/>
 							</div>
 						{/if}
 					</div>

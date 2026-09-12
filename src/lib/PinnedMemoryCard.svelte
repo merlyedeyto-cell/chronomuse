@@ -164,7 +164,7 @@
 			<p class="text-[10px] text-pink-400/80 mt-0.5 font-medium">Long-press any date on calendar to pin</p>
 		</div>
 	{:else}
-		<div class="space-y-1.5 max-h-[280px] overflow-y-auto scrollbar-hide pr-0.5">
+		<div class="space-y-1.5 max-h-[175px] sm:max-h-[185px] overflow-y-auto custom-pinned-scroll pr-1">
 			{#each pinnedMemories as pinned (pinned.pinned_id)}
 				<div class="flex items-center space-x-2 p-2 bg-[#fdf2f6]/60 border border-pink-100/80 rounded-xl hover:border-pink-200 hover:bg-[#fff5f8] transition-all duration-200 cursor-pointer shadow-2xs group active:scale-[0.99]" onclick={() => viewMemory(pinned)}>
 					<!-- Date Badge -->
@@ -240,22 +240,28 @@
 </div>
 
 <style>
-	.scrollbar-hide::-webkit-scrollbar {
-		display: none;
-	}
-	.scrollbar-hide {
-		-ms-overflow-style: none;
-		scrollbar-width: none;
-	}
-
 	/* Custom scrollbar for pinned memories list */
-	.max-h-\[300px\]::-webkit-scrollbar {
-		width: 6px;
+	.custom-pinned-scroll::-webkit-scrollbar {
+		width: 4px;
 	}
 
-	.max-h-\[300px\]::-webkit-scrollbar-track {
-		background: rgba(255, 225, 240, 0.5);
-		border-radius: 10px;
+	.custom-pinned-scroll::-webkit-scrollbar-track {
+		background: rgba(254, 226, 238, 0.4);
+		border-radius: 8px;
+	}
+
+	.custom-pinned-scroll::-webkit-scrollbar-thumb {
+		background: #f472b6;
+		border-radius: 8px;
+	}
+
+	.custom-pinned-scroll::-webkit-scrollbar-thumb:hover {
+		background: #f43f8e;
+	}
+
+	.custom-pinned-scroll {
+		scrollbar-width: thin;
+		scrollbar-color: #f472b6 rgba(254, 226, 238, 0.4);
 	}
 
 	.max-h-\[300px\]::-webkit-scrollbar-thumb {
