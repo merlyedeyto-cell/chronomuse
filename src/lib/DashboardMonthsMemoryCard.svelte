@@ -236,33 +236,33 @@
 		</div>
 	{:else}
 		<div class="h-[142px] overflow-y-auto custom-pinned-scroll pr-0.5">
-			<div class="grid grid-cols-4 gap-1.5 content-start">
+			<div class="grid grid-cols-5 gap-1 sm:gap-1.5 content-start">
 				{#each displayedMonths as month}
 					<button
 						type="button"
 						onclick={() => handleMonthClick(month.index)}
-						class="p-1.5 rounded-xl border transition-all duration-200 flex flex-col items-center justify-between text-center relative group cursor-pointer active:scale-95 shadow-2xs
+						class="p-1 sm:p-1.5 rounded-xl border transition-all duration-200 flex flex-col items-center justify-between text-center relative group cursor-pointer active:scale-95 shadow-2xs
 							{month.isCurrentSelected
 								? 'bg-gradient-to-b from-pink-100 to-pink-50 border-[#f43f8e] ring-2 ring-[#f43f8e]/40 shadow-xs'
 								: 'bg-white hover:bg-pink-50/90 border-pink-200/90 hover:border-[#f43f8e] hover:shadow-xs'}"
 						title="Jump to {month.name} {selectedYear} ({month.count} memories)"
 					>
 						<!-- Month Name -->
-						<span class="text-[11px] font-black text-pink-950 group-hover:text-[#f43f8e] transition-colors">
+						<span class="text-[10px] sm:text-[11px] font-black text-pink-950 group-hover:text-[#f43f8e] transition-colors">
 							{month.shortName}
 						</span>
 
 						<!-- Memory Count Badge -->
 						<div class="mt-0.5">
-							<span class="text-[8.5px] font-black px-1.5 py-0.5 rounded-full bg-[#f43f8e] text-white shadow-2xs inline-flex items-center gap-0.5">
+							<span class="text-[8px] sm:text-[8.5px] font-black px-1 sm:px-1.5 py-0.5 rounded-full bg-[#f43f8e] text-white shadow-2xs inline-flex items-center gap-0.5">
 								<span>{month.count}</span>
-								<span class="text-[7px] opacity-90">{month.count === 1 ? 'mem' : 'mems'}</span>
+								<span class="text-[6.5px] sm:text-[7px] opacity-90">{month.count === 1 ? 'm' : 'mems'}</span>
 							</span>
 						</div>
 
 						<!-- Indicator dot if active selected month in main calendar -->
 						{#if month.isCurrentSelected}
-							<span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#f43f8e]"></span>
+							<span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-[#f43f8e]"></span>
 						{/if}
 					</button>
 				{/each}
