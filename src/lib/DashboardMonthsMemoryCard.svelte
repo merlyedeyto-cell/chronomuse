@@ -236,15 +236,15 @@
 		</div>
 	{:else}
 		<div class="h-[142px] flex flex-col justify-between pr-0.5">
-			<div class="grid grid-cols-6 gap-1 content-start overflow-y-auto custom-pinned-scroll max-h-[105px]">
+			<div class="p-1 grid grid-cols-6 gap-1 content-start overflow-y-auto custom-pinned-scroll max-h-[108px]">
 				{#each displayedMonths as month}
 					<button
 						type="button"
 						onclick={() => handleMonthClick(month.index)}
-						class="p-1 sm:p-1.5 rounded-lg sm:rounded-xl border transition-all duration-200 flex flex-col items-center justify-between text-center relative group cursor-pointer active:scale-95 shadow-2xs
+						class="p-1 sm:p-1.5 rounded-lg sm:rounded-xl border transition-all duration-200 flex flex-col items-center justify-between text-center relative group cursor-pointer active:scale-95
 							{month.isCurrentSelected
-								? 'bg-gradient-to-b from-pink-100 to-pink-50 border-[#f43f8e] ring-2 ring-[#f43f8e]/40 shadow-xs'
-								: 'bg-white hover:bg-pink-50/90 border-pink-200/90 hover:border-[#f43f8e] hover:shadow-xs'}"
+								? 'bg-gradient-to-b from-pink-100 to-pink-50 border-[#f43f8e] shadow-[0_0_0_1.5px_#f43f8e]'
+								: 'bg-white hover:bg-pink-50/90 border-pink-200/90 hover:border-[#f43f8e] shadow-2xs hover:shadow-xs'}"
 						title="Jump to {month.name} {selectedYear} ({month.count} memories)"
 					>
 						<!-- Month Name -->
