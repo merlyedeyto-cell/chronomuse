@@ -784,40 +784,44 @@
 					<!-- Right Column - Add Memory Form / Daily Affirmation & Streak -->
 					<div bind:this={addMemoryContainerRef} class="space-y-4 animate-fade-in-up" style="animation-delay: 0.3s">
 						{#if showAddMemory}
-							<AddMemoryCard
-								{selectedDate}
-								bind:resetForm={resetAddMemoryForm}
-								on:saveMemory={handleSaveMemory}
-								on:close={handleCloseAddMemory}
-								on:showToast={showMemoryToast}
-							/>
-						{:else}
-							<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 text-center shadow-[0_4px_20px_rgba(244,114,182,0.08)] transition-all duration-300">
-								<h3 class="text-xs sm:text-sm font-black text-pink-950 mb-1">Create & Capture Memories</h3>
-								<p class="text-[11px] text-pink-400 mb-3 leading-relaxed font-bold">Click any date on the calendar to view or add new memories!</p>
-								<button
-									onclick={toggleAddMemory}
-									class="w-full py-2.5 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md cursor-pointer"
-								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-									</svg>
-									<span>Open Add Memory Form</span>
-								</button>
+							<div class="animate-smooth-reveal">
+								<AddMemoryCard
+									{selectedDate}
+									bind:resetForm={resetAddMemoryForm}
+									on:saveMemory={handleSaveMemory}
+									on:close={handleCloseAddMemory}
+									on:showToast={showMemoryToast}
+								/>
 							</div>
+						{:else}
+							<div class="space-y-4 animate-smooth-reveal">
+								<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 text-center shadow-[0_4px_20px_rgba(244,114,182,0.08)] transition-all duration-300 hover:border-pink-200">
+									<h3 class="text-xs sm:text-sm font-black text-pink-950 mb-1">Create & Capture Memories</h3>
+									<p class="text-[11px] text-pink-400 mb-3 leading-relaxed font-bold">Click any date on the calendar to view or add new memories!</p>
+									<button
+										onclick={toggleAddMemory}
+										class="w-full py-2.5 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md cursor-pointer"
+									>
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+										</svg>
+										<span>Open Add Memory Form</span>
+									</button>
+								</div>
 
-							<DashboardStatsCard
-								userId={user?.id}
-								{memoriesData}
-							/>
-
-							<!-- Mobile Only: Memory Flashback at the very bottom of the page -->
-							<div class="block md:hidden">
-								<DashboardFlashback
+								<DashboardStatsCard
 									userId={user?.id}
 									{memoriesData}
-									on:viewMemory={handleViewStatsMemory}
 								/>
+
+								<!-- Mobile Only: Memory Flashback at the very bottom of the page -->
+								<div class="block md:hidden">
+									<DashboardFlashback
+										userId={user?.id}
+										{memoriesData}
+										on:viewMemory={handleViewStatsMemory}
+									/>
+								</div>
 							</div>
 						{/if}
 					</div>
@@ -1027,5 +1031,21 @@
 
 	.animate-modal-content {
 		animation: modal-content 0.3s ease-out cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	@keyframes smooth-reveal {
+		0% {
+			opacity: 0;
+			transform: translateY(12px) scale(0.985);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	.animate-smooth-reveal {
+		animation: smooth-reveal 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+		will-change: opacity, transform;
 	}
 </style>

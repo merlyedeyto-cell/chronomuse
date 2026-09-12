@@ -139,9 +139,10 @@
 	<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans">
 		<!-- Header -->
 		<div class="flex items-center justify-between mb-3.5">
-			<div class="flex items-center space-x-2">
-				<div class="w-7 h-7 rounded-xl bg-pink-100/80 text-[#f43f8e] flex items-center justify-center border border-pink-200/80 shadow-2xs">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+			<div class="flex items-center space-x-1.5">
+				<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
+					<!-- Memory Streak Flame SVG -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
 						<path fill-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.177A7.547 7.547 0 016.6 11.25a7.5 7.5 0 0014.28 2.657 9.747 9.747 0 00-3.418-8.799 15.08 15.08 0 00-4.499-2.822zM12 7.5a6 6 0 00-4.5 9.975A6.002 6.002 0 0018 15c0-1.637-.654-3.12-1.716-4.204a11.968 11.968 0 01-1.859-2.028A7.508 7.508 0 0112 7.5z" clip-rule="evenodd" />
 					</svg>
 				</div>
@@ -150,8 +151,8 @@
 					<p class="text-[10px] text-pink-400 font-bold">Daily journal momentum</p>
 				</div>
 			</div>
-			<span class="text-[11px] font-black bg-pink-50 text-[#f43f8e] border border-pink-200/80 px-2.5 py-1 rounded-full flex items-center space-x-1.5">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-[#f43f8e]">
+			<span class="text-[11px] font-black bg-pink-50 text-[#f43f8e] border border-pink-200/80 px-2.5 py-1 rounded-full flex items-center space-x-1.5 shadow-2xs">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
 					<path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.316.492-.59 1.043-.843 1.603C8.75 5.8 8.04 7.42 8 8.5c0 .247.02.484.058.71a5.006 5.006 0 00-1.61-.476 1 1 0 00-.916 1.543c.478.775 1.157 1.554 1.956 2.193C8.423 13.2 9.61 14 11 14c3.314 0 6-2.686 6-6 0-1.95-1.118-3.666-2.605-4.447z" clip-rule="evenodd" />
 				</svg>
 				<span>{streakDays} {streakDays === 1 ? 'Day' : 'Days'}</span>
@@ -169,7 +170,7 @@
 				<span class="text-[9px] sm:text-[10px] text-pink-500 font-bold uppercase tracking-wider">Photos</span>
 			</div>
 			<div class="bg-pink-50/70 border border-pink-100/80 rounded-xl p-2 text-center transition-all hover:bg-pink-50">
-				<span class="block text-xs sm:text-sm font-black text-[#f43f8e] truncate mt-1 leading-tight">{topMood}</span>
+				<span class="block text-xs sm:text-sm font-black text-[#f43f8e] truncate mt-0.5 leading-tight">{topMood}</span>
 				<span class="text-[9px] sm:text-[10px] text-pink-500 font-bold uppercase tracking-wider">Top Vibe</span>
 			</div>
 		</div>
@@ -179,9 +180,10 @@
 	<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-4.5 shadow-[0_4px_20px_rgba(244,114,182,0.06)] relative overflow-hidden font-sans">
 		<div class="flex items-center justify-between mb-2">
 			<div class="flex items-center space-x-1.5">
-				<div class="w-5 h-5 rounded-md bg-pink-50 text-[#f43f8e] flex items-center justify-center border border-pink-100">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
-						<path fill-rule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5z" clip-rule="evenodd" />
+				<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
+					<!-- Daily Affirmation Heart SVG -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
+						<path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
 					</svg>
 				</div>
 				<span class="text-[11px] font-black tracking-wider uppercase text-[#f43f8e]">Daily Affirmation</span>

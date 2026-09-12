@@ -23,39 +23,55 @@
 <div class="flex flex-col min-h-screen bg-[#fff0f5] font-sans text-sm select-none antialiased">
 	<!-- Top Bar / Header Matching AppHeader Aesthetic -->
 	<header class="bg-pink-100/90 sm:bg-pink-100/95 backdrop-blur-md sticky top-0 z-40 transition-all border-b border-pink-200/60">
-		<div class="max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between">
+		<div class="max-w-7xl 2xl:max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-3.5 flex items-center justify-between gap-2">
 			<!-- Logo -->
-			<button type="button" onclick={handleLogoClick} class="flex items-center space-x-3 group cursor-pointer select-none text-left">
-				<div class="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-2xl bg-black flex items-center justify-center p-1 shadow-sm group-hover:scale-105 transition-transform duration-200">
-					<img src="/logo.png" alt="ChronoMuse Mascot" class="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 object-contain pointer-events-none" />
+			<button type="button" onclick={handleLogoClick} class="flex items-center space-x-2 sm:space-x-3 group cursor-pointer select-none text-left min-w-0">
+				<div class="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl bg-black flex items-center justify-center p-1 shadow-sm group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
+					<img src="/logo.png" alt="ChronoMuse Mascot" class="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 object-contain pointer-events-none" />
 				</div>
-				<span class="text-xl sm:text-2xl md:text-3xl font-black font-sans text-[#ff3e88] tracking-tight group-hover:text-pink-600 transition-colors select-none">ChronoMuse</span>
+				<span class="text-lg sm:text-2xl md:text-3xl font-black font-sans text-[#ff3e88] tracking-tight group-hover:text-pink-600 transition-colors select-none truncate">ChronoMuse</span>
 			</button>
 
 			<!-- Navigation -->
 			{#if showNav}
-				<div class="flex items-center space-x-3 sm:space-x-4 lg:space-x-5">
-					<nav class="flex items-center space-x-1.5 bg-white/90 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-pink-200/90 shadow-2xs font-sans">
+				<div class="flex items-center flex-shrink-0">
+					<nav class="flex items-center space-x-1 sm:space-x-1.5 bg-white/90 backdrop-blur-md p-1 sm:px-2.5 sm:py-1.5 rounded-full border border-pink-200/90 shadow-2xs font-sans">
 						<button
 							type="button"
 							onclick={() => handleTabClick('home')}
-							class="px-3.5 lg:px-4 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm font-black transition-all flex items-center space-x-1.5 cursor-pointer select-none active:scale-95 {activeTab === 'home' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-[#f43f8e] hover:bg-pink-50'}"
+							title="Home"
+							aria-label="Home"
+							class="p-2 sm:px-3.5 sm:py-1.5 lg:px-4 lg:py-2 rounded-full text-xs lg:text-sm font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer select-none active:scale-95 {activeTab === 'home' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-[#f43f8e] hover:bg-pink-50'}"
 						>
-							Home
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+								<path d="M11.47 3.841a.75.75 0 0 1 1.06 0l8.69 8.69a.75.75 0 1 1-1.06 1.061l-.97-.97V19.5a2.25 2.25 0 0 1-2.25 2.25H6.06A2.25 2.25 0 0 1 3.81 19.5V12.62l-.97.97a.75.75 0 0 1-1.06-1.06l8.69-8.69Z" />
+							</svg>
+							<span class="hidden sm:inline">Home</span>
 						</button>
 						<button
 							type="button"
 							onclick={() => handleTabClick('about')}
-							class="px-3.5 lg:px-4 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm font-black transition-all flex items-center space-x-1.5 cursor-pointer select-none active:scale-95 {activeTab === 'about' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-[#f43f8e] hover:bg-pink-50'}"
+							title="About"
+							aria-label="About"
+							class="p-2 sm:px-3.5 sm:py-1.5 lg:px-4 lg:py-2 rounded-full text-xs lg:text-sm font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer select-none active:scale-95 {activeTab === 'about' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-[#f43f8e] hover:bg-pink-50'}"
 						>
-							About
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+								<path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
+							</svg>
+							<span class="hidden sm:inline">About</span>
 						</button>
 						<button
 							type="button"
 							onclick={() => handleTabClick('contact')}
-							class="px-3.5 lg:px-4 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm font-black transition-all flex items-center space-x-1.5 cursor-pointer select-none active:scale-95 {activeTab === 'contact' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-[#f43f8e] hover:bg-pink-50'}"
+							title="Contact"
+							aria-label="Contact"
+							class="p-2 sm:px-3.5 sm:py-1.5 lg:px-4 lg:py-2 rounded-full text-xs lg:text-sm font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer select-none active:scale-95 {activeTab === 'contact' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-[#f43f8e] hover:bg-pink-50'}"
 						>
-							Contact
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+								<path d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3.75 3.75 0 0 1-3.144 0L1.5 8.67Z" />
+								<path d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z" />
+							</svg>
+							<span class="hidden sm:inline">Contact</span>
 						</button>
 					</nav>
 				</div>

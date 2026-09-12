@@ -432,7 +432,7 @@
 		}
 		setTimeout(() => {
 			dispatch('close');
-		}, 300);
+		}, 220);
 	}
 
 	function insertEmoji(emoji) {
@@ -490,7 +490,7 @@
 </script>
 
 <div
-	class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 relative transition-all duration-300 animate-modal-content max-w-lg mx-auto shadow-[0_4px_24px_rgba(244,114,182,0.12)] font-sans"
+	class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 relative transition-all duration-200 ease-out animate-modal-content max-w-lg mx-auto shadow-[0_4px_24px_rgba(244,114,182,0.12)] font-sans"
 	class:opacity-0={isOpening || isClosing}
 	class:scale-95={isOpening || isClosing}
 	class:transform={isOpening || isClosing}

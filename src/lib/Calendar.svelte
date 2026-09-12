@@ -447,7 +447,7 @@
 	<div class="mt-3.5 pt-3 border-t border-pink-100">
 		<button
 			onclick={jumpToToday}
-			class="w-full py-1.5 sm:py-2 px-3 bg-[#e0337f] hover:bg-[#c9256d] text-white rounded-xl text-xs font-bold transition-all duration-200 shadow-xs active:scale-95 flex items-center justify-center space-x-1.5 cursor-pointer"
+			class="w-full py-2.5 px-3 bg-[#e0337f] hover:bg-[#c9256d] text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
 		>
 			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
