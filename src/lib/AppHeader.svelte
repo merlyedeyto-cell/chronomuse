@@ -254,31 +254,37 @@
 <!-- Logout Confirmation Modal -->
 {#if showLogoutModal}
 	<div
-		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 animate-fade-in"
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3.5 sm:p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) showLogoutModal = false; }}
 		role="dialog"
 		aria-modal="true"
 		tabindex="-1"
 		onkeydown={(e) => { if (e.key === 'Escape') showLogoutModal = false; }}
 	>
-		<div class="bg-white border border-pink-200 rounded-2xl max-w-xs w-full p-5 text-center relative overflow-hidden shadow-2xl">
-			<h3 class="text-sm font-black text-pink-950 mb-1">Log Out of ChronoMuse?</h3>
-			<p class="text-[11px] text-pink-400 mb-4 font-bold">
+		<div class="bg-white border border-pink-100/90 rounded-3xl max-w-xs sm:max-w-md w-full p-5 sm:p-7 text-center relative overflow-hidden shadow-2xl animate-scale-up">
+			<div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center mx-auto mb-3 shadow-2xs">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 sm:w-7 sm:h-7">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+				</svg>
+			</div>
+
+			<h3 class="text-sm sm:text-lg font-black text-pink-950 mb-1 sm:mb-1.5">Log Out of ChronoMuse?</h3>
+			<p class="text-xs sm:text-sm text-pink-400 mb-5 sm:mb-6 font-medium">
 				Are you sure you want to log out of your account?
 			</p>
 
-			<div class="flex items-center space-x-2">
+			<div class="flex items-center space-x-2.5 sm:space-x-3">
 				<button
 					type="button"
 					onclick={() => showLogoutModal = false}
-					class="w-1/2 py-2 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-xl font-black text-xs transition-all cursor-pointer"
+					class="w-1/2 py-2.5 sm:py-3 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm transition-all cursor-pointer active:scale-95 shadow-2xs"
 				>
 					Cancel
 				</button>
 				<button
 					type="button"
 					onclick={handleLogout}
-					class="w-1/2 py-2 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer shadow-xs"
+					class="w-1/2 py-2.5 sm:py-3 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm transition-all active:scale-95 cursor-pointer shadow-md"
 				>
 					Log Out
 				</button>
