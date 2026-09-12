@@ -193,6 +193,7 @@
 				{currentYear}
 				{currentMonth}
 				{memoriesData}
+				isEmbedded={true}
 				on:monthSelected={(e) => {
 					dispatch('monthSelected', e.detail);
 				}}
