@@ -1591,11 +1591,11 @@
 							</div>
 						{:else}
 							<!-- Action buttons on other user profile -->
-							<div class="flex items-center gap-1.5 flex-wrap">
+							<div class="flex items-center gap-1 sm:gap-1.5 flex-nowrap flex-shrink-0">
 								<button
 									type="button"
 									onclick={handleCopyProfileLink}
-									class="p-2 sm:px-3 sm:py-1.5 bg-pink-50 hover:bg-pink-100 border border-pink-200/90 text-pink-700 text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center justify-center space-x-1.5 cursor-pointer"
+									class="p-1.5 sm:px-3 sm:py-1.5 bg-pink-50 hover:bg-pink-100 border border-pink-200/90 text-pink-700 text-[11px] sm:text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center justify-center space-x-1 cursor-pointer"
 									title="Share Profile Link"
 									aria-label="Share Profile Link"
 								>
@@ -1616,44 +1616,48 @@
 										type="button"
 										onclick={cancelFriendRequestOnProfile}
 										disabled={isSaving}
-										class="group px-3.5 py-1.5 bg-amber-50 hover:bg-rose-50 text-amber-700 hover:text-rose-600 border border-amber-200 hover:border-rose-200 text-xs font-black rounded-full transition-all cursor-pointer active:scale-95 shadow-2xs flex items-center space-x-1"
+										class="group px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-amber-50 hover:bg-rose-50 text-amber-700 hover:text-rose-600 border border-amber-200 hover:border-rose-200 text-[11px] sm:text-xs font-black rounded-full transition-all cursor-pointer active:scale-95 shadow-2xs flex items-center space-x-1"
 										title="Click to cancel friend request"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-amber-600 group-hover:hidden">
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-amber-600 group-hover:hidden flex-shrink-0">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
 										</svg>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-rose-500 hidden group-hover:inline">
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-rose-500 hidden group-hover:inline flex-shrink-0">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 										</svg>
-										<span class="group-hover:hidden">Request Pending</span>
-										<span class="hidden group-hover:inline">Cancel Request</span>
+										<span class="group-hover:hidden whitespace-nowrap"><span class="hidden sm:inline">Request </span>Pending</span>
+										<span class="hidden group-hover:inline whitespace-nowrap">Cancel<span class="hidden sm:inline"> Request</span></span>
 									</button>
 								{:else if !profileData.is_friend}
 									<button
 										type="button"
 										onclick={sendFriendRequestToTargetUser}
 										disabled={isSaving}
-										class="px-3.5 py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-xs rounded-full transition-all shadow-xs active:scale-95 cursor-pointer flex items-center space-x-1"
+										class="px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] sm:text-xs rounded-full transition-all shadow-xs active:scale-95 cursor-pointer flex items-center space-x-1"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 19.125a1.125 1.125 0 011.125-1.125h15.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H4.875a1.125 1.125 0 01-1.125-1.125v-2.25z" />
 										</svg>
-										<span>Add Friend</span>
+										<span class="whitespace-nowrap"><span class="hidden xs:inline">Add </span>Friend</span>
 									</button>
 								{:else}
 									<button
 										type="button"
 										onclick={() => promptRemoveFriend(profileData.user)}
-										class="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-black text-xs rounded-full transition-all cursor-pointer"
+										class="px-2.5 py-1.5 sm:px-3 sm:py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-black text-[11px] sm:text-xs rounded-full transition-all cursor-pointer whitespace-nowrap"
 									>
 										Friends
 									</button>
 								{/if}
 								<button
+									type="button"
 									onclick={() => openChatWithUser(profileData.user)}
-									class="px-3.5 py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-xs rounded-full transition-all shadow-xs active:scale-95 cursor-pointer"
+									class="px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] sm:text-xs rounded-full transition-all shadow-xs active:scale-95 cursor-pointer flex items-center space-x-1"
 								>
-									Message
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.812-.907 5.034 5.034 0 00.41-1.39A8.134 8.134 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+									</svg>
+									<span class="whitespace-nowrap">Message</span>
 								</button>
 							</div>
 						{/if}
