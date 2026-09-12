@@ -183,7 +183,7 @@
 	}
 </script>
 
-<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] transition-all duration-300 hover:border-pink-200">
+<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] transition-all duration-300 hover:border-pink-200">
 	<!-- Header -->
 	<div class="flex items-center justify-between mb-3 border-b border-pink-100 pb-3">
 		<div class="flex items-center space-x-2.5">
@@ -251,27 +251,27 @@
 			<p class="text-[10px] text-pink-400 font-medium mt-0.5">Add a memory on the calendar above to see it here!</p>
 		</div>
 	{:else}
-		<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+		<div class="grid grid-cols-4 gap-1.5 sm:gap-2">
 			{#each displayedMonths as month}
 				<button
 					type="button"
 					onclick={() => handleMonthClick(month.index)}
-					class="p-2 sm:p-2.5 rounded-2xl border transition-all duration-200 flex flex-col items-center justify-between text-center relative group cursor-pointer active:scale-95 shadow-2xs
+					class="p-1.5 sm:p-2 rounded-xl sm:rounded-2xl border transition-all duration-200 flex flex-col items-center justify-between text-center relative group cursor-pointer active:scale-95 shadow-2xs
 						{month.isCurrentSelected
 							? 'bg-gradient-to-b from-pink-100 to-pink-50 border-[#f43f8e] ring-2 ring-[#f43f8e]/40 shadow-xs'
 							: 'bg-white hover:bg-pink-50/90 border-pink-200/90 hover:border-[#f43f8e] hover:shadow-xs'}"
 					title="Navigate to {month.name} {selectedYear} ({month.count} memories)"
 				>
 					<!-- Month Name -->
-					<span class="text-xs font-black text-pink-950 group-hover:text-[#f43f8e] transition-colors">
+					<span class="text-[11px] sm:text-xs font-black text-pink-950 group-hover:text-[#f43f8e] transition-colors">
 						{month.shortName}
 					</span>
 
 					<!-- Memory Count Badge -->
-					<div class="mt-1">
-						<span class="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-[#f43f8e] text-white shadow-2xs inline-flex items-center gap-0.5">
+					<div class="mt-0.5 sm:mt-1">
+						<span class="text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-full bg-[#f43f8e] text-white shadow-2xs inline-flex items-center gap-0.5">
 							<span>{month.count}</span>
-							<span class="text-[8px] opacity-90">{month.count === 1 ? 'mem' : 'mems'}</span>
+							<span class="text-[7.5px] sm:text-[8px] opacity-90">{month.count === 1 ? 'mem' : 'mems'}</span>
 						</span>
 					</div>
 
