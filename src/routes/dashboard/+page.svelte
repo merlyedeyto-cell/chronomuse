@@ -491,6 +491,9 @@
 				showAddMemory = false;
 				// Refresh memories data for this date
 				await loadMemoriesForDate(selectedDate);
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_memory_change'));
+				}
 			} else {
 				showNotificationModal('Error saving memory: ' + (data.error || 'Unknown error'), 'error');
 			}
@@ -689,6 +692,10 @@
 					}
 				}
 
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_memory_change'));
+				}
+
 				showNotificationModal('Memory updated successfully!');
 			} else {
 				showNotificationModal('Error updating memory: ' + (data.error || 'Unknown error'), 'error');
@@ -725,6 +732,10 @@
 					for (const fid of data.shared_with) {
 						broadcastMemoryEvent(user.id, fid, 'shared_memory_update', data.data);
 					}
+				}
+
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_memory_change'));
 				}
 
 				showNotificationModal('Memory updated successfully!');
@@ -850,6 +861,7 @@
 									userId={user?.id}
 									currentYear={currentCalendarYear}
 									currentMonth={currentCalendarMonth}
+									{memoriesData}
 									on:monthSelected={handleNavigateToMonthFromCard}
 									on:yearChanged={handleYearChangedFromMonthCard}
 								/>

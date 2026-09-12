@@ -1,5 +1,6 @@
 <script>
 	import { onMount, createEventDispatcher } from 'svelte';
+	import { supabase } from '$lib/supabaseClient';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { playClickSound } from '$lib/soundEffects.js';
 
@@ -8,11 +9,13 @@
 	let {
 		userId = null,
 		currentYear = new Date().getFullYear(),
-		currentMonth = new Date().getMonth()
+		currentMonth = new Date().getMonth(),
+		memoriesData = {}
 	} = $props();
 
 	let allMemories = $state([]);
 	let isLoading = $state(true);
+	let realtimeChannel = null;
 
 	const monthNames = [
 		'January', 'February', 'March', 'April', 'May', 'June',
@@ -24,8 +27,17 @@
 		'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 	];
 
+	// React to userId or currentYear changes
 	$effect(() => {
 		if (userId) {
+			loadAllMemories();
+			setupRealtime();
+		}
+	});
+
+	// React immediately when memoriesData updates from dashboard calendar
+	$effect(() => {
+		if (memoriesData && userId) {
 			loadAllMemories();
 		}
 	});
@@ -33,22 +45,58 @@
 	onMount(() => {
 		if (userId) {
 			loadAllMemories();
+			setupRealtime();
 		}
 
 		const handleMemoryChange = () => {
-			if (userId) loadAllMemories();
+			if (userId) {
+				loadAllMemories();
+			}
 		};
 
 		window.addEventListener('chronomuse_memory_change', handleMemoryChange);
 		return () => {
 			window.removeEventListener('chronomuse_memory_change', handleMemoryChange);
+			cleanupRealtime();
 		};
 	});
+
+	function cleanupRealtime() {
+		if (realtimeChannel) {
+			supabase.removeChannel(realtimeChannel);
+			realtimeChannel = null;
+		}
+	}
+
+	function setupRealtime() {
+		if (!userId) return;
+		cleanupRealtime();
+
+		try {
+			realtimeChannel = supabase
+				.channel(`realtime_months_card_${userId}_${Math.random().toString(36).substring(2, 7)}`)
+				.on(
+					'postgres_changes',
+					{
+						event: '*',
+						schema: 'public',
+						table: 'chronomuse_memories',
+						filter: `user_id=eq.${userId}`
+					},
+					() => {
+						loadAllMemories();
+					}
+				)
+				.subscribe();
+		} catch (err) {
+			console.error('Error setting up realtime channel for months card:', err);
+		}
+	}
 
 	async function loadAllMemories() {
 		if (!userId) return;
 		try {
-			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${userId}&period=all`, { cache: 'no-store' });
+			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${userId}&period=all&_t=${Date.now()}`, { cache: 'no-store' });
 			const data = await res.json();
 			if (data.success && Array.isArray(data.data)) {
 				allMemories = data.data;
@@ -142,7 +190,7 @@
 	</div>
 
 	<!-- Months Interactive Grid (Only Months with Memories) -->
-	{#if isLoading}
+	{#if isLoading && allMemories.length === 0}
 		<div class="py-6 text-center space-y-2">
 			<div class="w-5 h-5 border-2 border-pink-200 border-t-[#f43f8e] rounded-full animate-spin mx-auto"></div>
 			<p class="text-xs text-pink-400 font-bold">Scanning memories for {currentYear}...</p>
