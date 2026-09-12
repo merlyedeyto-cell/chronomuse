@@ -235,8 +235,8 @@
 			<p class="text-[10px] text-pink-400/80 mt-0.5 font-medium">Add a memory on the calendar to see it here</p>
 		</div>
 	{:else}
-		<div class="h-[142px] overflow-y-auto custom-pinned-scroll pr-0.5">
-			<div class="grid grid-cols-6 gap-1 content-start">
+		<div class="h-[142px] flex flex-col justify-between pr-0.5">
+			<div class="grid grid-cols-6 gap-1 content-start overflow-y-auto custom-pinned-scroll max-h-[105px]">
 				{#each displayedMonths as month}
 					<button
 						type="button"
@@ -265,6 +265,19 @@
 						{/if}
 					</button>
 				{/each}
+			</div>
+
+			<!-- Description & Hint Note in the bottom space -->
+			<div class="pt-1.5 border-t border-pink-100/70 flex items-center justify-between text-[9.5px] sm:text-[10px] text-pink-400 font-bold px-0.5">
+				<span class="flex items-center gap-1 truncate">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-[#f43f8e] flex-shrink-0">
+						<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" />
+					</svg>
+					<span>Tap any month to switch calendar view</span>
+				</span>
+				<span class="text-[9px] text-pink-400 bg-pink-50 px-1.5 py-0.5 rounded-md border border-pink-200/60 font-black flex-shrink-0">
+					{displayedMonths.reduce((sum, m) => sum + m.count, 0)} total
+				</span>
 			</div>
 		</div>
 	{/if}
