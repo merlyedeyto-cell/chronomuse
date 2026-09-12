@@ -856,6 +856,49 @@
 		}
 	}
 
+	async function cancelFriendRequestFromChat(target) {
+		if (!user || !target || isSendingFriendRequest) return;
+		isSendingFriendRequest = true;
+		const targetId = String(target.friend_id || target.id);
+		const targetUname = (target.username || '').toLowerCase();
+		try {
+			const res = await fetch(API_ENDPOINTS.cancelFriendRequest, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					user_id: user.id,
+					friend_id: targetId
+				})
+			});
+			const data = await res.json();
+			if (data.error) {
+				showNotificationModal(data.error, 'error');
+			} else {
+				showNotificationModal('Friend request cancelled');
+				sentFriendRequestUsernames = sentFriendRequestUsernames.filter(u => u !== targetUname);
+
+				if (activeFriend && (String(activeFriend.friend_id || activeFriend.id) === targetId || (activeFriend.username || '').toLowerCase() === targetUname)) {
+					activeFriend = {
+						...activeFriend,
+						has_pending_request: false,
+						pending_request_sender_id: null
+					};
+				}
+
+				broadcastFriendEvent(user.id, targetId, 'request_cancelled');
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_friend_change'));
+				}
+
+				fetchChatList();
+			}
+		} catch (err) {
+			console.error('Error cancelling friend request from chat:', err);
+		} finally {
+			isSendingFriendRequest = false;
+		}
+	}
+
 	async function fetchChatList() {
 		if (!user) return;
 		try {
@@ -2679,15 +2722,22 @@
 								<span>Profile</span>
 							</a>
 							{#if isPendingRequest}
-								<span
-									class="px-2.5 py-1 bg-amber-100 text-amber-800 border border-amber-300 font-bold rounded-lg flex items-center space-x-1 shadow-2xs select-none"
-									title="Friend request is pending"
+								<button
+									type="button"
+									onclick={() => cancelFriendRequestFromChat(activeFriend)}
+									disabled={isSendingFriendRequest}
+									class="group px-2.5 py-1 bg-amber-50 hover:bg-rose-50 text-amber-800 hover:text-rose-600 border border-amber-300 hover:border-rose-200 font-bold rounded-lg transition-all flex items-center space-x-1 shadow-2xs cursor-pointer active:scale-95 disabled:opacity-50"
+									title="Click to cancel friend request"
 								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-amber-700">
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-amber-700 group-hover:hidden">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
 									</svg>
-									<span>Pending</span>
-								</span>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-rose-500 hidden group-hover:inline">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+									</svg>
+									<span class="group-hover:hidden">Pending</span>
+									<span class="hidden group-hover:inline">Cancel</span>
+								</button>
 							{:else}
 								<button
 									type="button"
