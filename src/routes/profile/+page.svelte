@@ -1544,37 +1544,39 @@
 							{/if}
 						</div>
 
-						<!-- Action buttons on own profile -->
+						<!-- Action buttons on own profile (Icon-only on mobile to save space, full text on desktop) -->
 						{#if profileData.is_self}
-							<div class="flex items-center gap-1.5 flex-wrap">
+							<div class="flex items-center gap-1.5 flex-nowrap">
 								<button
 									type="button"
 									onclick={handleCopyProfileLink}
-									class="px-3 py-1.5 bg-pink-50 hover:bg-pink-100 border border-pink-200/90 text-[#f43f8e] text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center space-x-1.5 cursor-pointer"
+									class="p-2 sm:px-3 sm:py-1.5 bg-pink-50 hover:bg-pink-100 border border-pink-200/90 text-[#f43f8e] text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center justify-center space-x-1.5 cursor-pointer"
 									title="Copy link to your profile"
+									aria-label="Copy Profile Link"
 								>
 									{#if isCopiedLink}
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-[#059669] flex-shrink-0">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#059669] flex-shrink-0">
 											<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
 										</svg>
-										<span class="text-[#059669] font-black">Link Copied!</span>
+										<span class="text-[#059669] font-black hidden sm:inline">Link Copied!</span>
 									{:else}
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0">
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0">
 											<path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
 										</svg>
-										<span>Copy Link</span>
+										<span class="hidden sm:inline">Copy Link</span>
 									{/if}
 								</button>
 								<button
 									type="button"
 									onclick={openEditProfileModal}
-									class="px-3 py-1.5 bg-white hover:bg-pink-50 border border-pink-200 text-pink-700 text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center space-x-1 cursor-pointer"
+									class="p-2 sm:px-3 sm:py-1.5 bg-white hover:bg-pink-50 border border-pink-200 text-pink-700 text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center justify-center space-x-1 cursor-pointer"
 									title="Edit Profile Info"
+									aria-label="Edit Profile"
 								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0">
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
 									</svg>
-									<span>Edit Profile</span>
+									<span class="hidden sm:inline">Edit Profile</span>
 								</button>
 							</div>
 						{:else}
