@@ -237,21 +237,6 @@
 		currentCalendarMonth = month;
 		if (year) currentCalendarYear = year;
 		loadMemoriesForMonth(month, year || currentCalendarYear);
-
-		if (typeof window !== 'undefined') {
-			setTimeout(() => {
-				const calEl = document.getElementById('calendar-section');
-				if (calEl) {
-					const headerEl = document.querySelector('header');
-					const headerHeight = headerEl ? headerEl.offsetHeight : 70;
-					const targetPosition = calEl.getBoundingClientRect().top + window.pageYOffset - headerHeight - 12;
-					window.scrollTo({
-						top: Math.max(0, targetPosition),
-						behavior: 'smooth'
-					});
-				}
-			}, 80);
-		}
 	}
 
 	function handleYearChangedFromMonthCard(event) {
