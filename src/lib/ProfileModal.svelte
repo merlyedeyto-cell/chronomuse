@@ -141,21 +141,28 @@
 <!-- Backdrop Overlay -->
 {#if isOpen}
 	<div
-		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 transition-opacity duration-300 flex items-center justify-center p-3 sm:p-4 animate-modal-backdrop font-sans"
+		class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-300 flex items-end justify-center font-sans pointer-events-auto"
 		class:opacity-0={isClosing}
 		onclick={handleClose}
 	>
 		<!-- Modal Content -->
 		<div
-			class="bg-white rounded-3xl p-5 border border-pink-100 transition-all duration-300 max-w-sm w-full relative max-h-[90vh] overflow-y-auto animate-modal-content shadow-2xl my-auto"
+			class="bg-gradient-to-b from-[#fff5f8] via-[#fff0f5] to-white rounded-t-[32px] sm:rounded-t-[38px] p-5 sm:p-6 pb-6 border-t-2 border-x border-pink-200/90 transition-all duration-300 max-w-md sm:max-w-lg w-full relative max-h-[96vh] sm:max-h-[92vh] overflow-y-auto shadow-[0_-12px_45px_rgba(244,63,142,0.22)] animate-bottom-sheet pointer-events-auto"
+			class:translate-y-full={isClosing}
 			class:opacity-0={isClosing}
-			class:scale-95={isClosing}
 			onclick={(e) => e.stopPropagation()}
 		>
+			<!-- Pull / Drag Handle Bar -->
+			<div
+				class="w-12 sm:w-16 h-1.5 rounded-full bg-pink-300/80 mx-auto mb-3 hover:bg-pink-400 cursor-grab active:cursor-grabbing transition-colors flex-shrink-0"
+				onclick={handleClose}
+				title="Tap or pull to close"
+			></div>
+
 			<!-- Close Button -->
 			<button
 				onclick={handleClose}
-				class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
+				class="absolute top-4 right-4 sm:top-5 sm:right-5 w-8 h-8 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 z-10"
 				aria-label="Close modal"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
@@ -301,6 +308,21 @@
 	/* Prevent body scroll when modal is open */
 	:global(body.modal-open) {
 		overflow: hidden;
+	}
+
+	@keyframes bottom-sheet-slide {
+		from {
+			transform: translateY(100%);
+			opacity: 0.8;
+		}
+		to {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+
+	.animate-bottom-sheet {
+		animation: bottom-sheet-slide 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 	}
 
 	@keyframes modal-backdrop {

@@ -2,6 +2,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
+	import { broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
 
 	const dispatch = createEventDispatcher();
 
@@ -9,6 +10,8 @@
 	let isOpen = $state(open);
 	let isClosing = $state(false);
 	let isLoading = $state(false);
+	let addingFriendUserId = $state(null);
+	let cancelingFriendUserId = $state(null);
 	let errorMessage = $state('');
 	let successMessage = $state('');
 
@@ -172,13 +175,14 @@
 	}
 
 	async function sendFriendRequestToUser(targetUser) {
-		isLoading = true;
+		if (!targetUser || !targetUser.id || addingFriendUserId === targetUser.id) return;
+		addingFriendUserId = targetUser.id;
 		errorMessage = '';
 		successMessage = '';
 
 		const user = getCurrentUser();
 		if (!user || !user.id) {
-			isLoading = false;
+			addingFriendUserId = null;
 			errorMessage = 'Please log in first.';
 			return;
 		}
@@ -188,6 +192,12 @@
 
 		// Also update inside suggestedUsers if present
 		suggestedUsers = suggestedUsers.map(su => su.id === targetUser.id ? { ...su, relationship: 'request_sent' } : su);
+
+		try {
+			if (typeof broadcastFriendEvent === 'function') {
+				broadcastFriendEvent(user.id, targetUser.id, 'friend_request');
+			}
+		} catch (e) {}
 
 		try {
 			const res = await fetch(API_ENDPOINTS.addFriend, {
@@ -201,7 +211,6 @@
 				})
 			});
 			const data = await res.json();
-			isLoading = false;
 			if (data.error) {
 				targetUser.relationship = previousRel;
 				suggestedUsers = suggestedUsers.map(su => su.id === targetUser.id ? { ...su, relationship: previousRel } : su);
@@ -212,6 +221,11 @@
 				suggestedUsers = suggestedUsers.map(su => su.id === targetUser.id ? { ...su, relationship: 'request_sent', request_id: data.request_id || su.request_id } : su);
 				fetchPendingRequests();
 				dispatch('addFriend', data);
+				try {
+					if (typeof broadcastFriendEvent === 'function') {
+						broadcastFriendEvent(user.id, targetUser.id, 'friend_request');
+					}
+				} catch (e) {}
 				if (typeof window !== 'undefined') {
 					window.dispatchEvent(new CustomEvent('chronomuse_friend_change'));
 				}
@@ -220,24 +234,30 @@
 				}, 3000);
 			}
 		} catch (error) {
-			isLoading = false;
 			targetUser.relationship = previousRel;
 			suggestedUsers = suggestedUsers.map(su => su.id === targetUser.id ? { ...su, relationship: previousRel } : su);
 			errorMessage = 'An error occurred. Please try again.';
 			console.error('Add friend error:', error);
+		} finally {
+			addingFriendUserId = null;
 		}
 	}
 
 	async function handleCancelFriendRequestFromSearch(targetUser) {
 		const user = getCurrentUser();
-		if (!user || !user.id || isResponding) return;
-		isResponding = true;
+		if (!user || !user.id || !targetUser || !targetUser.id || cancelingFriendUserId === targetUser.id) return;
+		cancelingFriendUserId = targetUser.id;
 		const previousRel = targetUser.relationship;
 		const previousReqId = targetUser.request_id;
 		targetUser.relationship = 'none';
 		targetUser.request_id = null;
 
 		suggestedUsers = suggestedUsers.map(su => su.id === targetUser.id ? { ...su, relationship: 'none', request_id: null } : su);
+		try {
+			if (typeof broadcastFriendEvent === 'function') {
+				broadcastFriendEvent(user.id, targetUser.id, 'cancel_request');
+			}
+		} catch (e) {}
 
 		try {
 			const res = await fetch(API_ENDPOINTS.cancelFriendRequest, {
@@ -252,6 +272,11 @@
 			const data = await res.json();
 			if (data.success) {
 				fetchPendingRequests();
+				try {
+					if (typeof broadcastFriendEvent === 'function') {
+						broadcastFriendEvent(user.id, targetUser.id, 'cancel_request');
+					}
+				} catch (e) {}
 			} else {
 				targetUser.relationship = previousRel;
 				targetUser.request_id = previousReqId;
@@ -263,7 +288,7 @@
 			suggestedUsers = suggestedUsers.map(su => su.id === targetUser.id ? { ...su, relationship: previousRel, request_id: previousReqId } : su);
 			console.error('Cancel friend request error:', err);
 		} finally {
-			isResponding = false;
+			cancelingFriendUserId = null;
 		}
 	}
 
@@ -314,6 +339,9 @@
 				fetchPendingRequests();
 				loadSuggestedUsers(1, false);
 				dispatch('friendStatusChanged');
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_friend_change'));
+				}
 				setTimeout(() => {
 					successMessage = '';
 				}, 3000);
@@ -339,7 +367,12 @@
 		successMessage = '';
 
 		const backupSent = [...sentRequests];
+		const targetReq = sentRequests.find(r => r.id === requestId);
 		sentRequests = sentRequests.filter(r => r.id !== requestId);
+
+		if (targetReq?.receiver_id) {
+			broadcastFriendEvent(user.id, targetReq.receiver_id, 'cancel_request');
+		}
 
 		try {
 			const res = await fetch(API_ENDPOINTS.cancelFriendRequest, {
@@ -352,21 +385,19 @@
 			});
 			const data = await res.json();
 			if (data.success) {
-				successMessage = data.message || 'Friend request cancelled';
 				fetchPendingRequests();
 				loadSuggestedUsers(1, false);
-				dispatch('friendStatusChanged');
-				setTimeout(() => {
-					successMessage = '';
-				}, 3000);
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_friend_change'));
+				}
 			} else {
 				sentRequests = backupSent;
 				errorMessage = data.error || 'Failed to cancel request';
 			}
-		} catch (error) {
+		} catch (err) {
 			sentRequests = backupSent;
 			errorMessage = 'An error occurred. Please try again.';
-			console.error('Cancel sent request error:', error);
+			console.error('Cancel request error:', err);
 		} finally {
 			isResponding = false;
 		}
@@ -375,21 +406,28 @@
 
 {#if isOpen}
 	<div
-		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 animate-modal-backdrop overflow-y-auto font-sans"
+		class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center animate-modal-backdrop font-sans pointer-events-auto"
 		class:opacity-0={isClosing}
 		class:pointer-events-none={isClosing}
 		onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 	>
 		<div
-			class="bg-white border border-pink-100 rounded-3xl max-w-lg w-full p-4 sm:p-5 relative transition-all duration-300 animate-modal-content my-auto max-h-[88vh] overflow-y-auto shadow-2xl"
+			class="bg-gradient-to-b from-[#fff5f8] via-[#fff0f5] to-white border-t-2 border-x border-pink-200/90 rounded-t-[32px] sm:rounded-t-[38px] p-4 sm:p-6 pb-6 relative transition-all duration-300 w-full max-w-xl sm:max-w-2xl md:max-w-3xl max-h-[96vh] sm:max-h-[92vh] h-[93vh] sm:h-[89vh] md:h-[88vh] overflow-hidden flex flex-col shadow-[0_-12px_45px_rgba(244,63,142,0.22)] animate-bottom-sheet"
+			class:translate-y-full={isClosing}
 			class:opacity-0={isClosing}
-			class:scale-95={isClosing}
 			onclick={(e) => e.stopPropagation()}
 		>
+			<!-- Pull / Drag Handle Bar -->
+			<div
+				class="w-12 sm:w-16 h-1.5 rounded-full bg-pink-300/80 mx-auto mb-2 hover:bg-pink-400 cursor-grab active:cursor-grabbing transition-colors flex-shrink-0"
+				onclick={handleClose}
+				title="Tap or pull to close"
+			></div>
+
 			<!-- Close Button -->
 			<button
 				onclick={handleClose}
-				class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
+				class="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 w-8 h-8 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 z-10"
 				title="Close"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
@@ -398,13 +436,13 @@
 			</button>
 
 			<!-- Header -->
-			<div class="text-center mb-4 pr-6">
-				<div class="w-12 h-12 bg-gradient-to-tr from-[#f43f8e] to-[#ec4899] rounded-2xl flex items-center justify-center mx-auto mb-2 text-white shadow-xs">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+			<div class="text-center mb-3 pr-10 pl-10 flex-shrink-0">
+				<div class="w-10 h-10 bg-gradient-to-tr from-[#f43f8e] to-[#ec4899] rounded-2xl flex items-center justify-center mx-auto mb-1.5 text-white shadow-xs">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.765z" />
 					</svg>
 				</div>
-				<h2 class="text-base font-black text-pink-950 mb-0.5">Find & Add Friends</h2>
+				<h2 class="text-base sm:text-lg font-black text-pink-950 mb-0.5">Find & Add Friends</h2>
 				<p class="text-[11px] text-pink-400 font-bold">Search or discover registered users to connect on ChronoMuse</p>
 			</div>
 
@@ -543,10 +581,14 @@
 										<button
 											type="button"
 											onclick={() => sendFriendRequestToUser(targetUser)}
-											disabled={isLoading}
+											disabled={addingFriendUserId === targetUser.id}
 											class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-xs disabled:opacity-50"
 										>
-											+ Add Friend
+											{#if addingFriendUserId === targetUser.id}
+												Sending...
+											{:else}
+												+ Add Friend
+											{/if}
 										</button>
 									{/if}
 								</div>
@@ -635,10 +677,14 @@
 										<button
 											type="button"
 											onclick={() => handleCancelFriendRequestFromSearch(sugUser)}
-											disabled={isResponding}
+											disabled={cancelingFriendUserId === sugUser.id}
 											class="px-2.5 py-1 bg-white hover:bg-rose-50 text-pink-600 hover:text-rose-600 border border-pink-200 text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer disabled:opacity-50"
 										>
-											Cancel
+											{#if cancelingFriendUserId === sugUser.id}
+												Canceling...
+											{:else}
+												Cancel
+											{/if}
 										</button>
 									{:else if sugUser.relationship === 'request_received'}
 										<button
@@ -652,10 +698,14 @@
 										<button
 											type="button"
 											onclick={() => sendFriendRequestToUser(sugUser)}
-											disabled={isLoading}
+											disabled={addingFriendUserId === sugUser.id}
 											class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-xs disabled:opacity-50"
 										>
-											+ Add Friend
+											{#if addingFriendUserId === sugUser.id}
+												Sending...
+											{:else}
+												+ Add Friend
+											{/if}
 										</button>
 									{/if}
 								</div>
@@ -770,6 +820,21 @@
 {/if}
 
 <style>
+	@keyframes bottom-sheet-slide {
+		from {
+			transform: translateY(100%);
+			opacity: 0.8;
+		}
+		to {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+
+	.animate-bottom-sheet {
+		animation: bottom-sheet-slide 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+	}
+
 	@keyframes modal-backdrop {
 		from { opacity: 0; }
 		to { opacity: 1; }

@@ -38,65 +38,70 @@ export async function POST({ request }) {
 			return json({ error: `${displayTarget} not found` }, { status: 404 });
 		}
 
-		const user_id = senderId;
+		const user_id = Number(senderId);
+		const target_id = Number(targetUser.id);
 
-		if (String(targetUser.id) === String(user_id)) {
+		if (target_id === user_id) {
 			return json({ error: 'You cannot add yourself as a friend' }, { status: 400 });
 		}
 
-		// Check if already friends & check existing request in parallel for fast response
-		const [{ data: existingFriend }, { data: existingRequest }] = await Promise.all([
+		// Check if already friends & check existing requests between both users
+		const [{ data: existingFriends }, { data: existingRequests }] = await Promise.all([
 			supabase
 				.from('chronomuse_friends')
 				.select('id')
-				.or(`and(user_id.eq.${user_id},friend_id.eq.${targetUser.id}),and(user_id.eq.${targetUser.id},friend_id.eq.${user_id})`)
-				.maybeSingle(),
+				.or(`and(user_id.eq.${user_id},friend_id.eq.${target_id}),and(user_id.eq.${target_id},friend_id.eq.${user_id})`)
+				.limit(1),
 			supabase
 				.from('chronomuse_friend_requests')
-				.select('id, status, sender_id')
-				.or(`and(sender_id.eq.${user_id},receiver_id.eq.${targetUser.id}),and(sender_id.eq.${targetUser.id},receiver_id.eq.${user_id})`)
-				.maybeSingle()
+				.select('id, status, sender_id, receiver_id')
+				.or(`and(sender_id.eq.${user_id},receiver_id.eq.${target_id}),and(sender_id.eq.${target_id},receiver_id.eq.${user_id})`)
 		]);
 
-		if (existingFriend) {
+		if (existingFriends && existingFriends.length > 0) {
 			return json({ error: `You are already friends with @${targetUser.username}` }, { status: 400 });
 		}
 
-		if (existingRequest) {
-			if (existingRequest.status === 'pending') {
-				return json({ error: `Friend request to @${targetUser.username} is already pending` }, { status: 400 });
-			}
-			if (existingRequest.status === 'accepted' && existingFriend) {
-				return json({ error: `You are already friends with @${targetUser.username}` }, { status: 400 });
-			}
-			if (existingRequest.status === 'declined' || (existingRequest.status === 'accepted' && !existingFriend)) {
-				// Re-open request
-				const { error: updateError } = await supabase
-					.from('chronomuse_friend_requests')
-					.update({
-						sender_id: user_id,
-						receiver_id: targetUser.id,
-						status: 'pending',
-						updated_at: new Date()
-					})
-					.eq('id', existingRequest.id);
-
-				if (updateError) {
-					return json({ error: 'Failed to update friend request: ' + updateError.message }, { status: 500 });
+		if (existingRequests && existingRequests.length > 0) {
+			const pendingReq = existingRequests.find(r => r.status === 'pending');
+			if (pendingReq) {
+				if (Number(pendingReq.sender_id) === user_id) {
+					return json({ error: `Friend request to @${targetUser.username} is already pending` }, { status: 400 });
+				} else {
+					// The other user already sent a pending request to this user -> automatically accept!
+					await Promise.all([
+						supabase
+							.from('chronomuse_friend_requests')
+							.update({ status: 'accepted', updated_at: new Date().toISOString() })
+							.eq('id', pendingReq.id),
+						supabase
+							.from('chronomuse_friends')
+							.upsert([
+								{ user_id: user_id, friend_id: target_id },
+								{ user_id: target_id, friend_id: user_id }
+							], { onConflict: 'user_id,friend_id' })
+					]);
+					return json({ success: true, message: `You and @${targetUser.username} are now friends!` });
 				}
-
-				return json({ success: true, request_id: existingRequest.id, message: `Friend request sent to @${targetUser.username}!` });
 			}
+
+			// If old non-pending requests exist (declined/accepted/etc.), clean them up before inserting a fresh one
+			await supabase
+				.from('chronomuse_friend_requests')
+				.delete()
+				.or(`and(sender_id.eq.${user_id},receiver_id.eq.${target_id}),and(sender_id.eq.${target_id},receiver_id.eq.${user_id})`);
 		}
 
-		// Insert friend request
+		// Insert new friend request
 		const { data: newReq, error: insertError } = await supabase
 			.from('chronomuse_friend_requests')
 			.insert([
 				{
 					sender_id: user_id,
-					receiver_id: targetUser.id,
-					status: 'pending'
+					receiver_id: target_id,
+					status: 'pending',
+					created_at: new Date().toISOString(),
+					updated_at: new Date().toISOString()
 				}
 			])
 			.select('id')
@@ -109,7 +114,11 @@ export async function POST({ request }) {
 			return json({ error: 'Database error: ' + insertError.message }, { status: 500 });
 		}
 
-		return json({ success: true, request_id: newReq?.id || null, message: `Friend request sent to ${targetUser.username}!` });
+		return json({
+			success: true,
+			request_id: newReq?.id || null,
+			message: `Friend request sent to @${targetUser.username}!`
+		});
 	} catch (err) {
 		return json({ error: err.message }, { status: 500 });
 	}

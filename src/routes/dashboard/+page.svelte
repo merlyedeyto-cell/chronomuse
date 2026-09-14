@@ -658,6 +658,63 @@
 		}
 	}
 
+	async function handleBatchDeleteMemories(event) {
+		const { dates = [], memoryIds = [], onComplete } = event.detail || {};
+		if (dates.length === 0 && memoryIds.length === 0) {
+			if (onComplete) onComplete();
+			return;
+		}
+
+		try {
+			const response = await fetch(API_ENDPOINTS.deleteMemory, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					dates: dates,
+					memory_ids: memoryIds,
+					user_id: user?.id
+				})
+			});
+			const data = await response.json();
+
+			if (data.success) {
+				// Remove all deleted dates from memoriesData
+				const nextMemoriesData = { ...memoriesData };
+				dates.forEach(d => {
+					delete nextMemoriesData[d];
+				});
+				memoriesData = nextMemoriesData;
+
+				// Remove deleted dates from pinnedDates
+				pinnedDates = pinnedDates.filter(p => !dates.includes(p.date));
+
+				// Refresh stats, pinned memories, and month memory card
+				await Promise.all([
+					loadPinnedDates(),
+					loadMemoriesForMonth(currentCalendarMonth, currentCalendarYear)
+				]);
+
+				if (pinnedMemoryCardRef) {
+					pinnedMemoryCardRef.loadPinnedMemories(true);
+				}
+
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_memory_change'));
+					window.dispatchEvent(new CustomEvent('chronomuse_pinned_change'));
+				}
+
+				showNotificationModal(data.message || 'Selected memories deleted successfully!');
+			} else {
+				showNotificationModal('Error: ' + (data.error || 'Failed to delete selected memories'), 'error');
+			}
+		} catch (err) {
+			console.error('Batch delete error:', err);
+			showNotificationModal('An error occurred during batch deletion', 'error');
+		} finally {
+			if (onComplete) onComplete();
+		}
+	}
+
 	function handleUpdateMemory(event) {
 		const { memoryId, description, moodTag, memoryTag } = event.detail;
 		updateMemoryInDatabase(memoryId, { description, mood_tag: moodTag, memory_tag: memoryTag });
@@ -833,6 +890,7 @@
 							on:dateWithMemoriesSelected={handleDateWithMemoriesSelected}
 							on:monthChanged={handleMonthChanged}
 							on:pinDate={handlePinDate}
+							on:batchDeleteMemories={handleBatchDeleteMemories}
 						/>
 					</div>
 

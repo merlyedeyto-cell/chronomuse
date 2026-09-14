@@ -213,23 +213,30 @@
 
 {#if isOpen}
 	<div
-		class="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in font-sans"
+		class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center font-sans pointer-events-auto"
 		onclick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
 	>
-		<div class="bg-white rounded-[32px] max-w-lg w-full max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-pink-100 animate-pop-in">
+		<div class="bg-gradient-to-b from-[#fff5f8] via-[#fff0f5] to-white rounded-t-[32px] sm:rounded-t-[38px] max-w-xl sm:max-w-2xl md:max-w-3xl w-full max-h-[96vh] sm:max-h-[92vh] h-[93vh] sm:h-[89vh] md:h-[88vh] flex flex-col overflow-hidden shadow-[0_-12px_45px_rgba(244,63,142,0.22)] border-t-2 border-x border-pink-200/90 animate-bottom-sheet">
+			<!-- Pull / Drag Handle Bar -->
+			<div
+				class="w-12 sm:w-16 h-1.5 rounded-full bg-pink-300/80 mx-auto mt-3 hover:bg-pink-400 cursor-grab active:cursor-grabbing transition-colors flex-shrink-0"
+				onclick={closeModal}
+				title="Tap or pull to close"
+			></div>
+
 			<!-- Header -->
-			<div class="p-5 pb-3 flex items-center justify-between border-b border-pink-50">
+			<div class="p-4 sm:p-5 pb-3 flex items-center justify-between border-b border-pink-100 flex-shrink-0">
 				<div>
-					<h2 class="text-lg font-black text-[#f43f8e]">Notifications & Requests</h2>
-					<p class="text-xs text-pink-400 font-bold">Accept memory requests or manage notifications</p>
+					<h2 class="text-lg sm:text-xl font-black text-[#f43f8e] tracking-tight">Notifications & Requests</h2>
+					<p class="text-[11px] sm:text-xs text-pink-400 font-bold mt-0.5">Accept memory requests or manage notifications</p>
 				</div>
 
 				<button
 					onclick={closeModal}
-					class="p-1.5 rounded-full hover:bg-pink-50 text-pink-400 hover:text-pink-600 transition-colors cursor-pointer"
+					class="p-1.5 rounded-full hover:bg-pink-50 text-pink-400 hover:text-[#f43f8e] bg-white border border-pink-200 transition-all cursor-pointer shadow-xs active:scale-95"
 					aria-label="Close"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 					</svg>
 				</button>
@@ -438,3 +445,20 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	@keyframes bottom-sheet-slide {
+		from {
+			transform: translateY(100%);
+			opacity: 0.8;
+		}
+		to {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+
+	.animate-bottom-sheet {
+		animation: bottom-sheet-slide 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+	}
+</style>

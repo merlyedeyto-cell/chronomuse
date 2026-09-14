@@ -21,8 +21,14 @@
 	let highlightedDateStr = $state('');
 	let highlightTimeout;
 
+	// Selection & Batch Delete State
+	let isSelectionMode = $state(false);
+	let selectedDaysForDelete = $state(new Set());
+	let showBatchDeleteModal = $state(false);
+	let isBatchDeleting = $state(false);
+
 	$effect(() => {
-		if (showMonthMenu || showYearMenu) {
+		if (showMonthMenu || showYearMenu || showBatchDeleteModal) {
 			document.body.style.overflow = 'hidden';
 		} else {
 			document.body.style.overflow = '';
@@ -55,14 +61,17 @@
 		}
 	});
 
+	function getDateString(day) {
+		return `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+	}
+
 	function isTargetHighlighted(day) {
 		if (!highlightedDateStr) return false;
-		const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-		return highlightedDateStr === dateStr;
+		return highlightedDateStr === getDateString(day);
 	}
 
 	function getDayMemories(day) {
-		const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+		const dateStr = getDateString(day);
 		return memoriesData[dateStr] || [];
 	}
 
@@ -94,7 +103,98 @@
 		return mems.some(m => isMemoryShared(m));
 	}
 
-	// Hover state for pin tooltip
+	function isDateSelectedForDelete(day) {
+		return selectedDaysForDelete.has(getDateString(day));
+	}
+
+	function getDaysWithMemoriesInCurrentMonth() {
+		const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+		const days = [];
+		for (let d = 1; d <= daysInMonth; d++) {
+			if (hasMemories(d)) {
+				days.push(d);
+			}
+		}
+		return days;
+	}
+
+	function getSelectedMemoriesCount() {
+		let count = 0;
+		for (const dateStr of selectedDaysForDelete) {
+			count += (memoriesData[dateStr] || []).length;
+		}
+		return count;
+	}
+
+	function getAllSelectedMemoryIds() {
+		const ids = [];
+		for (const dateStr of selectedDaysForDelete) {
+			const list = memoriesData[dateStr] || [];
+			list.forEach(m => {
+				if (m && m.id) ids.push(Number(m.id));
+			});
+		}
+		return ids;
+	}
+
+	function toggleDateSelection(day) {
+		if (!hasMemories(day)) return;
+		const dateStr = getDateString(day);
+		const next = new Set(selectedDaysForDelete);
+		if (next.has(dateStr)) {
+			next.delete(dateStr);
+		} else {
+			next.add(dateStr);
+		}
+		selectedDaysForDelete = next;
+	}
+
+	function toggleSelectAllMonth() {
+		const withMemories = getDaysWithMemoriesInCurrentMonth();
+		const allCurrentSelected = withMemories.every(d => selectedDaysForDelete.has(getDateString(d)));
+		const next = new Set(selectedDaysForDelete);
+
+		if (allCurrentSelected) {
+			withMemories.forEach(d => next.delete(getDateString(d)));
+		} else {
+			withMemories.forEach(d => next.add(getDateString(d)));
+		}
+		selectedDaysForDelete = next;
+	}
+
+	function enterSelectionMode(initialDay = null) {
+		isSelectionMode = true;
+		closeTooltip();
+		const next = new Set();
+		if (initialDay && hasMemories(initialDay)) {
+			next.add(getDateString(initialDay));
+		}
+		selectedDaysForDelete = next;
+	}
+
+	function exitSelectionMode() {
+		isSelectionMode = false;
+		selectedDaysForDelete = new Set();
+		showBatchDeleteModal = false;
+	}
+
+	function confirmBatchDelete() {
+		if (selectedDaysForDelete.size === 0) return;
+		const memoryIds = getAllSelectedMemoryIds();
+		const dates = Array.from(selectedDaysForDelete);
+
+		isBatchDeleting = true;
+		dispatch('batchDeleteMemories', {
+			dates: dates,
+			memoryIds: memoryIds,
+			onComplete: () => {
+				isBatchDeleting = false;
+				exitSelectionMode();
+			}
+		});
+	}
+
+	// Hover state for pin / action tooltip
 	let hoveredDate = $state(null);
 	let longPressTimer;
 	let longPressCompleted = $state(false);
@@ -102,12 +202,11 @@
 	let closeTimer;
 
 	function isDatePinned(day) {
-		const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+		const dateStr = getDateString(day);
 		return pinnedDates.some(d => d.date === dateStr);
 	}
 
 	function handleClickOutside(event) {
-		// Close tooltip when clicking outside
 		if (hoveredDate && !event.target.closest('.pin-tooltip')) {
 			closeTooltip();
 		}
@@ -206,9 +305,13 @@
 	}
 
 	function selectDate(day) {
+		if (isSelectionMode) {
+			toggleDateSelection(day);
+			return;
+		}
+
 		selectedDate = new Date(currentYear, currentMonth, day);
-		// Use local date format instead of ISO to avoid timezone issues
-		const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+		const dateStr = getDateString(day);
 
 		// Check if this date has memories
 		if (memoriesData[dateStr] && memoriesData[dateStr].length > 0) {
@@ -253,24 +356,26 @@
 	function startLongPress(day) {
 		if (!hasMemories(day)) return;
 		longPressCompleted = false;
+		if (longPressTimer) clearTimeout(longPressTimer);
+
 		longPressTimer = setTimeout(() => {
-			hoveredDate = day;
 			longPressCompleted = true;
 			isDesktopHover = false;
 			// Vibrate if supported (mobile only)
-			if (navigator.vibrate) {
-				navigator.vibrate(50);
+			if (typeof navigator !== 'undefined' && navigator.vibrate) {
+				try { navigator.vibrate(50); } catch(e) {}
 			}
-		}, 500); // 500ms long press
+			if (isSelectionMode) {
+				toggleDateSelection(day);
+			} else {
+				hoveredDate = day;
+			}
+		}, 450); // 450ms long press
 	}
 
 	function cancelLongPress() {
 		if (longPressTimer) {
 			clearTimeout(longPressTimer);
-		}
-		// Only clear hoveredDate if long press didn't complete
-		if (!longPressCompleted) {
-			hoveredDate = null;
 		}
 	}
 	
@@ -281,28 +386,70 @@
 	}
 	
 	function handleMouseEnter(day) {
+		if (isSelectionMode) return;
 		if (hasMemories(day)) {
-			// Cancel any pending close timer
-			if (closeTimer) {
-				clearTimeout(closeTimer);
-			}
+			if (closeTimer) clearTimeout(closeTimer);
 			hoveredDate = day;
 			isDesktopHover = true;
 		}
 	}
 	
 	function handleMouseLeave() {
-		// Delay closing to allow moving to tooltip
+		if (isSelectionMode) return;
 		closeTimer = setTimeout(() => {
 			if (isDesktopHover) {
 				hoveredDate = null;
 				isDesktopHover = false;
 			}
-		}, 200); // 200ms delay
+		}, 200);
 	}
 </script>
 
-<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-3xl p-3.5 sm:p-4 shadow-[0_8px_30px_rgba(244,114,182,0.1)] font-sans animate-fade-in-up">
+<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-3xl p-3.5 sm:p-4 shadow-[0_8px_30px_rgba(244,114,182,0.1)] font-sans animate-fade-in-up relative">
+	<!-- Multi-Select Delete Mode Floating Banner -->
+	{#if isSelectionMode}
+		<div class="mb-3 p-2.5 sm:p-3 bg-gradient-to-r from-[#f43f8e] via-[#e11d48] to-[#be123c] text-white rounded-2xl shadow-md border border-pink-300/40 animate-fade-in flex items-center justify-between gap-2">
+			<div class="flex items-center space-x-2.5 min-w-0">
+				<div class="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center flex-shrink-0 shadow-inner">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 text-white">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+					</svg>
+				</div>
+				<div class="min-w-0">
+					<p class="text-xs font-black tracking-wide flex items-center gap-1.5 flex-wrap">
+						<span>Select & Delete Mode</span>
+						<span class="px-2 py-0.5 bg-white/25 text-white rounded-full text-[10px] font-black">{selectedDaysForDelete.size} date{selectedDaysForDelete.size === 1 ? '' : 's'}</span>
+					</p>
+					<p class="text-[10px] text-pink-100 font-semibold">
+						{getSelectedMemoriesCount()} total {getSelectedMemoriesCount() === 1 ? 'memory' : 'memories'} selected
+					</p>
+				</div>
+			</div>
+
+			<div class="flex items-center space-x-1.5 flex-shrink-0">
+				{#if getDaysWithMemoriesInCurrentMonth().length > 0}
+					<button
+						type="button"
+						onclick={toggleSelectAllMonth}
+						class="px-2.5 py-1 bg-white/20 hover:bg-white/30 active:scale-95 text-white text-[11px] font-bold rounded-xl transition-all cursor-pointer"
+					>
+						{getDaysWithMemoriesInCurrentMonth().every(d => selectedDaysForDelete.has(getDateString(d))) ? 'Deselect All' : 'Select All'}
+					</button>
+				{/if}
+				<button
+					type="button"
+					onclick={exitSelectionMode}
+					class="w-7 h-7 bg-white/20 hover:bg-white/30 active:scale-95 text-white rounded-full flex items-center justify-center transition-all cursor-pointer"
+					title="Exit Select Mode"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+		</div>
+	{/if}
+
 	<!-- Header -->
 	<div class="flex items-center justify-between gap-1.5 sm:gap-2 mb-3.5">
 		<!-- Previous Month (Round Button) -->
@@ -317,7 +464,7 @@
 			</svg>
 		</button>
 
-		<!-- Center Month & Year Pill Selectors -->
+		<!-- Center Month & Year Pill Selectors & Multi-Select Toggle -->
 		<div class="flex items-center justify-center space-x-1.5 sm:space-x-2 relative z-20">
 			<!-- Month Pill Button -->
 			<button
@@ -342,6 +489,8 @@
 					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 				</svg>
 			</button>
+
+
 		</div>
 
 		<!-- Next Month (Round Button) -->
@@ -376,79 +525,104 @@
 						onclick={() => { closeTooltip(); highlightedDateStr = ''; selectDate(day); }}
 						onmouseenter={() => handleMouseEnter(day)}
 						onmouseleave={handleMouseLeave}
-						ontouchstart={() => { startLongPress(day); }}
-						ontouchend={() => { cancelLongPress(); }}
-						ontouchcancel={() => { cancelLongPress(); }}
-						class="relative aspect-square w-full rounded-2xl transition-all duration-200 flex flex-col items-center justify-center cursor-pointer select-none {isToday(day) ? 'bg-[#e0337f] text-white shadow-[0_4px_14px_rgba(224,51,127,0.35)] scale-102' : isSelected(day) ? 'bg-[#fff0f5] text-[#9d2b63] border-2 border-[#e0337f] shadow-xs' : 'bg-[#fff0f5] text-[#9d2b63] hover:bg-[#ffe4ee] hover:scale-105'} {isTargetHighlighted(day) ? (hasSharedMemories(day) ? 'ring-2 ring-emerald-500 ring-offset-1 scale-105 animate-subtle-glow' : 'ring-2 ring-[#e0337f] ring-offset-1 scale-105 animate-subtle-glow') : ''}"
+						ontouchstart={() => startLongPress(day)}
+						ontouchend={cancelLongPress}
+						ontouchcancel={cancelLongPress}
+						onmousedown={() => startLongPress(day)}
+						onmouseup={cancelLongPress}
+						oncontextmenu={(e) => { e.preventDefault(); if (hasMemories(day)) { hoveredDate = day; isDesktopHover = false; } }}
+						class="relative aspect-square w-full rounded-2xl transition-all duration-200 flex flex-col items-center justify-center cursor-pointer select-none {isSelectionMode ? (hasMemories(day) ? (isDateSelectedForDelete(day) ? 'bg-gradient-to-br from-[#f43f8e] to-[#e11d48] text-white shadow-md ring-2 ring-rose-400 scale-102 font-black' : 'bg-pink-50/80 text-pink-950 border border-pink-200 hover:border-rose-400 hover:bg-pink-100 hover:scale-102') : 'bg-pink-50/20 text-pink-200 opacity-30 pointer-events-none') : (isToday(day) ? 'bg-[#e0337f] text-white shadow-[0_4px_14px_rgba(224,51,127,0.35)] scale-102' : isSelected(day) ? 'bg-[#fff0f5] text-[#9d2b63] border-2 border-[#e0337f] shadow-xs' : 'bg-[#fff0f5] text-[#9d2b63] hover:bg-[#ffe4ee] hover:scale-105')} {isTargetHighlighted(day) && !isSelectionMode ? (hasSharedMemories(day) ? 'ring-2 ring-emerald-500 ring-offset-1 scale-105 animate-subtle-glow' : 'ring-2 ring-[#e0337f] ring-offset-1 scale-105 animate-subtle-glow') : ''}"
 					>
-						<!-- Day Number -->
-						<span class="leading-none text-xs sm:text-sm {isToday(day) || isSelected(day) ? 'font-black' : 'font-bold'} {isToday(day) ? 'text-white' : 'text-[#9d2b63]'}">{day}</span>
-						
-						<!-- Memory Dots -->
-						{#if hasPersonalMemories(day) && hasSharedMemories(day)}
-							<!-- Both Personal & Shared memories: Two dots side-by-side (Green and Pink) -->
-							<div class="mt-1 flex items-center justify-center space-x-1">
-								<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-2xs"></span>
-								<span class="w-1.5 h-1.5 rounded-full {isToday(day) ? 'bg-white' : 'bg-[#e0337f]'} shadow-2xs"></span>
-							</div>
-						{:else if hasSharedMemories(day)}
-							<!-- Only Shared memory: 1 Green dot -->
-							<div class="mt-1 flex items-center justify-center">
-								<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-2xs"></span>
-							</div>
-						{:else if hasPersonalMemories(day)}
-							<!-- Only Personal memory: 1 Pink dot -->
-							<div class="mt-1 flex items-center justify-center">
-								<span class="w-1.5 h-1.5 rounded-full {isToday(day) ? 'bg-white' : 'bg-[#e0337f]'} shadow-2xs"></span>
+						<!-- Selection Checkbox Overlay in Selection Mode -->
+						{#if isSelectionMode && hasMemories(day)}
+							<div class="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center transition-all shadow-xs {isDateSelectedForDelete(day) ? 'bg-white text-rose-600 scale-105' : 'bg-white/90 border border-pink-300 text-transparent'}">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
+									<path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 011.04-.207z" clip-rule="evenodd" />
+								</svg>
 							</div>
 						{/if}
 
-						<!-- Pinned Ribbon Bookmark (Day 2 style) -->
-						{#if isDatePinned(day)}
-							<span class="absolute top-1 right-1.5 w-2.5 h-2.5 {isToday(day) ? 'text-white' : 'text-[#e0337f]'}" title="Pinned date">
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-full h-full drop-shadow-2xs">
-									<path fill-rule="evenodd" d="M6.32 2.577a49.255 49.255 0 0111.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 01-1.085.67L12 18.089l-7.165 3.58A.75.75 0 013.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93z" clip-rule="evenodd" />
-								</svg>
+						<!-- Day Number -->
+						<span class="leading-none text-xs sm:text-sm {isToday(day) || isSelected(day) || (isSelectionMode && isDateSelectedForDelete(day)) ? 'font-black' : 'font-bold'} {isToday(day) || (isSelectionMode && isDateSelectedForDelete(day)) ? 'text-white' : 'text-[#9d2b63]'}">{day}</span>
+						
+						<!-- Memory Dots (when not in selection mode) -->
+						{#if !isSelectionMode}
+							{#if hasPersonalMemories(day) && hasSharedMemories(day)}
+								<div class="mt-1 flex items-center justify-center space-x-1">
+									<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-2xs"></span>
+									<span class="w-1.5 h-1.5 rounded-full {isToday(day) ? 'bg-white' : 'bg-[#e0337f]'} shadow-2xs"></span>
+								</div>
+							{:else if hasSharedMemories(day)}
+								<div class="mt-1 flex items-center justify-center">
+									<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-2xs"></span>
+								</div>
+							{:else if hasPersonalMemories(day)}
+								<div class="mt-1 flex items-center justify-center">
+									<span class="w-1.5 h-1.5 rounded-full {isToday(day) ? 'bg-white' : 'bg-[#e0337f]'} shadow-2xs"></span>
+								</div>
+							{/if}
+
+							<!-- Pinned Ribbon Bookmark -->
+							{#if isDatePinned(day)}
+								<span class="absolute top-1 right-1.5 w-2.5 h-2.5 {isToday(day) ? 'text-white' : 'text-[#e0337f]'}" title="Pinned date">
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-full h-full drop-shadow-2xs">
+										<path fill-rule="evenodd" d="M6.32 2.577a49.255 49.255 0 0111.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 01-1.085.67L12 18.089l-7.165 3.58A.75.75 0 013.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93z" clip-rule="evenodd" />
+									</svg>
+								</span>
+							{/if}
+						{:else if hasMemories(day)}
+							<!-- Count pill inside selection mode -->
+							<span class="text-[9px] font-black mt-0.5 px-1 py-0.2 rounded-full {isDateSelectedForDelete(day) ? 'text-white/90 bg-black/15' : 'text-pink-600 bg-pink-100/70'}">
+								{getDayMemories(day).length} {getDayMemories(day).length === 1 ? 'mem' : 'mems'}
 							</span>
 						{/if}
 					</button>
 					
-					<!-- Pin Tooltip - Desktop & Mobile (Long Press) -->
-					{#if hoveredDate === day && hasMemories(day)}
+					<!-- Long Press / Context Action Stacked Popover (Pin Date & Select & Delete) -->
+					{#if hoveredDate === day && hasMemories(day) && !isSelectionMode}
 						<div
-							class="pin-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1 bg-pink-950/90 backdrop-blur-xs text-white text-[11px] font-bold rounded-xl whitespace-nowrap z-50 flex items-center gap-1.5 shadow-lg border border-pink-300/30"
+							class="pin-tooltip absolute bottom-full mb-2 p-1.5 bg-[#2a0618]/95 backdrop-blur-md text-white rounded-2xl whitespace-nowrap z-50 flex flex-col gap-1 shadow-[0_12px_32px_rgba(0,0,0,0.4)] border border-pink-400/30 animate-scale-in min-w-[130px] {index % 7 >= 5 ? 'right-0 translate-x-0' : (index % 7 <= 1 ? 'left-0 translate-x-0' : 'left-1/2 -translate-x-1/2')}"
 							onmouseenter={() => {
-								if (closeTimer) {
-									clearTimeout(closeTimer);
-								}
+								if (closeTimer) clearTimeout(closeTimer);
 							}}
 							onmouseleave={() => {
-								if (isDesktopHover) {
-									handleMouseLeave();
-								}
+								if (isDesktopHover) handleMouseLeave();
 							}}
 							ontouchstart={(e) => { e.stopPropagation(); }}
 						>
+							<!-- Pin / Unpin Button (Top Item) -->
 							<button
-								onclick={(e) => { e.stopPropagation(); dispatch('pinDate', { date: day, month: currentMonth, year: currentYear, isPinned: isDatePinned(day) }); }}
-								class="bg-transparent text-white text-[11px] font-bold hover:text-pink-200 transition-colors duration-200 cursor-pointer"
+								type="button"
+								onclick={(e) => {
+									e.stopPropagation();
+									dispatch('pinDate', { date: day, month: currentMonth, year: currentYear, isPinned: isDatePinned(day) });
+									closeTooltip();
+								}}
+								class="w-full px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-pink-100 hover:text-white text-xs font-bold transition-all duration-150 cursor-pointer flex items-center space-x-2 active:scale-95 text-left shadow-2xs"
 							>
-								{#if isDatePinned(day)}
-									Unpin date
-								{:else}
-									Pin date
-								{/if}
-							</button>
-							<button
-								onclick={(e) => { e.stopPropagation(); closeTooltip(); }}
-								class="text-white hover:text-pink-200 transition-colors duration-200 p-0.5"
-								title="Close"
-							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0">
+									<path fill-rule="evenodd" d="M6.32 2.577a49.255 49.255 0 0111.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 01-1.085.67L12 18.089l-7.165 3.58A.75.75 0 013.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93z" clip-rule="evenodd" />
 								</svg>
+								<span>{isDatePinned(day) ? 'Unpin Date' : 'Pin Date'}</span>
 							</button>
-							<div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-3 border-r-3 border-t-3 border-transparent border-t-pink-950/90"></div>
+
+							<!-- Select & Delete (Bottom Item - Stacked) -->
+							<button
+								type="button"
+								onclick={(e) => {
+									e.stopPropagation();
+									enterSelectionMode(day);
+								}}
+								class="w-full px-2.5 py-1.5 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-black transition-all duration-150 cursor-pointer flex items-center space-x-2 active:scale-95 text-left shadow-2xs"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-white flex-shrink-0">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+								</svg>
+								<span>Select & Delete</span>
+							</button>
+
+							<!-- Tooltip Arrow Pointer -->
+							<div class="absolute top-full w-0 h-0 border-l-[5px] border-r-[5px] border-t-[5px] border-transparent border-t-[#2a0618]/95 {index % 7 >= 5 ? 'right-4' : (index % 7 <= 1 ? 'left-4' : 'left-1/2 -translate-x-1/2')}"></div>
 						</div>
 					{/if}
 				</div>
@@ -458,22 +632,50 @@
 		{/each}
 	</div>
 
-	<!-- Jump to Today Button -->
-	<div class="mt-3.5 pt-3 border-t border-pink-100">
-		<button
-			onclick={jumpToToday}
-			class="w-full py-2.5 px-3 bg-[#e0337f] hover:bg-[#c9256d] text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
-		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-			</svg>
-			<span>Today</span>
-		</button>
-	</div>
+	<!-- Bottom Action Bar -->
+	{#if isSelectionMode}
+		<div class="mt-3.5 pt-3 border-t border-pink-100 flex items-center justify-between gap-2 animate-fade-in">
+			<button
+				type="button"
+				onclick={exitSelectionMode}
+				class="w-1/3 py-2 px-3 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 active:scale-95 transition-all cursor-pointer"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+				</svg>
+				<span>Cancel</span>
+			</button>
 
-	<!-- Legend -->
-	<div class="mt-3 pt-2.5 border-t border-pink-100">
-		<div class="flex items-center justify-center flex-wrap gap-x-3 gap-y-1.5 text-[10px] sm:text-[11px] font-bold">
+			<button
+				type="button"
+				onclick={() => showBatchDeleteModal = true}
+				disabled={selectedDaysForDelete.size === 0}
+				class="w-2/3 py-2 px-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+				</svg>
+				<span>Delete Selected ({selectedDaysForDelete.size})</span>
+			</button>
+		</div>
+	{:else}
+		<div class="mt-3.5 pt-3 border-t border-pink-100 flex items-center justify-center">
+			<button
+				type="button"
+				onclick={jumpToToday}
+				class="w-full py-2 px-3 bg-[#e0337f] hover:bg-[#c9256d] text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+				</svg>
+				<span>Today</span>
+			</button>
+		</div>
+	{/if}
+
+	<!-- Legend & Hold Tip -->
+	<div class="mt-3 pt-2.5 border-t border-pink-100 space-y-1.5">
+		<div class="flex items-center justify-center flex-wrap gap-x-3 gap-y-1 text-[10px] sm:text-[11px] font-bold">
 			<div class="flex items-center space-x-1">
 				<div class="w-2.5 h-2.5 bg-[#e0337f] rounded-md shadow-2xs"></div>
 				<span class="text-pink-900">Today</span>
@@ -498,10 +700,13 @@
 				<span class="text-pink-800">Both</span>
 			</div>
 		</div>
+		<p class="text-center text-[10px] text-pink-400 font-medium">
+			Tip: Long-press / hold any date to Pin or Select & Delete in bulk.
+		</p>
 	</div>
 
 	<!-- Selected Date Info -->
-	{#if selectedDate}
+	{#if selectedDate && !isSelectionMode}
 		<div class="mt-2.5 py-2.5 px-3 bg-[#fff0f5] border border-pink-200/80 rounded-xl text-center shadow-2xs flex items-center justify-center">
 			<p class="text-xs sm:text-[13px] text-pink-900 font-bold">
 				Selected: <span class="text-[#e0337f] font-extrabold">{selectedDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
@@ -509,6 +714,82 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Batch Delete Confirmation Modal -->
+{#if showBatchDeleteModal}
+	<div
+		class="fixed inset-0 bg-pink-950/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in"
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+		onclick={(e) => { if (e.target === e.currentTarget && !isBatchDeleting) showBatchDeleteModal = false; }}
+		onkeydown={(e) => { if (e.key === 'Escape' && !isBatchDeleting) showBatchDeleteModal = false; }}
+	>
+		<div class="bg-white border border-rose-100 rounded-3xl p-5 sm:p-6 max-w-sm sm:max-w-md w-full space-y-4 shadow-2xl animate-scale-in">
+			<div class="flex items-center space-x-3">
+				<div class="w-11 h-11 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 shadow-inner">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-6 h-6">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+					</svg>
+				</div>
+				<div>
+					<h3 class="text-base font-black text-rose-950 leading-tight">Delete Selected Memories?</h3>
+					<p class="text-xs text-rose-500 font-bold mt-0.5">Bulk Delete Confirmation</p>
+				</div>
+			</div>
+
+			<div class="p-3.5 bg-rose-50/70 border border-rose-200/80 rounded-2xl space-y-2">
+				<p class="text-xs text-rose-950 font-medium leading-relaxed">
+					Are you sure you want to permanently delete all memories on the <strong class="text-rose-700 font-black">{selectedDaysForDelete.size} selected date(s)</strong> ({getSelectedMemoriesCount()} total memories)?
+				</p>
+				<p class="text-[11px] text-rose-600 font-bold">
+					⚠️ This will remove all associated media, tags, and pinned dates. This action cannot be undone.
+				</p>
+			</div>
+
+			<!-- Dates Chips Preview -->
+			<div class="max-h-32 overflow-y-auto space-y-1.5 pr-1">
+				<p class="text-[11px] font-black text-pink-950 uppercase tracking-wide">Selected Dates to Remove:</p>
+				<div class="flex flex-wrap gap-1.5">
+					{#each Array.from(selectedDaysForDelete) as dateStr}
+						<span class="px-2.5 py-1 bg-white border border-rose-200 rounded-xl text-xs font-bold text-rose-800 shadow-2xs flex items-center space-x-1">
+							<span>{dateStr}</span>
+							<span class="text-[10px] text-rose-500 font-medium">({(memoriesData[dateStr] || []).length} mems)</span>
+						</span>
+					{/each}
+				</div>
+			</div>
+
+			<!-- Actions -->
+			<div class="flex items-center justify-end space-x-2 pt-2 border-t border-rose-100">
+				<button
+					type="button"
+					onclick={() => showBatchDeleteModal = false}
+					disabled={isBatchDeleting}
+					class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+				>
+					Cancel
+				</button>
+				<button
+					type="button"
+					onclick={confirmBatchDelete}
+					disabled={isBatchDeleting}
+					class="px-4 py-2 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white text-xs font-black rounded-xl transition-all cursor-pointer active:scale-95 shadow-md hover:shadow-lg disabled:opacity-50 flex items-center space-x-1.5"
+				>
+					{#if isBatchDeleting}
+						<div class="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full"></div>
+						<span>Deleting...</span>
+					{:else}
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+						</svg>
+						<span>Delete All ({getSelectedMemoriesCount()})</span>
+					{/if}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <!-- Custom Month Selection Popup -->
 {#if showMonthMenu}

@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
+	import { broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
 
@@ -33,7 +34,8 @@
 
 	// Add Friend / Search User State
 	let friendUsername = $state('');
-	let isAddingFriend = $state(false);
+	let addingFriendUserId = $state(null);
+	let cancelingFriendUserId = $state(null);
 	let addFriendError = $state('');
 	let addFriendSuccess = $state('');
 	let searchResults = $state([]);
@@ -375,19 +377,25 @@
 	}
 
 	async function sendFriendRequestToUser(targetUser) {
-		if (!user || !user.id || isAddingFriend) return;
-		isAddingFriend = true;
+		if (!user || !user.id || !targetUser || !targetUser.id || addingFriendUserId === targetUser.id) return;
+		addingFriendUserId = targetUser.id;
 		addFriendError = '';
 		addFriendSuccess = '';
 
-		// 0ms Optimistic UI update
+		// 0ms Optimistic UI update for targetUser
 		const previousRel = targetUser.relationship;
 		targetUser.relationship = 'request_sent';
 		suggestedUsers = suggestedUsers.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: 'request_sent' } : su);
 		searchResults = searchResults.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: 'request_sent' } : su);
 
 		// Instant client-side broadcast
-		broadcastFriendEvent(user.id, targetUser.id, 'friend_request');
+		try {
+			if (typeof broadcastFriendEvent === 'function') {
+				broadcastFriendEvent(user.id, targetUser.id, 'friend_request');
+			}
+		} catch (e) {
+			console.warn('Broadcast friend event warn:', e);
+		}
 
 		try {
 			const res = await fetch(API_ENDPOINTS.addFriend, {
@@ -406,13 +414,18 @@
 				suggestedUsers = suggestedUsers.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: previousRel } : su);
 				searchResults = searchResults.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: previousRel } : su);
 				addFriendError = data.error;
+				showNotificationModal(data.error, 'error');
 			} else {
 				addFriendSuccess = data.message || `Friend request sent to @${targetUser.username}!`;
 				targetUser.request_id = data.request_id || null;
 				suggestedUsers = suggestedUsers.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: 'request_sent', request_id: data.request_id || su.request_id } : su);
 				searchResults = searchResults.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: 'request_sent', request_id: data.request_id || su.request_id } : su);
 				fetchPendingRequests(true);
-				broadcastFriendEvent(user.id, targetUser.id, 'friend_request');
+				try {
+					if (typeof broadcastFriendEvent === 'function') {
+						broadcastFriendEvent(user.id, targetUser.id, 'friend_request');
+					}
+				} catch (e) {}
 				setTimeout(() => {
 					addFriendSuccess = '';
 				}, 3000);
@@ -422,22 +435,29 @@
 			suggestedUsers = suggestedUsers.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: previousRel } : su);
 			searchResults = searchResults.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: previousRel } : su);
 			addFriendError = 'An error occurred. Please try again.';
+			showNotificationModal('An error occurred. Please try again.', 'error');
 			console.error('Add friend error:', err);
 		} finally {
-			isAddingFriend = false;
+			addingFriendUserId = null;
 		}
 	}
 
 	async function handleCancelFriendRequestFromSearch(targetUser) {
-		if (!user || !user.id || isResponding) return;
-		isResponding = true;
+		if (!user || !user.id || !targetUser || !targetUser.id || cancelingFriendUserId === targetUser.id) return;
+		cancelingFriendUserId = targetUser.id;
 		const previousRel = targetUser.relationship;
 		const previousReqId = targetUser.request_id;
 		// Optimistic instant toggle to Add Friend
 		targetUser.relationship = 'none';
 		targetUser.request_id = null;
+		suggestedUsers = suggestedUsers.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: 'none', request_id: null } : su);
+		searchResults = searchResults.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: 'none', request_id: null } : su);
 
-		broadcastFriendEvent(user.id, targetUser.id, 'cancel_request');
+		try {
+			if (typeof broadcastFriendEvent === 'function') {
+				broadcastFriendEvent(user.id, targetUser.id, 'cancel_request');
+			}
+		} catch (e) {}
 
 		try {
 			const res = await fetch(API_ENDPOINTS.cancelFriendRequest, {
@@ -452,18 +472,26 @@
 			const data = await res.json();
 			if (data.success) {
 				fetchPendingRequests();
-				broadcastFriendEvent(user.id, targetUser.id, 'cancel_request');
+				try {
+					if (typeof broadcastFriendEvent === 'function') {
+						broadcastFriendEvent(user.id, targetUser.id, 'cancel_request');
+					}
+				} catch (e) {}
 			} else {
 				targetUser.relationship = previousRel;
 				targetUser.request_id = previousReqId;
+				suggestedUsers = suggestedUsers.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: previousRel, request_id: previousReqId } : su);
+				searchResults = searchResults.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: previousRel, request_id: previousReqId } : su);
 				showNotificationModal(data.error || 'Failed to cancel request', 'error');
 			}
 		} catch (err) {
 			targetUser.relationship = previousRel;
 			targetUser.request_id = previousReqId;
+			suggestedUsers = suggestedUsers.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: previousRel, request_id: previousReqId } : su);
+			searchResults = searchResults.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: previousRel, request_id: previousReqId } : su);
 			console.error('Cancel friend request error:', err);
 		} finally {
-			isResponding = false;
+			cancelingFriendUserId = null;
 		}
 	}
 
@@ -984,11 +1012,16 @@
 											<button
 												type="button"
 												onclick={() => handleCancelFriendRequestFromSearch(targetUser)}
-												disabled={isResponding}
+												disabled={cancelingFriendUserId === targetUser.id}
 												class="px-2.5 py-1 bg-amber-50 hover:bg-rose-50 text-amber-800 hover:text-rose-600 border border-amber-200 hover:border-rose-200 text-xs font-bold rounded-xl active:scale-95 transition-all flex items-center space-x-1 cursor-pointer disabled:opacity-50"
 												title="Click to cancel friend request"
 											>
-												<span>Cancel Add</span>
+												{#if cancelingFriendUserId === targetUser.id}
+													<div class="animate-spin h-3 w-3 border-2 border-amber-400 border-t-amber-800 rounded-full"></div>
+													<span>Canceling...</span>
+												{:else}
+													<span>Cancel Add</span>
+												{/if}
 											</button>
 										{:else if targetUser.relationship === 'request_received'}
 											<button
@@ -1002,13 +1035,18 @@
 											<button
 												type="button"
 												onclick={() => sendFriendRequestToUser(targetUser)}
-												disabled={isAddingFriend}
+												disabled={addingFriendUserId === targetUser.id}
 												class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 text-white text-xs font-bold rounded-xl transition-all disabled:opacity-50 flex items-center space-x-1 cursor-pointer shadow-xs"
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-												</svg>
-												<span>Add Friend</span>
+												{#if addingFriendUserId === targetUser.id}
+													<div class="animate-spin h-3 w-3 border-2 border-white/40 border-t-white rounded-full"></div>
+													<span>Sending...</span>
+												{:else}
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
+														<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+													</svg>
+													<span>Add Friend</span>
+												{/if}
 											</button>
 										{/if}
 									</div>
@@ -1102,11 +1140,16 @@
 											<button
 												type="button"
 												onclick={() => handleCancelFriendRequestFromSearch(sugUser)}
-												disabled={isResponding}
+												disabled={cancelingFriendUserId === sugUser.id}
 												class="px-2.5 py-1 bg-amber-50 hover:bg-rose-50 text-amber-800 hover:text-rose-600 border border-amber-200 hover:border-rose-200 text-xs font-bold rounded-xl active:scale-95 transition-all flex items-center space-x-1 cursor-pointer disabled:opacity-50"
 												title="Cancel request"
 											>
-												<span>Cancel Add</span>
+												{#if cancelingFriendUserId === sugUser.id}
+													<div class="animate-spin h-3 w-3 border-2 border-amber-400 border-t-amber-800 rounded-full"></div>
+													<span>Canceling...</span>
+												{:else}
+													<span>Cancel Add</span>
+												{/if}
 											</button>
 										{:else if sugUser.relationship === 'request_received'}
 											<button
@@ -1120,13 +1163,18 @@
 											<button
 												type="button"
 												onclick={() => sendFriendRequestToUser(sugUser)}
-												disabled={isAddingFriend}
+												disabled={addingFriendUserId === sugUser.id}
 												class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 text-white text-xs font-bold rounded-xl transition-all disabled:opacity-50 flex items-center space-x-1 cursor-pointer shadow-xs"
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-												</svg>
-												<span>Add Friend</span>
+												{#if addingFriendUserId === sugUser.id}
+													<div class="animate-spin h-3 w-3 border-2 border-white/40 border-t-white rounded-full"></div>
+													<span>Sending...</span>
+												{:else}
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
+														<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+													</svg>
+													<span>Add Friend</span>
+												{/if}
 											</button>
 										{/if}
 									</div>

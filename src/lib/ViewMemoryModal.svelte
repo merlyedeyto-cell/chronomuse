@@ -765,27 +765,33 @@
 
 <!-- Backdrop Overlay -->
 <div
-	class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 transition-opacity duration-300"
+	class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-300 pointer-events-auto"
 	class:opacity-0={isClosing}
 	onclick={handleClose}
 ></div>
 
-<!-- Modal Content Container -->
+<!-- Bottom Sheet Modal Container -->
 <div
-	class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 font-sans"
+	class="fixed inset-0 z-50 flex items-end justify-center font-sans pointer-events-none"
 	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 >
 	<div
-		class="bg-[#fff0f5] border border-pink-200/90 rounded-[28px] p-4 sm:p-5 relative transition-all duration-300 max-w-[360px] sm:max-w-[440px] md:max-w-[460px] w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl my-auto"
+		class="bg-gradient-to-b from-[#fff5f8] via-[#fff0f5] to-white border-t-2 border-x border-pink-200/90 rounded-t-[32px] sm:rounded-t-[38px] p-4 sm:p-6 pb-6 relative transition-all duration-300 w-full max-w-xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[96vh] sm:max-h-[92vh] h-[93vh] sm:h-[89vh] md:h-[88vh] overflow-hidden flex flex-col shadow-[0_-12px_45px_rgba(244,63,142,0.22)] pointer-events-auto animate-bottom-sheet"
+		class:translate-y-full={isClosing}
 		class:opacity-0={isClosing}
-		class:scale-95={isClosing}
-		class:transform={isClosing}
 		onclick={(e) => e.stopPropagation()}
 	>
+		<!-- Pull / Drag Handle Bar -->
+		<div
+			class="w-12 sm:w-16 h-1.5 rounded-full bg-pink-300/80 mx-auto mb-2 hover:bg-pink-400 cursor-grab active:cursor-grabbing transition-colors flex-shrink-0"
+			onclick={handleClose}
+			title="Tap or pull to close"
+		></div>
+
 		<!-- Close Button -->
 		<button
 			onclick={handleClose}
-			class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full text-pink-400 hover:text-[#f43f8e] bg-white/80 hover:bg-white border border-pink-200/80 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+			class="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 w-8 h-8 rounded-full text-pink-400 hover:text-[#f43f8e] bg-white/90 hover:bg-white border border-pink-200/90 flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 z-10"
 			title="Close"
 		>
 			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
@@ -794,21 +800,21 @@
 		</button>
 
 		<!-- Header -->
-		<div class="text-center mb-3 pr-4 pl-4">
-			<h2 class="text-base sm:text-lg md:text-xl font-black text-[#f43f8e]">View Memories</h2>
-			<p class="text-[10px] sm:text-xs text-pink-400 font-bold">Your special moments on this date</p>
+		<div class="text-center mb-3 pr-10 pl-10 flex-shrink-0">
+			<h2 class="text-lg sm:text-xl md:text-2xl font-black text-[#f43f8e] tracking-tight">View Memories</h2>
+			<p class="text-[11px] sm:text-xs text-pink-400 font-bold mt-0.5">Your special moments on this date</p>
 		</div>
 
 		<!-- Selected Date Banner -->
-		<div class="mb-3 p-3 sm:p-3.5 bg-gradient-to-r from-[#f43f8e] to-[#ec4899] text-white rounded-2xl text-left shadow-[0_4px_16px_rgba(244,63,94,0.22)] flex items-center space-x-3 flex-shrink-0">
-			<div class="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center flex-shrink-0 text-white shadow-inner">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
+		<div class="mb-3.5 p-3.5 sm:p-4 bg-gradient-to-r from-[#f43f8e] via-[#ec4899] to-[#db2777] text-white rounded-2xl text-left shadow-[0_4px_20px_rgba(244,63,94,0.22)] flex items-center space-x-3.5 flex-shrink-0">
+			<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center flex-shrink-0 text-white shadow-inner">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-5 h-5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
 				</svg>
 			</div>
-			<div class="min-w-0">
-				<span class="text-[9px] sm:text-[10px] font-black tracking-wider uppercase text-white/80 block leading-tight">SELECTED DATE</span>
-				<span class="text-xs sm:text-sm md:text-base font-black text-white block truncate leading-tight">{formatDate(selectedDate)}</span>
+			<div class="min-w-0 flex-1">
+				<span class="text-[10px] sm:text-[11px] font-black tracking-wider uppercase text-white/80 block leading-tight">SELECTED DATE</span>
+				<span class="text-sm sm:text-base md:text-lg font-black text-white block truncate leading-tight">{formatDate(selectedDate)}</span>
 			</div>
 		</div>
 
@@ -836,328 +842,274 @@
 				{@debug memory}
 				<div class="p-3.5 bg-white border border-pink-100/90 rounded-2xl shadow-2xs hover:border-pink-200 transition-all">
 					{#if isEditing && memory.id}
-						<!-- Edit Mode -->
-						<div class="space-y-2.5">
-							<!-- Mood Tag -->
-							<button
-								type="button"
-								onclick={() => showMoodTagModal = true}
-								class="w-full px-3 py-1.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs text-left flex items-center justify-between font-bold text-pink-950 cursor-pointer transition-colors hover:bg-pink-100"
-							>
-								<span class={editedMoodTag ? 'text-pink-950 truncate' : 'text-pink-400 truncate'}>
-									{editedMoodTag || 'Select mood'}
-								</span>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-								</svg>
-							</button>
+						<!-- Edit Mode (2-column on desktop, 1-column on mobile) -->
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 items-start">
+							<!-- Left Column: Mood, Tag, Description, Save/Cancel -->
+							<div class="space-y-2.5">
+								<!-- Mood Tag -->
+								<button
+									type="button"
+									onclick={() => showMoodTagModal = true}
+									class="w-full px-3 py-1.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs text-left flex items-center justify-between font-bold text-pink-950 cursor-pointer transition-colors hover:bg-pink-100"
+								>
+									<span class={editedMoodTag ? 'text-pink-950 truncate' : 'text-pink-400 truncate'}>
+										{editedMoodTag || 'Select mood'}
+									</span>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+									</svg>
+								</button>
 
-							<!-- Memory Tag -->
-							<button
-								type="button"
-								onclick={() => showMemoryTagModal = true}
-								class="w-full px-3 py-1.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs text-left flex items-center justify-between font-bold text-pink-950 cursor-pointer transition-colors hover:bg-pink-100"
-							>
-								<span class={editedMemoryTag ? 'text-pink-950 truncate' : 'text-pink-400 truncate'}>
-									{editedMemoryTag || 'Select tag'}
-								</span>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-								</svg>
-							</button>
+								<!-- Memory Tag -->
+								<button
+									type="button"
+									onclick={() => showMemoryTagModal = true}
+									class="w-full px-3 py-1.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs text-left flex items-center justify-between font-bold text-pink-950 cursor-pointer transition-colors hover:bg-pink-100"
+								>
+									<span class={editedMemoryTag ? 'text-pink-950 truncate' : 'text-pink-400 truncate'}>
+										{editedMemoryTag || 'Select tag'}
+									</span>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+									</svg>
+								</button>
 
-							<!-- Upload Photo or Video -->
-							<div>
-								<div class="flex items-center justify-between mb-1">
-									<label class="block text-[10px] font-bold text-pink-500">Photo or Video</label>
-									{#if editedPhotoVideo || memory.photo_video}
-										<button
-											type="button"
-											onclick={() => { photoVideoInput?.click(); }}
-											class="text-[10px] font-bold text-[#f43f8e] hover:text-[#e0337f] bg-pink-50 px-2 py-0.5 rounded-full transition-all flex items-center space-x-1"
-										>
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-											</svg>
-											<span>Change</span>
-										</button>
+								<!-- Description -->
+								<div class="relative">
+									<textarea
+										bind:value={editedDescription}
+										placeholder="Write about this memory..."
+										rows="3"
+										class="w-full px-3 py-2 pr-9 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-pink-950 placeholder:text-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 focus:border-[#f43f8e] focus:bg-white text-xs font-bold resize-none"
+									></textarea>
+									<button
+										type="button"
+										onclick={() => showEmojiPicker = !showEmojiPicker}
+										class="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-white border border-pink-200 flex items-center justify-center text-xs hover:scale-110 transition-transform cursor-pointer"
+									>
+										<span>😊</span>
+									</button>
+									{#if showEmojiPicker}
+										<div class="absolute bottom-full right-0 mb-1.5 p-2 bg-white border border-pink-100 rounded-2xl z-10 max-w-[180px] shadow-lg">
+											<div class="grid grid-cols-6 gap-1">
+												{#each emojis as emoji}
+													<button
+														type="button"
+														onclick={() => insertEmoji(emoji)}
+														class="p-1 hover:bg-pink-50 rounded-lg transition-colors text-sm cursor-pointer"
+													>
+														{emoji}
+													</button>
+												{/each}
+											</div>
+										</div>
 									{/if}
 								</div>
 
-								<div
-									class="relative flex flex-col items-center justify-center w-full min-h-[80px] max-h-40 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/70 cursor-pointer hover:bg-pink-100/70 transition-all duration-200 overflow-hidden group"
-									onclick={() => { photoVideoInput?.click(); }}
-								>
-									{#if editedPhotoVideoPreview}
-										{#if editedPhotoVideoType.startsWith('image/')}
-											<img src={editedPhotoVideoPreview} alt="Preview" class="w-full max-h-36 object-contain" />
+								<!-- Save/Cancel Buttons -->
+								<div class="flex space-x-2 pt-1">
+									<button
+										onclick={() => handleSaveEdit(memory)}
+										disabled={isSaving}
+										class="flex-1 py-1.5 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] transition-all text-xs font-bold disabled:opacity-50 active:scale-95 shadow-xs cursor-pointer"
+									>
+										{#if isSaving}Saving...{:else}Save{/if}
+									</button>
+									<button
+										onclick={handleCancelEdit}
+										class="flex-1 py-1.5 px-3 bg-white border border-pink-200 text-pink-600 rounded-xl hover:bg-pink-50 transition-all text-xs font-bold active:scale-95 cursor-pointer"
+									>
+										Cancel
+									</button>
+								</div>
+							</div>
+
+							<!-- Right Column: Media Uploads (Photo/Video & Music) -->
+							<div class="space-y-2.5">
+								<!-- Upload Photo or Video -->
+								<div>
+									<div class="flex items-center justify-between mb-1">
+										<label class="block text-[10px] font-bold text-pink-500">Photo or Video</label>
+										{#if editedPhotoVideo || memory.photo_video}
+											<button
+												type="button"
+												onclick={() => { photoVideoInput?.click(); }}
+												class="text-[10px] font-bold text-[#f43f8e] hover:text-[#e0337f] bg-pink-50 px-2 py-0.5 rounded-full transition-all flex items-center space-x-1"
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+												</svg>
+												<span>Change</span>
+											</button>
+										{/if}
+									</div>
+
+									<div
+										class="relative flex flex-col items-center justify-center w-full min-h-[80px] max-h-36 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/70 cursor-pointer hover:bg-pink-100/70 transition-all duration-200 overflow-hidden group"
+										onclick={() => { photoVideoInput?.click(); }}
+									>
+										{#if editedPhotoVideoPreview}
+											{#if editedPhotoVideoType.startsWith('image/')}
+												<img src={editedPhotoVideoPreview} alt="Preview" class="w-full max-h-36 object-contain" />
+											{:else}
+												<div class="relative w-full h-full flex items-center justify-center bg-black/80 py-1.5">
+													<video src={editedPhotoVideoPreview} class="w-full max-h-36 object-contain pointer-events-none" muted playsinline></video>
+													<div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
+														<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1">
+															<span>Change Video</span>
+														</span>
+													</div>
+												</div>
+											{/if}
+										{:else if memory.photo_video}
+											{#if (memory.photo_video_type && memory.photo_video_type.startsWith('video/')) || (typeof memory.photo_video === 'string' && (memory.photo_video.endsWith('.mp4') || memory.photo_video.endsWith('.webm') || memory.photo_video.endsWith('.mov')))}
+												<div class="relative w-full h-full flex items-center justify-center bg-black/80 py-1.5">
+													<video src={getMediaUrl(memory.photo_video)} class="w-full max-h-36 object-contain pointer-events-none" muted playsinline></video>
+													<div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
+														<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1">
+															<span>Change Video</span>
+														</span>
+													</div>
+												</div>
+											{:else}
+												<div class="relative w-full h-full flex items-center justify-center">
+													<img src={getMediaUrl(memory.photo_video)} alt="Current" class="w-full max-h-36 object-contain" />
+													<div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-all">
+														<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm">Change Photo</span>
+													</div>
+												</div>
+											{/if}
 										{:else}
-											<div class="relative w-full h-full flex items-center justify-center bg-black/80 py-1.5">
-												<video src={editedPhotoVideoPreview} class="w-full max-h-36 object-contain pointer-events-none" muted playsinline></video>
-												<div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
-													<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1">
-														<span>Change Video</span>
-													</span>
+											<div class="flex items-center space-x-2.5 py-2 px-3">
+												<div class="w-7 h-7 rounded-lg bg-pink-100 text-[#f43f8e] flex items-center justify-center flex-shrink-0">
+													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+														<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+													</svg>
+												</div>
+												<div class="flex-1 min-w-0">
+													<p class="text-xs font-bold text-[#f43f8e]">Upload Photo/Video</p>
+													<p class="text-[10px] text-pink-400 font-medium">Click to select file</p>
 												</div>
 											</div>
 										{/if}
-									{:else if memory.photo_video}
-										{#if (memory.photo_video_type && memory.photo_video_type.startsWith('video/')) || (typeof memory.photo_video === 'string' && (memory.photo_video.endsWith('.mp4') || memory.photo_video.endsWith('.webm') || memory.photo_video.endsWith('.mov')))}
-											<div class="relative w-full h-full flex items-center justify-center bg-black/80 py-1.5">
-												<video src={getMediaUrl(memory.photo_video)} class="w-full max-h-36 object-contain pointer-events-none" muted playsinline></video>
-												<div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
-													<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1">
-														<span>Change Video</span>
-													</span>
-												</div>
-											</div>
-										{:else}
-											<div class="relative w-full h-full flex items-center justify-center">
-												<img src={getMediaUrl(memory.photo_video)} alt="Current" class="w-full max-h-36 object-contain" />
-												<div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-all">
-													<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm">Change Photo</span>
-												</div>
-											</div>
-										{/if}
-									{:else}
-										<div class="flex items-center space-x-2.5 py-2 px-3">
+
+										<input
+											type="file"
+											accept="image/*,video/*"
+											onchange={handleEditedPhotoVideoChange}
+											bind:this={photoVideoInput}
+											class="hidden"
+										/>
+									</div>
+								</div>
+
+								<!-- Upload Music -->
+								<div>
+									<label class="block text-[10px] font-bold text-pink-500 mb-1">Music</label>
+									<label class="flex flex-col items-center justify-center w-full py-2 px-3 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/70 cursor-pointer hover:bg-pink-100 transition-all duration-200">
+										<div class="flex items-center space-x-2.5 w-full max-w-full min-w-0 overflow-hidden">
 											<div class="w-7 h-7 rounded-lg bg-pink-100 text-[#f43f8e] flex items-center justify-center flex-shrink-0">
 												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+													<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
 												</svg>
 											</div>
 											<div class="flex-1 min-w-0">
-												<p class="text-xs font-bold text-[#f43f8e]">Upload Photo/Video</p>
-												<p class="text-[10px] text-pink-400 font-medium">Click to select file</p>
+												{#if editedMusic}
+													<p class="text-xs text-pink-950 font-bold truncate">{editedMusic.name}</p>
+													<p class="text-[10px] text-pink-400">Click to change</p>
+												{:else if memory.music}
+													<p class="text-xs text-pink-950 font-bold truncate">Current: {getMusicName(memory.music)}</p>
+													<p class="text-[10px] text-pink-400">Click to change</p>
+												{:else}
+													<p class="text-xs text-[#f43f8e] font-bold">Upload Music</p>
+													<p class="text-[10px] text-pink-400">Click to select audio</p>
+												{/if}
 											</div>
 										</div>
-									{/if}
-
-									<input
-										type="file"
-										accept="image/*,video/*"
-										onchange={handleEditedPhotoVideoChange}
-										bind:this={photoVideoInput}
-										class="hidden"
-									/>
+										<input
+											type="file"
+											accept="audio/*"
+											onchange={handleEditedMusicChange}
+											bind:this={musicInput}
+											class="hidden"
+										/>
+									</label>
 								</div>
-							</div>
-
-							<!-- Upload Music -->
-							<div>
-								<label class="block text-[10px] font-bold text-pink-500 mb-1">Music</label>
-								<label class="flex flex-col items-center justify-center w-full py-2 px-3 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/70 cursor-pointer hover:bg-pink-100 transition-all duration-200">
-									<div class="flex items-center space-x-2.5 w-full max-w-full min-w-0 overflow-hidden">
-										<div class="w-7 h-7 rounded-lg bg-pink-100 text-[#f43f8e] flex items-center justify-center flex-shrink-0">
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
-											</svg>
-										</div>
-										<div class="flex-1 min-w-0">
-											{#if editedMusic}
-												<p class="text-xs text-pink-950 font-bold truncate">{editedMusic.name}</p>
-												<p class="text-[10px] text-pink-400">Click to change</p>
-											{:else if memory.music}
-												<p class="text-xs text-pink-950 font-bold truncate">Current: {getMusicName(memory.music)}</p>
-												<p class="text-[10px] text-pink-400">Click to change</p>
-											{:else}
-												<p class="text-xs text-[#f43f8e] font-bold">Upload Music</p>
-												<p class="text-[10px] text-pink-400">Click to select audio</p>
-											{/if}
-										</div>
-									</div>
-									<input
-										type="file"
-										accept="audio/*"
-										onchange={handleEditedMusicChange}
-										bind:this={musicInput}
-										class="hidden"
-									/>
-								</label>
-							</div>
-
-							<!-- Description -->
-							<div class="relative">
-								<textarea
-									bind:value={editedDescription}
-									placeholder="Write about this memory..."
-									rows="2"
-									class="w-full px-3 py-2 pr-9 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-pink-950 placeholder:text-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 focus:border-[#f43f8e] focus:bg-white text-xs font-bold resize-none"
-								></textarea>
-								<button
-									type="button"
-									onclick={() => showEmojiPicker = !showEmojiPicker}
-									class="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-white border border-pink-200 flex items-center justify-center text-xs hover:scale-110 transition-transform cursor-pointer"
-								>
-									<span>😊</span>
-								</button>
-								{#if showEmojiPicker}
-									<div class="absolute bottom-full right-0 mb-1.5 p-2 bg-white border border-pink-100 rounded-2xl z-10 max-w-[180px] shadow-lg">
-										<div class="grid grid-cols-6 gap-1">
-											{#each emojis as emoji}
-												<button
-													type="button"
-													onclick={() => insertEmoji(emoji)}
-													class="p-1 hover:bg-pink-50 rounded-lg transition-colors text-sm cursor-pointer"
-												>
-													{emoji}
-												</button>
-											{/each}
-										</div>
-									</div>
-								{/if}
-							</div>
-
-							<!-- Save/Cancel Buttons -->
-							<div class="flex space-x-2">
-								<button
-									onclick={() => handleSaveEdit(memory)}
-									disabled={isSaving}
-									class="flex-1 py-1.5 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] transition-all text-xs font-bold disabled:opacity-50 active:scale-95 shadow-xs cursor-pointer"
-								>
-									{#if isSaving}Saving...{:else}Save{/if}
-								</button>
-								<button
-									onclick={handleCancelEdit}
-									class="flex-1 py-1.5 px-3 bg-white border border-pink-200 text-pink-600 rounded-xl hover:bg-pink-50 transition-all text-xs font-bold active:scale-95 cursor-pointer"
-								>
-									Cancel
-								</button>
 							</div>
 						</div>
 					{:else}
 						<!-- View Mode -->
 						{@const details = getMemoryDisplayDetails(memory)}
-						<div class="space-y-2">
-							<!-- Header Row: Tags & Shared Badge on Left, Action Toolbar on Right -->
-							<div class="flex items-center justify-between gap-1.5 border-b border-pink-50 pb-2">
-								<div class="flex items-center flex-wrap gap-1 min-w-0">
-									{#if details.isShared && details.senderName}
-										<button
-											type="button"
-											onclick={() => handleSenderClick(details.senderName)}
-											class="text-[10px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full bg-pink-500 text-white font-bold flex items-center space-x-1 shadow-2xs hover:bg-pink-600 transition-colors cursor-pointer"
-										>
-											<span>Shared by @{details.senderName}</span>
-										</button>
-									{/if}
 
-									{#if memory.mood_tag}
-										<span class="text-[10px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap">
-											{memory.mood_tag}
-										</span>
-									{/if}
+						<!-- Hidden audio element mounted once per memory -->
+						{#if memory.music}
+							<audio
+								bind:this={audioElements[memory.id]}
+								src={getMusicUrl(memory.music)}
+								preload="metadata"
+								onloadedmetadata={(e) => { audioDurations[memory.id] = e.currentTarget.duration || 0; }}
+								ontimeupdate={(e) => { audioCurrentTimes[memory.id] = e.currentTarget.currentTime || 0; }}
+								onended={() => { if (playingAudioId === memory.id) playingAudioId = null; audioCurrentTimes[memory.id] = 0; }}
+								onplay={() => { playingAudioId = memory.id; }}
+								onpause={() => { if (playingAudioId === memory.id) playingAudioId = null; }}
+								onerror={() => { if (playingAudioId === memory.id) playingAudioId = null; }}
+								crossorigin="anonymous"
+								class="hidden"
+							></audio>
+						{/if}
 
-									{#if details.cleanTag}
-										<span class="text-[10px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full bg-pink-50 text-pink-500 border border-pink-200 font-bold whitespace-nowrap">
-											{details.cleanTag}
-										</span>
-									{/if}
-								</div>
-
-								<!-- Action Toolbar on Right -->
-								<div class="flex items-center space-x-1.5 flex-shrink-0">
-									{#if !details.isShared}
-										<!-- Share with Friend Button -->
-										<button
-											onclick={() => openShareModal(memory)}
-											class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all flex items-center space-x-1 active:scale-95 cursor-pointer"
-											title="Share with Friend"
-										>
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zm0-12a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
-											</svg>
-										</button>
-
-										<button
-											onclick={() => handleEditMemory(memory)}
-											class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all active:scale-95 cursor-pointer"
-											title="Edit"
-										>
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-											</svg>
-										</button>
-									{/if}
-
-									<button
-										onclick={() => handleDeleteMemory(memory.id)}
-										class="p-1.5 text-pink-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all active:scale-95 cursor-pointer"
-										title="Delete"
-									>
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-											<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-										</svg>
-									</button>
-								</div>
-							</div>
-
-							<!-- Clean Description Content -->
-							{#if details.cleanDesc}
-								<p class="text-xs sm:text-sm md:text-[15px] font-bold text-pink-950 leading-relaxed whitespace-pre-wrap mt-1 mb-2">{details.cleanDesc}</p>
-							{/if}
-
-							<!-- Media -->
-							{#if memory.photo_video}
-								{#if (!memory.photo_video_type || memory.photo_video_type.startsWith('image/')) && !(typeof memory.photo_video === 'string' && (memory.photo_video.endsWith('.mp4') || memory.photo_video.endsWith('.webm') || memory.photo_video.endsWith('.mov')))}
-									<div 
-										class="relative rounded-2xl overflow-hidden border border-pink-100/90 cursor-pointer hover:border-pink-300 transition-all duration-200 bg-pink-50/50 shadow-2xs group" 
-										onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'image')}
-									>
-										<img 
-											src={getMediaUrl(memory.photo_video)} 
-											alt="Memory" 
-											class="w-full h-44 sm:h-48 md:h-52 object-cover group-hover:scale-105 transition-transform duration-300 rounded-2xl" 
-										/>
-										<div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
-											<span class="bg-black/60 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-xs flex items-center space-x-1.5 shadow-sm">
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-												</svg>
-												<span>Full view</span>
-											</span>
-										</div>
-									</div>
-								{:else}
-									<div class="relative rounded-2xl overflow-hidden border border-pink-100/90 bg-black shadow-2xs group">
-										<video 
-											src={getMediaUrl(memory.photo_video)} 
-											class="w-full h-44 sm:h-48 md:h-52 object-cover" 
-											controls 
-											playsinline 
-											preload="metadata"
-											controlslist="nofullscreen nodownload noremoteplayback"
-											disablepictureinpicture
-											aria-label="Memory video"
-										></video>
-										<button
-											type="button"
-											onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'video')}
-											class="absolute top-2.5 right-2.5 bg-[#f43f8e]/90 hover:bg-[#e0337f] text-white text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-lg backdrop-blur-xs flex items-center space-x-1 transition-all z-10 shadow-xs active:scale-95 cursor-pointer"
-											title="Full view"
-										>
+						{#snippet mediaBox()}
+							{#if (!memory.photo_video_type || memory.photo_video_type.startsWith('image/')) && !(typeof memory.photo_video === 'string' && (memory.photo_video.endsWith('.mp4') || memory.photo_video.endsWith('.webm') || memory.photo_video.endsWith('.mov')))}
+								<div 
+									class="relative rounded-2xl overflow-hidden border border-pink-100/90 cursor-pointer hover:border-pink-300 transition-all duration-200 bg-pink-50/50 shadow-2xs group w-full h-44 sm:h-48 md:h-52 flex items-center justify-center" 
+									onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'image')}
+								>
+									<img 
+										src={getMediaUrl(memory.photo_video)} 
+										alt="Memory" 
+										class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 rounded-2xl" 
+									/>
+									<div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
+										<span class="bg-black/60 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-xs flex items-center space-x-1.5 shadow-sm">
 											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
 												<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
 											</svg>
 											<span>Full view</span>
-										</button>
+										</span>
 									</div>
-								{/if}
+								</div>
+							{:else}
+								<div class="relative rounded-2xl overflow-hidden border border-pink-100/90 bg-black shadow-2xs group w-full h-44 sm:h-48 md:h-52 flex items-center justify-center">
+									<video 
+										src={getMediaUrl(memory.photo_video)} 
+										class="w-full h-full object-cover" 
+										controls 
+										playsinline 
+										preload="metadata"
+										controlslist="nofullscreen nodownload noremoteplayback"
+										disablepictureinpicture
+										aria-label="Memory video"
+									></video>
+									<button
+										type="button"
+										onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'video')}
+										class="absolute top-2.5 right-2.5 bg-[#f43f8e]/90 hover:bg-[#e0337f] text-white text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-lg backdrop-blur-xs flex items-center space-x-1 transition-all z-10 shadow-xs active:scale-95 cursor-pointer"
+										title="Full view"
+									>
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+										</svg>
+										<span>Full view</span>
+									</button>
+								</div>
 							{/if}
+						{/snippet}
 
-							<!-- Custom Pink Pill Audio Player -->
+						{#snippet audioBox()}
 							{#if memory.music}
-								<div class="bg-pink-50/50 border border-pink-100 rounded-2xl p-2.5 sm:p-3 mt-2 space-y-1.5">
-									<div class="flex items-center space-x-2 min-w-0">
-										<div class="w-6 h-6 rounded-full bg-[#f43f8e] text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
-											<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-												<path d="M19.95 2.1a1 1 0 00-.95.1L8 6.4a1 1 0 00-.8 1V17.5a3.5 3.5 0 102 3.14V11.2l9-3.6v6.9a3.5 3.5 0 102 3.14V3a1 1 0 00-.25-.9z" />
-											</svg>
-										</div>
-										<p class="text-xs sm:text-sm font-bold text-pink-950 truncate flex-1">{getMusicName(memory.music)}</p>
-									</div>
+								<div class="bg-pink-50/50 border border-pink-100 rounded-2xl p-2 sm:p-2.5 space-y-1">
+									<p class="text-[11px] sm:text-xs font-bold text-pink-950 truncate px-0.5">{getMusicName(memory.music)}</p>
 
-									<!-- Player Controls -->
 									<div class="flex items-center space-x-2">
 										<button
 											type="button"
@@ -1175,7 +1127,7 @@
 											{/if}
 										</button>
 
-										<span class="text-[10px] font-black text-pink-600 min-w-[26px] text-right tabular-nums">
+										<span class="text-[9.5px] font-black text-pink-600 min-w-[24px] text-right tabular-nums">
 											{formatAudioTime(audioCurrentTimes[memory.id] || 0)}
 										</span>
 
@@ -1189,34 +1141,270 @@
 											class="flex-1 h-1.5 bg-pink-100 accent-[#f43f8e] rounded-full cursor-pointer"
 										/>
 
-										<span class="text-[10px] font-bold text-pink-400 min-w-[26px] tabular-nums">
+										<span class="text-[9.5px] font-bold text-pink-400 min-w-[24px] tabular-nums">
 											{formatAudioTime(audioDurations[memory.id] || 0)}
 										</span>
-
-										<audio
-											bind:this={audioElements[memory.id]}
-											src={getMusicUrl(memory.music)}
-											preload="metadata"
-											onloadedmetadata={(e) => { audioDurations[memory.id] = e.currentTarget.duration || 0; }}
-											ontimeupdate={(e) => { audioCurrentTimes[memory.id] = e.currentTarget.currentTime || 0; }}
-											onended={() => { if (playingAudioId === memory.id) playingAudioId = null; audioCurrentTimes[memory.id] = 0; }}
-											onplay={() => { playingAudioId = memory.id; }}
-											onpause={() => { if (playingAudioId === memory.id) playingAudioId = null; }}
-											onerror={() => { if (playingAudioId === memory.id) playingAudioId = null; }}
-											crossorigin="anonymous"
-											class="hidden"
-										></audio>
 									</div>
 								</div>
 							{/if}
+						{/snippet}
 
-							<!-- Timestamp -->
-							<div class="pt-2 border-t border-pink-50">
-								<span class="text-[10px] sm:text-xs text-pink-400 font-bold">
-									Created: {formatTime(memory.created_at)}
-								</span>
+						{#if memory.photo_video}
+							<!-- MOBILE VIEW (< md): Stacked in exact requested order: Tags -> Description -> Media -> Music -> Timestamp -->
+							<div class="flex flex-col space-y-2.5 md:hidden min-w-0">
+								<!-- Header Row (Tags & Mobile Actions) -->
+								<div class="flex items-center justify-between gap-1.5 border-b border-pink-50 pb-2 min-w-0">
+									<div class="flex items-center flex-wrap gap-1 min-w-0">
+										{#if details.isShared && details.senderName}
+											<button
+												type="button"
+												onclick={() => handleSenderClick(details.senderName)}
+												class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink-500 text-white font-bold flex items-center space-x-1 shadow-2xs hover:bg-pink-600 transition-colors cursor-pointer"
+											>
+												<span>Shared by @{details.senderName}</span>
+											</button>
+										{/if}
+
+										{#if memory.mood_tag}
+											<span class="text-[10px] px-2.5 py-0.5 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap">
+												{memory.mood_tag}
+											</span>
+										{/if}
+
+										{#if details.cleanTag}
+											<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-500 border border-pink-200 font-bold whitespace-nowrap">
+												{details.cleanTag}
+											</span>
+										{/if}
+									</div>
+
+									<!-- Action Toolbar on Mobile -->
+									<div class="flex items-center space-x-1 flex-shrink-0">
+										{#if !details.isShared}
+											<button
+												onclick={() => openShareModal(memory)}
+												class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all flex items-center space-x-1 active:scale-95 cursor-pointer"
+												title="Share with Friend"
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zm0-12a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
+												</svg>
+											</button>
+
+											<button
+												onclick={() => handleEditMemory(memory)}
+												class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all active:scale-95 cursor-pointer"
+												title="Edit"
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+												</svg>
+											</button>
+										{/if}
+
+										<button
+											onclick={() => handleDeleteMemory(memory.id)}
+											class="p-1.5 text-pink-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all active:scale-95 cursor-pointer"
+											title="Delete"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+												<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+											</svg>
+										</button>
+									</div>
+								</div>
+
+								<!-- Clean Description Content (Max 10 lines on mobile, with mini-scroll) -->
+								{#if details.cleanDesc}
+									<p class="text-xs sm:text-sm font-bold text-pink-950 leading-relaxed whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-h-48 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#f43f8e_transparent] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-pink-300 [&::-webkit-scrollbar-thumb]:rounded-full mt-0.5">
+										{details.cleanDesc}
+									</p>
+								{/if}
+
+								<!-- Photo / Video (Media) on Phone View -->
+								{@render mediaBox()}
+
+								<!-- Audio Player on Phone View (Nasa BABA ng pic/vid) -->
+								{@render audioBox()}
+
+								<!-- Timestamp on Phone View -->
+								<div class="pt-1 border-t border-pink-50">
+									<span class="text-[10px] text-pink-400 font-bold">
+										Created: {formatTime(memory.created_at)}
+									</span>
+								</div>
 							</div>
-						</div>
+
+							<!-- DESKTOP VIEW (md:): 2-Column Split -->
+							<div class="hidden md:flex md:flex-row gap-5 items-stretch min-w-0">
+								<!-- Left Column (Tags, Description, Audio Player, Timestamp) -->
+								<div class="w-[54%] lg:w-[58%] min-w-0 flex flex-col justify-between space-y-2.5 overflow-hidden">
+									<div class="space-y-2 min-w-0 overflow-hidden">
+										<!-- Header Row (Tags) -->
+										<div class="flex items-center flex-wrap gap-1 min-w-0">
+											{#if details.isShared && details.senderName}
+												<button
+													type="button"
+													onclick={() => handleSenderClick(details.senderName)}
+													class="text-xs px-2.5 py-1 rounded-full bg-pink-500 text-white font-bold flex items-center space-x-1 shadow-2xs hover:bg-pink-600 transition-colors cursor-pointer"
+												>
+													<span>Shared by @{details.senderName}</span>
+												</button>
+											{/if}
+
+											{#if memory.mood_tag}
+												<span class="text-xs px-2.5 py-1 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap">
+													{memory.mood_tag}
+												</span>
+											{/if}
+
+											{#if details.cleanTag}
+												<span class="text-xs px-2.5 py-1 rounded-full bg-pink-50 text-pink-500 border border-pink-200 font-bold whitespace-nowrap">
+													{details.cleanTag}
+												</span>
+											{/if}
+										</div>
+
+										<!-- Description Content (Max 6 lines on desktop, with mini-scroll) -->
+										{#if details.cleanDesc}
+											<p class="text-sm font-bold text-pink-950 leading-relaxed whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-h-36 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#f43f8e_transparent] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-pink-300 [&::-webkit-scrollbar-thumb]:rounded-full mt-0.5">
+												{details.cleanDesc}
+											</p>
+										{/if}
+									</div>
+
+									<!-- Bottom of Left Column: Audio Player & Timestamp -->
+									<div class="space-y-2 pt-1 border-t border-pink-50 min-w-0">
+										{@render audioBox()}
+										<div class="pt-0.5">
+											<span class="text-xs text-pink-400 font-bold">
+												Created: {formatTime(memory.created_at)}
+											</span>
+										</div>
+									</div>
+								</div>
+
+								<!-- Right Column (Desktop Toolbar & Media Box) -->
+								<div class="w-[46%] lg:w-[42%] flex flex-col space-y-2 flex-shrink-0 min-w-0">
+									<!-- Action Toolbar on Desktop -->
+									<div class="flex items-center justify-end space-x-1.5 flex-shrink-0">
+										{#if !details.isShared}
+											<button
+												onclick={() => openShareModal(memory)}
+												class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all flex items-center space-x-1 active:scale-95 cursor-pointer"
+												title="Share with Friend"
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zm0-12a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
+												</svg>
+											</button>
+
+											<button
+												onclick={() => handleEditMemory(memory)}
+												class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all active:scale-95 cursor-pointer"
+												title="Edit"
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+												</svg>
+											</button>
+										{/if}
+
+										<button
+											onclick={() => handleDeleteMemory(memory.id)}
+											class="p-1.5 text-pink-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all active:scale-95 cursor-pointer"
+											title="Delete"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+												<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+											</svg>
+										</button>
+									</div>
+
+									{@render mediaBox()}
+								</div>
+							</div>
+						{:else}
+							<!-- Layout Without Media: Single Full-Width Card -->
+							<div class="space-y-2 min-w-0 overflow-hidden">
+								<!-- Header Row: Tags & Shared Badge on Left, Action Toolbar on Right -->
+								<div class="flex items-center justify-between gap-1.5 border-b border-pink-50 pb-2 min-w-0">
+									<div class="flex items-center flex-wrap gap-1 min-w-0">
+										{#if details.isShared && details.senderName}
+											<button
+												type="button"
+												onclick={() => handleSenderClick(details.senderName)}
+												class="text-[10px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full bg-pink-500 text-white font-bold flex items-center space-x-1 shadow-2xs hover:bg-pink-600 transition-colors cursor-pointer"
+											>
+												<span>Shared by @{details.senderName}</span>
+											</button>
+										{/if}
+
+										{#if memory.mood_tag}
+											<span class="text-[10px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap">
+												{memory.mood_tag}
+											</span>
+										{/if}
+
+										{#if details.cleanTag}
+											<span class="text-[10px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full bg-pink-50 text-pink-500 border border-pink-200 font-bold whitespace-nowrap">
+												{details.cleanTag}
+											</span>
+										{/if}
+									</div>
+
+									<!-- Action Toolbar on Right -->
+									<div class="flex items-center space-x-1.5 flex-shrink-0">
+										{#if !details.isShared}
+											<button
+												onclick={() => openShareModal(memory)}
+												class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all flex items-center space-x-1 active:scale-95 cursor-pointer"
+												title="Share with Friend"
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zm0-12a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
+												</svg>
+											</button>
+
+											<button
+												onclick={() => handleEditMemory(memory)}
+												class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all active:scale-95 cursor-pointer"
+												title="Edit"
+											>
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+												</svg>
+											</button>
+										{/if}
+
+										<button
+											onclick={() => handleDeleteMemory(memory.id)}
+											class="p-1.5 text-pink-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all active:scale-95 cursor-pointer"
+											title="Delete"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+												<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+											</svg>
+										</button>
+									</div>
+								</div>
+
+								<!-- Clean Description Content (Max 10 lines mobile, 6 lines desktop with mini-scroll) -->
+								{#if details.cleanDesc}
+									<p class="text-xs sm:text-sm md:text-[15px] font-bold text-pink-950 leading-relaxed whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-h-48 md:max-h-36 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#f43f8e_transparent] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-pink-300 [&::-webkit-scrollbar-thumb]:rounded-full mt-1 mb-2">{details.cleanDesc}</p>
+								{/if}
+
+								<!-- Audio Player -->
+								{@render audioBox()}
+
+								<!-- Timestamp -->
+								<div class="pt-2 border-t border-pink-50">
+									<span class="text-[10px] sm:text-xs text-pink-400 font-bold">
+										Created: {formatTime(memory.created_at)}
+									</span>
+								</div>
+							</div>
+						{/if}
 					{/if}
 				</div>
 			{/each}
@@ -1657,6 +1845,21 @@
 	.flex-1 {
 		-ms-overflow-style: none;
 		scrollbar-width: none;
+	}
+
+	@keyframes bottom-sheet-slide {
+		from {
+			transform: translateY(100%);
+			opacity: 0.8;
+		}
+		to {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+
+	.animate-bottom-sheet {
+		animation: bottom-sheet-slide 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 	}
 
 	@keyframes modal-backdrop {
