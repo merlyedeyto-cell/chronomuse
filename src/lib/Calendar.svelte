@@ -505,16 +505,16 @@
 	</div>
 
 	<!-- Weekday Names -->
-	<div class="grid grid-cols-7 gap-1.5 sm:gap-2 mb-2 sm:mb-2.5">
+	<div class="grid grid-cols-7 gap-2 sm:gap-2.5 mb-2 sm:mb-2.5">
 		{#each dayNames as day}
-			<div class="text-center text-[10px] sm:text-[11px] font-bold text-[#e05688] py-0.5">
+			<div class="text-center text-[10.5px] sm:text-[11.5px] font-bold text-[#e05688] py-0.5">
 				{day}
 			</div>
 		{/each}
 	</div>
 
 	<!-- Calendar Days Grid -->
-	<div class="grid grid-cols-7 gap-1.5 sm:gap-2">
+	<div class="grid grid-cols-7 gap-2 sm:gap-2.5">
 		{#each getDaysArray() as day, index}
 			{#if day}
 				<div class="relative">
@@ -529,7 +529,7 @@
 						onmousedown={() => startLongPress(day)}
 						onmouseup={cancelLongPress}
 						oncontextmenu={(e) => { e.preventDefault(); if (hasMemories(day)) { hoveredDate = day; isDesktopHover = false; } }}
-						class="relative aspect-square w-full rounded-xl sm:rounded-2xl transition-all duration-200 flex flex-col items-center justify-center p-0.5 cursor-pointer select-none {isSelectionMode ? (hasMemories(day) ? (isDateSelectedForDelete(day) ? 'bg-gradient-to-br from-[#f43f8e] to-[#e11d48] text-white shadow-md ring-2 ring-rose-400 scale-102 font-black' : 'bg-pink-50/80 text-pink-950 border border-pink-200 hover:border-rose-400 hover:bg-pink-100 hover:scale-102') : 'bg-pink-50/20 text-pink-200 opacity-30 pointer-events-none') : (isToday(day) ? 'bg-[#e0337f] text-white shadow-[0_4px_14px_rgba(224,51,127,0.35)] scale-102' : isSelected(day) ? 'bg-[#fff0f5] text-[#9d2b63] border-2 border-[#e0337f] shadow-xs' : 'bg-[#fff0f5] text-[#9d2b63] hover:bg-[#ffe4ee] hover:scale-105')} {isTargetHighlighted(day) && !isSelectionMode ? (hasSharedMemories(day) ? 'ring-2 ring-emerald-500 ring-offset-1 scale-105 animate-subtle-glow' : 'ring-2 ring-[#e0337f] ring-offset-1 scale-105 animate-subtle-glow') : ''}"
+						class="relative aspect-square w-full rounded-xl sm:rounded-2xl transition-all duration-200 flex flex-col items-center justify-center p-1 cursor-pointer select-none {isSelectionMode ? (hasMemories(day) ? (isDateSelectedForDelete(day) ? 'bg-gradient-to-br from-[#f43f8e] to-[#e11d48] text-white shadow-md ring-2 ring-rose-400 scale-102 font-black' : 'bg-pink-50/80 text-pink-950 border border-pink-200 hover:border-rose-400 hover:bg-pink-100 hover:scale-102') : 'bg-pink-50/20 text-pink-200 opacity-30 pointer-events-none') : (isToday(day) ? 'bg-[#e0337f] text-white shadow-[0_4px_14px_rgba(224,51,127,0.35)] scale-102' : isSelected(day) ? 'bg-[#fff0f5] text-[#9d2b63] border-2 border-[#e0337f] shadow-xs' : 'bg-[#fff0f5] text-[#9d2b63] border border-pink-100/60 hover:bg-[#ffe4ee] hover:scale-105')} {isTargetHighlighted(day) && !isSelectionMode ? (hasSharedMemories(day) ? 'ring-2 ring-emerald-500 ring-offset-1 scale-105 animate-subtle-glow' : 'ring-2 ring-[#e0337f] ring-offset-1 scale-105 animate-subtle-glow') : ''}"
 					>
 						<!-- Selection Checkbox Overlay in Selection Mode -->
 						{#if isSelectionMode && hasMemories(day)}
@@ -541,13 +541,13 @@
 						{/if}
 
 						<!-- Day Number -->
-						<span class="leading-none text-[11px] sm:text-xs {isToday(day) || isSelected(day) || (isSelectionMode && isDateSelectedForDelete(day)) ? 'font-black' : 'font-bold'} {isToday(day) || (isSelectionMode && isDateSelectedForDelete(day)) ? 'text-white' : 'text-[#9d2b63]'}">{day}</span>
+						<span class="leading-none text-[11.5px] sm:text-[12.5px] {isToday(day) || isSelected(day) || (isSelectionMode && isDateSelectedForDelete(day)) ? 'font-black' : 'font-bold'} {isToday(day) || (isSelectionMode && isDateSelectedForDelete(day)) ? 'text-white' : 'text-[#9d2b63]'}">{day}</span>
 						
-						<!-- Memory Dots with fixed height row to avoid crowding the number -->
+						<!-- Memory Dots with proper spacing from number -->
 						{#if !isSelectionMode}
-							<div class="h-2 flex items-center justify-center mt-0.5">
+							<div class="h-2 flex items-center justify-center mt-1 sm:mt-1.5">
 								{#if hasPersonalMemories(day) && hasSharedMemories(day)}
-									<div class="flex items-center justify-center space-x-0.5">
+									<div class="flex items-center justify-center space-x-1">
 										<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-2xs"></span>
 										<span class="w-1.5 h-1.5 rounded-full {isToday(day) ? 'bg-white' : 'bg-[#e0337f]'} shadow-2xs"></span>
 									</div>
@@ -560,7 +560,7 @@
 
 							<!-- Pinned Ribbon Bookmark (Tucked in top corner) -->
 							{#if isDatePinned(day)}
-								<span class="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 w-2 h-2 sm:w-2.5 sm:h-2.5 {isToday(day) ? 'text-white' : 'text-[#e0337f]'}" title="Pinned date">
+								<span class="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 w-2 sm:w-2.5 h-2 sm:h-2.5 {isToday(day) ? 'text-white' : 'text-[#e0337f]'}" title="Pinned date">
 									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-full h-full drop-shadow-2xs">
 										<path fill-rule="evenodd" d="M6.32 2.577a49.255 49.255 0 0111.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 01-1.085.67L12 18.089l-7.165 3.58A.75.75 0 013.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93z" clip-rule="evenodd" />
 									</svg>
