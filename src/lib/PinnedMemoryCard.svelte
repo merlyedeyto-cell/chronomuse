@@ -213,7 +213,7 @@
 
 	<!-- Mobile Only: Months with Memories Content (Replaces pinned list on mobile when active) -->
 	{#if showMonthsFilter}
-		<div class="md:hidden animate-smooth-reveal h-[180px]">
+		<div class="md:hidden animate-smooth-reveal h-[148px]">
 			<DashboardMonthsMemoryCard
 				{userId}
 				{currentYear}
@@ -233,7 +233,7 @@
 	<!-- Pinned Memories List (Hidden on mobile when months filter is active, always visible on desktop) -->
 	<div class="{showMonthsFilter ? 'hidden md:block' : 'block'}">
 		{#if isLoading}
-			<div class="h-[180px] space-y-1.5 overflow-hidden animate-pulse">
+			<div class="h-[148px] space-y-1.5 overflow-hidden animate-pulse">
 				{#each Array(3) as _}
 					<div class="flex items-center space-x-2 p-2 bg-[#fdf2f6]/60 border border-pink-100/80 rounded-xl">
 						<div class="w-8 h-8 bg-pink-200/70 rounded-lg flex-shrink-0"></div>
@@ -246,8 +246,8 @@
 				{/each}
 			</div>
 		{:else if pinnedMemories.length === 0}
-			<div class="h-[180px] flex flex-col items-center justify-center text-center">
-				<div class="w-10 h-10 rounded-2xl bg-pink-50 border border-pink-100 text-pink-300 flex items-center justify-center mx-auto mb-2">
+			<div class="h-[148px] flex flex-col items-center justify-center text-center">
+				<div class="w-9 h-9 rounded-2xl bg-pink-50 border border-pink-100 text-pink-300 flex items-center justify-center mx-auto mb-1.5">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
 					</svg>
@@ -256,7 +256,7 @@
 				<p class="text-[10px] text-pink-400/80 mt-0.5 font-medium">Long-press any date on calendar to pin</p>
 			</div>
 		{:else}
-			<div class="h-[180px] space-y-1.5 overflow-y-auto custom-pinned-scroll pr-1">
+			<div class="h-[148px] space-y-1.5 overflow-y-auto custom-pinned-scroll pr-1">
 				{#each pinnedMemories as pinned (pinned.pinned_id)}
 					<div
 						class="flex items-center space-x-2 p-2 bg-[#fdf2f6]/60 border border-pink-100/80 rounded-xl hover:border-pink-200 hover:bg-[#fff5f8] transition-all duration-200 cursor-pointer shadow-2xs group active:scale-[0.99]"

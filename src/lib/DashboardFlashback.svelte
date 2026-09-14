@@ -134,7 +134,7 @@
 
 {#if isLoading}
 	<!-- Skeleton Flashback Card -->
-	<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans transition-all">
+	<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans transition-all">
 		<!-- Header Skeleton -->
 		<div class="flex items-center justify-between mb-2.5">
 			<div class="flex items-center space-x-1.5">
@@ -150,28 +150,28 @@
 		</div>
 
 		<!-- Body Media + Info Skeleton -->
-		<div class="bg-pink-50/50 rounded-xl p-2.5 border border-pink-100/60 mb-2.5 flex items-center space-x-3 animate-pulse">
+		<div class="bg-pink-50/50 rounded-xl p-2.5 border border-pink-100/60 mb-2.5 flex items-center space-x-2.5 animate-pulse">
 			<!-- Square Thumbnail Placeholder -->
-			<div class="w-12 h-12 rounded-lg bg-pink-200/60 flex-shrink-0 flex items-center justify-center border border-pink-200/50">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5 text-pink-300">
+			<div class="w-11 h-11 rounded-lg bg-pink-200/60 flex-shrink-0 flex items-center justify-center border border-pink-200/50">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4 text-pink-300">
 					<path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
 				</svg>
 			</div>
 			<!-- Text Placeholders -->
-			<div class="min-w-0 flex-1 space-y-2">
-				<div class="h-3.5 bg-pink-200/70 rounded-md w-3/4"></div>
-				<div class="h-2.5 bg-pink-200/50 rounded-md w-1/3"></div>
+			<div class="min-w-0 flex-1 space-y-1.5">
+				<div class="h-3 bg-pink-200/70 rounded-md w-3/4"></div>
+				<div class="h-2 bg-pink-200/50 rounded-md w-1/3"></div>
 			</div>
 		</div>
 
 		<!-- Action Button Skeleton -->
-		<div class="w-full py-2.5 px-3 bg-pink-100/60 rounded-xl border border-pink-100 flex items-center justify-center space-x-2 animate-pulse">
+		<div class="w-full py-2 px-3 bg-pink-100/60 rounded-xl border border-pink-100 flex items-center justify-center space-x-2 animate-pulse">
 			<div class="h-3 w-24 bg-pink-200/70 rounded"></div>
 			<div class="w-3.5 h-3.5 bg-pink-200/70 rounded-full"></div>
 		</div>
 	</div>
 {:else if throwbackMemory}
-	<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans transition-all hover:border-pink-200">
+	<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans transition-all hover:border-pink-200">
 		<div class="flex items-center justify-between mb-2.5">
 			<div class="flex items-center space-x-1.5">
 				<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
@@ -187,12 +187,12 @@
 			</span>
 		</div>
 
-		<div class="bg-pink-50/50 rounded-xl p-2.5 border border-pink-100/60 mb-2.5 flex items-center space-x-3">
+		<div class="bg-pink-50/50 rounded-xl p-2.5 border border-pink-100/60 mb-2.5 flex items-center space-x-2.5">
 			{#if throwbackMemory.photo_video || throwbackMemory.photo_video_url}
 				{@const mediaUrl = getMediaUrl(throwbackMemory.photo_video_url || throwbackMemory.photo_video)}
 				{#if isVideoMedia(throwbackMemory)}
 					<!-- Video Thumbnail with Play Overlay -->
-					<div class="w-12 h-12 rounded-lg bg-[#1e1e24] relative overflow-hidden border border-pink-200 shadow-xs flex-shrink-0 flex items-center justify-center">
+					<div class="w-11 h-11 rounded-lg bg-[#1e1e24] relative overflow-hidden border border-pink-200 shadow-xs flex-shrink-0 flex items-center justify-center">
 						<video
 							src={mediaUrl}
 							class="w-full h-full object-cover"
@@ -202,8 +202,8 @@
 							aria-label="Flashback video"
 						></video>
 						<div class="absolute inset-0 bg-black/30 flex items-center justify-center">
-							<div class="w-5 h-5 rounded-full bg-white/90 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3 translate-x-0.5">
+							<div class="w-4 h-4 rounded-full bg-white/90 text-[#f43f8e] flex items-center justify-center shadow-2xs">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-2.5 h-2.5 translate-x-0.5">
 									<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
 								</svg>
 							</div>
@@ -214,12 +214,12 @@
 					<img
 						src={mediaUrl}
 						alt="Flashback"
-						class="w-12 h-12 rounded-lg object-cover border border-pink-200 shadow-xs flex-shrink-0"
+						class="w-11 h-11 rounded-lg object-cover border border-pink-200 shadow-xs flex-shrink-0"
 					/>
 				{/if}
 			{:else}
-				<div class="w-12 h-12 rounded-lg bg-gradient-to-br from-pink-100 to-pink-50 text-[#f43f8e] flex items-center justify-center flex-shrink-0 border border-pink-200/60 shadow-inner">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5 text-[#f43f8e]">
+				<div class="w-11 h-11 rounded-lg bg-gradient-to-br from-pink-100 to-pink-50 text-[#f43f8e] flex items-center justify-center flex-shrink-0 border border-pink-200/60 shadow-inner">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
 						<path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
 					</svg>
 				</div>
@@ -238,7 +238,7 @@
 
 		<button
 			onclick={viewThrowback}
-			class="w-full py-2.5 px-3 bg-pink-50 hover:bg-pink-100 text-[#f43f8e] font-semibold sm:font-bold text-xs rounded-xl transition-all duration-200 flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95 border border-pink-200/80 shadow-sm hover:shadow-md"
+			class="w-full py-2 px-3 bg-pink-50 hover:bg-pink-100 text-[#f43f8e] font-semibold sm:font-bold text-xs rounded-xl transition-all duration-200 flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95 border border-pink-200/80 shadow-sm hover:shadow-md"
 		>
 			<span>View Flashback</span>
 			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">

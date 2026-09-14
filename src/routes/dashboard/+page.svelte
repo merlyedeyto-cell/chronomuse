@@ -853,7 +853,7 @@
 	<!-- Main Content -->
 	<main class="flex-grow px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-28 sm:pb-32 md:ml-0 overflow-hidden">
 			<div class="flex justify-center">
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 xl:gap-8 max-w-7xl 2xl:max-w-[1600px] w-full">
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 max-w-6xl xl:max-w-7xl w-full items-start">
 					<!-- Left Column - Pinned Memories & Memory Flashback -->
 					<div class="space-y-4 animate-fade-in-up" style="animation-delay: 0.1s">
 						<PinnedMemoryCard
