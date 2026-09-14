@@ -748,13 +748,95 @@
 		isEditing = false;
 	}
 
+	// Gesture Drag Animation State (Mobile Touch & Pointer Optimized)
+	let isDragging = $state(false);
+	let dragStartY = 0;
+	let dragTranslateY = $state(0);
+	let dragStartTime = 0;
+	let activePointerId = null;
+	let hasMounted = $state(false);
+
+	$effect(() => {
+		const timer = setTimeout(() => {
+			hasMounted = true;
+		}, 350);
+		return () => clearTimeout(timer);
+	});
+
+	function handleModalDragPointerDown(e) {
+		if (isClosing) return;
+		if (e.target.closest('button, input, textarea, a, select, audio, video')) return;
+		if (e.button !== undefined && e.button !== 0) return;
+
+		dragStartY = e.clientY;
+		dragTranslateY = 0;
+		dragStartTime = Date.now();
+		isDragging = true;
+		activePointerId = e.pointerId;
+
+		try {
+			if (e.currentTarget && e.currentTarget.setPointerCapture) {
+				e.currentTarget.setPointerCapture(e.pointerId);
+			}
+		} catch (err) {}
+	}
+
+	function handleModalDragPointerMove(e) {
+		if (!isDragging || isClosing) return;
+		if (activePointerId !== null && e.pointerId !== activePointerId) return;
+
+		const deltaY = e.clientY - dragStartY;
+		if (deltaY > 0) {
+			// Dragging down (1:1 direct follow)
+			dragTranslateY = deltaY;
+		} else {
+			// Dragging up (elastic rubber-band resistance)
+			dragTranslateY = deltaY * 0.35;
+		}
+	}
+
+	function handleModalDragPointerUp(e) {
+		if (!isDragging) return;
+		if (activePointerId !== null && e.pointerId !== activePointerId) return;
+
+		isDragging = false;
+		if (activePointerId !== null) {
+			try {
+				if (e.currentTarget && e.currentTarget.releasePointerCapture) {
+					e.currentTarget.releasePointerCapture(activePointerId);
+				}
+			} catch (err) {}
+			activePointerId = null;
+		}
+
+		const elapsedTime = Date.now() - dragStartTime;
+		const velocity = dragTranslateY / Math.max(elapsedTime, 1);
+
+		// Dismiss if pulled down past threshold (> 85px or quick swipe down)
+		if (dragTranslateY > 85 || (velocity > 0.3 && dragTranslateY > 30)) {
+			handleClose();
+		} else {
+			// Smoothly bounce / spring back to 0
+			dragTranslateY = 0;
+		}
+	}
+
+	function handleModalDragPointerCancel(e) {
+		if (isDragging) {
+			isDragging = false;
+			activePointerId = null;
+			dragTranslateY = 0;
+		}
+	}
+
 	function handleClose() {
+		if (isClosing) return;
 		isClosing = true;
 		// Restore body scroll
 		document.body.style.overflow = '';
 		setTimeout(() => {
 			dispatch('close');
-		}, 120);
+		}, 200);
 	}
 
 	function insertEmoji(emoji) {
@@ -765,28 +847,43 @@
 
 <!-- Backdrop Overlay -->
 <div
-	class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-300 pointer-events-auto"
-	class:opacity-0={isClosing}
+	class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 pointer-events-auto"
+	style="opacity: {isClosing ? 0 : Math.max(0.1, 1 - (dragTranslateY / 380))}; transition: {isDragging ? 'none' : 'opacity 0.25s ease'};"
 	onclick={handleClose}
 ></div>
 
 <!-- Bottom Sheet Modal Container -->
 <div
-	class="fixed inset-0 z-50 flex items-end justify-center font-sans pointer-events-none"
+	class="fixed inset-0 z-50 flex items-end justify-center font-sans pointer-events-none select-none"
 	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
 >
 	<div
-		class="bg-gradient-to-b from-[#fff5f8] via-[#fff0f5] to-white border-t-2 border-x border-pink-200/90 rounded-t-[32px] sm:rounded-t-[38px] p-4 sm:p-6 pb-6 relative transition-all duration-300 w-full max-w-xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[96vh] sm:max-h-[92vh] h-[93vh] sm:h-[89vh] md:h-[88vh] overflow-hidden flex flex-col shadow-[0_-12px_45px_rgba(244,63,142,0.22)] pointer-events-auto animate-bottom-sheet"
-		class:translate-y-full={isClosing}
-		class:opacity-0={isClosing}
+		class="bg-gradient-to-b from-[#fff5f8] via-[#fff0f5] to-white border-t-2 border-x border-pink-200/90 rounded-t-[32px] sm:rounded-t-[38px] p-4 sm:p-6 pb-6 relative w-full max-w-xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[96vh] sm:max-h-[92vh] h-[93vh] sm:h-[89vh] md:h-[88vh] overflow-hidden flex flex-col shadow-[0_-12px_45px_rgba(244,63,142,0.22)] pointer-events-auto {!hasMounted ? 'animate-bottom-sheet' : ''}"
+		style="transform: translateY({isClosing ? '100%' : `${dragTranslateY}px`}); transition: {isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease'}; opacity: {isClosing ? 0 : 1}; will-change: transform;"
 		onclick={(e) => e.stopPropagation()}
 	>
-		<!-- Pull / Drag Handle Bar -->
+		<!-- Large Draggable Header Area (Drag up or down from handle or header on mobile/desktop) -->
 		<div
-			class="w-12 sm:w-16 h-1.5 rounded-full bg-pink-300/80 mx-auto mb-2 hover:bg-pink-400 cursor-grab active:cursor-grabbing transition-colors flex-shrink-0"
-			onclick={handleClose}
-			title="Tap or pull to close"
-		></div>
+			class="w-full pt-1 pb-2 -mt-1.5 mb-1 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none flex-shrink-0 touch-none"
+			style="touch-action: none; -webkit-user-select: none;"
+			onpointerdown={handleModalDragPointerDown}
+			onpointermove={handleModalDragPointerMove}
+			onpointerup={handleModalDragPointerUp}
+			onpointercancel={handleModalDragPointerCancel}
+		>
+			<!-- Pill Handle Bar -->
+			<div class="py-1 px-8 flex items-center justify-center">
+				<div
+					class="h-1.5 rounded-full transition-all duration-200 {isDragging ? 'w-24 bg-[#f43f8e] scale-110 shadow-sm' : 'w-14 sm:w-16 bg-pink-300/80 hover:bg-pink-400 hover:w-20'}"
+				></div>
+			</div>
+
+			<!-- Header Title -->
+			<div class="text-center pr-10 pl-10 mt-1 pointer-events-none">
+				<h2 class="text-lg sm:text-xl md:text-2xl font-black text-[#f43f8e] tracking-tight">View Memories</h2>
+				<p class="text-[11px] sm:text-xs text-pink-400 font-bold mt-0.5">Your special moments on this date</p>
+			</div>
+		</div>
 
 		<!-- Close Button -->
 		<button
@@ -798,12 +895,6 @@
 				<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 			</svg>
 		</button>
-
-		<!-- Header -->
-		<div class="text-center mb-3 pr-10 pl-10 flex-shrink-0">
-			<h2 class="text-lg sm:text-xl md:text-2xl font-black text-[#f43f8e] tracking-tight">View Memories</h2>
-			<p class="text-[11px] sm:text-xs text-pink-400 font-bold mt-0.5">Your special moments on this date</p>
-		</div>
 
 		<!-- Selected Date Banner -->
 		<div class="mb-3.5 p-3.5 sm:p-4 bg-gradient-to-r from-[#f43f8e] via-[#ec4899] to-[#db2777] text-white rounded-2xl text-left shadow-[0_4px_20px_rgba(244,63,94,0.22)] flex items-center space-x-3.5 flex-shrink-0">

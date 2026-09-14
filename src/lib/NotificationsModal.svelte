@@ -37,10 +37,86 @@
 		};
 	});
 
+	// Gesture Drag Animation State (Mobile Touch & Pointer Optimized)
+	let isDragging = $state(false);
+	let dragStartY = 0;
+	let dragTranslateY = $state(0);
+	let dragStartTime = 0;
+	let isClosing = $state(false);
+	let activePointerId = null;
+
+	function handlePointerDown(e) {
+		if (isClosing) return;
+		if (e.target.closest('button, input, textarea, a, select')) return;
+		if (e.button !== undefined && e.button !== 0) return;
+
+		dragStartY = e.clientY;
+		dragTranslateY = 0;
+		dragStartTime = Date.now();
+		isDragging = true;
+		activePointerId = e.pointerId;
+
+		try {
+			if (e.currentTarget && e.currentTarget.setPointerCapture) {
+				e.currentTarget.setPointerCapture(e.pointerId);
+			}
+		} catch (err) {}
+	}
+
+	function handlePointerMove(e) {
+		if (!isDragging || isClosing) return;
+		if (activePointerId !== null && e.pointerId !== activePointerId) return;
+
+		const deltaY = e.clientY - dragStartY;
+		if (deltaY > 0) {
+			dragTranslateY = deltaY;
+		} else {
+			dragTranslateY = deltaY * 0.35;
+		}
+	}
+
+	function handlePointerUp(e) {
+		if (!isDragging) return;
+		if (activePointerId !== null && e.pointerId !== activePointerId) return;
+
+		isDragging = false;
+		if (activePointerId !== null) {
+			try {
+				if (e.currentTarget && e.currentTarget.releasePointerCapture) {
+					e.currentTarget.releasePointerCapture(activePointerId);
+				}
+			} catch (err) {}
+			activePointerId = null;
+		}
+
+		const elapsedTime = Date.now() - dragStartTime;
+		const velocity = dragTranslateY / Math.max(elapsedTime, 1);
+
+		if (dragTranslateY > 85 || (velocity > 0.3 && dragTranslateY > 30)) {
+			closeModal();
+		} else {
+			dragTranslateY = 0;
+		}
+	}
+
+	function handlePointerCancel(e) {
+		if (isDragging) {
+			isDragging = false;
+			activePointerId = null;
+			dragTranslateY = 0;
+		}
+	}
+
 	function closeModal() {
+		if (isClosing) return;
+		isClosing = true;
 		playClickSound();
-		isOpen = false;
-		dispatch('close');
+		setTimeout(() => {
+			isOpen = false;
+			isClosing = false;
+			dragTranslateY = 0;
+			dispatch('close');
+		}, 200);
 	}
 
 	async function fetchNotifications(isSilent = false) {
@@ -213,16 +289,30 @@
 
 {#if isOpen}
 	<div
-		class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center font-sans pointer-events-auto"
+		class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center font-sans pointer-events-auto select-none"
+		style="opacity: {isClosing ? 0 : Math.max(0.1, 1 - (dragTranslateY / 380))}; transition: {isDragging ? 'none' : 'opacity 0.25s ease'};"
 		onclick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
 	>
-		<div class="bg-gradient-to-b from-[#fff5f8] via-[#fff0f5] to-white rounded-t-[32px] sm:rounded-t-[38px] max-w-xl sm:max-w-2xl md:max-w-3xl w-full max-h-[96vh] sm:max-h-[92vh] h-[93vh] sm:h-[89vh] md:h-[88vh] flex flex-col overflow-hidden shadow-[0_-12px_45px_rgba(244,63,142,0.22)] border-t-2 border-x border-pink-200/90 animate-bottom-sheet">
-			<!-- Pull / Drag Handle Bar -->
+		<div
+			class="bg-gradient-to-b from-[#fff5f8] via-[#fff0f5] to-white rounded-t-[32px] sm:rounded-t-[38px] max-w-xl sm:max-w-2xl md:max-w-3xl w-full max-h-[96vh] sm:max-h-[92vh] h-[93vh] sm:h-[89vh] md:h-[88vh] flex flex-col overflow-hidden shadow-[0_-12px_45px_rgba(244,63,142,0.22)] border-t-2 border-x border-pink-200/90"
+			style="transform: translateY({isClosing ? '100%' : `${dragTranslateY}px`}); transition: {isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease'}; opacity: {isClosing ? 0 : 1}; will-change: transform;"
+			onclick={(e) => e.stopPropagation()}
+		>
+			<!-- Pull / Drag Handle Bar Touch Area -->
 			<div
-				class="w-12 sm:w-16 h-1.5 rounded-full bg-pink-300/80 mx-auto mt-3 hover:bg-pink-400 cursor-grab active:cursor-grabbing transition-colors flex-shrink-0"
-				onclick={closeModal}
-				title="Tap or pull to close"
-			></div>
+				class="w-full pt-2 pb-1 flex items-center justify-center cursor-grab active:cursor-grabbing select-none flex-shrink-0 touch-none"
+				style="touch-action: none; -webkit-user-select: none;"
+				onpointerdown={handlePointerDown}
+				onpointermove={handlePointerMove}
+				onpointerup={handlePointerUp}
+				onpointercancel={handlePointerCancel}
+			>
+				<div class="py-1 px-8 flex items-center justify-center">
+					<div
+						class="h-1.5 rounded-full transition-all duration-200 {isDragging ? 'w-24 bg-[#f43f8e] scale-110 shadow-sm' : 'w-14 sm:w-16 bg-pink-300/80 hover:bg-pink-400 hover:w-20'}"
+					></div>
+				</div>
+			</div>
 
 			<!-- Header -->
 			<div class="p-4 sm:p-5 pb-3 flex items-center justify-between border-b border-pink-100 flex-shrink-0">
