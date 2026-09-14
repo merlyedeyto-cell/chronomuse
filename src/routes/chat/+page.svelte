@@ -2616,12 +2616,13 @@
 					</div>
 				{:else}
 					<!-- Active Chat Normal Header -->
-					<div class="px-3 sm:px-5 py-2.5 sm:py-3 min-h-[64px] sm:min-h-[68px] bg-white/95 backdrop-blur-md border-b border-pink-100 text-pink-950 flex items-center justify-between flex-shrink-0 sticky top-0 z-30 shadow-2xs">
+					<div class="px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 bg-white/95 backdrop-blur-md border-b border-pink-200/60 text-pink-950 flex items-center justify-between flex-shrink-0 sticky top-0 z-30 shadow-xs">
 						<div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
 							<button
 								onclick={handleBackToChatList}
-								class="md:hidden p-2 bg-white hover:bg-pink-50 border-2 border-pink-200/90 rounded-2xl text-pink-500 shadow-sm transition-all flex-shrink-0 active:scale-95 cursor-pointer"
+								class="md:hidden w-8 h-8 sm:w-8.5 sm:h-8.5 bg-white hover:bg-pink-50 border border-pink-200/90 rounded-xl text-pink-500 shadow-2xs flex items-center justify-center transition-all flex-shrink-0 active:scale-95 cursor-pointer"
 								title="Back to Chat List"
+								aria-label="Back to Chat List"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -2633,7 +2634,7 @@
 								title="View @{activeFriend.username}'s Profile"
 							>
 								<div class="relative flex-shrink-0">
-									<div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-pink-100 border-2 border-pink-200 flex items-center justify-center text-[#f43f8e] font-black text-sm sm:text-base overflow-hidden group-hover:scale-105 transition-transform shadow-xs">
+									<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-pink-100 border border-pink-200/90 flex items-center justify-center text-[#f43f8e] font-black text-sm sm:text-base overflow-hidden group-hover:scale-105 transition-transform shadow-2xs">
 										{#if activeFriend.avatar_url}
 											<img src={activeFriend.avatar_url} alt={activeFriend.username} class="w-full h-full object-cover" />
 										{:else}
@@ -2679,37 +2680,37 @@
 							</a>
 						</div>
 
-						<!-- Header Actions (Themed Pill Buttons Matching App Theme) -->
+						<!-- Header Actions (Matching AppHeader Squircle Buttons) -->
 						<div class="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
 							<a
 								href="/profile?id={activeFriend.friend_id}"
-								class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-white hover:bg-pink-50 border-2 border-pink-200/90 text-pink-600 hover:text-[#f43f8e] rounded-xl sm:rounded-2xl transition-all text-xs font-black flex items-center space-x-1.5 cursor-pointer shadow-sm active:scale-95"
+								class="w-8 h-8 sm:w-8.5 sm:h-8.5 bg-white hover:bg-pink-50 border border-pink-200/90 text-pink-500 hover:text-[#f43f8e] rounded-xl flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
 								title="View Profile"
+								aria-label="View Profile"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-pink-500">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-pink-500">
 									<path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
 								</svg>
-								<span class="hidden sm:inline">Profile</span>
 							</a>
 							<button
 								onclick={() => promptToggleBlockUser(activeFriend)}
-								class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-white hover:bg-pink-50 border-2 border-pink-200/90 {isCurrentFriendBlockedByMe ? 'text-emerald-600 hover:text-emerald-700' : 'text-rose-500 hover:text-rose-600'} rounded-xl sm:rounded-2xl transition-all text-xs font-black flex items-center space-x-1.5 cursor-pointer shadow-sm active:scale-95"
+								class="w-8 h-8 sm:w-8.5 sm:h-8.5 bg-white hover:bg-pink-50 border border-pink-200/90 {isCurrentFriendBlockedByMe ? 'text-emerald-600 hover:text-emerald-700' : 'text-rose-500 hover:text-rose-600'} rounded-xl flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
 								title={isCurrentFriendBlockedByMe ? "Unblock User" : "Block User"}
+								aria-label={isCurrentFriendBlockedByMe ? "Unblock User" : "Block User"}
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 sm:w-4.5 sm:h-4.5">
 									<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
 								</svg>
-								<span class="hidden sm:inline">{isCurrentFriendBlockedByMe ? 'Unblock' : 'Block'}</span>
 							</button>
 							<button
 								onclick={() => showClearModal = true}
-								class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-white hover:bg-pink-50 border-2 border-pink-200/90 text-pink-600 hover:text-[#f43f8e] rounded-xl sm:rounded-2xl transition-all text-xs font-black flex items-center space-x-1.5 cursor-pointer shadow-sm active:scale-95"
+								class="w-8 h-8 sm:w-8.5 sm:h-8.5 bg-white hover:bg-pink-50 border border-pink-200/90 text-pink-500 hover:text-rose-600 rounded-xl flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
 								title="Clear Chat History"
+								aria-label="Clear Chat History"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-pink-500">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-pink-500 hover:text-rose-600 transition-colors">
 									<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
 								</svg>
-								<span class="hidden sm:inline">Clear</span>
 							</button>
 						</div>
 					</div>

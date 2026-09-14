@@ -35,15 +35,15 @@
 			<!-- Navigation -->
 			{#if showNav}
 				<div class="flex items-center flex-shrink-0">
-					<nav class="flex items-center space-x-1 sm:space-x-1.5 bg-white/90 backdrop-blur-md p-1 sm:px-2.5 sm:py-1.5 rounded-full border border-pink-200/90 shadow-2xs font-sans">
+					<nav class="flex items-center space-x-1 sm:space-x-1.5 bg-white/95 backdrop-blur-md px-2 py-1 rounded-full border border-pink-200/90 shadow-2xs font-sans">
 						<button
 							type="button"
 							onclick={() => handleTabClick('home')}
 							title="Home"
 							aria-label="Home"
-							class="p-2 sm:px-3.5 sm:py-1.5 lg:px-4 lg:py-2 rounded-full text-xs lg:text-sm font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer select-none active:scale-95 {activeTab === 'home' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-[#f43f8e] hover:bg-pink-50'}"
+							class="px-3 lg:px-3.5 py-1.5 rounded-full text-xs lg:text-[13px] font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer select-none active:scale-95 {activeTab === 'home' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-[#f43f8e] hover:bg-pink-50'}"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 lg:w-4 lg:h-4 flex-shrink-0">
 								<path d="M11.47 3.841a.75.75 0 0 1 1.06 0l8.69 8.69a.75.75 0 1 1-1.06 1.061l-.97-.97V19.5a2.25 2.25 0 0 1-2.25 2.25H6.06A2.25 2.25 0 0 1 3.81 19.5V12.62l-.97.97a.75.75 0 0 1-1.06-1.06l8.69-8.69Z" />
 							</svg>
 							<span class="hidden sm:inline">Home</span>
@@ -53,9 +53,9 @@
 							onclick={() => handleTabClick('about')}
 							title="About"
 							aria-label="About"
-							class="p-2 sm:px-3.5 sm:py-1.5 lg:px-4 lg:py-2 rounded-full text-xs lg:text-sm font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer select-none active:scale-95 {activeTab === 'about' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-[#f43f8e] hover:bg-pink-50'}"
+							class="px-3 lg:px-3.5 py-1.5 rounded-full text-xs lg:text-[13px] font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer select-none active:scale-95 {activeTab === 'about' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-[#f43f8e] hover:bg-pink-50'}"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 lg:w-4 lg:h-4 flex-shrink-0">
 								<path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
 							</svg>
 							<span class="hidden sm:inline">About</span>
@@ -65,9 +65,9 @@
 							onclick={() => handleTabClick('contact')}
 							title="Contact"
 							aria-label="Contact"
-							class="p-2 sm:px-3.5 sm:py-1.5 lg:px-4 lg:py-2 rounded-full text-xs lg:text-sm font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer select-none active:scale-95 {activeTab === 'contact' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-[#f43f8e] hover:bg-pink-50'}"
+							class="px-3 lg:px-3.5 py-1.5 rounded-full text-xs lg:text-[13px] font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer select-none active:scale-95 {activeTab === 'contact' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-[#f43f8e] hover:bg-pink-50'}"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 flex-shrink-0">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 lg:w-4 lg:h-4 flex-shrink-0">
 								<path d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3.75 3.75 0 0 1-3.144 0L1.5 8.67Z" />
 								<path d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z" />
 							</svg>
