@@ -15,6 +15,17 @@
 		onClose
 	} = $props();
 
+	$effect(() => {
+		if (isOpen) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+		return () => {
+			document.body.style.overflow = '';
+		};
+	});
+
 	function handleSelect(val) {
 		if (onSelect) onSelect(val);
 		if (onClose) onClose();

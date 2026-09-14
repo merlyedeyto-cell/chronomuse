@@ -5,15 +5,20 @@ export async function POST({ request }) {
 	try {
 		const { pinned_id, title, user_id } = await request.json();
 
-		if (!pinned_id || !title || !user_id) {
-			return json({ error: 'Pinned ID, Title, and User ID are required' }, { status: 400 });
+		if (!pinned_id || !title) {
+			return json({ error: 'Pinned ID and Title are required' }, { status: 400 });
 		}
 
-		const { error } = await supabase
+		let query = supabase
 			.from('chronomuse_pinned_dates')
 			.update({ title: title })
-			.eq('id', pinned_id)
-			.eq('user_id', user_id);
+			.eq('id', pinned_id);
+
+		if (user_id) {
+			query = query.eq('user_id', user_id);
+		}
+
+		const { error } = await query;
 
 		if (error) {
 			return json({ error: 'Database update error: ' + error.message }, { status: 500 });

@@ -822,6 +822,8 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					user_id: user.id,
+					sender_id: user.id,
+					receiver_id: target.friend_id || target.id,
 					friend_username: target.username
 				})
 			});
@@ -2458,9 +2460,16 @@
 			<!-- Friends List -->
 			<div class="flex-grow overflow-y-auto p-2 sm:p-2.5 space-y-1.5">
 				{#if isLoadingChatList && friends.length === 0 && requests.length === 0}
-					<div class="p-8 text-center text-pink-400 text-sm flex flex-col items-center">
-						<div class="animate-spin w-7 h-7 border-3 border-pink-300 border-t-pink-500 rounded-full mb-2"></div>
-						<span>Loading conversations...</span>
+					<div class="space-y-2 p-1 animate-pulse">
+						{#each Array(5) as _}
+							<div class="p-2.5 rounded-2xl bg-pink-50/50 border border-pink-100 flex items-center space-x-3">
+								<div class="w-10 h-10 rounded-full bg-pink-200/70 flex-shrink-0"></div>
+								<div class="flex-1 space-y-1.5 min-w-0">
+									<div class="h-3.5 bg-pink-200/70 rounded w-1/2"></div>
+									<div class="h-2.5 bg-pink-200/50 rounded w-3/4"></div>
+								</div>
+							</div>
+						{/each}
 					</div>
 				{:else if !isLoadingChatList && filteredFriends().length === 0}
 					<div class="p-6 text-center text-pink-400 text-xs">
@@ -2771,8 +2780,18 @@
 					class="flex-1 min-h-0 p-2.5 sm:p-3 overflow-y-auto overflow-x-hidden space-y-2 sm:space-y-2.5 bg-[#fffafb] select-none overscroll-contain"
 				>
 					{#if isFetchingMessages && messages.length === 0}
-						<div class="h-full flex items-center justify-center py-12">
-							<div class="animate-spin h-6 w-6 border-2 border-pink-300 border-t-pink-500 rounded-full"></div>
+						<div class="space-y-3 py-6 px-3 animate-pulse">
+							<div class="flex items-start space-x-2.5">
+								<div class="w-8 h-8 rounded-full bg-pink-200/70 flex-shrink-0"></div>
+								<div class="h-10 w-44 bg-pink-100/80 rounded-2xl"></div>
+							</div>
+							<div class="flex items-start justify-end space-x-2.5">
+								<div class="h-12 w-52 bg-pink-200/60 rounded-2xl"></div>
+							</div>
+							<div class="flex items-start space-x-2.5">
+								<div class="w-8 h-8 rounded-full bg-pink-200/70 flex-shrink-0"></div>
+								<div class="h-8 w-36 bg-pink-100/80 rounded-2xl"></div>
+							</div>
 						</div>
 					{:else if messages.length === 0}
 						<div class="h-full flex flex-col items-center justify-center text-pink-400 text-xs py-10">

@@ -100,6 +100,7 @@
 	}
 
 	function saveEdit(pinned) {
+		const newTitle = editingTitle.trim() || 'Pinned Date';
 		// Call API to update title
 		fetch(API_ENDPOINTS.updatePinnedDateTitle, {
 			method: 'POST',
@@ -108,14 +109,19 @@
 			},
 			body: JSON.stringify({
 				pinned_id: pinned.pinned_id,
-				title: editingTitle
+				title: newTitle,
+				user_id: userId || pinned.user_id
 			})
 		})
 		.then(response => response.json())
 		.then(data => {
 			if (data.success) {
-				pinned.title = editingTitle;
+				pinned.title = newTitle;
 				editingId = null;
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_pinned_change'));
+					window.dispatchEvent(new CustomEvent('pinnedDatesChanged'));
+				}
 			}
 		})
 		.catch(error => {
@@ -207,9 +213,17 @@
 	<!-- Pinned Memories List (Hidden on mobile when months filter is active, always visible on desktop) -->
 	<div class="{showMonthsFilter ? 'hidden md:block' : 'block'}">
 		{#if isLoading}
-			<div class="h-[180px] flex flex-col items-center justify-center text-center">
-				<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-[#f43f8e] mx-auto"></div>
-				<p class="text-xs text-pink-400 mt-2 font-medium">Loading pinned memories...</p>
+			<div class="h-[180px] space-y-1.5 overflow-hidden animate-pulse">
+				{#each Array(3) as _}
+					<div class="flex items-center space-x-2 p-2 bg-[#fdf2f6]/60 border border-pink-100/80 rounded-xl">
+						<div class="w-8 h-8 bg-pink-200/70 rounded-lg flex-shrink-0"></div>
+						<div class="flex-1 space-y-1.5 py-0.5">
+							<div class="h-3 bg-pink-200/70 rounded w-3/4"></div>
+							<div class="h-2.5 bg-pink-200/50 rounded w-1/3"></div>
+						</div>
+						<div class="w-5 h-5 bg-pink-200/50 rounded-md flex-shrink-0"></div>
+					</div>
+				{/each}
 			</div>
 		{:else if pinnedMemories.length === 0}
 			<div class="h-[180px] flex flex-col items-center justify-center text-center">

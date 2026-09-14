@@ -316,6 +316,46 @@
 	let editGender = $state('Prefer not to say');
 	let isSavingAboutInfo = $state(false);
 
+	let lastLoadedTargetId = $state(/** @type {string|null} */ (undefined));
+
+	// Automatically reload profile & mood insights when navigating to any user (stalking/viewing profiles)
+	$effect(() => {
+		const currentUrlId = $page.url.searchParams.get('id') || $page.url.searchParams.get('user_id') || '';
+		if (lastLoadedTargetId === undefined || currentUrlId !== lastLoadedTargetId) {
+			lastLoadedTargetId = currentUrlId;
+			// Immediately clear previous user's mood stats and set loading
+			isLoadingMoods = true;
+			dominantMoods = [];
+			dominantMood = '';
+			dominantMoodCount = 0;
+			totalMoodLogs = 0;
+			moodSummary = {
+				happy: 0,
+				excited: 0,
+				grateful: 0,
+				calm: 0,
+				love: 0,
+				neutral: 0,
+				sad: 0,
+				anxious: 0,
+				lonely: 0,
+				angry: 0
+			};
+			loadProfile(currentUrlId || null, false);
+		}
+	});
+
+	$effect(() => {
+		if (showEditProfileModal || showUnfriendModal || showBlockModal || showNoteModal || viewingUserNote) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+		return () => {
+			document.body.style.overflow = '';
+		};
+	});
+
 	function openEditProfileModal() {
 		playClickSound();
 		const userObj = profileData?.user || currentUser || {};
@@ -549,7 +589,7 @@
 	async function fetchUserMoodSummary(targetId = null, isSilent = false) {
 		const effectiveId = targetId || profileData?.user?.id || currentUser?.id;
 		if (typeof window === 'undefined' || !effectiveId) return;
-		if (!isSilent && totalMoodLogs === 0) {
+		if (!isSilent) {
 			isLoadingMoods = true;
 		}
 		try {
@@ -557,17 +597,26 @@
 			const data = await res.json();
 			const moods = data.success && Array.isArray(data.data) ? data.data : [];
 
-			const stats = /** @type {Record<string, number>} */ ({ happy: 0, excited: 0, grateful: 0, calm: 0, love: 0, neutral: 0, sad: 0, anxious: 0, lonely: 0, angry: 0 });
+			const stats = /** @type {Record<string, number>} */ ({
+				happy: 0,
+				sad: 0,
+				excited: 0,
+				angry: 0,
+				calm: 0,
+				anxious: 0,
+				grateful: 0,
+				lonely: 0,
+				love: 0,
+				neutral: 0
+			});
 			let total = 0;
 
 			moods.forEach((/** @type {any} */ m) => {
-				const tag = (m.mood_tag || 'happy').toLowerCase().trim();
-				if (stats[tag] !== undefined) {
+				const tag = (m.mood_tag || '').toLowerCase().trim();
+				if (tag && stats.hasOwnProperty(tag)) {
 					stats[tag]++;
-				} else {
-					stats.neutral = (stats.neutral || 0) + 1;
+					total++;
 				}
-				total++;
 			});
 
 			moodSummary = stats;
@@ -712,7 +761,7 @@
 					: (profileData.user?.is_private ?? (typeof window !== 'undefined' ? localStorage.getItem(`chronomuse_private_${effectiveTargetId}`) === 'true' : false));
 
 				if (profileData.is_self || !targetIsPrivate) {
-					fetchUserMoodSummary(effectiveTargetId, isSilent);
+					fetchUserMoodSummary(data.data.user.id, isSilent);
 				} else {
 					if (activeTab === 'mood') {
 						activeTab = 'about';
@@ -738,7 +787,6 @@
 	}
 
 	onMount(() => {
-		loadProfile();
 		updateNoteTimer();
 		noteTimerInterval = setInterval(updateNoteTimer, 1000);
 
@@ -1298,6 +1346,22 @@
 		}
 	}
 
+	function getMoodBadgeStyle(moodTag) {
+		switch ((moodTag || '').toLowerCase()) {
+			case 'happy': return 'bg-amber-50 text-amber-900 border-amber-200';
+			case 'sad': return 'bg-sky-50 text-sky-900 border-sky-200';
+			case 'excited': return 'bg-orange-50 text-orange-900 border-orange-200';
+			case 'calm': return 'bg-emerald-50 text-emerald-900 border-emerald-200';
+			case 'love': return 'bg-rose-50 text-rose-900 border-rose-200';
+			case 'angry': return 'bg-red-50 text-red-900 border-red-200';
+			case 'grateful': return 'bg-pink-50 text-pink-900 border-pink-200';
+			case 'anxious': return 'bg-purple-50 text-purple-900 border-purple-200';
+			case 'lonely': return 'bg-slate-50 text-slate-900 border-slate-200';
+			case 'neutral': return 'bg-gray-50 text-gray-900 border-gray-200';
+			default: return 'bg-pink-50 text-pink-900 border-pink-200';
+		}
+	}
+
 	function getSystemFeedbackMessage(moodTag, tiedMoods = []) {
 		if (tiedMoods && tiedMoods.length > 1) {
 			const joined = tiedMoods.join(' and ');
@@ -1392,9 +1456,35 @@
 	<!-- Main Profile Container -->
 	<main class="flex-grow container mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-24 sm:pb-28 max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl space-y-3.5 sm:space-y-4">
 		{#if !profileData && (isLoading || !isProfileNotFound)}
-			<div class="flex flex-col items-center justify-center py-20 space-y-2.5">
-				<div class="w-8 h-8 border-3 border-[#f43f8e] border-t-transparent rounded-full animate-spin"></div>
-				<p class="text-xs font-extrabold text-pink-400 animate-pulse">Loading profile...</p>
+			<div class="space-y-4 animate-pulse">
+				<!-- Cover & Avatar Skeleton -->
+				<div class="bg-white rounded-3xl overflow-hidden border border-pink-100 shadow-sm">
+					<div class="h-32 sm:h-44 bg-pink-100/70"></div>
+					<div class="px-5 pb-5 -mt-12 sm:-mt-16 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+						<div class="flex items-end space-x-3">
+							<div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white bg-pink-200/80 shadow-md flex-shrink-0"></div>
+							<div class="space-y-1.5 pb-1">
+								<div class="h-4 w-32 bg-pink-200/70 rounded"></div>
+								<div class="h-3 w-20 bg-pink-100/80 rounded"></div>
+							</div>
+						</div>
+						<div class="h-8 w-28 bg-pink-100/80 rounded-xl"></div>
+					</div>
+				</div>
+
+				<!-- Tabs Skeleton -->
+				<div class="flex space-x-2 bg-pink-100/50 p-1 rounded-xl">
+					<div class="flex-1 h-8 bg-white/80 rounded-lg"></div>
+					<div class="flex-1 h-8 bg-pink-100/60 rounded-lg"></div>
+					<div class="flex-1 h-8 bg-pink-100/60 rounded-lg"></div>
+					<div class="flex-1 h-8 bg-pink-100/60 rounded-lg"></div>
+				</div>
+
+				<!-- Card Content Skeleton -->
+				<div class="bg-white rounded-2xl p-5 border border-pink-100 shadow-xs space-y-3">
+					<div class="h-4 w-40 bg-pink-200/70 rounded"></div>
+					<div class="h-16 bg-pink-50 rounded-xl"></div>
+				</div>
 			</div>
 		{:else if !profileData}
 			<div class="bg-white rounded-2xl p-6 border border-pink-100 shadow-[0_4px_20px_rgba(244,114,182,0.1)] flex flex-col items-center justify-center text-center space-y-3">
@@ -1987,38 +2077,67 @@
 						{/if}
 					</div>
 
-					<!-- Dominant Moods Container -->
-					<div class="p-3 bg-pink-50/20 border border-pink-100 rounded-xl space-y-2 shadow-2xs">
-						<p class="text-[9px] font-black uppercase tracking-wider text-[#f43f8e]">
-							DOMINANT MOODS (TIED)
-						</p>
+					{#if isLoadingMoods}
+						<!-- Skeleton Loader for Mood Insights & Reflection -->
+						<div class="p-3 bg-pink-50/20 border border-pink-100 rounded-xl space-y-2.5 shadow-2xs animate-pulse">
+							<!-- Header tag skeleton -->
+							<div class="h-3 w-32 bg-pink-200/70 rounded-md"></div>
 
-						<div class="flex items-center gap-1.5 flex-wrap">
-							<div class="px-2.5 py-0.5 bg-amber-50 text-amber-900 border border-amber-200 font-black text-[11px] rounded-full flex items-center space-x-1 shadow-2xs">
-								<span>😊</span>
-								<span>Happy 3</span>
+							<!-- Badges skeleton row -->
+							<div class="flex items-center gap-2 flex-wrap py-0.5">
+								<div class="h-6 w-28 bg-pink-200/60 rounded-full"></div>
+								<div class="h-6 w-16 bg-pink-100/80 rounded-full"></div>
 							</div>
 
-							<div class="px-2.5 py-0.5 bg-sky-50 text-sky-900 border border-sky-200 font-black text-[11px] rounded-full flex items-center space-x-1 shadow-2xs">
-								<span>😢</span>
-								<span>Sad 3</span>
-							</div>
-
-							<div class="px-2.5 py-0.5 bg-purple-50 text-purple-900 border border-purple-200 font-black text-[11px] rounded-full flex items-center space-x-1 shadow-2xs">
-								<span>8 Logs</span>
+							<!-- System Feedback Quote Skeleton -->
+							<div class="p-2.5 bg-white border border-pink-100 rounded-xl flex items-start space-x-2 shadow-2xs">
+								<div class="w-3.5 h-3.5 rounded-full bg-pink-200/70 flex-shrink-0 mt-0.5"></div>
+								<div class="flex-1 space-y-1.5 py-0.5">
+									<div class="h-3 bg-pink-200/60 rounded w-11/12"></div>
+									<div class="h-3 bg-pink-100/70 rounded w-2/3"></div>
+								</div>
 							</div>
 						</div>
-
-						<!-- System Feedback Quote -->
-						<div class="p-2.5 bg-white border border-pink-100 rounded-xl flex items-start space-x-2 shadow-2xs">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 mt-0.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-							</svg>
-							<p class="text-xs text-pink-950/80 font-bold italic leading-relaxed">
-								"{getSystemFeedbackMessage(dominantMood, dominantMoods)}"
+					{:else}
+						<!-- Dominant Moods Container -->
+						<div class="p-3 bg-pink-50/20 border border-pink-100 rounded-xl space-y-2 shadow-2xs">
+							<p class="text-[9px] font-black uppercase tracking-wider text-[#f43f8e]">
+								{#if dominantMoods && dominantMoods.length > 1}
+									DOMINANT MOODS (TIED)
+								{:else if dominantMoods && dominantMoods.length === 1}
+									DOMINANT MOOD
+								{:else}
+									NO MOOD LOGS YET
+								{/if}
 							</p>
+
+							<div class="flex items-center gap-1.5 flex-wrap">
+								{#if dominantMoods && dominantMoods.length > 0}
+									{#each dominantMoods as mood}
+										<div class="px-2.5 py-0.5 border font-black text-[11px] rounded-full flex items-center space-x-1 shadow-2xs {getMoodBadgeStyle(mood)}">
+											<span>{getMoodDynamicEmoji(mood)}</span>
+											<span>{mood} {dominantMoodCount}</span>
+										</div>
+									{/each}
+									<div class="px-2.5 py-0.5 bg-pink-100/70 text-[#f43f8e] border border-pink-200 font-black text-[11px] rounded-full flex items-center space-x-1 shadow-2xs">
+										<span>{totalMoodLogs} {totalMoodLogs === 1 ? 'Log' : 'Logs'}</span>
+									</div>
+								{:else}
+									<p class="text-xs text-pink-400 font-medium">No mood entries recorded yet.</p>
+								{/if}
+							</div>
+
+							<!-- System Feedback Quote -->
+							<div class="p-2.5 bg-white border border-pink-100 rounded-xl flex items-start space-x-2 shadow-2xs">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 mt-0.5">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+								</svg>
+								<p class="text-xs text-pink-950/80 font-bold italic leading-relaxed">
+									"{getSystemFeedbackMessage(dominantMood, dominantMoods)}"
+								</p>
+							</div>
 						</div>
-					</div>
+					{/if}
 				</div>
 			{/if}
 

@@ -165,9 +165,19 @@
 			<!-- Friends List - Scrollable -->
 			<div class="flex-1 overflow-y-auto -mx-1 px-1">
 				{#if isLoading}
-					<div class="text-center py-8">
-						<div class="animate-spin w-7 h-7 border-3 border-pink-100 border-t-[#f43f8e] rounded-full mx-auto"></div>
-						<p class="text-xs text-pink-400 font-bold mt-2.5">Loading friends...</p>
+					<div class="space-y-2 py-2 animate-pulse">
+						{#each Array(4) as _}
+							<div class="p-2.5 bg-pink-50/50 border border-pink-100 rounded-2xl flex items-center justify-between gap-2 shadow-2xs">
+								<div class="flex items-center space-x-2.5 min-w-0 flex-1">
+									<div class="w-9 h-9 rounded-full bg-pink-200/70 flex-shrink-0"></div>
+									<div class="space-y-1.5 flex-1">
+										<div class="h-3.5 bg-pink-200/70 rounded w-1/2"></div>
+										<div class="h-2.5 bg-pink-200/50 rounded w-1/3"></div>
+									</div>
+								</div>
+								<div class="h-7 w-16 bg-pink-100/80 rounded-xl flex-shrink-0"></div>
+							</div>
+						{/each}
 					</div>
 				{:else if friends.length === 0}
 					<div class="text-center py-8">

@@ -26,6 +26,17 @@
 	let totalMemoriesCount = $derived(acceptedSharedMemories.length);
 	let totalSentCount = $derived(sentSharedMemories.length);
 
+	$effect(() => {
+		if (isOpen) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+		return () => {
+			document.body.style.overflow = '';
+		};
+	});
+
 	function closeModal() {
 		playClickSound();
 		isOpen = false;
@@ -268,9 +279,19 @@
 			<!-- Content List -->
 			<div class="p-4 overflow-y-auto space-y-3 flex-1">
 				{#if isLoading}
-					<div class="py-12 text-center">
-						<div class="animate-spin h-7 w-7 text-[#f43f8e] mx-auto mb-2 border-3 border-pink-100 border-t-[#f43f8e] rounded-full"></div>
-						<p class="text-xs text-pink-400 font-bold">Loading notifications...</p>
+					<div class="space-y-2.5 animate-pulse">
+						{#each Array(3) as _}
+							<div class="bg-pink-50/50 rounded-2xl p-3.5 border border-pink-100/80 flex items-center justify-between gap-3">
+								<div class="flex items-center space-x-2.5 min-w-0 flex-1">
+									<div class="w-9 h-9 rounded-full bg-pink-200/70 flex-shrink-0"></div>
+									<div class="space-y-1.5 flex-1">
+										<div class="h-3 bg-pink-200/70 rounded w-3/4"></div>
+										<div class="h-2.5 bg-pink-200/50 rounded w-1/2"></div>
+									</div>
+								</div>
+								<div class="h-6 w-16 bg-pink-200/50 rounded-lg flex-shrink-0"></div>
+							</div>
+						{/each}
 					</div>
 				{:else if activeTab === 'memories'}
 					{#if acceptedSharedMemories.length === 0}

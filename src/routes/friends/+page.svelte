@@ -91,16 +91,32 @@
 		};
 	});
 
+	let hasLoadedRequests = $state(false);
+	let hasLoadedFriends = $state(false);
+
+	$effect(() => {
+		if (showConfirmDelete || showNotificationModalPopup) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+		return () => {
+			document.body.style.overflow = '';
+		};
+	});
+
 	// Suggested / Discover Users State
 	let suggestedUsers = $state([]);
 	let suggestedPage = $state(1);
 	let hasMoreSuggested = $state(false);
 	let isLoadingSuggested = $state(false);
 
-	function loadAllData() {
-		fetchFriends(false);
-		fetchPendingRequests(false);
-		fetchSuggestedUsers(1, false);
+	async function loadAllData() {
+		await Promise.all([
+			fetchFriends(false),
+			fetchPendingRequests(false)
+		]);
+		await fetchSuggestedUsers(1, false);
 	}
 
 	async function fetchSuggestedUsers(page = 1, append = false) {
@@ -137,25 +153,48 @@
 
 	function syncSuggestedUsersWithState() {
 		if (!suggestedUsers || suggestedUsers.length === 0) return;
-		const sentIds = new Set((sentRequests || []).map(r => Number(r.receiver_id || r.id)));
-		const friendIds = new Set((friends || []).map(f => Number(f.friend_id || f.id)));
-		const incomingSenderIds = new Set((pendingRequests || []).map(r => Number(r.sender_id || r.id)));
+		const sentIds = new Set();
+		(sentRequests || []).forEach(r => {
+			if (r.receiver_id != null) {
+				sentIds.add(Number(r.receiver_id));
+				sentIds.add(String(r.receiver_id));
+			}
+		});
+
+		const friendIds = new Set();
+		(friends || []).forEach(f => {
+			if (f.friend_id != null) {
+				friendIds.add(Number(f.friend_id));
+				friendIds.add(String(f.friend_id));
+			}
+		});
+
+		const incomingSenderIds = new Set();
+		(pendingRequests || []).forEach(r => {
+			if (r.sender_id != null) {
+				incomingSenderIds.add(Number(r.sender_id));
+				incomingSenderIds.add(String(r.sender_id));
+			}
+		});
 
 		suggestedUsers = suggestedUsers.map(u => {
 			const uId = Number(u.id);
-			if (friendIds.has(uId)) {
+			const uIdStr = String(u.id);
+			if (friendIds.has(uId) || friendIds.has(uIdStr)) {
 				return { ...u, relationship: 'friends' };
 			}
-			if (sentIds.has(uId)) {
-				const req = sentRequests.find(r => Number(r.receiver_id || r.id) === uId);
+			if (sentIds.has(uId) || sentIds.has(uIdStr)) {
+				const req = sentRequests.find(r => String(r.receiver_id) === uIdStr || Number(r.receiver_id) === uId);
 				return { ...u, relationship: 'request_sent', request_id: req?.id || req?.request_id || u.request_id };
 			}
-			if (incomingSenderIds.has(uId)) {
-				const req = pendingRequests.find(r => Number(r.sender_id || r.id) === uId);
+			if (incomingSenderIds.has(uId) || incomingSenderIds.has(uIdStr)) {
+				const req = pendingRequests.find(r => String(r.sender_id) === uIdStr || Number(r.sender_id) === uId);
 				return { ...u, relationship: 'request_received', request_id: req?.id || req?.request_id || u.request_id };
 			}
-			if (u.relationship === 'request_sent' || u.relationship === 'request_received') {
-				return { ...u, relationship: 'none', request_id: null };
+			if (hasLoadedRequests && hasLoadedFriends) {
+				if (u.relationship === 'request_sent' || u.relationship === 'request_received') {
+					return { ...u, relationship: 'none', request_id: null };
+				}
 			}
 			return u;
 		});
@@ -164,28 +203,50 @@
 	function syncSearchResultsWithState() {
 		syncSuggestedUsersWithState();
 		if (!searchResults || searchResults.length === 0) return;
-		const sentIds = new Set((sentRequests || []).map(r => Number(r.receiver_id || r.id)));
-		const friendIds = new Set((friends || []).map(f => Number(f.friend_id || f.id)));
-		const incomingSenderIds = new Set((pendingRequests || []).map(r => Number(r.sender_id || r.id)));
+		const sentIds = new Set();
+		(sentRequests || []).forEach(r => {
+			if (r.receiver_id != null) {
+				sentIds.add(Number(r.receiver_id));
+				sentIds.add(String(r.receiver_id));
+			}
+		});
+
+		const friendIds = new Set();
+		(friends || []).forEach(f => {
+			if (f.friend_id != null) {
+				friendIds.add(Number(f.friend_id));
+				friendIds.add(String(f.friend_id));
+			}
+		});
+
+		const incomingSenderIds = new Set();
+		(pendingRequests || []).forEach(r => {
+			if (r.sender_id != null) {
+				incomingSenderIds.add(Number(r.sender_id));
+				incomingSenderIds.add(String(r.sender_id));
+			}
+		});
 
 		searchResults = searchResults.map(u => {
 			const uId = Number(u.id);
+			const uIdStr = String(u.id);
 			if (u.relationship === 'self') return u;
 
-			if (friendIds.has(uId)) {
+			if (friendIds.has(uId) || friendIds.has(uIdStr)) {
 				return { ...u, relationship: 'friends' };
 			}
-			if (sentIds.has(uId)) {
-				const req = sentRequests.find(r => Number(r.receiver_id || r.id) === uId);
+			if (sentIds.has(uId) || sentIds.has(uIdStr)) {
+				const req = sentRequests.find(r => String(r.receiver_id) === uIdStr || Number(r.receiver_id) === uId);
 				return { ...u, relationship: 'request_sent', request_id: req?.id || req?.request_id || u.request_id };
 			}
-			if (incomingSenderIds.has(uId)) {
-				const req = pendingRequests.find(r => Number(r.sender_id || r.id) === uId);
+			if (incomingSenderIds.has(uId) || incomingSenderIds.has(uIdStr)) {
+				const req = pendingRequests.find(r => String(r.sender_id) === uIdStr || Number(r.sender_id) === uId);
 				return { ...u, relationship: 'request_received', request_id: req?.id || req?.request_id || u.request_id };
 			}
-			// If not in friends, sent, or incoming, relationship is 'none'
-			if (u.relationship === 'request_sent' || u.relationship === 'request_received') {
-				return { ...u, relationship: 'none', request_id: null };
+			if (hasLoadedRequests && hasLoadedFriends) {
+				if (u.relationship === 'request_sent' || u.relationship === 'request_received') {
+					return { ...u, relationship: 'none', request_id: null };
+				}
 			}
 			return u;
 		});
@@ -197,7 +258,7 @@
 			isFetchingFriends = true;
 		}
 
-		fetch(API_ENDPOINTS.getFriendsList, {
+		return fetch(API_ENDPOINTS.getFriendsList, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ user_id: user.id })
@@ -205,6 +266,7 @@
 		.then(res => res.json())
 		.then(data => {
 			isFetchingFriends = false;
+			hasLoadedFriends = true;
 			if (data.data) {
 				friends = data.data.friends || [];
 				syncSearchResultsWithState();
@@ -212,6 +274,7 @@
 		})
 		.catch(err => {
 			isFetchingFriends = false;
+			hasLoadedFriends = true;
 			console.error('Error fetching friends:', err);
 		});
 	}
@@ -222,7 +285,7 @@
 			isFetchingRequests = true;
 		}
 
-		fetch(API_ENDPOINTS.getFriendRequests, {
+		return fetch(API_ENDPOINTS.getFriendRequests, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ user_id: user.id })
@@ -230,6 +293,7 @@
 		.then(res => res.json())
 		.then(data => {
 			isFetchingRequests = false;
+			hasLoadedRequests = true;
 			if (data.data) {
 				pendingRequests = data.data.requests || [];
 				sentRequests = data.data.sent_requests || [];
@@ -238,6 +302,7 @@
 		})
 		.catch(err => {
 			isFetchingRequests = false;
+			hasLoadedRequests = true;
 			console.error('Error fetching pending requests:', err);
 		});
 	}
@@ -318,6 +383,8 @@
 		// 0ms Optimistic UI update
 		const previousRel = targetUser.relationship;
 		targetUser.relationship = 'request_sent';
+		suggestedUsers = suggestedUsers.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: 'request_sent' } : su);
+		searchResults = searchResults.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: 'request_sent' } : su);
 
 		// Instant client-side broadcast
 		broadcastFriendEvent(user.id, targetUser.id, 'friend_request');
@@ -328,17 +395,23 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					friend_username: targetUser.username,
-					user_id: user.id
+					user_id: user.id,
+					sender_id: user.id,
+					receiver_id: targetUser.id
 				})
 			});
 			const data = await res.json();
 			if (data.error) {
 				targetUser.relationship = previousRel;
+				suggestedUsers = suggestedUsers.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: previousRel } : su);
+				searchResults = searchResults.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: previousRel } : su);
 				addFriendError = data.error;
 			} else {
 				addFriendSuccess = data.message || `Friend request sent to @${targetUser.username}!`;
 				targetUser.request_id = data.request_id || null;
-				fetchPendingRequests();
+				suggestedUsers = suggestedUsers.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: 'request_sent', request_id: data.request_id || su.request_id } : su);
+				searchResults = searchResults.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: 'request_sent', request_id: data.request_id || su.request_id } : su);
+				fetchPendingRequests(true);
 				broadcastFriendEvent(user.id, targetUser.id, 'friend_request');
 				setTimeout(() => {
 					addFriendSuccess = '';
@@ -346,6 +419,8 @@
 			}
 		} catch (err) {
 			targetUser.relationship = previousRel;
+			suggestedUsers = suggestedUsers.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: previousRel } : su);
+			searchResults = searchResults.map(su => String(su.id) === String(targetUser.id) ? { ...su, relationship: previousRel } : su);
 			addFriendError = 'An error occurred. Please try again.';
 			console.error('Add friend error:', err);
 		} finally {
@@ -678,9 +753,19 @@
 				</div>
 
 				{#if isFetchingFriends && friends.length === 0}
-					<div class="text-center py-8">
-						<div class="animate-spin h-6 w-6 text-[#f43f8e] mx-auto mb-2 border-2 border-pink-200 border-t-[#f43f8e] rounded-full"></div>
-						<p class="text-xs text-pink-400 font-bold">Loading friends list...</p>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 animate-pulse">
+						{#each Array(4) as _}
+							<div class="p-2.5 bg-[#fdf2f6]/60 border border-pink-100/80 rounded-2xl flex items-center justify-between gap-2 shadow-2xs">
+								<div class="flex items-center space-x-2.5 min-w-0 flex-1">
+									<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-pink-200/70 flex-shrink-0"></div>
+									<div class="space-y-1.5 flex-1">
+										<div class="h-3.5 bg-pink-200/70 rounded w-2/3"></div>
+										<div class="h-2.5 bg-pink-200/50 rounded w-1/3"></div>
+									</div>
+								</div>
+								<div class="h-7 w-16 bg-pink-100/80 rounded-xl flex-shrink-0"></div>
+							</div>
+						{/each}
 					</div>
 				{:else if filteredFriends().length > 0}
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
@@ -811,9 +896,19 @@
 
 				<!-- Live Search State & Results Container -->
 				{#if isSearchingUsers}
-					<div class="text-center py-5">
-						<div class="animate-spin h-5 w-5 border-2 border-pink-200 border-t-[#f43f8e] rounded-full mx-auto mb-1.5"></div>
-						<p class="text-xs text-pink-400 font-bold">Searching users...</p>
+					<div class="space-y-2 mt-3 animate-pulse">
+						{#each Array(2) as _}
+							<div class="p-2.5 bg-[#fdf2f6]/60 border border-pink-100/80 rounded-2xl flex items-center justify-between gap-2">
+								<div class="flex items-center space-x-2 min-w-0 flex-1">
+									<div class="w-9 h-9 rounded-full bg-pink-200/70 flex-shrink-0"></div>
+									<div class="space-y-1.5 flex-1">
+										<div class="h-3.5 bg-pink-200/70 rounded w-1/2"></div>
+										<div class="h-2.5 bg-pink-200/50 rounded w-1/3"></div>
+									</div>
+								</div>
+								<div class="h-7 w-20 bg-pink-100/80 rounded-xl flex-shrink-0"></div>
+							</div>
+						{/each}
 					</div>
 				{:else if searchResults.length > 0}
 					<div class="space-y-2.5 mt-3">
@@ -959,9 +1054,19 @@
 					</div>
 
 					{#if isLoadingSuggested && suggestedUsers.length === 0}
-						<div class="text-center py-5">
-							<div class="animate-spin h-5 w-5 border-2 border-pink-200 border-t-[#f43f8e] rounded-full mx-auto mb-1.5"></div>
-							<p class="text-xs text-pink-400 font-bold">Loading suggested users...</p>
+						<div class="space-y-2 max-h-72 overflow-hidden animate-pulse">
+							{#each Array(3) as _}
+								<div class="p-2.5 bg-[#fdf2f6]/60 border border-pink-100/80 rounded-2xl flex items-center justify-between gap-2">
+									<div class="flex items-center space-x-2 min-w-0 flex-1">
+										<div class="w-9 h-9 rounded-full bg-pink-200/70 flex-shrink-0"></div>
+										<div class="space-y-1.5 flex-1">
+											<div class="h-3.5 bg-pink-200/70 rounded w-1/2"></div>
+											<div class="h-2.5 bg-pink-200/50 rounded w-1/3"></div>
+										</div>
+									</div>
+									<div class="h-7 w-16 bg-pink-100/80 rounded-xl flex-shrink-0"></div>
+								</div>
+							{/each}
 						</div>
 					{:else if suggestedUsers.length > 0}
 						<div class="space-y-2 max-h-72 overflow-y-auto pr-1">

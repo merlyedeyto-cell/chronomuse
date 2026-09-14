@@ -525,9 +525,19 @@
 
 		<!-- Main Content Display -->
 		{#if isLoading && !hasLoadedOnce}
-			<div class="bg-white rounded-2xl p-8 text-center shadow-xs border border-pink-100/90 animate-fade-in">
-				<div class="w-8 h-8 border-3 border-[#f43f8e] border-t-transparent rounded-full animate-spin mx-auto mb-2.5"></div>
-				<p class="text-xs text-[#f43f8e] font-black animate-pulse">Loading notifications...</p>
+			<div class="space-y-2.5 animate-pulse">
+				{#each Array(4) as _}
+					<div class="bg-white rounded-2xl p-4 border border-pink-100 flex items-center justify-between gap-3 shadow-2xs">
+						<div class="flex items-center space-x-3 min-w-0 flex-1">
+							<div class="w-10 h-10 rounded-full bg-pink-200/70 flex-shrink-0"></div>
+							<div class="space-y-1.5 flex-1">
+								<div class="h-3.5 bg-pink-200/70 rounded w-3/4"></div>
+								<div class="h-2.5 bg-pink-200/50 rounded w-1/2"></div>
+							</div>
+						</div>
+						<div class="h-7 w-20 bg-pink-100/80 rounded-xl flex-shrink-0"></div>
+					</div>
+				{/each}
 			</div>
 		{:else if activeTab === 'memories'}
 			<!-- Tab 1: Shared Memories (Saved on Calendar) -->

@@ -32,11 +32,15 @@
 		isOpen = open;
 		if (isOpen) {
 			document.body.style.overflow = 'hidden';
-			fetchPendingRequests();
-			loadSuggestedUsers(1, false);
+			fetchPendingRequests().then(() => {
+				loadSuggestedUsers(1, false);
+			});
 		} else {
 			document.body.style.overflow = '';
 		}
+		return () => {
+			document.body.style.overflow = '';
+		};
 	});
 
 	function handleClose() {
@@ -191,7 +195,9 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					friend_username: targetUser.username,
-					user_id: user.id
+					user_id: user.id,
+					sender_id: user.id,
+					receiver_id: targetUser.id
 				})
 			});
 			const data = await res.json();
@@ -203,8 +209,12 @@
 			} else {
 				successMessage = data.message || `Friend request sent to @${targetUser.username}!`;
 				targetUser.request_id = data.request_id || null;
+				suggestedUsers = suggestedUsers.map(su => su.id === targetUser.id ? { ...su, relationship: 'request_sent', request_id: data.request_id || su.request_id } : su);
 				fetchPendingRequests();
 				dispatch('addFriend', data);
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('chronomuse_friend_change'));
+				}
 				setTimeout(() => {
 					successMessage = '';
 				}, 3000);
@@ -452,9 +462,19 @@
 
 			<!-- Search Results List -->
 			{#if isSearching}
-				<div class="text-center py-6">
-					<div class="animate-spin h-6 w-6 border-3 border-pink-100 border-t-[#f43f8e] rounded-full mx-auto mb-2"></div>
-					<p class="text-xs text-pink-400 font-bold">Searching users...</p>
+				<div class="space-y-2 mb-4 animate-pulse">
+					{#each Array(2) as _}
+						<div class="p-2.5 bg-white border border-pink-100 rounded-2xl flex items-center justify-between gap-2 shadow-2xs">
+							<div class="flex items-center space-x-2.5 min-w-0 flex-1">
+								<div class="w-9 h-9 rounded-full bg-pink-200/70 flex-shrink-0"></div>
+								<div class="space-y-1.5 flex-1">
+									<div class="h-3.5 bg-pink-200/70 rounded w-1/2"></div>
+									<div class="h-2.5 bg-pink-200/50 rounded w-1/3"></div>
+								</div>
+							</div>
+							<div class="h-7 w-16 bg-pink-100/80 rounded-xl flex-shrink-0"></div>
+						</div>
+					{/each}
 				</div>
 			{:else if searchResults.length > 0}
 				<div class="mb-4 space-y-2">
@@ -560,9 +580,19 @@
 				</div>
 
 				{#if suggestedUsers.length === 0 && isLoadingSuggested}
-					<div class="py-6 text-center">
-						<div class="animate-spin h-6 w-6 border-3 border-pink-100 border-t-[#f43f8e] rounded-full mx-auto mb-2"></div>
-						<p class="text-xs text-pink-400 font-bold">Loading suggested users...</p>
+					<div class="space-y-2 max-h-56 overflow-hidden animate-pulse">
+						{#each Array(3) as _}
+							<div class="p-2.5 bg-white border border-pink-100/90 rounded-2xl flex items-center justify-between gap-2 shadow-2xs">
+								<div class="flex items-center space-x-2.5 min-w-0 flex-1">
+									<div class="w-9 h-9 rounded-full bg-pink-200/70 flex-shrink-0"></div>
+									<div class="space-y-1.5 flex-1">
+										<div class="h-3.5 bg-pink-200/70 rounded w-1/2"></div>
+										<div class="h-2.5 bg-pink-200/50 rounded w-1/3"></div>
+									</div>
+								</div>
+								<div class="h-7 w-16 bg-pink-100/80 rounded-xl flex-shrink-0"></div>
+							</div>
+						{/each}
 					</div>
 				{:else if suggestedUsers.length === 0}
 					<div class="py-3 text-center bg-[#fdf2f6] rounded-2xl border border-pink-100">

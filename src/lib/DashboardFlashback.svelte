@@ -116,7 +116,45 @@
 	}
 </script>
 
-{#if throwbackMemory}
+{#if isLoading}
+	<!-- Skeleton Flashback Card -->
+	<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans transition-all">
+		<!-- Header Skeleton -->
+		<div class="flex items-center justify-between mb-2.5">
+			<div class="flex items-center space-x-1.5">
+				<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-pink-400">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+				</div>
+				<h4 class="text-xs font-black text-pink-950">Memory Flashback</h4>
+			</div>
+			<!-- Date Badge Skeleton -->
+			<div class="h-4.5 w-20 bg-pink-100/80 rounded-full animate-pulse"></div>
+		</div>
+
+		<!-- Body Media + Info Skeleton -->
+		<div class="bg-pink-50/50 rounded-xl p-2.5 border border-pink-100/60 mb-2.5 flex items-center space-x-3 animate-pulse">
+			<!-- Square Thumbnail Placeholder -->
+			<div class="w-12 h-12 rounded-lg bg-pink-200/60 flex-shrink-0 flex items-center justify-center border border-pink-200/50">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5 text-pink-300">
+					<path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+				</svg>
+			</div>
+			<!-- Text Placeholders -->
+			<div class="min-w-0 flex-1 space-y-2">
+				<div class="h-3.5 bg-pink-200/70 rounded-md w-3/4"></div>
+				<div class="h-2.5 bg-pink-200/50 rounded-md w-1/3"></div>
+			</div>
+		</div>
+
+		<!-- Action Button Skeleton -->
+		<div class="w-full py-2.5 px-3 bg-pink-100/60 rounded-xl border border-pink-100 flex items-center justify-center space-x-2 animate-pulse">
+			<div class="h-3 w-24 bg-pink-200/70 rounded"></div>
+			<div class="w-3.5 h-3.5 bg-pink-200/70 rounded-full"></div>
+		</div>
+	</div>
+{:else if throwbackMemory}
 	<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans transition-all hover:border-pink-200">
 		<div class="flex items-center justify-between mb-2.5">
 			<div class="flex items-center space-x-1.5">

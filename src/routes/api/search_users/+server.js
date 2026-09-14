@@ -36,7 +36,10 @@ export async function POST({ request }) {
 				.eq('user_id', user_id);
 
 			if (friendships) {
-				friendships.forEach(f => myFriendIds.add(Number(f.friend_id)));
+				friendships.forEach(f => {
+					myFriendIds.add(Number(f.friend_id));
+					myFriendIds.add(String(f.friend_id));
+				});
 			}
 		}
 
@@ -52,10 +55,12 @@ export async function POST({ request }) {
 
 			if (friendRequests) {
 				friendRequests.forEach(req => {
-					if (String(req.sender_id) === String(user_id)) {
+					if (String(req.sender_id) === String(user_id) || Number(req.sender_id) === Number(user_id)) {
 						sentPendingMap.set(Number(req.receiver_id), req.id);
-					} else if (String(req.receiver_id) === String(user_id)) {
+						sentPendingMap.set(String(req.receiver_id), req.id);
+					} else if (String(req.receiver_id) === String(user_id) || Number(req.receiver_id) === Number(user_id)) {
 						receivedPendingMap.set(Number(req.sender_id), req.id);
+						receivedPendingMap.set(String(req.sender_id), req.id);
 					}
 				});
 			}
@@ -72,7 +77,7 @@ export async function POST({ request }) {
 
 			if (targetFriendships) {
 				targetFriendships.forEach(tf => {
-					if (myFriendIds.has(Number(tf.friend_id))) {
+					if (myFriendIds.has(Number(tf.friend_id)) || myFriendIds.has(String(tf.friend_id))) {
 						const currentCount = mutualFriendsCountMap.get(tf.user_id) || 0;
 						mutualFriendsCountMap.set(tf.user_id, currentCount + 1);
 					}
@@ -83,10 +88,10 @@ export async function POST({ request }) {
 		// 5. Format results
 		const users = matchedUsers.map(u => {
 			const isSelf = user_id && String(u.id) === String(user_id);
-			const isFriend = myFriendIds.has(Number(u.id));
-			const isSentPending = sentPendingMap.has(Number(u.id));
-			const isReceivedPending = receivedPendingMap.has(Number(u.id));
-			const requestId = isSentPending ? sentPendingMap.get(Number(u.id)) : isReceivedPending ? receivedPendingMap.get(Number(u.id)) : null;
+			const isFriend = myFriendIds.has(Number(u.id)) || myFriendIds.has(String(u.id));
+			const isSentPending = sentPendingMap.has(Number(u.id)) || sentPendingMap.has(String(u.id));
+			const isReceivedPending = receivedPendingMap.has(Number(u.id)) || receivedPendingMap.has(String(u.id));
+			const requestId = isSentPending ? (sentPendingMap.get(Number(u.id)) || sentPendingMap.get(String(u.id))) : isReceivedPending ? (receivedPendingMap.get(Number(u.id)) || receivedPendingMap.get(String(u.id))) : null;
 
 			let relationship = 'none';
 			if (isSelf) relationship = 'self';

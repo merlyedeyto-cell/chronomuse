@@ -148,9 +148,20 @@
 
 	const emojis = ['😀', '😁', '😂', '🥰', '😍', '🤩', '😊', '😎', '🥳', '🎉', '❤️', '🔥', '✨', '🌟', '💫', '🎈', '🎊', '📸', '📷', '🎵', '🎶', '💕', '💖', '💗', '🌸', '🌺', '🌻', '🌈', '☀️', '🌙', '⭐'];
 
-	onMount(() => {
-		// Prevent body scroll when modal is open
+	$effect(() => {
 		document.body.style.overflow = 'hidden';
+		return () => {
+			document.body.style.overflow = '';
+		};
+	});
+
+	$effect(() => {
+		if (memories && memories.length === 0 && !isClosing) {
+			handleClose();
+		}
+	});
+
+	onMount(() => {
 		fetchFriends();
 
 		const handleRealtimeChange = (e) => {
@@ -667,9 +678,16 @@
 
 	function confirmDeleteMemory() {
 		if (memoryToDeleteId) {
-			dispatch('deleteMemory', { memoryId: memoryToDeleteId, date: selectedDate });
+			const toDelete = memoryToDeleteId;
+			const remainingCount = (memories || []).filter(m => m.id !== toDelete).length;
+			dispatch('deleteMemory', { memoryId: toDelete, date: selectedDate });
 			showDeleteConfirmModal = false;
 			memoryToDeleteId = null;
+
+			// If all memories for this date/modal have been deleted, close modal automatically
+			if (remainingCount === 0) {
+				handleClose();
+			}
 		}
 	}
 

@@ -183,46 +183,61 @@
 {#snippet monthsContent()}
 	<!-- Embedded / Standalone Sub-header: Active Count & Year Switcher -->
 	<div class="flex items-center justify-between mb-2 pb-1.5 border-b border-pink-100/70">
-		<div class="flex items-center gap-1.5">
-			<span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-pink-50 text-[#f43f8e] border border-pink-200/80 inline-flex items-center gap-1 shadow-2xs">
-				<span class="w-1.5 h-1.5 rounded-full bg-[#f43f8e] animate-pulse"></span>
-				<span>{monthsWithMemoriesCount} {monthsWithMemoriesCount === 1 ? 'active month' : 'active months'}</span>
-			</span>
-		</div>
+		{#if isLoading && allMemories.length === 0}
+			<div class="h-4.5 w-24 bg-pink-100/80 rounded-full animate-pulse"></div>
+			<div class="h-5 w-16 bg-pink-100/80 rounded-lg animate-pulse"></div>
+		{:else}
+			<div class="flex items-center gap-1.5">
+				<span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-pink-50 text-[#f43f8e] border border-pink-200/80 inline-flex items-center gap-1 shadow-2xs">
+					<span class="w-1.5 h-1.5 rounded-full bg-[#f43f8e] animate-pulse"></span>
+					<span>{monthsWithMemoriesCount} {monthsWithMemoriesCount === 1 ? 'active month' : 'active months'}</span>
+				</span>
+			</div>
 
-		<!-- Year Switcher (Interactive Previous/Next Year) -->
-		<div class="flex items-center space-x-1 bg-pink-50/80 p-0.5 rounded-lg border border-pink-200/80 shadow-2xs">
-			<button
-				type="button"
-				onclick={() => changeYear(-1)}
-				class="p-0.5 text-pink-600 hover:text-[#f43f8e] hover:bg-white rounded transition-all cursor-pointer active:scale-95 flex items-center justify-center"
-				title="Previous Year"
-				aria-label="Previous Year"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-				</svg>
-			</button>
-			<span class="text-[11px] font-black text-[#f43f8e] px-1 select-none">{selectedYear}</span>
-			<button
-				type="button"
-				onclick={() => changeYear(1)}
-				class="p-0.5 text-pink-600 hover:text-[#f43f8e] hover:bg-white rounded transition-all cursor-pointer active:scale-95 flex items-center justify-center"
-				title="Next Year"
-				aria-label="Next Year"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
-					<path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-				</svg>
-			</button>
-		</div>
+			<!-- Year Switcher (Interactive Previous/Next Year) -->
+			<div class="flex items-center space-x-1 bg-pink-50/80 p-0.5 rounded-lg border border-pink-200/80 shadow-2xs">
+				<button
+					type="button"
+					onclick={() => changeYear(-1)}
+					class="p-0.5 text-pink-600 hover:text-[#f43f8e] hover:bg-white rounded transition-all cursor-pointer active:scale-95 flex items-center justify-center"
+					title="Previous Year"
+					aria-label="Previous Year"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+					</svg>
+				</button>
+				<span class="text-[11px] font-black text-[#f43f8e] px-1 select-none">{selectedYear}</span>
+				<button
+					type="button"
+					onclick={() => changeYear(1)}
+					class="p-0.5 text-pink-600 hover:text-[#f43f8e] hover:bg-white rounded transition-all cursor-pointer active:scale-95 flex items-center justify-center"
+					title="Next Year"
+					aria-label="Next Year"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
+						<path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+					</svg>
+				</button>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Months Interactive Grid (Only Months with Memories) -->
 	{#if isLoading && allMemories.length === 0}
-		<div class="h-[142px] flex flex-col items-center justify-center text-center space-y-1.5">
-			<div class="w-5 h-5 border-2 border-pink-200 border-t-[#f43f8e] rounded-full animate-spin mx-auto"></div>
-			<p class="text-[11px] text-pink-400 font-bold">Scanning memories...</p>
+		<div class="h-[142px] flex flex-col justify-between animate-pulse">
+			<div class="grid grid-cols-6 gap-1 content-start p-0.5">
+				{#each Array(6) as _}
+					<div class="py-2 px-0.5 rounded-xl border border-pink-100/90 bg-pink-50/50 flex flex-col items-center justify-center space-y-1">
+						<div class="h-2.5 w-6 bg-pink-200/70 rounded"></div>
+						<div class="w-3.5 h-3.5 rounded-full bg-pink-200/60"></div>
+					</div>
+				{/each}
+			</div>
+			<div class="pt-1.5 border-t border-pink-100/70 flex items-center justify-between px-0.5">
+				<div class="h-2.5 w-36 bg-pink-100/80 rounded"></div>
+				<div class="h-3.5 w-12 bg-pink-100/80 rounded-md"></div>
+			</div>
 		</div>
 	{:else if displayedMonths.length === 0}
 		<div class="h-[142px] flex flex-col items-center justify-center text-center">

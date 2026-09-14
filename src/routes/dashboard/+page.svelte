@@ -46,6 +46,17 @@
 	let pinnedDateToDelete = $state(null);
 	let showViewMemoryModalWrapper = $state(false);
 
+	$effect(() => {
+		if (showViewMemory || showDeletePinnedModal || showNotificationModalPopup || sidebarOpen || showViewMemoryModalWrapper) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+		return () => {
+			document.body.style.overflow = '';
+		};
+	});
+
 	function showMemoryToast(event) {
 		toastMessage = event.detail.message;
 		toastType = event.detail.type;
@@ -623,6 +634,8 @@
 				if (memoriesForDate.length === 0) {
 					delete memoriesData[deletedDate];
 					pinnedDates = pinnedDates.filter(p => p.date !== deletedDate);
+					showViewMemory = false;
+					showViewMemoryModalWrapper = false;
 				} else {
 					memoriesData[deletedDate] = memoriesForDate;
 				}

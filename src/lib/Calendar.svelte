@@ -22,6 +22,17 @@
 	let highlightTimeout;
 
 	$effect(() => {
+		if (showMonthMenu || showYearMenu) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+		return () => {
+			document.body.style.overflow = '';
+		};
+	});
+
+	$effect(() => {
 		if (selectedDateStr) {
 			const parts = selectedDateStr.split('-');
 			if (parts.length === 3) {

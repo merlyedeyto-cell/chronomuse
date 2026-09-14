@@ -274,7 +274,7 @@
 				moodKey: mood,
 				moodName: mood.charAt(0).toUpperCase() + mood.slice(1),
 				count,
-				percent: totalMemories > 0 ? Math.round((count / totalMemories) * 100) : 0,
+				percent: totalLoggedMoods > 0 ? Math.round((count / totalLoggedMoods) * 100) : 0,
 				color: getMoodFillColor(mood.charAt(0).toUpperCase() + mood.slice(1))
 			}))
 	);
@@ -288,7 +288,7 @@
 		const circumference = 2 * Math.PI * radius; // ~219.911
 
 		data.forEach(([mood, count]) => {
-			const percent = totalMemories > 0 ? (count / totalMemories) * 100 : 0;
+			const percent = totalLoggedMoods > 0 ? (count / totalLoggedMoods) * 100 : 0;
 			const segmentLength = (percent / 100) * circumference;
 			const strokeDasharray = `${segmentLength} ${circumference}`;
 			const strokeDashoffset = -((cumulativePercent / 100) * circumference);
@@ -298,7 +298,7 @@
 				mood: mood.charAt(0).toUpperCase() + mood.slice(1),
 				rawMood: mood,
 				count,
-				percent,
+				percent: Math.round(percent),
 				strokeDasharray,
 				strokeDashoffset,
 				color
@@ -461,6 +461,17 @@
 		};
 	});
 
+	$effect(() => {
+		if (showMoodListModal || showViewMemoryModal || showPositiveRatioModal) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+		return () => {
+			document.body.style.overflow = '';
+		};
+	});
+
 	function calculateMoodStats() {
 		// Reset stats
 		moodStats = {
@@ -537,9 +548,53 @@
 	}
 
 	function getMoodPercentage(mood) {
-		if (totalMemories === 0) return 0;
-		return Math.round((moodStats[mood.toLowerCase()] / totalMemories) * 100);
+		if (totalLoggedMoods === 0) return 0;
+		return Math.round((moodStats[mood.toLowerCase()] / totalLoggedMoods) * 100);
 	}
+
+	function getMoodEmoji(moodTag) {
+		switch ((moodTag || '').toLowerCase()) {
+			case 'happy': return '😊';
+			case 'sad': return '😢';
+			case 'excited': return '🤩';
+			case 'calm': return '🌿';
+			case 'love': return '💖';
+			case 'angry': return '🔥';
+			case 'grateful': return '🙏';
+			case 'anxious': return '🌊';
+			case 'lonely': return '🌧️';
+			case 'neutral': return '✨';
+			default: return '🌟';
+		}
+	}
+
+	let positiveMoodsLogged = $derived(
+		['happy', 'excited', 'grateful', 'calm', 'love']
+			.filter(m => (moodStats[m] || 0) > 0)
+			.map(m => ({
+				key: m,
+				name: m.charAt(0).toUpperCase() + m.slice(1),
+				count: moodStats[m],
+				emoji: getMoodEmoji(m)
+			}))
+	);
+
+	let negativeMoodsLogged = $derived(
+		['sad', 'angry', 'anxious', 'lonely']
+			.filter(m => (moodStats[m] || 0) > 0)
+			.map(m => ({
+				key: m,
+				name: m.charAt(0).toUpperCase() + m.slice(1),
+				count: moodStats[m],
+				emoji: getMoodEmoji(m)
+			}))
+	);
+
+	let neutralMoodsLogged = $derived(
+		(moodStats.neutral || 0) > 0
+			? [{ key: 'neutral', name: 'Neutral', count: moodStats.neutral, emoji: '✨' }]
+			: []
+	);
 
 	let recentTenMemories = $derived(
 		[...moodData]
@@ -624,7 +679,9 @@
 						onkeydown={(e) => { if (e.key === 'Enter' && mostFrequentMoods.length > 0) openMoodListModal(mostFrequentMoods[0]); }}
 					>
 						<div class="flex items-center justify-between mb-2 opacity-90">
-							<span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">Dominant Mood</span>
+							<span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
+								{mostFrequentMoods.length > 1 ? 'Dominant Moods (Tied)' : 'Dominant Mood'}
+							</span>
 							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 opacity-90">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0V5.625a1.125 1.125 0 011.125-1.125h2.25c1.052 0 2.125.703 2.125 2.25v0c0 1.125-.872 2.25-2.125 2.25h-2.25m-9 0h2.25c1.052 0 2.125-.703 2.125-2.25v0c0-1.125-.872-2.25-2.125-2.25H9.497m0 14.25V5.625a1.125 1.125 0 011.125-1.125h2.25c1.052 0 2.125.703 2.125 2.25v0c0 1.125-.872 2.25-2.125 2.25h-2.25" />
 							</svg>
@@ -703,14 +760,14 @@
 								<p class="text-[10px] sm:text-[11px] text-pink-400 font-bold">Interactive emotional spread</p>
 							</div>
 						</div>
-						{#if totalMemories > 0}
+						{#if totalLoggedMoods > 0}
 							<span class="text-[10px] text-pink-500 bg-pink-50 px-2.5 py-0.5 rounded-full font-bold border border-pink-100">
 								{activeMoodsSorted.length} Active Tags
 							</span>
 						{/if}
 					</div>
 
-					{#if totalMemories > 0}
+					{#if totalLoggedMoods > 0}
 						<div class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5 items-center">
 							<!-- Donut Chart on Left of the card (5 Cols) -->
 							<div class="md:col-span-5 flex flex-col items-center justify-center py-1">
@@ -738,8 +795,8 @@
 									</svg>
 									<!-- Center text -->
 									<div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none select-none">
-										<span class="text-xl sm:text-2xl font-black text-[#f43f8e]">{totalMemories}</span>
-										<span class="text-[9px] text-pink-400 font-bold uppercase tracking-wider">Memories</span>
+										<span class="text-xl sm:text-2xl font-black text-[#f43f8e]">{totalLoggedMoods}</span>
+										<span class="text-[9px] text-pink-400 font-bold uppercase tracking-wider">{totalLoggedMoods === 1 ? 'Mood Log' : 'Mood Logs'}</span>
 									</div>
 								</div>
 								<p class="text-[10px] sm:text-[11px] text-pink-400 font-medium text-center mt-1">Tap a slice to see tagged memories</p>
@@ -954,13 +1011,13 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
-			class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in font-sans"
+			class="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fade-in font-sans"
 			onclick={(e) => { if (e.target === e.currentTarget) showPositiveRatioModal = false; }}
 		>
-			<div class="bg-white border border-pink-100/90 rounded-3xl shadow-2xl max-w-sm w-full p-5 sm:p-6 space-y-4 animate-modal-content">
+			<div class="bg-white border border-pink-100 rounded-3xl shadow-2xl max-w-sm sm:max-w-md w-full p-4 sm:p-5 space-y-3.5 animate-modal-content max-h-[90vh] overflow-y-auto">
 				<!-- Header -->
-				<div class="flex items-center justify-between border-b border-pink-100 pb-3">
-					<div class="flex items-center space-x-2.5">
+				<div class="flex items-center justify-between border-b border-pink-100/80 pb-2.5">
+					<div class="flex items-center space-x-2">
 						<div class="w-8 h-8 rounded-xl bg-pink-50 text-[#f43f8e] border border-pink-100 flex items-center justify-center shadow-2xs">
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-[#f43f8e]">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
@@ -968,25 +1025,56 @@
 						</div>
 						<div>
 							<h3 class="text-sm font-black text-pink-950">Positive Ratio</h3>
-							<p class="text-[10px] text-pink-400 font-bold">Calculation Breakdown</p>
+							<p class="text-[10px] text-pink-400 font-bold">Calculation & Breakdown</p>
 						</div>
 					</div>
 					<button
 						onclick={() => { playClickSound(); showPositiveRatioModal = false; }}
 						aria-label="Close"
-						class="text-pink-400 hover:text-pink-600 p-1 rounded-lg hover:bg-pink-50 transition-colors cursor-pointer"
+						class="w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-all cursor-pointer active:scale-95"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 						</svg>
 					</button>
 				</div>
 
 				<!-- Ratio Score Hero -->
-				<div class="p-3.5 bg-gradient-to-br from-pink-50/80 to-[#fff0f5] border border-pink-100 rounded-2xl text-center space-y-1 shadow-2xs">
-					<span class="text-[10px] font-black uppercase tracking-wider text-pink-400">YOUR SCORE ({selectedPeriod === 'all' ? 'All Time' : selectedPeriod === 'week' ? 'Past 7 Days' : selectedPeriod === 'month' ? 'Past 30 Days' : 'Past Year'})</span>
-					<p class="text-3xl font-black text-[#f43f8e]">{positivePercentage}%</p>
-					<p class="text-xs text-pink-900 font-medium leading-tight">
+				<div class="p-3.5 bg-gradient-to-br from-pink-50/80 via-white to-pink-50/40 border border-pink-100 rounded-2xl text-center space-y-1.5 shadow-2xs">
+					<span class="text-[9px] font-black uppercase tracking-wider text-pink-400 bg-white px-2.5 py-0.5 rounded-full border border-pink-100 inline-block shadow-2xs">
+						YOUR SCORE ({selectedPeriod === 'all' ? 'All Time' : selectedPeriod === 'week' ? 'Past 7 Days' : selectedPeriod === 'month' ? 'Past 30 Days' : 'Past Year'})
+					</span>
+					
+					<p class="text-3xl sm:text-4xl font-black text-[#f43f8e] tracking-tight">{positivePercentage}%</p>
+					
+					<!-- Segmented ratio bar -->
+					{#if totalLoggedMoods > 0}
+						<div class="w-full h-2.5 bg-pink-100/60 rounded-full overflow-hidden flex shadow-inner my-1.5 border border-pink-100">
+							{#if positiveCount > 0}
+								<div
+									class="bg-gradient-to-r from-emerald-400 to-emerald-500 h-full transition-all duration-500"
+									style="width: {(positiveCount / totalLoggedMoods) * 100}%"
+									title="Positive: {positiveCount} logs"
+								></div>
+							{/if}
+							{#if neutralCount > 0}
+								<div
+									class="bg-gradient-to-r from-slate-300 to-slate-400 h-full transition-all duration-500"
+									style="width: {(neutralCount / totalLoggedMoods) * 100}%"
+									title="Neutral: {neutralCount} logs"
+								></div>
+							{/if}
+							{#if negativeCount > 0}
+								<div
+									class="bg-gradient-to-r from-rose-400 to-rose-500 h-full transition-all duration-500"
+									style="width: {(negativeCount / totalLoggedMoods) * 100}%"
+									title="Negative: {negativeCount} logs"
+								></div>
+							{/if}
+						</div>
+					{/if}
+
+					<p class="text-[11px] text-pink-900/90 font-bold leading-relaxed px-2">
 						{#if positivePercentage >= 70}
 							Outstanding! You're keeping high positive energy and appreciation.
 						{:else if positivePercentage >= 50}
@@ -1000,68 +1088,132 @@
 				</div>
 
 				<!-- Formula Card -->
-				<div class="p-3 bg-pink-50/60 border border-pink-100/80 rounded-2xl space-y-1.5">
-					<div class="flex items-center justify-between text-[11px] font-bold text-pink-950">
+				<div class="p-3 bg-pink-50/40 border border-pink-100 rounded-2xl space-y-2">
+					<div class="flex items-center justify-between text-[10px] font-extrabold text-pink-950">
 						<span class="flex items-center gap-1.5">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M4.745 3A23.933 23.933 0 003 12c0 3.183.62 6.22 1.745 9M19.255 3c1.125 2.78 1.745 5.817 1.745 9 0 3.183-.62 6.22-1.745 9m-1.5-12.75h-10.5m10.5 7.5h-10.5" />
 							</svg>
 							<span>Formula Used</span>
 						</span>
-						<span class="text-[10px] text-[#f43f8e] font-black uppercase tracking-wide">Accurate Calculation</span>
+						<span class="text-[9px] text-[#f43f8e] font-black uppercase bg-white px-2 py-0.5 rounded-full border border-pink-100 shadow-2xs">Calculation</span>
 					</div>
-					<div class="p-2 bg-white rounded-xl border border-pink-100 text-center font-mono text-xs font-bold text-pink-900 shadow-2xs">
-						(Positive Moods ÷ Total Logged Moods) × 100%
+
+					<div class="p-2 bg-white rounded-xl border border-pink-100 text-center font-mono text-[11px] font-extrabold text-pink-900 shadow-2xs">
+						(Positive Moods ÷ Total Moods) × 100%
 					</div>
-					<p class="text-[10px] text-pink-600 font-medium leading-relaxed">
-						Formula: <strong class="text-pink-900">({positiveCount} ÷ {totalLoggedMoods}) × 100%</strong> = <strong class="text-[#f43f8e]">{positivePercentage}%</strong>.
-					</p>
+
+					<div class="flex items-center justify-center gap-1.5 text-[11px] font-bold text-pink-800 bg-white/70 py-1.5 px-2 rounded-xl border border-pink-100">
+						<span>( <strong class="text-emerald-600">{positiveCount}</strong> ÷ <strong class="text-pink-950">{totalLoggedMoods}</strong> ) × 100%</span>
+						<span>=</span>
+						<span class="text-[#f43f8e] font-black">{positivePercentage}%</span>
+					</div>
 				</div>
 
 				<!-- Moods Breakdown -->
-				<div class="space-y-1.5">
-					<span class="text-[11px] font-bold text-pink-950 flex items-center gap-1.5">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-						</svg>
-						<span>Breakdown of Logged Moods ({totalLoggedMoods} total)</span>
-					</span>
+				<div class="space-y-2">
+					<div class="flex items-center justify-between">
+						<span class="text-[11px] font-black text-pink-950 flex items-center gap-1.5">
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+							</svg>
+							<span>Moods Breakdown</span>
+						</span>
+						<span class="text-[10px] text-pink-500 font-bold bg-pink-50 px-2 py-0.5 rounded-full border border-pink-100">
+							{totalLoggedMoods} {totalLoggedMoods === 1 ? 'total log' : 'total logs'}
+						</span>
+					</div>
 
-					<div class="space-y-1">
-						<div class="flex items-center justify-between p-2 bg-emerald-50/70 border border-emerald-100 rounded-xl">
-							<span class="font-bold text-emerald-800 text-[11px] flex items-center gap-1.5">
-								<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-								<span>Positive Moods</span>
-							</span>
-							<span class="font-black text-emerald-900 text-xs">{positiveCount} logs ({positivePercentage}%)</span>
-						</div>
-						<p class="text-[9px] text-emerald-600 font-medium pl-2">Happy ({moodStats.happy || 0}), Relaxed ({moodStats.relaxed || 0}), Excited ({moodStats.excited || 0}), In Love ({moodStats.in_love || 0}), Grateful ({moodStats.grateful || 0}), Motivated ({moodStats.motivated || 0}), Peaceful ({moodStats.peaceful || 0}), Confident ({moodStats.confident || 0}), Playful ({moodStats.playful || 0})</p>
+					<div class="space-y-1.5">
+						<!-- Positive Category Card -->
+						<div class="p-2.5 bg-emerald-50/50 border border-emerald-100/90 rounded-2xl space-y-1.5 shadow-2xs">
+							<div class="flex items-center justify-between">
+								<span class="font-black text-emerald-900 text-xs flex items-center gap-1.5">
+									<span class="w-2 h-2 rounded-full bg-emerald-500 shadow-2xs"></span>
+									<span>Positive Moods</span>
+								</span>
+								<span class="font-black text-emerald-900 text-xs bg-emerald-100/80 px-2 py-0.5 rounded-full border border-emerald-200">
+									{positiveCount} {positiveCount === 1 ? 'log' : 'logs'} ({positivePercentage}%)
+								</span>
+							</div>
 
-						<div class="flex items-center justify-between p-2 bg-pink-50/70 border border-pink-100 rounded-xl mt-1">
-							<span class="font-bold text-pink-800 text-[11px] flex items-center gap-1.5">
-								<span class="w-2 h-2 rounded-full bg-pink-400"></span>
-								<span>Neutral Moods</span>
-							</span>
-							<span class="font-black text-pink-900 text-xs">{neutralCount} logs</span>
+							{#if positiveMoodsLogged.length > 0}
+								<div class="flex flex-wrap gap-1 pt-0.5">
+									{#each positiveMoodsLogged as item}
+										<div class="inline-flex items-center space-x-1 px-2 py-0.5 bg-white border border-emerald-200 rounded-full text-[10px] font-bold text-emerald-900 shadow-2xs">
+											<span>{item.emoji}</span>
+											<span>{item.name}</span>
+											<span class="text-emerald-700 font-black">({item.count})</span>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<p class="text-[10px] text-emerald-600/70 font-medium italic">No positive moods logged in this period</p>
+							{/if}
 						</div>
 
-						<div class="flex items-center justify-between p-2 bg-rose-50/70 border border-rose-100 rounded-xl mt-1">
-							<span class="font-bold text-rose-800 text-[11px] flex items-center gap-1.5">
-								<span class="w-2 h-2 rounded-full bg-rose-500"></span>
-								<span>Negative Moods</span>
-							</span>
-							<span class="font-black text-rose-900 text-xs">{negativeCount} logs</span>
+						<!-- Neutral Category Card -->
+						<div class="p-2.5 bg-slate-50/70 border border-slate-200/80 rounded-2xl space-y-1.5 shadow-2xs">
+							<div class="flex items-center justify-between">
+								<span class="font-black text-slate-800 text-xs flex items-center gap-1.5">
+									<span class="w-2 h-2 rounded-full bg-slate-400 shadow-2xs"></span>
+									<span>Neutral Moods</span>
+								</span>
+								<span class="font-black text-slate-900 text-xs bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+									{neutralCount} {neutralCount === 1 ? 'log' : 'logs'} ({totalLoggedMoods > 0 ? Math.round((neutralCount / totalLoggedMoods) * 100) : 0}%)
+								</span>
+							</div>
+
+							{#if neutralMoodsLogged.length > 0}
+								<div class="flex flex-wrap gap-1 pt-0.5">
+									{#each neutralMoodsLogged as item}
+										<div class="inline-flex items-center space-x-1 px-2 py-0.5 bg-white border border-slate-200 rounded-full text-[10px] font-bold text-slate-800 shadow-2xs">
+											<span>{item.emoji}</span>
+											<span>{item.name}</span>
+											<span class="text-slate-600 font-black">({item.count})</span>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<p class="text-[10px] text-slate-500 font-medium italic">No neutral moods logged in this period</p>
+							{/if}
 						</div>
-						<p class="text-[9px] text-rose-500 font-medium pl-2">Sad ({moodStats.sad || 0}), Angry ({moodStats.angry || 0}), Anxious ({moodStats.anxious || 0}), Lonely ({moodStats.lonely || 0})</p>
+
+						<!-- Negative Category Card -->
+						<div class="p-2.5 bg-rose-50/50 border border-rose-100/90 rounded-2xl space-y-1.5 shadow-2xs">
+							<div class="flex items-center justify-between">
+								<span class="font-black text-rose-900 text-xs flex items-center gap-1.5">
+									<span class="w-2 h-2 rounded-full bg-rose-500 shadow-2xs"></span>
+									<span>Negative Moods</span>
+								</span>
+								<span class="font-black text-rose-900 text-xs bg-rose-100/80 px-2 py-0.5 rounded-full border border-rose-200">
+									{negativeCount} {negativeCount === 1 ? 'log' : 'logs'} ({totalLoggedMoods > 0 ? Math.round((negativeCount / totalLoggedMoods) * 100) : 0}%)
+								</span>
+							</div>
+
+							{#if negativeMoodsLogged.length > 0}
+								<div class="flex flex-wrap gap-1 pt-0.5">
+									{#each negativeMoodsLogged as item}
+										<div class="inline-flex items-center space-x-1 px-2 py-0.5 bg-white border border-rose-200 rounded-full text-[10px] font-bold text-rose-900 shadow-2xs">
+											<span>{item.emoji}</span>
+											<span>{item.name}</span>
+											<span class="text-rose-700 font-black">({item.count})</span>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<p class="text-[10px] text-rose-500/70 font-medium italic">No negative moods logged in this period</p>
+							{/if}
+						</div>
 					</div>
 				</div>
 
-				<!-- Footer -->
-				<div class="border-t border-pink-100 pt-3 flex justify-end">
+				<!-- Footer Button -->
+				<div class="border-t border-pink-100/80 pt-2.5">
 					<button
 						type="button"
 						onclick={() => { playClickSound(); showPositiveRatioModal = false; }}
-						class="w-full py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-bold text-xs rounded-xl shadow-md shadow-pink-300/30 transition-all cursor-pointer active:scale-95 text-center"
+						class="w-full py-2.5 bg-gradient-to-r from-[#f43f8e] to-[#e0337f] hover:from-[#e0337f] hover:to-[#d02470] text-white font-black text-xs rounded-xl shadow-[0_4px_12px_rgba(244,63,142,0.25)] transition-all cursor-pointer active:scale-98 text-center"
 					>
 						Got it!
 					</button>

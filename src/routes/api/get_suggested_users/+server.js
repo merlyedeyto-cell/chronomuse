@@ -55,7 +55,10 @@ export async function POST({ request }) {
 				.eq('user_id', currentUserId);
 
 			if (friendships) {
-				friendships.forEach(f => myFriendIds.add(Number(f.friend_id)));
+				friendships.forEach(f => {
+					myFriendIds.add(Number(f.friend_id));
+					myFriendIds.add(String(f.friend_id));
+				});
 			}
 		}
 
@@ -71,10 +74,12 @@ export async function POST({ request }) {
 
 			if (friendRequests) {
 				friendRequests.forEach(req => {
-					if (Number(req.sender_id) === currentUserId) {
+					if (Number(req.sender_id) === currentUserId || String(req.sender_id) === String(currentUserId)) {
 						sentPendingMap.set(Number(req.receiver_id), req.id);
-					} else if (Number(req.receiver_id) === currentUserId) {
+						sentPendingMap.set(String(req.receiver_id), req.id);
+					} else if (Number(req.receiver_id) === currentUserId || String(req.receiver_id) === String(currentUserId)) {
 						receivedPendingMap.set(Number(req.sender_id), req.id);
+						receivedPendingMap.set(String(req.sender_id), req.id);
 					}
 				});
 			}
@@ -83,10 +88,11 @@ export async function POST({ request }) {
 		// 5. Format results
 		const users = userRows.map(u => {
 			const uId = Number(u.id);
-			const isFriend = myFriendIds.has(uId);
-			const isSentPending = sentPendingMap.has(uId);
-			const isReceivedPending = receivedPendingMap.has(uId);
-			const requestId = isSentPending ? sentPendingMap.get(uId) : isReceivedPending ? receivedPendingMap.get(uId) : null;
+			const uIdStr = String(u.id);
+			const isFriend = myFriendIds.has(uId) || myFriendIds.has(uIdStr);
+			const isSentPending = sentPendingMap.has(uId) || sentPendingMap.has(uIdStr);
+			const isReceivedPending = receivedPendingMap.has(uId) || receivedPendingMap.has(uIdStr);
+			const requestId = isSentPending ? (sentPendingMap.get(uId) || sentPendingMap.get(uIdStr)) : isReceivedPending ? (receivedPendingMap.get(uId) || receivedPendingMap.get(uIdStr)) : null;
 
 			let relationship = 'none';
 			if (isFriend) relationship = 'friends';

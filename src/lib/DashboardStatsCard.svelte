@@ -55,6 +55,7 @@
 
 	async function loadStats() {
 		if (!userId) return;
+		isLoading = true;
 		try {
 			const res = await fetch(`${API_ENDPOINTS.getMoodData}?user_id=${userId}&period=all`, { cache: 'no-store' });
 			const data = await res.json();
@@ -151,29 +152,50 @@
 					<p class="text-[10px] text-pink-400 font-bold">Daily journal momentum</p>
 				</div>
 			</div>
-			<span class="text-[11px] font-black bg-pink-50 text-[#f43f8e] border border-pink-200/80 px-2.5 py-1 rounded-full flex items-center space-x-1.5 shadow-2xs">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-					<path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.316.492-.59 1.043-.843 1.603C8.75 5.8 8.04 7.42 8 8.5c0 .247.02.484.058.71a5.006 5.006 0 00-1.61-.476 1 1 0 00-.916 1.543c.478.775 1.157 1.554 1.956 2.193C8.423 13.2 9.61 14 11 14c3.314 0 6-2.686 6-6 0-1.95-1.118-3.666-2.605-4.447z" clip-rule="evenodd" />
-				</svg>
-				<span>{streakDays} {streakDays === 1 ? 'Day' : 'Days'}</span>
-			</span>
+			{#if isLoading}
+				<div class="h-6 w-16 bg-pink-100/80 rounded-full animate-pulse"></div>
+			{:else}
+				<span class="text-[11px] font-black bg-pink-50 text-[#f43f8e] border border-pink-200/80 px-2.5 py-1 rounded-full flex items-center space-x-1.5 shadow-2xs">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
+						<path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.316.492-.59 1.043-.843 1.603C8.75 5.8 8.04 7.42 8 8.5c0 .247.02.484.058.71a5.006 5.006 0 00-1.61-.476 1 1 0 00-.916 1.543c.478.775 1.157 1.554 1.956 2.193C8.423 13.2 9.61 14 11 14c3.314 0 6-2.686 6-6 0-1.95-1.118-3.666-2.605-4.447z" clip-rule="evenodd" />
+					</svg>
+					<span>{streakDays} {streakDays === 1 ? 'Day' : 'Days'}</span>
+				</span>
+			{/if}
 		</div>
 
 		<!-- Quick Metric Pills -->
-		<div class="grid grid-cols-3 gap-2 pt-1">
-			<div class="bg-pink-50/70 border border-pink-100/80 rounded-xl p-2 text-center transition-all hover:bg-pink-50">
-				<span class="block text-base sm:text-lg font-black text-pink-900 leading-tight">{totalMemories}</span>
-				<span class="text-[9px] sm:text-[10px] text-pink-500 font-bold uppercase tracking-wider">Memories</span>
+		{#if isLoading}
+			<div class="grid grid-cols-3 gap-2 pt-1 animate-pulse">
+				<div class="bg-pink-50/70 border border-pink-100/80 rounded-xl p-2.5 text-center flex flex-col items-center justify-center space-y-1.5">
+					<div class="h-5 w-8 bg-pink-200/70 rounded-md"></div>
+					<div class="h-2.5 w-12 bg-pink-200/50 rounded"></div>
+				</div>
+				<div class="bg-pink-50/70 border border-pink-100/80 rounded-xl p-2.5 text-center flex flex-col items-center justify-center space-y-1.5">
+					<div class="h-5 w-8 bg-pink-200/70 rounded-md"></div>
+					<div class="h-2.5 w-12 bg-pink-200/50 rounded"></div>
+				</div>
+				<div class="bg-pink-50/70 border border-pink-100/80 rounded-xl p-2.5 text-center flex flex-col items-center justify-center space-y-1.5">
+					<div class="h-5 w-12 bg-pink-200/70 rounded-md"></div>
+					<div class="h-2.5 w-12 bg-pink-200/50 rounded"></div>
+				</div>
 			</div>
-			<div class="bg-pink-50/70 border border-pink-100/80 rounded-xl p-2 text-center transition-all hover:bg-pink-50">
-				<span class="block text-base sm:text-lg font-black text-pink-900 leading-tight">{photoCount}</span>
-				<span class="text-[9px] sm:text-[10px] text-pink-500 font-bold uppercase tracking-wider">Photos</span>
+		{:else}
+			<div class="grid grid-cols-3 gap-2 pt-1">
+				<div class="bg-pink-50/70 border border-pink-100/80 rounded-xl p-2 text-center transition-all hover:bg-pink-50">
+					<span class="block text-base sm:text-lg font-black text-pink-900 leading-tight">{totalMemories}</span>
+					<span class="text-[9px] sm:text-[10px] text-pink-500 font-bold uppercase tracking-wider">Memories</span>
+				</div>
+				<div class="bg-pink-50/70 border border-pink-100/80 rounded-xl p-2 text-center transition-all hover:bg-pink-50">
+					<span class="block text-base sm:text-lg font-black text-pink-900 leading-tight">{photoCount}</span>
+					<span class="text-[9px] sm:text-[10px] text-pink-500 font-bold uppercase tracking-wider">Photos</span>
+				</div>
+				<div class="bg-pink-50/70 border border-pink-100/80 rounded-xl p-2 text-center transition-all hover:bg-pink-50">
+					<span class="block text-xs sm:text-sm font-black text-[#f43f8e] truncate mt-0.5 leading-tight">{topMood}</span>
+					<span class="text-[9px] sm:text-[10px] text-pink-500 font-bold uppercase tracking-wider">Top Vibe</span>
+				</div>
 			</div>
-			<div class="bg-pink-50/70 border border-pink-100/80 rounded-xl p-2 text-center transition-all hover:bg-pink-50">
-				<span class="block text-xs sm:text-sm font-black text-[#f43f8e] truncate mt-0.5 leading-tight">{topMood}</span>
-				<span class="text-[9px] sm:text-[10px] text-pink-500 font-bold uppercase tracking-wider">Top Vibe</span>
-			</div>
-		</div>
+		{/if}
 	</div>
 
 	<!-- Daily Inspiration Quote Card -->
