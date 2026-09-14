@@ -69,7 +69,7 @@
 
 {#if !isCheckingAuth && !isLoggedIn}
 	<TopBar showNav={true} showFooter={true} on:navigate={handleNavigate}>
-		<div class="w-full flex items-center justify-center min-h-[calc(100vh-160px)]">
+		<div class="w-full flex items-center justify-center min-h-[calc(100vh-160px)] py-6 sm:py-8 px-4">
 			<RegisterCard on:register={handleRegister} on:showToast={showRegisterToast} />
 		</div>
 
