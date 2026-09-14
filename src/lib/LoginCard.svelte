@@ -56,9 +56,7 @@
 				if (typeof window !== 'undefined') {
 					window.dispatchEvent(new Event('chronomuse_auth_change'));
 				}
-				setTimeout(() => {
-					goto(redirectTarget || '/dashboard');
-				}, 300);
+				goto(redirectTarget || '/dashboard');
 			}
 		})
 		.catch(error => {

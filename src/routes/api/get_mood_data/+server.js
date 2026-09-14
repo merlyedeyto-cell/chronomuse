@@ -13,7 +13,7 @@ export async function GET({ url }) {
 
 		let query = supabase
 			.from('chronomuse_memories')
-			.select('*')
+			.select('id, user_id, date, mood_tag, memory_tag, title, description, photo_video, photo_video_type, created_at')
 			.eq('user_id', userId)
 			.order('date', { ascending: false });
 

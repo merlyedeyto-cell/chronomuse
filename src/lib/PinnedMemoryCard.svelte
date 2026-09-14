@@ -19,22 +19,33 @@
 	let editingTitle = $state('');
 	let showMonthsFilter = $state(false);
 
+	function autoFocus(node) {
+		node?.focus?.();
+	}
+
+	let lastLoadedUserId = null;
+
 	$effect(() => {
 		const uid = userId;
 		untrack(() => {
 			if (uid) {
-				loadPinnedMemories();
+				if (lastLoadedUserId !== uid) {
+					lastLoadedUserId = uid;
+					loadPinnedMemories();
+				}
 			} else {
 				isLoading = false;
 				pinnedMemories = [];
+				lastLoadedUserId = null;
 			}
 		});
 	});
 
 	onMount(() => {
-		if (userId) {
+		if (userId && lastLoadedUserId !== userId) {
+			lastLoadedUserId = userId;
 			loadPinnedMemories();
-		} else {
+		} else if (!userId) {
 			isLoading = false;
 		}
 
@@ -247,7 +258,18 @@
 		{:else}
 			<div class="h-[180px] space-y-1.5 overflow-y-auto custom-pinned-scroll pr-1">
 				{#each pinnedMemories as pinned (pinned.pinned_id)}
-					<div class="flex items-center space-x-2 p-2 bg-[#fdf2f6]/60 border border-pink-100/80 rounded-xl hover:border-pink-200 hover:bg-[#fff5f8] transition-all duration-200 cursor-pointer shadow-2xs group active:scale-[0.99]" onclick={() => viewMemory(pinned)}>
+					<div
+						class="flex items-center space-x-2 p-2 bg-[#fdf2f6]/60 border border-pink-100/80 rounded-xl hover:border-pink-200 hover:bg-[#fff5f8] transition-all duration-200 cursor-pointer shadow-2xs group active:scale-[0.99]"
+						role="button"
+						tabindex="0"
+						onclick={() => viewMemory(pinned)}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								viewMemory(pinned);
+							}
+						}}
+					>
 						<!-- Date Badge -->
 						<div class="flex flex-col items-center justify-center w-8 h-8 bg-[#f43f8e] rounded-lg text-white flex-shrink-0 shadow-xs">
 							<span class="text-[8px] font-black uppercase leading-none">{getDayName(pinned.date)}</span>
@@ -266,7 +288,7 @@
 										if (e.key === 'Escape') cancelEdit();
 									}}
 									onclick={(e) => e.stopPropagation()}
-									autofocus
+									use:autoFocus
 								/>
 							{:else}
 								<p class="text-xs font-bold text-pink-950 truncate group-hover:text-[#f43f8e] transition-colors">{pinned.title || 'Pinned Date'}</p>
@@ -277,6 +299,7 @@
 						<!-- Edit Button -->
 						{#if editingId === pinned.pinned_id}
 							<button
+								type="button"
 								onclick={(e) => { e.stopPropagation(); saveEdit(pinned); }}
 								class="p-1 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
 								title="Save"
@@ -286,6 +309,7 @@
 								</svg>
 							</button>
 							<button
+								type="button"
 								onclick={(e) => { e.stopPropagation(); cancelEdit(); }}
 								class="p-1 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
 								title="Cancel"
@@ -296,6 +320,7 @@
 							</button>
 						{:else}
 							<button
+								type="button"
 								onclick={(e) => { e.stopPropagation(); startEdit(pinned); }}
 								class="p-1 text-pink-400 hover:text-[#f43f8e] hover:bg-pink-100 rounded-lg transition-colors cursor-pointer"
 								title="Edit title"
@@ -305,6 +330,7 @@
 								</svg>
 							</button>
 							<button
+								type="button"
 								onclick={(e) => { e.stopPropagation(); deletePinned(pinned); }}
 								class="p-1 text-pink-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
 								title="Unpin date"
@@ -344,42 +370,5 @@
 	.custom-pinned-scroll {
 		scrollbar-width: thin;
 		scrollbar-color: #f472b6 rgba(254, 226, 238, 0.4);
-	}
-
-	.max-h-\[300px\]::-webkit-scrollbar-thumb {
-		background: linear-gradient(180deg, #ff69b4, #ff1493);
-		border-radius: 10px;
-	}
-
-	.max-h-\[300px\]::-webkit-scrollbar-thumb:hover {
-		background: linear-gradient(180deg, #ff1493, #b11663);
-	}
-
-	@keyframes fade-in {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
-	}
-
-	@keyframes modal-content {
-		from {
-			opacity: 0;
-			transform: scale(0.9) translateY(-20px);
-		}
-		to {
-			opacity: 1;
-			transform: scale(1) translateY(0);
-		}
-	}
-
-	.animate-fade-in {
-		animation: fade-in 0.2s ease-out;
-	}
-
-	.animate-modal-content {
-		animation: modal-content 0.3s ease-out cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
 </style>

@@ -10,21 +10,28 @@
 	let throwbackMemory = $state(null);
 	let isLoading = $state(true);
 
+	let lastLoadedUserId = null;
+
 	$effect(() => {
 		const uid = userId;
 		untrack(() => {
 			if (uid) {
-				loadFlashback();
+				if (lastLoadedUserId !== uid) {
+					lastLoadedUserId = uid;
+					loadFlashback();
+				}
 			} else {
 				isLoading = false;
+				lastLoadedUserId = null;
 			}
 		});
 	});
 
 	onMount(() => {
-		if (userId) {
+		if (userId && lastLoadedUserId !== userId) {
+			lastLoadedUserId = userId;
 			loadFlashback();
-		} else {
+		} else if (!userId) {
 			isLoading = false;
 		}
 

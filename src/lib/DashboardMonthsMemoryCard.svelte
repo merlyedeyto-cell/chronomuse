@@ -28,6 +28,8 @@
 		'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 	];
 
+	let lastLoadedUserId = null;
+
 	// Keep selectedYear synchronized when main calendar changes year
 	$effect(() => {
 		if (currentYear && currentYear !== selectedYear) {
@@ -37,21 +39,22 @@
 
 	// React to userId changes
 	$effect(() => {
-		if (userId) {
+		const uid = userId;
+		if (uid && lastLoadedUserId !== uid) {
+			lastLoadedUserId = uid;
 			loadAllMemories();
-		}
-	});
-
-	// React immediately when memoriesData updates from dashboard calendar
-	$effect(() => {
-		if (memoriesData && userId) {
-			loadAllMemories();
+		} else if (!uid) {
+			isLoading = false;
+			lastLoadedUserId = null;
 		}
 	});
 
 	onMount(() => {
-		if (userId) {
+		if (userId && lastLoadedUserId !== userId) {
+			lastLoadedUserId = userId;
 			loadAllMemories();
+		} else if (!userId) {
+			isLoading = false;
 		}
 
 		const handleMemoryChange = () => {

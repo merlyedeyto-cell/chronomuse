@@ -29,13 +29,19 @@
 		currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
 	}
 
+	let lastLoadedUserId = null;
+
 	$effect(() => {
 		const uid = userId;
 		untrack(() => {
 			if (uid) {
-				loadStats();
+				if (lastLoadedUserId !== uid) {
+					lastLoadedUserId = uid;
+					loadStats();
+				}
 			} else {
 				isLoading = false;
+				lastLoadedUserId = null;
 			}
 		});
 	});
@@ -44,9 +50,10 @@
 		const today = new Date();
 		currentQuoteIndex = today.getDate() % quotes.length;
 
-		if (userId) {
+		if (userId && lastLoadedUserId !== userId) {
+			lastLoadedUserId = userId;
 			loadStats();
-		} else {
+		} else if (!userId) {
 			isLoading = false;
 		}
 

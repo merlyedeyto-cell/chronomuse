@@ -157,12 +157,12 @@
 			window.addEventListener('chronomuse_notification_change', checkNotifications);
 			window.addEventListener('chronomuse_memory_change', handleMemoryChange);
 
-			// Fast au interval to ensure instant memory updates across devices
+			// Fallback interval to ensure memory updates across devices
 			syncInterval = setInterval(() => {
 				if (selectedDate) {
 					loadMemoriesForDate(selectedDate);
 				}
-			}, 2500);
+			}, 10000);
 		}
 
 		return () => {
@@ -1040,21 +1040,6 @@
 
 	.animate-fade-in {
 		animation: fade-in 0.2s ease-out;
-	}
-
-	@keyframes slide-down {
-		0% {
-			opacity: 0;
-			transform: translateY(-20px);
-		}
-		100% {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	.animate-slide-down {
-		animation: slide-down 0.3s ease-out;
 	}
 
 	@keyframes fade-in-up {

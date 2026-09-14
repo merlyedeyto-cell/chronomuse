@@ -111,51 +111,63 @@ export async function POST({ request }) {
 			});
 		} catch (e) {}
 
-		// 4. For each partner, fetch last message and unread count
-		const conversations = await Promise.all(
-			partnerUsers.map(async partner => {
-				const isFriend = friendIdSet.has(Number(partner.id)) || friendIdSet.has(String(partner.id));
+		// 4. Batch query unread messages for all partners in 1 single query
+		const { data: allUnreadMessages } = await supabase
+			.from('chronomuse_messages')
+			.select('sender_id')
+			.eq('receiver_id', user_id)
+			.eq('is_read', false);
 
-				// Last message
-				const { data: lastMsgArr } = await supabase
-					.from('chronomuse_messages')
-					.select('message, created_at, sender_id, is_read')
-					.or(`and(sender_id.eq.${user_id},receiver_id.eq.${partner.id}),and(sender_id.eq.${partner.id},receiver_id.eq.${user_id})`)
-					.order('created_at', { ascending: false })
-					.limit(1);
+		const unreadCountMap = new Map();
+		(allUnreadMessages || []).forEach(m => {
+			const sId = String(m.sender_id);
+			unreadCountMap.set(sId, (unreadCountMap.get(sId) || 0) + 1);
+		});
 
-				// Unread count
-				const { count: unreadCount } = await supabase
-					.from('chronomuse_messages')
-					.select('*', { count: 'exact', head: true })
-					.eq('sender_id', partner.id)
-					.eq('receiver_id', user_id)
-					.eq('is_read', false);
+		// 5. Batch query recent messages involving the user in 1 single query
+		const { data: recentMessages } = await supabase
+			.from('chronomuse_messages')
+			.select('message, created_at, sender_id, receiver_id, is_read')
+			.or(`sender_id.eq.${user_id},receiver_id.eq.${user_id}`)
+			.order('created_at', { ascending: false })
+			.limit(500);
 
-				const lastMsg = lastMsgArr && lastMsgArr.length > 0 ? lastMsgArr[0] : null;
+		const lastMsgMap = new Map();
+		(recentMessages || []).forEach(msg => {
+			const partnerId = String(msg.sender_id) === String(user_id) ? String(msg.receiver_id) : String(msg.sender_id);
+			if (!lastMsgMap.has(partnerId)) {
+				lastMsgMap.set(partnerId, msg);
+			}
+		});
 
-				return {
-					friend_id: partner.id,
-					id: partner.id,
-					username: partner.username,
-					email: partner.email,
-					avatar_url: partner.avatar_url || null,
-					note: partner.note || null,
-					last_activity: partner.last_activity,
-					last_message: lastMsg ? lastMsg.message : null,
-					last_message_time: lastMsg ? lastMsg.created_at : null,
-					last_sender_id: lastMsg ? lastMsg.sender_id : null,
-					last_is_read: lastMsg ? Boolean(lastMsg.is_read) : false,
-					unread_count: unreadCount || 0,
-					is_friend: isFriend,
-					is_request: !isFriend,
-					is_blocked_by_me: blockedSetByMe.has(String(partner.id)),
-					is_blocking_me: blockedSetByThem.has(String(partner.id)),
-					has_pending_request: pendingRequestsSet.has(String(partner.id)),
-					pending_request_sender_id: pendingRequestsSet.get(String(partner.id)) || null
-				};
-			})
-		);
+		// 6. Assemble conversations in memory instantly
+		const conversations = partnerUsers.map(partner => {
+			const pIdStr = String(partner.id);
+			const isFriend = friendIdSet.has(Number(partner.id)) || friendIdSet.has(String(partner.id));
+			const lastMsg = lastMsgMap.get(pIdStr) || null;
+			const unreadCount = unreadCountMap.get(pIdStr) || 0;
+
+			return {
+				friend_id: partner.id,
+				id: partner.id,
+				username: partner.username,
+				email: partner.email,
+				avatar_url: partner.avatar_url || null,
+				note: partner.note || null,
+				last_activity: partner.last_activity,
+				last_message: lastMsg ? lastMsg.message : null,
+				last_message_time: lastMsg ? lastMsg.created_at : null,
+				last_sender_id: lastMsg ? lastMsg.sender_id : null,
+				last_is_read: lastMsg ? Boolean(lastMsg.is_read) : false,
+				unread_count: unreadCount,
+				is_friend: isFriend,
+				is_request: !isFriend,
+				is_blocked_by_me: blockedSetByMe.has(pIdStr),
+				is_blocking_me: blockedSetByThem.has(pIdStr),
+				has_pending_request: pendingRequestsSet.has(pIdStr),
+				pending_request_sender_id: pendingRequestsSet.get(pIdStr) || null
+			};
+		});
 
 		// Separate friends and message requests
 		const friendsList = conversations.filter(c => c.is_friend);
