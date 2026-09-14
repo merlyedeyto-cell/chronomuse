@@ -213,7 +213,7 @@
 
 	<!-- Mobile Only: Months with Memories Content (Replaces pinned list on mobile when active) -->
 	{#if showMonthsFilter}
-		<div class="md:hidden animate-smooth-reveal h-[148px]">
+		<div class="md:hidden animate-smooth-reveal">
 			<DashboardMonthsMemoryCard
 				{userId}
 				{currentYear}

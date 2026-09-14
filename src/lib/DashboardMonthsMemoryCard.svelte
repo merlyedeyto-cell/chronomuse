@@ -148,21 +148,21 @@
 </script>
 
 {#snippet monthsContent()}
-	<!-- Embedded / Standalone Sub-header: Active Count & Year Switcher -->
-	<div class="flex items-center justify-between mb-2 pb-1.5 border-b border-pink-100/70">
+	<!-- Sub-header: Year Switcher & Month Count -->
+	<div class="flex items-center justify-between pb-1 border-b border-pink-100/70">
 		{#if isLoading && allMemories.length === 0}
-			<div class="h-4.5 w-24 bg-pink-100/80 rounded-full animate-pulse"></div>
-			<div class="h-5 w-16 bg-pink-100/80 rounded-lg animate-pulse"></div>
+			<div class="h-4 w-20 bg-pink-100/80 rounded-full animate-pulse"></div>
+			<div class="h-4.5 w-16 bg-pink-100/80 rounded-lg animate-pulse"></div>
 		{:else}
 			<div class="flex items-center gap-1.5">
-				<span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-pink-50 text-[#f43f8e] border border-pink-200/80 inline-flex items-center gap-1 shadow-2xs">
+				<span class="text-[9.5px] sm:text-[10px] font-black px-2 py-0.5 rounded-full bg-pink-50 text-[#f43f8e] border border-pink-200/80 inline-flex items-center gap-1 shadow-2xs">
 					<span class="w-1.5 h-1.5 rounded-full bg-[#f43f8e] animate-pulse"></span>
 					<span>{monthsWithMemoriesCount} {monthsWithMemoriesCount === 1 ? 'active month' : 'active months'}</span>
 				</span>
 			</div>
 
 			<!-- Year Switcher (Interactive Previous/Next Year) -->
-			<div class="flex items-center space-x-1 bg-pink-50/80 p-0.5 rounded-lg border border-pink-200/80 shadow-2xs">
+			<div class="flex items-center space-x-0.5 bg-pink-50/80 p-0.5 rounded-lg border border-pink-200/80 shadow-2xs">
 				<button
 					type="button"
 					onclick={() => changeYear(-1)}
@@ -174,7 +174,7 @@
 						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
 					</svg>
 				</button>
-				<span class="text-[11px] font-black text-[#f43f8e] px-1 select-none">{selectedYear}</span>
+				<span class="text-[10.5px] sm:text-[11px] font-black text-[#f43f8e] px-1 select-none">{selectedYear}</span>
 				<button
 					type="button"
 					onclick={() => changeYear(1)}
@@ -192,51 +192,51 @@
 
 	<!-- Months Interactive Grid (Only Months with Memories) -->
 	{#if isLoading && allMemories.length === 0}
-		<div class="h-[142px] flex flex-col justify-between animate-pulse">
-			<div class="grid grid-cols-6 gap-1 content-start p-0.5">
+		<div class="flex-1 flex flex-col justify-between py-1 animate-pulse">
+			<div class="grid grid-cols-6 gap-1 content-start">
 				{#each Array(6) as _}
-					<div class="py-2 px-0.5 rounded-xl border border-pink-100/90 bg-pink-50/50 flex flex-col items-center justify-center space-y-1">
-						<div class="h-2.5 w-6 bg-pink-200/70 rounded"></div>
-						<div class="w-3.5 h-3.5 rounded-full bg-pink-200/60"></div>
+					<div class="py-1 px-0.5 rounded-lg border border-pink-100/90 bg-pink-50/50 flex flex-col items-center justify-center space-y-0.5">
+						<div class="h-2.5 w-5 bg-pink-200/70 rounded"></div>
+						<div class="w-3 h-3 rounded-full bg-pink-200/60"></div>
 					</div>
 				{/each}
 			</div>
-			<div class="pt-1.5 border-t border-pink-100/70 flex items-center justify-between px-0.5">
-				<div class="h-2.5 w-36 bg-pink-100/80 rounded"></div>
-				<div class="h-3.5 w-12 bg-pink-100/80 rounded-md"></div>
+			<div class="pt-1 border-t border-pink-100/70 flex items-center justify-between">
+				<div class="h-2.5 w-28 bg-pink-100/80 rounded"></div>
+				<div class="h-3 w-10 bg-pink-100/80 rounded"></div>
 			</div>
 		</div>
 	{:else if displayedMonths.length === 0}
-		<div class="h-[142px] flex flex-col items-center justify-center text-center">
-			<div class="w-9 h-9 rounded-2xl bg-pink-50 border border-pink-100 text-pink-300 flex items-center justify-center mx-auto mb-1.5">
+		<div class="flex-1 flex flex-col items-center justify-center text-center py-1">
+			<div class="w-8 h-8 rounded-xl bg-pink-50 border border-pink-100 text-pink-300 flex items-center justify-center mx-auto mb-1">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
 				</svg>
 			</div>
-			<p class="text-xs font-bold text-pink-400">No memories for {selectedYear}</p>
-			<p class="text-[10px] text-pink-400/80 mt-0.5 font-medium">Add a memory on the calendar to see it here</p>
+			<p class="text-[11px] font-bold text-pink-400">No memories for {selectedYear}</p>
+			<p class="text-[9.5px] text-pink-400/80 font-medium">Add a memory on the calendar to see it here</p>
 		</div>
 	{:else}
-		<div class="h-[142px] flex flex-col justify-between">
-			<div class="grid grid-cols-6 gap-1 content-start p-0.5">
+		<div class="flex-1 flex flex-col justify-between py-1 min-h-0">
+			<div class="grid grid-cols-6 gap-1 content-start overflow-y-auto max-h-[82px] pr-0.5 custom-month-scroll">
 				{#each displayedMonths as month}
 					<button
 						type="button"
 						onclick={() => handleMonthClick(month.index)}
-						class="py-1 px-0.5 rounded-xl border transition-all duration-200 flex flex-col items-center justify-center text-center relative group cursor-pointer active:scale-95
+						class="py-1 px-0.5 rounded-lg border transition-all duration-200 flex flex-col items-center justify-center text-center relative group cursor-pointer active:scale-95
 							{month.isCurrentSelected
 								? 'bg-gradient-to-b from-pink-100 to-pink-50 border-[#f43f8e] shadow-[0_0_0_1.5px_#f43f8e]'
 								: 'bg-white hover:bg-pink-50/90 border-pink-200/90 hover:border-[#f43f8e] shadow-2xs hover:shadow-xs'}"
 						title="Jump to {month.name} {selectedYear} ({month.count} memories)"
 					>
 						<!-- Month Name -->
-						<span class="text-[10px] font-black text-pink-950 group-hover:text-[#f43f8e] transition-colors leading-tight">
+						<span class="text-[9.5px] font-black text-pink-950 group-hover:text-[#f43f8e] transition-colors leading-tight">
 							{month.shortName}
 						</span>
 
 						<!-- Memory Count Badge -->
 						<div class="mt-0.5">
-							<span class="text-[8px] font-black min-w-[15px] h-[13px] px-1 rounded-full bg-[#f43f8e] text-white shadow-2xs inline-flex items-center justify-center leading-none">
+							<span class="text-[7.5px] font-black min-w-[14px] h-[12px] px-0.5 rounded-full bg-[#f43f8e] text-white shadow-2xs inline-flex items-center justify-center leading-none">
 								{month.count}
 							</span>
 						</div>
@@ -250,14 +250,14 @@
 			</div>
 
 			<!-- Description & Hint Note in the bottom space -->
-			<div class="pt-1.5 border-t border-pink-100/70 flex items-center justify-between text-[9.5px] sm:text-[10px] text-pink-400 font-bold px-0.5">
+			<div class="pt-1 border-t border-pink-100/70 flex items-center justify-between text-[9px] sm:text-[9.5px] text-pink-400 font-bold px-0.5">
 				<span class="flex items-center gap-1 truncate">
 					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-[#f43f8e] flex-shrink-0">
 						<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" />
 					</svg>
-					<span>Tap any month to switch calendar view</span>
+					<span class="truncate">Tap month to view</span>
 				</span>
-				<span class="text-[9px] text-pink-400 bg-pink-50 px-1.5 py-0.5 rounded-md border border-pink-200/60 font-black flex-shrink-0">
+				<span class="text-[8.5px] text-pink-500 bg-pink-50 px-1.5 py-0.5 rounded-md border border-pink-200/60 font-black flex-shrink-0">
 					{displayedMonths.reduce((sum, m) => sum + m.count, 0)} total
 				</span>
 			</div>
@@ -266,15 +266,15 @@
 {/snippet}
 
 {#if isEmbedded}
-	<!-- Embedded Mode (e.g. inside PinnedMemoryCard on mobile): No extra card container -->
-	<div class="w-full h-[180px] font-sans flex flex-col justify-between">
+	<!-- Embedded Mode (e.g. inside PinnedMemoryCard on mobile): Exactly h-[148px] to match pinned list -->
+	<div class="w-full h-[148px] font-sans flex flex-col justify-between overflow-hidden">
 		{@render monthsContent()}
 	</div>
 {:else}
-	<!-- Standalone Mode (e.g. on Desktop): Sleek compact card matching PinnedMemoryCard -->
+	<!-- Standalone Mode (e.g. on Desktop): Exact match with PinnedMemoryCard wrapper and h-[148px] body -->
 	<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans transition-all duration-300 hover:border-pink-200">
 		<!-- Header -->
-		<div class="flex items-center justify-between mb-2.5 border-b border-pink-100/80 pb-2">
+		<div class="flex items-center justify-between mb-3 border-b border-pink-100/80 pb-2">
 			<div class="flex items-center space-x-1.5">
 				<div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#f43f8e] to-[#ec4899] text-white flex items-center justify-center shadow-2xs flex-shrink-0">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
@@ -283,8 +283,32 @@
 				</div>
 				<h3 class="text-xs sm:text-sm font-black text-pink-950">Months with Memories</h3>
 			</div>
+			<span class="text-[10px] bg-pink-100 text-[#f43f8e] px-2 py-0.5 rounded-full font-bold border border-pink-200/80 select-none">
+				{monthsWithMemoriesCount} months
+			</span>
 		</div>
 
-		{@render monthsContent()}
+		<!-- Body with exact h-[148px] height to match PinnedMemoryCard -->
+		<div class="h-[148px] flex flex-col justify-between overflow-hidden">
+			{@render monthsContent()}
+		</div>
 	</div>
 {/if}
+
+<style>
+	.custom-month-scroll::-webkit-scrollbar {
+		width: 3px;
+	}
+	.custom-month-scroll::-webkit-scrollbar-track {
+		background: rgba(254, 226, 238, 0.3);
+		border-radius: 6px;
+	}
+	.custom-month-scroll::-webkit-scrollbar-thumb {
+		background: #f472b6;
+		border-radius: 6px;
+	}
+	.custom-month-scroll {
+		scrollbar-width: thin;
+		scrollbar-color: #f472b6 rgba(254, 226, 238, 0.3);
+	}
+</style>
