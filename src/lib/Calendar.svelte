@@ -405,22 +405,22 @@
 	}
 </script>
 
-<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-3xl p-3.5 sm:p-4 shadow-[0_8px_30px_rgba(244,114,182,0.1)] font-sans animate-fade-in-up relative">
+<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 shadow-[0_8px_30px_rgba(244,114,182,0.08)] font-sans animate-fade-in-up relative max-w-[430px] mx-auto w-full">
 	<!-- Multi-Select Delete Mode Floating Banner -->
 	{#if isSelectionMode}
-		<div class="mb-3 p-2.5 sm:p-3 bg-gradient-to-r from-[#f43f8e] via-[#e11d48] to-[#be123c] text-white rounded-2xl shadow-md border border-pink-300/40 animate-fade-in flex items-center justify-between gap-2">
-			<div class="flex items-center space-x-2.5 min-w-0">
-				<div class="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center flex-shrink-0 shadow-inner">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 text-white">
+		<div class="mb-2.5 p-2 sm:p-2.5 bg-gradient-to-r from-[#f43f8e] via-[#e11d48] to-[#be123c] text-white rounded-xl shadow-md border border-pink-300/40 animate-fade-in flex items-center justify-between gap-2">
+			<div class="flex items-center space-x-2 min-w-0">
+				<div class="w-7 h-7 rounded-lg bg-white/20 backdrop-blur-xs flex items-center justify-center flex-shrink-0 shadow-inner">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-white">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
 					</svg>
 				</div>
 				<div class="min-w-0">
-					<p class="text-xs font-black tracking-wide flex items-center gap-1.5 flex-wrap">
+					<p class="text-[11px] font-black tracking-wide flex items-center gap-1.5 flex-wrap">
 						<span>Select & Delete Mode</span>
-						<span class="px-2 py-0.5 bg-white/25 text-white rounded-full text-[10px] font-black">{selectedDaysForDelete.size} date{selectedDaysForDelete.size === 1 ? '' : 's'}</span>
+						<span class="px-1.5 py-0.2 bg-white/25 text-white rounded-full text-[9.5px] font-black">{selectedDaysForDelete.size} date{selectedDaysForDelete.size === 1 ? '' : 's'}</span>
 					</p>
-					<p class="text-[10px] text-pink-100 font-semibold">
+					<p class="text-[9.5px] text-pink-100 font-semibold">
 						{getSelectedMemoriesCount()} total {getSelectedMemoriesCount() === 1 ? 'memory' : 'memories'} selected
 					</p>
 				</div>
@@ -431,7 +431,7 @@
 					<button
 						type="button"
 						onclick={toggleSelectAllMonth}
-						class="px-2.5 py-1 bg-white/20 hover:bg-white/30 active:scale-95 text-white text-[11px] font-bold rounded-xl transition-all cursor-pointer"
+						class="px-2 py-0.5 bg-white/20 hover:bg-white/30 active:scale-95 text-white text-[10px] font-bold rounded-lg transition-all cursor-pointer"
 					>
 						{getDaysWithMemoriesInCurrentMonth().every(d => selectedDaysForDelete.has(getDateString(d))) ? 'Deselect All' : 'Select All'}
 					</button>
@@ -439,10 +439,10 @@
 				<button
 					type="button"
 					onclick={exitSelectionMode}
-					class="w-7 h-7 bg-white/20 hover:bg-white/30 active:scale-95 text-white rounded-full flex items-center justify-center transition-all cursor-pointer"
+					class="w-6 h-6 bg-white/20 hover:bg-white/30 active:scale-95 text-white rounded-full flex items-center justify-center transition-all cursor-pointer"
 					title="Exit Select Mode"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 					</svg>
 				</button>
@@ -451,29 +451,29 @@
 	{/if}
 
 	<!-- Header -->
-	<div class="flex items-center justify-between gap-1.5 sm:gap-2 mb-3.5">
+	<div class="flex items-center justify-between gap-1.5 sm:gap-2 mb-2.5 sm:mb-3">
 		<!-- Previous Month (Round Button) -->
 		<button
 			type="button"
 			onclick={prevMonth}
-			class="w-8 sm:w-9 h-8 sm:h-9 rounded-full bg-white hover:bg-pink-50 text-[#e0337f] border border-pink-200/90 flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-xs flex-shrink-0"
+			class="w-7 sm:w-8 h-7 sm:h-8 rounded-full bg-white hover:bg-pink-50 text-[#e0337f] border border-pink-200/90 flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-xs flex-shrink-0"
 			title="Previous month"
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 sm:w-4 h-3.5 sm:h-4">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
 			</svg>
 		</button>
 
-		<!-- Center Month & Year Pill Selectors & Multi-Select Toggle -->
+		<!-- Center Month & Year Pill Selectors -->
 		<div class="flex items-center justify-center space-x-1.5 sm:space-x-2 relative z-20">
 			<!-- Month Pill Button -->
 			<button
 				type="button"
 				onclick={() => { showMonthMenu = !showMonthMenu; showYearMenu = false; }}
-				class="px-3 sm:px-4 py-1 sm:py-1.5 bg-white hover:bg-pink-50 text-[#e0337f] font-bold text-xs sm:text-sm rounded-full border border-pink-200/90 transition-all duration-200 cursor-pointer active:scale-95 flex items-center space-x-1.5 shadow-xs"
+				class="px-2.5 sm:px-3 py-1 bg-white hover:bg-pink-50 text-[#e0337f] font-bold text-xs rounded-full border border-pink-200/90 transition-all duration-200 cursor-pointer active:scale-95 flex items-center space-x-1 shadow-xs"
 			>
 				<span>{monthNames[currentMonth]}</span>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[#e0337f] transition-transform duration-200 {showMonthMenu ? 'rotate-180' : ''}">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-[#e0337f] transition-transform duration-200 {showMonthMenu ? 'rotate-180' : ''}">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 				</svg>
 			</button>
@@ -482,41 +482,39 @@
 			<button
 				type="button"
 				onclick={toggleYearMenu}
-				class="px-3 sm:px-4 py-1 sm:py-1.5 bg-white hover:bg-pink-50 text-[#e0337f] font-bold text-xs sm:text-sm rounded-full border border-pink-200/90 transition-all duration-200 cursor-pointer active:scale-95 flex items-center space-x-1.5 shadow-xs"
+				class="px-2.5 sm:px-3 py-1 bg-white hover:bg-pink-50 text-[#e0337f] font-bold text-xs rounded-full border border-pink-200/90 transition-all duration-200 cursor-pointer active:scale-95 flex items-center space-x-1 shadow-xs"
 			>
 				<span>{currentYear}</span>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[#e0337f] transition-transform duration-200 {showYearMenu ? 'rotate-180' : ''}">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-[#e0337f] transition-transform duration-200 {showYearMenu ? 'rotate-180' : ''}">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
 				</svg>
 			</button>
-
-
 		</div>
 
 		<!-- Next Month (Round Button) -->
 		<button
 			type="button"
 			onclick={nextMonth}
-			class="w-8 sm:w-9 h-8 sm:h-9 rounded-full bg-white hover:bg-pink-50 text-[#e0337f] border border-pink-200/90 flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-xs flex-shrink-0"
+			class="w-7 sm:w-8 h-7 sm:h-8 rounded-full bg-white hover:bg-pink-50 text-[#e0337f] border border-pink-200/90 flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-xs flex-shrink-0"
 			title="Next month"
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 sm:w-4 h-3.5 sm:h-4">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
 			</svg>
 		</button>
 	</div>
 
 	<!-- Weekday Names -->
-	<div class="grid grid-cols-7 gap-1.5 sm:gap-2 mb-2">
+	<div class="grid grid-cols-7 gap-1 sm:gap-1.5 mb-1.5">
 		{#each dayNames as day}
-			<div class="text-center text-[10px] sm:text-xs font-bold text-[#e05688] py-0.5">
+			<div class="text-center text-[9.5px] sm:text-[10.5px] font-bold text-[#e05688] py-0.5">
 				{day}
 			</div>
 		{/each}
 	</div>
 
 	<!-- Calendar Days Grid -->
-	<div class="grid grid-cols-7 gap-1.5 sm:gap-2">
+	<div class="grid grid-cols-7 gap-1 sm:gap-1.5">
 		{#each getDaysArray() as day, index}
 			{#if day}
 				<div class="relative">
@@ -531,40 +529,40 @@
 						onmousedown={() => startLongPress(day)}
 						onmouseup={cancelLongPress}
 						oncontextmenu={(e) => { e.preventDefault(); if (hasMemories(day)) { hoveredDate = day; isDesktopHover = false; } }}
-						class="relative aspect-square w-full rounded-2xl transition-all duration-200 flex flex-col items-center justify-center cursor-pointer select-none {isSelectionMode ? (hasMemories(day) ? (isDateSelectedForDelete(day) ? 'bg-gradient-to-br from-[#f43f8e] to-[#e11d48] text-white shadow-md ring-2 ring-rose-400 scale-102 font-black' : 'bg-pink-50/80 text-pink-950 border border-pink-200 hover:border-rose-400 hover:bg-pink-100 hover:scale-102') : 'bg-pink-50/20 text-pink-200 opacity-30 pointer-events-none') : (isToday(day) ? 'bg-[#e0337f] text-white shadow-[0_4px_14px_rgba(224,51,127,0.35)] scale-102' : isSelected(day) ? 'bg-[#fff0f5] text-[#9d2b63] border-2 border-[#e0337f] shadow-xs' : 'bg-[#fff0f5] text-[#9d2b63] hover:bg-[#ffe4ee] hover:scale-105')} {isTargetHighlighted(day) && !isSelectionMode ? (hasSharedMemories(day) ? 'ring-2 ring-emerald-500 ring-offset-1 scale-105 animate-subtle-glow' : 'ring-2 ring-[#e0337f] ring-offset-1 scale-105 animate-subtle-glow') : ''}"
+						class="relative aspect-square w-full rounded-xl sm:rounded-2xl transition-all duration-200 flex flex-col items-center justify-center cursor-pointer select-none {isSelectionMode ? (hasMemories(day) ? (isDateSelectedForDelete(day) ? 'bg-gradient-to-br from-[#f43f8e] to-[#e11d48] text-white shadow-md ring-2 ring-rose-400 scale-102 font-black' : 'bg-pink-50/80 text-pink-950 border border-pink-200 hover:border-rose-400 hover:bg-pink-100 hover:scale-102') : 'bg-pink-50/20 text-pink-200 opacity-30 pointer-events-none') : (isToday(day) ? 'bg-[#e0337f] text-white shadow-[0_4px_14px_rgba(224,51,127,0.35)] scale-102' : isSelected(day) ? 'bg-[#fff0f5] text-[#9d2b63] border-2 border-[#e0337f] shadow-xs' : 'bg-[#fff0f5] text-[#9d2b63] hover:bg-[#ffe4ee] hover:scale-105')} {isTargetHighlighted(day) && !isSelectionMode ? (hasSharedMemories(day) ? 'ring-2 ring-emerald-500 ring-offset-1 scale-105 animate-subtle-glow' : 'ring-2 ring-[#e0337f] ring-offset-1 scale-105 animate-subtle-glow') : ''}"
 					>
 						<!-- Selection Checkbox Overlay in Selection Mode -->
 						{#if isSelectionMode && hasMemories(day)}
-							<div class="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center transition-all shadow-xs {isDateSelectedForDelete(day) ? 'bg-white text-rose-600 scale-105' : 'bg-white/90 border border-pink-300 text-transparent'}">
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
+							<div class="absolute top-1 right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all shadow-xs {isDateSelectedForDelete(day) ? 'bg-white text-rose-600 scale-105' : 'bg-white/90 border border-pink-300 text-transparent'}">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-2.5 h-2.5">
 									<path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 011.04-.207z" clip-rule="evenodd" />
 								</svg>
 							</div>
 						{/if}
 
 						<!-- Day Number -->
-						<span class="leading-none text-xs sm:text-sm {isToday(day) || isSelected(day) || (isSelectionMode && isDateSelectedForDelete(day)) ? 'font-black' : 'font-bold'} {isToday(day) || (isSelectionMode && isDateSelectedForDelete(day)) ? 'text-white' : 'text-[#9d2b63]'}">{day}</span>
+						<span class="leading-none text-[11px] sm:text-xs {isToday(day) || isSelected(day) || (isSelectionMode && isDateSelectedForDelete(day)) ? 'font-black' : 'font-bold'} {isToday(day) || (isSelectionMode && isDateSelectedForDelete(day)) ? 'text-white' : 'text-[#9d2b63]'}">{day}</span>
 						
 						<!-- Memory Dots (when not in selection mode) -->
 						{#if !isSelectionMode}
 							{#if hasPersonalMemories(day) && hasSharedMemories(day)}
-								<div class="mt-1 flex items-center justify-center space-x-1">
+								<div class="mt-0.5 sm:mt-1 flex items-center justify-center space-x-0.5 sm:space-x-1">
 									<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-2xs"></span>
 									<span class="w-1.5 h-1.5 rounded-full {isToday(day) ? 'bg-white' : 'bg-[#e0337f]'} shadow-2xs"></span>
 								</div>
 							{:else if hasSharedMemories(day)}
-								<div class="mt-1 flex items-center justify-center">
+								<div class="mt-0.5 sm:mt-1 flex items-center justify-center">
 									<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-2xs"></span>
 								</div>
 							{:else if hasPersonalMemories(day)}
-								<div class="mt-1 flex items-center justify-center">
+								<div class="mt-0.5 sm:mt-1 flex items-center justify-center">
 									<span class="w-1.5 h-1.5 rounded-full {isToday(day) ? 'bg-white' : 'bg-[#e0337f]'} shadow-2xs"></span>
 								</div>
 							{/if}
 
 							<!-- Pinned Ribbon Bookmark -->
 							{#if isDatePinned(day)}
-								<span class="absolute top-1 right-1.5 w-2.5 h-2.5 {isToday(day) ? 'text-white' : 'text-[#e0337f]'}" title="Pinned date">
+								<span class="absolute top-1 right-1 w-2 h-2 sm:w-2.5 sm:h-2.5 {isToday(day) ? 'text-white' : 'text-[#e0337f]'}" title="Pinned date">
 									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-full h-full drop-shadow-2xs">
 										<path fill-rule="evenodd" d="M6.32 2.577a49.255 49.255 0 0111.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 01-1.085.67L12 18.089l-7.165 3.58A.75.75 0 013.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93z" clip-rule="evenodd" />
 									</svg>
@@ -572,7 +570,7 @@
 							{/if}
 						{:else if hasMemories(day)}
 							<!-- Count pill inside selection mode -->
-							<span class="text-[9px] font-black mt-0.5 px-1 py-0.2 rounded-full {isDateSelectedForDelete(day) ? 'text-white/90 bg-black/15' : 'text-pink-600 bg-pink-100/70'}">
+							<span class="text-[8.5px] font-black mt-0.5 px-1 py-0.2 rounded-full {isDateSelectedForDelete(day) ? 'text-white/90 bg-black/15' : 'text-pink-600 bg-pink-100/70'}">
 								{getDayMemories(day).length} {getDayMemories(day).length === 1 ? 'mem' : 'mems'}
 							</span>
 						{/if}
@@ -634,11 +632,11 @@
 
 	<!-- Bottom Action Bar -->
 	{#if isSelectionMode}
-		<div class="mt-3.5 pt-3 border-t border-pink-100 flex items-center justify-between gap-2 animate-fade-in">
+		<div class="mt-2.5 pt-2.5 border-t border-pink-100 flex items-center justify-between gap-2 animate-fade-in">
 			<button
 				type="button"
 				onclick={exitSelectionMode}
-				class="w-1/3 py-2 px-3 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 active:scale-95 transition-all cursor-pointer"
+				class="w-1/3 py-1.5 sm:py-2 px-2.5 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 active:scale-95 transition-all cursor-pointer"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -650,7 +648,7 @@
 				type="button"
 				onclick={() => showBatchDeleteModal = true}
 				disabled={selectedDaysForDelete.size === 0}
-				class="w-2/3 py-2 px-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+				class="w-2/3 py-1.5 sm:py-2 px-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -659,11 +657,11 @@
 			</button>
 		</div>
 	{:else}
-		<div class="mt-3.5 pt-3 border-t border-pink-100 flex items-center justify-center">
+		<div class="mt-2.5 pt-2 border-t border-pink-100 flex items-center justify-center">
 			<button
 				type="button"
 				onclick={jumpToToday}
-				class="w-full py-2 px-3 bg-[#e0337f] hover:bg-[#c9256d] text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
+				class="w-full py-1.5 sm:py-2 px-3 bg-[#e0337f] hover:bg-[#c9256d] text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -674,22 +672,22 @@
 	{/if}
 
 	<!-- Legend & Hold Tip -->
-	<div class="mt-3 pt-2.5 border-t border-pink-100 space-y-1.5">
-		<div class="flex items-center justify-center flex-wrap gap-x-3 gap-y-1 text-[10px] sm:text-[11px] font-bold">
+	<div class="mt-2.5 pt-2 border-t border-pink-100 space-y-1">
+		<div class="flex items-center justify-center flex-wrap gap-x-2.5 gap-y-1 text-[9.5px] sm:text-[10px] font-bold">
 			<div class="flex items-center space-x-1">
-				<div class="w-2.5 h-2.5 bg-[#e0337f] rounded-md shadow-2xs"></div>
+				<div class="w-2 h-2 bg-[#e0337f] rounded-md shadow-2xs"></div>
 				<span class="text-pink-900">Today</span>
 			</div>
 			<div class="flex items-center space-x-1">
-				<div class="w-2.5 h-2.5 bg-[#fff0f5] border-2 border-[#e0337f] rounded-md"></div>
+				<div class="w-2 h-2 bg-[#fff0f5] border-2 border-[#e0337f] rounded-md"></div>
 				<span class="text-pink-900">Selected</span>
 			</div>
 			<div class="flex items-center space-x-1">
-				<div class="w-2 h-2 bg-[#e0337f] rounded-full"></div>
+				<div class="w-1.5 h-1.5 bg-[#e0337f] rounded-full"></div>
 				<span class="text-pink-700">My Memory</span>
 			</div>
 			<div class="flex items-center space-x-1">
-				<div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+				<div class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
 				<span class="text-emerald-700">Shared</span>
 			</div>
 			<div class="flex items-center space-x-1">
@@ -700,15 +698,15 @@
 				<span class="text-pink-800">Both</span>
 			</div>
 		</div>
-		<p class="text-center text-[10px] text-pink-400 font-medium">
+		<p class="text-center text-[9px] sm:text-[9.5px] text-pink-400 font-medium">
 			Tip: Long-press / hold any date to Pin or Select & Delete in bulk.
 		</p>
 	</div>
 
 	<!-- Selected Date Info -->
 	{#if selectedDate && !isSelectionMode}
-		<div class="mt-2.5 py-2.5 px-3 bg-[#fff0f5] border border-pink-200/80 rounded-xl text-center shadow-2xs flex items-center justify-center">
-			<p class="text-xs sm:text-[13px] text-pink-900 font-bold">
+		<div class="mt-2 py-1.5 sm:py-2 px-3 bg-[#fff0f5] border border-pink-200/80 rounded-xl text-center shadow-2xs flex items-center justify-center">
+			<p class="text-[11px] sm:text-xs text-pink-900 font-bold">
 				Selected: <span class="text-[#e0337f] font-extrabold">{selectedDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
 			</p>
 		</div>
