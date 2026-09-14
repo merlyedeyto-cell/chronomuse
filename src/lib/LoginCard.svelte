@@ -92,17 +92,17 @@
 </script>
 
 <div
-	class="w-full max-w-[360px] sm:max-w-[410px] mx-auto transition-all duration-300"
+	class="w-full max-w-[360px] sm:max-w-[420px] mx-auto transition-all duration-300"
 	class:scale-[1.02]={isClicked}
 >
-	<div class="bg-white rounded-[32px] sm:rounded-[36px] p-6 sm:p-8 md:p-9 shadow-[0_16px_45px_rgba(244,114,182,0.2)] border border-pink-100/90 text-center transition-all duration-300">
+	<div class="bg-white rounded-[32px] sm:rounded-[38px] p-7 sm:p-9 shadow-[0_16px_50px_rgba(244,114,182,0.22)] border border-pink-100/90 text-center transition-all duration-300">
 		<!-- Mascot Logo Header -->
-		<div class="text-center mb-5 sm:mb-6">
-			<div class="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl bg-black flex items-center justify-center p-1.5 mx-auto mb-3 shadow-xs hover:scale-105 transition-transform duration-200">
-				<img src="/logo.png" alt="ChronoMuse" class="w-9 h-9 sm:w-10.5 sm:h-10.5 object-contain pointer-events-none" />
+		<div class="text-center mb-6">
+			<div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-black flex items-center justify-center p-1.5 mx-auto mb-3.5 shadow-sm hover:scale-105 transition-transform duration-200">
+				<img src="/logo.png" alt="ChronoMuse" class="w-10 h-10 sm:w-11 sm:h-11 object-contain pointer-events-none" />
 			</div>
-			<h1 class="text-xl sm:text-2xl font-black text-[#f43f8e] mb-0.5 tracking-tight uppercase">CHRONOMUSE</h1>
-			<p class="text-pink-400 text-xs sm:text-[13px] font-bold">Sign in to your account</p>
+			<h1 class="text-xl sm:text-2xl font-black text-pink-500 mb-1 tracking-wide uppercase">CHRONOMUSE</h1>
+			<p class="text-pink-400 text-xs sm:text-sm font-bold">Sign in to your account</p>
 		</div>
 
 		<!-- Error Message -->
@@ -113,13 +113,13 @@
 		{/if}
 
 		<!-- Form -->
-		<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-3 sm:space-y-3.5">
+		<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-3.5 sm:space-y-4">
 			<!-- Username or Email Field -->
 			<div>
 				<input
 					type="text"
 					bind:value={usernameOrEmail}
-					class="w-full px-5 sm:px-6 py-3 sm:py-3.5 bg-white border-2 border-pink-200/90 rounded-full text-pink-900 placeholder-pink-300 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all text-xs sm:text-sm font-bold text-left"
+					class="w-full px-5 sm:px-6 py-3.5 sm:py-4 bg-white border-2 border-pink-200/90 rounded-full text-pink-800 placeholder-pink-300 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all text-xs sm:text-sm font-bold text-left"
 					placeholder="Username or Email"
 					required
 					disabled={isLoading}
@@ -131,7 +131,7 @@
 				<input
 					type={showPassword ? 'text' : 'password'}
 					bind:value={password}
-					class="w-full pl-5 sm:pl-6 pr-12 py-3 sm:py-3.5 bg-white border-2 border-pink-200/90 rounded-full text-pink-900 placeholder-pink-300 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all text-xs sm:text-sm font-bold text-left"
+					class="w-full pl-5 sm:pl-6 pr-12 py-3.5 sm:py-4 bg-white border-2 border-pink-200/90 rounded-full text-pink-800 placeholder-pink-300 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all text-xs sm:text-sm font-bold text-left"
 					placeholder="Password"
 					required
 					disabled={isLoading}
@@ -160,7 +160,7 @@
 			<button
 				type="submit"
 				disabled={isLoading}
-				class="w-full py-3.5 sm:py-3.5 bg-[#f43f8e] hover:bg-[#e11d48] text-white rounded-full font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_8px_20px_rgba(244,63,94,0.28)] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center space-x-2 mt-1"
+				class="w-full py-3.5 sm:py-4 bg-[#f43f8e] hover:bg-[#e11d48] text-white rounded-full font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_8px_22px_rgba(244,63,94,0.32)] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center space-x-2"
 			>
 				{#if isLoading}
 					<div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -172,10 +172,10 @@
 		</form>
 
 		<!-- Register Link -->
-		<div class="mt-5 sm:mt-6 text-center">
-			<p class="text-pink-400 text-xs sm:text-[13px] font-bold">
+		<div class="mt-6 text-center">
+			<p class="text-pink-400 text-xs sm:text-sm font-bold">
 				Don't have an account?
-				<a href="/register" class="text-[#f43f8e] hover:text-pink-700 font-black transition-colors ml-1">
+				<a href="/register" class="text-pink-600 hover:text-pink-800 font-black transition-colors ml-1">
 					Register
 				</a>
 			</p>

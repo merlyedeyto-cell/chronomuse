@@ -201,23 +201,23 @@
 			</nav>
 
 			<!-- Notification, Settings, and Logout Action Buttons -->
-			<div class="flex items-center space-x-2.5 sm:space-x-3">
+			<div class="flex items-center space-x-2 sm:space-x-2.5">
 				<!-- Notifications Button -->
 				<button
 					type="button"
 					onclick={handleNotificationClick}
-					class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-white border-2 border-pink-200/90 shadow-2xs flex items-center justify-center relative text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50/80 active:scale-95 transition-all duration-150 cursor-pointer"
+					class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white border border-pink-200/90 shadow-2xs flex items-center justify-center relative text-pink-500 hover:bg-pink-50/80 active:scale-95 transition-all duration-150 cursor-pointer"
 					class:border-pink-400={$page.url.pathname === '/notifications'}
 					class:bg-pink-50={$page.url.pathname === '/notifications'}
 					aria-label="Notifications"
 					title="Notifications"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5.5 h-5.5 sm:w-6 sm:h-6">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4.5 h-4.5 sm:w-5 sm:h-5 text-pink-500">
+						<path fill-rule="evenodd" d="M5.25 9a6.75 6.75 0 0113.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 01-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 01-7.48 0 24.585 24.585 0 01-4.831-1.244.75.75 0 01-.298-1.205A8.217 8.217 0 005.25 9.75V9zm4.502 8.9a2.25 2.25 0 004.496 0 25.057 25.057 0 01-4.496 0z" clip-rule="evenodd" />
 					</svg>
 
 					{#if notificationsCount > 0}
-						<span class="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] px-1 bg-[#f43f8e] text-white text-[10.5px] font-black rounded-full flex items-center justify-center shadow-xs border-2 border-white animate-pulse">
+						<span class="absolute -top-1 -right-1 min-w-4.5 h-4.5 px-1 bg-[#f43f5e] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs animate-pulse">
 							{notificationsCount > 99 ? '99+' : notificationsCount}
 						</span>
 					{/if}
@@ -227,15 +227,14 @@
 				<button
 					type="button"
 					onclick={handleSettingsClick}
-					class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-white border-2 border-pink-200/90 shadow-2xs flex items-center justify-center text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50/80 active:scale-95 transition-all duration-150 cursor-pointer"
+					class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white border border-pink-200/90 shadow-2xs flex items-center justify-center text-pink-500 hover:bg-pink-50/80 active:scale-95 transition-all duration-150 cursor-pointer"
 					class:border-pink-400={$page.url.pathname === '/settings'}
 					class:bg-pink-50={$page.url.pathname === '/settings'}
 					aria-label="Settings"
 					title="Settings"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5.5 h-5.5 sm:w-6 sm:h-6">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-						<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4.5 h-4.5 sm:w-5 sm:h-5 text-pink-500">
+						<path fill-rule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.08 5.4c-.838-.309-1.78.113-2.111.942l-1.07 2.68c-.332.83.044 1.776.84 2.17l1.09.54c.11.054.195.18.2.32a7.618 7.618 0 000 1.156c-.005.14-.09.266-.2.32l-1.09.54c-.796.394-1.172 1.34-.84 2.17l1.07 2.68c.33.829 1.273 1.251 2.111.942l1.238-.49c.115-.043.283-.032.45.083.31.214.64.407.985.57.182.088.277.228.297.348l.178 1.072c.151.904.933 1.567 1.85 1.567h2.844c.917 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.115-.26.297-.348.346-.163.675-.356.985-.57.167-.115.335-.126.45-.083l1.238.49c.838.309 1.78-.113 2.111-.942l1.07-2.68c.332-.83-.044-1.776-.84-2.17l-1.09-.54c-.11-.054-.195-.18-.2-.32a7.618 7.618 0 000-1.156c.005-.14.09-.266.2-.32l1.09-.54c.796-.394 1.172-1.34.84-2.17l-1.07-2.68c-.33-.829-1.273-1.251-2.111-.942l-1.238.49c-.115.043-.283.032-.45-.083a7.493 7.493 0 00-.985-.57c-.182-.088-.277-.228-.297-.348l-.178-1.072c-.151-.904-.933-1.567-1.85-1.567h-2.844zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clip-rule="evenodd" />
 					</svg>
 				</button>
 
@@ -243,11 +242,11 @@
 				<button
 					type="button"
 					onclick={() => { playClickSound(); showLogoutModal = true; }}
-					class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-white border-2 border-pink-200/90 shadow-2xs flex items-center justify-center text-pink-500 hover:text-rose-600 hover:bg-pink-50/80 active:scale-95 transition-all duration-150 cursor-pointer"
+					class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white border border-pink-200/90 shadow-2xs flex items-center justify-center text-pink-500 hover:text-rose-600 hover:bg-pink-50/80 active:scale-95 transition-all duration-150 cursor-pointer"
 					aria-label="Logout"
 					title="Log Out"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5.5 h-5.5 sm:w-6 sm:h-6">
+					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4.5 h-4.5 sm:w-5 sm:h-5">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
 					</svg>
 				</button>
