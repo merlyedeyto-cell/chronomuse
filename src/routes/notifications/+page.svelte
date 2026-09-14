@@ -453,7 +453,7 @@
 	<AppHeader />
 
 	<!-- Main Content Area -->
-	<main class="flex-grow container mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-24 max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl space-y-3.5 sm:space-y-4">
+	<main class="flex-grow container mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-24 max-w-3xl lg:max-w-4xl xl:max-w-5xl space-y-3.5 sm:space-y-4">
 		<!-- Top Header Card (Notifications & Requests + 3-Pill Switcher) -->
 		<div class="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-pink-100/90 animate-fade-in">
 			<div class="flex items-center space-x-2 mb-0.5">

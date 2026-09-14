@@ -2291,8 +2291,8 @@
 		<AppHeader />
 	</div>
 
-	<!-- Chat Body Container (Sized consistent with Friends page: max-w-4xl lg:max-w-6xl xl:max-w-7xl) -->
-	<div class="flex-grow flex flex-col md:flex-row overflow-hidden {activeFriend !== null ? 'p-0 w-full h-full max-w-full md:container md:mx-auto md:px-6 lg:md:px-8 md:py-4 md:max-w-4xl md:lg:max-w-6xl md:xl:max-w-7xl md:gap-4 md:h-[calc(100vh-5.5rem)]' : 'container mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 max-w-4xl lg:max-w-6xl xl:max-w-7xl gap-3 sm:gap-4 h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5.5rem)]'}">
+	<!-- Chat Body Container (Sized consistent with Dashboard and Friends pages: max-w-6xl xl:max-w-7xl) -->
+	<div class="flex-grow flex flex-col md:flex-row overflow-hidden {activeFriend !== null ? 'p-0 w-full h-full max-w-full md:container md:mx-auto md:px-6 lg:md:px-8 md:py-4 md:max-w-6xl md:xl:max-w-7xl md:gap-4 md:h-[calc(100vh-5.5rem)]' : 'container mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 max-w-6xl xl:max-w-7xl gap-3 sm:gap-4 h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5.5rem)]'}">
 		
 		<!-- Left Panel: Friends & Search (Consistent Sizing) -->
 		<div class="w-full md:w-80 lg:w-96 flex-shrink-0 bg-white/95 backdrop-blur-md border border-pink-100 rounded-2xl sm:rounded-3xl shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col overflow-hidden animate-fade-in-up" class:hidden={activeFriend !== null} class:md:flex={true} style="animation-delay: 0.05s">

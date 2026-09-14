@@ -22,14 +22,14 @@
 
 <div class="flex flex-col min-h-screen bg-[#fff0f5] font-sans text-sm select-none antialiased">
 	<!-- Top Bar / Header Matching AppHeader Aesthetic -->
-	<header class="bg-pink-100/90 sm:bg-pink-100/95 backdrop-blur-md sticky top-0 z-40 transition-all border-b border-pink-200/60">
-		<div class="max-w-7xl 2xl:max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-3.5 flex items-center justify-between gap-2">
+	<header class="bg-pink-100/90 sm:bg-pink-100/95 backdrop-blur-md sticky top-0 z-40 transition-all border-b border-pink-200/60 shadow-xs">
+		<div class="max-w-6xl xl:max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 flex items-center justify-between gap-2">
 			<!-- Logo -->
-			<button type="button" onclick={handleLogoClick} class="flex items-center space-x-2 sm:space-x-3 group cursor-pointer select-none text-left min-w-0">
-				<div class="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl bg-black flex items-center justify-center p-1 shadow-sm group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
-					<img src="/logo.png" alt="ChronoMuse Mascot" class="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 object-contain pointer-events-none" />
+			<button type="button" onclick={handleLogoClick} class="flex items-center space-x-2.5 sm:space-x-3 group cursor-pointer select-none text-left min-w-0">
+				<div class="w-9 h-9 sm:w-10 sm:h-10 md:w-10.5 md:h-10.5 rounded-xl sm:rounded-2xl bg-black flex items-center justify-center p-1 shadow-xs group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
+					<img src="/logo.png" alt="ChronoMuse Mascot" class="w-7 h-7 sm:w-8 sm:h-8 md:w-8.5 md:h-8.5 object-contain pointer-events-none" />
 				</div>
-				<span class="text-lg sm:text-2xl md:text-3xl font-black font-sans text-[#ff3e88] tracking-tight group-hover:text-pink-600 transition-colors select-none truncate">ChronoMuse</span>
+				<span class="text-lg sm:text-2xl font-black font-sans text-[#ff3e88] tracking-tight group-hover:text-pink-600 transition-colors select-none truncate">ChronoMuse</span>
 			</button>
 
 			<!-- Navigation -->

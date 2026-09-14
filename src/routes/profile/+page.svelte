@@ -1420,7 +1420,7 @@
 	<AppHeader />
 
 	<!-- Main Profile Container -->
-	<main class="flex-grow container mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-24 sm:pb-28 max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl space-y-3.5 sm:space-y-4">
+	<main class="flex-grow container mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-24 sm:pb-28 max-w-4xl lg:max-w-5xl xl:max-w-6xl space-y-3.5 sm:space-y-4">
 		{#if !profileData && (isLoading || !isProfileNotFound)}
 			<div class="space-y-4 animate-pulse">
 				<!-- Cover & Avatar Skeleton -->
