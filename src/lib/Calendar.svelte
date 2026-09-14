@@ -451,7 +451,7 @@
 	{/if}
 
 	<!-- Header -->
-	<div class="flex items-center justify-between gap-1.5 sm:gap-2 mb-2.5 sm:mb-3">
+	<div class="flex items-center justify-between gap-1.5 sm:gap-2 mb-3.5 sm:mb-4">
 		<!-- Previous Month (Round Button) -->
 		<button
 			type="button"
@@ -505,7 +505,7 @@
 	</div>
 
 	<!-- Weekday Names -->
-	<div class="grid grid-cols-7 gap-1 sm:gap-1.5 mb-1.5">
+	<div class="grid grid-cols-7 gap-1 sm:gap-1.5 mb-2.5 sm:mb-3">
 		{#each dayNames as day}
 			<div class="text-center text-[9.5px] sm:text-[10.5px] font-bold text-[#e05688] py-0.5">
 				{day}
