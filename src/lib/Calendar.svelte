@@ -405,10 +405,10 @@
 	}
 </script>
 
-<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 shadow-[0_8px_30px_rgba(244,114,182,0.08)] font-sans animate-fade-in-up relative max-w-[430px] mx-auto w-full">
+<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4.5 shadow-[0_8px_30px_rgba(244,114,182,0.08)] font-sans animate-fade-in-up relative max-w-[430px] mx-auto w-full">
 	<!-- Multi-Select Delete Mode Floating Banner -->
 	{#if isSelectionMode}
-		<div class="mb-2.5 p-2 sm:p-2.5 bg-gradient-to-r from-[#f43f8e] via-[#e11d48] to-[#be123c] text-white rounded-xl shadow-md border border-pink-300/40 animate-fade-in flex items-center justify-between gap-2">
+		<div class="mb-3 p-2 sm:p-2.5 bg-gradient-to-r from-[#f43f8e] via-[#e11d48] to-[#be123c] text-white rounded-xl shadow-md border border-pink-300/40 animate-fade-in flex items-center justify-between gap-2">
 			<div class="flex items-center space-x-2 min-w-0">
 				<div class="w-7 h-7 rounded-lg bg-white/20 backdrop-blur-xs flex items-center justify-center flex-shrink-0 shadow-inner">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-white">
@@ -632,11 +632,11 @@
 
 	<!-- Bottom Action Bar -->
 	{#if isSelectionMode}
-		<div class="mt-2.5 pt-2.5 border-t border-pink-100 flex items-center justify-between gap-2 animate-fade-in">
+		<div class="mt-3.5 sm:mt-4 pt-3 border-t border-pink-100/80 flex items-center justify-between gap-2 animate-fade-in">
 			<button
 				type="button"
 				onclick={exitSelectionMode}
-				class="w-1/3 py-1.5 sm:py-2 px-2.5 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 active:scale-95 transition-all cursor-pointer"
+				class="w-1/3 py-2 px-2.5 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 active:scale-95 transition-all cursor-pointer"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -648,7 +648,7 @@
 				type="button"
 				onclick={() => showBatchDeleteModal = true}
 				disabled={selectedDaysForDelete.size === 0}
-				class="w-2/3 py-1.5 sm:py-2 px-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+				class="w-2/3 py-2 px-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -657,11 +657,11 @@
 			</button>
 		</div>
 	{:else}
-		<div class="mt-2.5 pt-2 border-t border-pink-100 flex items-center justify-center">
+		<div class="mt-3.5 sm:mt-4 pt-3 border-t border-pink-100/80 flex items-center justify-center">
 			<button
 				type="button"
 				onclick={jumpToToday}
-				class="w-full py-1.5 sm:py-2 px-3 bg-[#e0337f] hover:bg-[#c9256d] text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
+				class="w-full py-2 px-3 bg-[#e0337f] hover:bg-[#c9256d] text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -672,7 +672,7 @@
 	{/if}
 
 	<!-- Legend & Hold Tip -->
-	<div class="mt-2.5 pt-2 border-t border-pink-100 space-y-1">
+	<div class="mt-3 sm:mt-3.5 pt-2.5 sm:pt-3 border-t border-pink-100/80 space-y-1.5">
 		<div class="flex items-center justify-center flex-wrap gap-x-2.5 gap-y-1 text-[9.5px] sm:text-[10px] font-bold">
 			<div class="flex items-center space-x-1">
 				<div class="w-2 h-2 bg-[#e0337f] rounded-md shadow-2xs"></div>
@@ -705,7 +705,7 @@
 
 	<!-- Selected Date Info -->
 	{#if selectedDate && !isSelectionMode}
-		<div class="mt-2 py-1.5 sm:py-2 px-3 bg-[#fff0f5] border border-pink-200/80 rounded-xl text-center shadow-2xs flex items-center justify-center">
+		<div class="mt-3 sm:mt-3.5 py-2 sm:py-2.5 px-3 bg-[#fff0f5] border border-pink-200/80 rounded-xl text-center shadow-2xs flex items-center justify-center">
 			<p class="text-[11px] sm:text-xs text-pink-900 font-bold">
 				Selected: <span class="text-[#e0337f] font-extrabold">{selectedDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
 			</p>
