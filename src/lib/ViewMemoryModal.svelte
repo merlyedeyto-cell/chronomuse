@@ -1173,23 +1173,89 @@
 								ontimeupdate={(e) => { audioCurrentTimes[memory.id] = e.currentTarget.currentTime || 0; }}
 								onended={() => { if (playingAudioId === memory.id) playingAudioId = null; audioCurrentTimes[memory.id] = 0; }}
 								onplay={() => { playingAudioId = memory.id; }}
-								onpause={() => { if (playingAudioId === memory.id) playingAudioId = null; }}
 								onerror={() => { if (playingAudioId === memory.id) playingAudioId = null; }}
 								crossorigin="anonymous"
 								class="hidden"
 							></audio>
 						{/if}
 
+						{#snippet cardHeader()}
+							<div class="flex items-center justify-between gap-2 border-b border-pink-100/80 pb-2 mb-2.5 min-w-0">
+								<!-- Tags & Badges -->
+								<div class="flex items-center flex-wrap gap-1.5 min-w-0">
+									{#if details.isShared && details.senderName}
+										<button
+											type="button"
+											onclick={() => handleSenderClick(details.senderName)}
+											class="text-[10.5px] sm:text-xs px-2.5 py-0.5 rounded-full bg-pink-500 text-white font-bold flex items-center space-x-1 shadow-2xs hover:bg-pink-600 transition-colors cursor-pointer"
+										>
+											<span>Shared by @{details.senderName}</span>
+										</button>
+									{/if}
+
+									{#if memory.mood_tag}
+										<span class="text-[10.5px] sm:text-xs px-2.5 py-0.5 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap">
+											{memory.mood_tag}
+										</span>
+									{/if}
+
+									{#if details.cleanTag}
+										<span class="text-[10.5px] sm:text-xs px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-500 border border-pink-200 font-bold whitespace-nowrap">
+											{details.cleanTag}
+										</span>
+									{/if}
+								</div>
+
+								<!-- Action Buttons -->
+								<div class="flex items-center space-x-1 flex-shrink-0">
+									{#if !details.isShared}
+										<button
+											type="button"
+											onclick={() => openShareModal(memory)}
+											class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-pink-50/80 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] active:scale-95 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+											title="Share with Friend"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zm0-12a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
+											</svg>
+										</button>
+
+										<button
+											type="button"
+											onclick={() => handleEditMemory(memory)}
+											class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-pink-50/80 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] active:scale-95 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+											title="Edit"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+												<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+											</svg>
+										</button>
+									{/if}
+
+									<button
+										type="button"
+										onclick={() => handleDeleteMemory(memory.id)}
+										class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-pink-50/80 hover:bg-rose-50 text-pink-400 hover:text-rose-600 active:scale-95 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+										title="Delete"
+									>
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+											<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+										</svg>
+									</button>
+								</div>
+							</div>
+						{/snippet}
+
 						{#snippet mediaBox()}
 							{#if (!memory.photo_video_type || memory.photo_video_type.startsWith('image/')) && !(typeof memory.photo_video === 'string' && (memory.photo_video.endsWith('.mp4') || memory.photo_video.endsWith('.webm') || memory.photo_video.endsWith('.mov')))}
 								<div 
-									class="relative rounded-2xl overflow-hidden border border-pink-100/90 cursor-pointer hover:border-pink-300 transition-all duration-200 bg-pink-50/50 shadow-2xs group w-full h-44 sm:h-48 md:h-52 flex items-center justify-center" 
+									class="relative rounded-xl overflow-hidden border border-pink-100/90 cursor-pointer hover:border-pink-300 transition-all duration-200 bg-pink-50/50 shadow-2xs group w-full h-44 sm:h-48 md:h-full md:min-h-[160px] md:max-h-[220px] flex items-center justify-center" 
 									onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'image')}
 								>
 									<img 
 										src={getMediaUrl(memory.photo_video)} 
 										alt="Memory" 
-										class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 rounded-2xl" 
+										class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 rounded-xl" 
 									/>
 									<div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
 										<span class="bg-black/60 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-xs flex items-center space-x-1.5 shadow-sm">
@@ -1201,13 +1267,13 @@
 									</div>
 								</div>
 							{:else}
-								<div class="relative rounded-2xl overflow-hidden border border-pink-100/90 bg-black shadow-2xs group w-full h-44 sm:h-48 md:h-52 flex items-center justify-center">
+								<div class="relative rounded-xl overflow-hidden border border-pink-100/90 bg-black shadow-2xs group w-full h-44 sm:h-48 md:h-full md:min-h-[160px] md:max-h-[220px] flex items-center justify-center">
 									<video 
 										src={getMediaUrl(memory.photo_video)} 
 										class="w-full h-full object-cover" 
 										controls 
 										playsinline 
-										preload="metadata"
+										preload="metadata" 
 										controlslist="nofullscreen nodownload noremoteplayback"
 										disablepictureinpicture
 										aria-label="Memory video"
@@ -1229,7 +1295,7 @@
 
 						{#snippet audioBox()}
 							{#if memory.music}
-								<div class="bg-pink-50/50 border border-pink-100 rounded-2xl p-2 sm:p-2.5 space-y-1">
+								<div class="bg-pink-50/60 border border-pink-100/90 rounded-xl p-2 sm:p-2.5 space-y-1">
 									<p class="text-[11px] sm:text-xs font-bold text-pink-950 truncate px-0.5">{getMusicName(memory.music)}</p>
 
 									<div class="flex items-center space-x-2">
@@ -1249,7 +1315,7 @@
 											{/if}
 										</button>
 
-										<span class="text-[9.5px] font-black text-pink-600 min-w-[24px] text-right tabular-nums">
+										<span class="text-[9.5px] font-bold text-pink-600 min-w-[24px] text-right tabular-nums">
 											{formatAudioTime(audioCurrentTimes[memory.id] || 0)}
 										</span>
 
@@ -1272,73 +1338,13 @@
 						{/snippet}
 
 						{#if memory.photo_video}
-							<!-- MOBILE VIEW (< md): Stacked in exact requested order: Tags -> Description -> Media -> Music -> Timestamp -->
+							<!-- MOBILE VIEW (< md): Stacked in exact clean proportion -->
 							<div class="flex flex-col space-y-2.5 md:hidden min-w-0">
-								<!-- Header Row (Tags & Mobile Actions) -->
-								<div class="flex items-center justify-between gap-1.5 border-b border-pink-50 pb-2 min-w-0">
-									<div class="flex items-center flex-wrap gap-1 min-w-0">
-										{#if details.isShared && details.senderName}
-											<button
-												type="button"
-												onclick={() => handleSenderClick(details.senderName)}
-												class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink-500 text-white font-bold flex items-center space-x-1 shadow-2xs hover:bg-pink-600 transition-colors cursor-pointer"
-											>
-												<span>Shared by @{details.senderName}</span>
-											</button>
-										{/if}
+								{@render cardHeader()}
 
-										{#if memory.mood_tag}
-											<span class="text-[10px] px-2.5 py-0.5 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap">
-												{memory.mood_tag}
-											</span>
-										{/if}
-
-										{#if details.cleanTag}
-											<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-500 border border-pink-200 font-bold whitespace-nowrap">
-												{details.cleanTag}
-											</span>
-										{/if}
-									</div>
-
-									<!-- Action Toolbar on Mobile -->
-									<div class="flex items-center space-x-1 flex-shrink-0">
-										{#if !details.isShared}
-											<button
-												onclick={() => openShareModal(memory)}
-												class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all flex items-center space-x-1 active:scale-95 cursor-pointer"
-												title="Share with Friend"
-											>
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zm0-12a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
-												</svg>
-											</button>
-
-											<button
-												onclick={() => handleEditMemory(memory)}
-												class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all active:scale-95 cursor-pointer"
-												title="Edit"
-											>
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-												</svg>
-											</button>
-										{/if}
-
-										<button
-											onclick={() => handleDeleteMemory(memory.id)}
-											class="p-1.5 text-pink-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all active:scale-95 cursor-pointer"
-											title="Delete"
-										>
-											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-												<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-											</svg>
-										</button>
-									</div>
-								</div>
-
-								<!-- Clean Description Content (Max 10 lines on mobile, with mini-scroll) -->
+								<!-- Description Content -->
 								{#if details.cleanDesc}
-									<p class="text-xs sm:text-sm font-bold text-pink-950 leading-relaxed whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-h-48 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#f43f8e_transparent] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-pink-300 [&::-webkit-scrollbar-thumb]:rounded-full mt-0.5">
+									<p class="text-xs sm:text-sm font-semibold text-pink-950 leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere] max-h-40 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:#f43f8e_transparent] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-pink-300 [&::-webkit-scrollbar-thumb]:rounded-full">
 										{details.cleanDesc}
 									</p>
 								{/if}
@@ -1346,174 +1352,56 @@
 								<!-- Photo / Video (Media) on Phone View -->
 								{@render mediaBox()}
 
-								<!-- Audio Player on Phone View (Nasa BABA ng pic/vid) -->
+								<!-- Audio Player on Phone View -->
 								{@render audioBox()}
 
 								<!-- Timestamp on Phone View -->
-								<div class="pt-1 border-t border-pink-50">
+								<div class="pt-1.5 border-t border-pink-50">
 									<span class="text-[10px] text-pink-400 font-bold">
 										Created: {formatTime(memory.created_at)}
 									</span>
 								</div>
 							</div>
 
-							<!-- DESKTOP VIEW (md:): 2-Column Split -->
-							<div class="hidden md:flex md:flex-row gap-5 items-stretch min-w-0">
-								<!-- Left Column (Tags, Description, Audio Player, Timestamp) -->
-								<div class="w-[54%] lg:w-[58%] min-w-0 flex flex-col justify-between space-y-2.5 overflow-hidden">
-									<div class="space-y-2 min-w-0 overflow-hidden">
-										<!-- Header Row (Tags) -->
-										<div class="flex items-center flex-wrap gap-1 min-w-0">
-											{#if details.isShared && details.senderName}
-												<button
-													type="button"
-													onclick={() => handleSenderClick(details.senderName)}
-													class="text-xs px-2.5 py-1 rounded-full bg-pink-500 text-white font-bold flex items-center space-x-1 shadow-2xs hover:bg-pink-600 transition-colors cursor-pointer"
-												>
-													<span>Shared by @{details.senderName}</span>
-												</button>
-											{/if}
+							<!-- DESKTOP VIEW (md:): Balanced 2-Column Split -->
+							<div class="hidden md:flex md:flex-col min-w-0">
+								{@render cardHeader()}
 
-											{#if memory.mood_tag}
-												<span class="text-xs px-2.5 py-1 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap">
-													{memory.mood_tag}
-												</span>
-											{/if}
-
-											{#if details.cleanTag}
-												<span class="text-xs px-2.5 py-1 rounded-full bg-pink-50 text-pink-500 border border-pink-200 font-bold whitespace-nowrap">
-													{details.cleanTag}
-												</span>
-											{/if}
-										</div>
-
-										<!-- Description Content (Max 6 lines on desktop, with mini-scroll) -->
+								<div class="grid grid-cols-2 gap-4 items-stretch min-w-0">
+									<!-- Left Column (Description, Audio Player, Timestamp) -->
+									<div class="flex flex-col justify-between space-y-2.5 min-w-0 overflow-hidden">
+										<!-- Description Content -->
 										{#if details.cleanDesc}
-											<p class="text-sm font-bold text-pink-950 leading-relaxed whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-h-36 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#f43f8e_transparent] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-pink-300 [&::-webkit-scrollbar-thumb]:rounded-full mt-0.5">
+											<p class="text-xs sm:text-sm font-semibold text-pink-950 leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere] max-h-36 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:#f43f8e_transparent] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-pink-300 [&::-webkit-scrollbar-thumb]:rounded-full">
 												{details.cleanDesc}
 											</p>
 										{/if}
-									</div>
 
-									<!-- Bottom of Left Column: Audio Player & Timestamp -->
-									<div class="space-y-2 pt-1 border-t border-pink-50 min-w-0">
-										{@render audioBox()}
-										<div class="pt-0.5">
-											<span class="text-xs text-pink-400 font-bold">
-												Created: {formatTime(memory.created_at)}
-											</span>
+										<!-- Bottom of Left Column: Audio Player & Timestamp -->
+										<div class="space-y-2 pt-2 border-t border-pink-50 min-w-0 mt-auto">
+											{@render audioBox()}
+											<div class="pt-0.5">
+												<span class="text-xs text-pink-400 font-bold">
+													Created: {formatTime(memory.created_at)}
+												</span>
+											</div>
 										</div>
 									</div>
-								</div>
 
-								<!-- Right Column (Desktop Toolbar & Media Box) -->
-								<div class="w-[46%] lg:w-[42%] flex flex-col space-y-2 flex-shrink-0 min-w-0">
-									<!-- Action Toolbar on Desktop -->
-									<div class="flex items-center justify-end space-x-1.5 flex-shrink-0">
-										{#if !details.isShared}
-											<button
-												onclick={() => openShareModal(memory)}
-												class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all flex items-center space-x-1 active:scale-95 cursor-pointer"
-												title="Share with Friend"
-											>
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zm0-12a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
-												</svg>
-											</button>
-
-											<button
-												onclick={() => handleEditMemory(memory)}
-												class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all active:scale-95 cursor-pointer"
-												title="Edit"
-											>
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-												</svg>
-											</button>
-										{/if}
-
-										<button
-											onclick={() => handleDeleteMemory(memory.id)}
-											class="p-1.5 text-pink-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all active:scale-95 cursor-pointer"
-											title="Delete"
-										>
-											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-												<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-											</svg>
-										</button>
+									<!-- Right Column (Media Box) -->
+									<div class="flex flex-col justify-center min-w-0">
+										{@render mediaBox()}
 									</div>
-
-									{@render mediaBox()}
 								</div>
 							</div>
 						{:else}
 							<!-- Layout Without Media: Single Full-Width Card -->
-							<div class="space-y-2 min-w-0 overflow-hidden">
-								<!-- Header Row: Tags & Shared Badge on Left, Action Toolbar on Right -->
-								<div class="flex items-center justify-between gap-1.5 border-b border-pink-50 pb-2 min-w-0">
-									<div class="flex items-center flex-wrap gap-1 min-w-0">
-										{#if details.isShared && details.senderName}
-											<button
-												type="button"
-												onclick={() => handleSenderClick(details.senderName)}
-												class="text-[10px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full bg-pink-500 text-white font-bold flex items-center space-x-1 shadow-2xs hover:bg-pink-600 transition-colors cursor-pointer"
-											>
-												<span>Shared by @{details.senderName}</span>
-											</button>
-										{/if}
+							<div class="space-y-2.5 min-w-0 overflow-hidden">
+								{@render cardHeader()}
 
-										{#if memory.mood_tag}
-											<span class="text-[10px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full border {getMoodColor(memory.mood_tag)} font-bold whitespace-nowrap">
-												{memory.mood_tag}
-											</span>
-										{/if}
-
-										{#if details.cleanTag}
-											<span class="text-[10px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full bg-pink-50 text-pink-500 border border-pink-200 font-bold whitespace-nowrap">
-												{details.cleanTag}
-											</span>
-										{/if}
-									</div>
-
-									<!-- Action Toolbar on Right -->
-									<div class="flex items-center space-x-1.5 flex-shrink-0">
-										{#if !details.isShared}
-											<button
-												onclick={() => openShareModal(memory)}
-												class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all flex items-center space-x-1 active:scale-95 cursor-pointer"
-												title="Share with Friend"
-											>
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zm0-12a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
-												</svg>
-											</button>
-
-											<button
-												onclick={() => handleEditMemory(memory)}
-												class="p-1.5 text-pink-300 hover:text-[#f43f8e] hover:bg-pink-50 rounded-lg transition-all active:scale-95 cursor-pointer"
-												title="Edit"
-											>
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-												</svg>
-											</button>
-										{/if}
-
-										<button
-											onclick={() => handleDeleteMemory(memory.id)}
-											class="p-1.5 text-pink-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all active:scale-95 cursor-pointer"
-											title="Delete"
-										>
-											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-												<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-											</svg>
-										</button>
-									</div>
-								</div>
-
-								<!-- Clean Description Content (Max 10 lines mobile, 6 lines desktop with mini-scroll) -->
+								<!-- Clean Description Content -->
 								{#if details.cleanDesc}
-									<p class="text-xs sm:text-sm md:text-[15px] font-bold text-pink-950 leading-relaxed whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-h-48 md:max-h-36 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#f43f8e_transparent] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-pink-300 [&::-webkit-scrollbar-thumb]:rounded-full mt-1 mb-2">{details.cleanDesc}</p>
+									<p class="text-xs sm:text-sm md:text-[14.5px] font-semibold text-pink-950 leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere] max-h-48 md:max-h-36 overflow-y-auto pr-1.5 [scrollbar-width:thin] [scrollbar-color:#f43f8e_transparent] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-pink-300 [&::-webkit-scrollbar-thumb]:rounded-full my-1">{details.cleanDesc}</p>
 								{/if}
 
 								<!-- Audio Player -->
