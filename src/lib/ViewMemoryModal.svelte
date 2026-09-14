@@ -21,7 +21,8 @@
 	let editedPhotoVideo = $state(null);
 	let editedMusic = $state(null);
 	let editedPhotoVideoPreview = $state(null);
-	let isEditing = $state(false);
+	let editingMemoryId = $state(/** @type {any} */ (null));
+	let editingMemory = $state(/** @type {any} */ (null));
 	let isSaving = $state(false);
 	let photoVideoInput;
 	let musicInput;
@@ -692,7 +693,8 @@
 	}
 
 	function handleEditMemory(memory) {
-		isEditing = true;
+		editingMemoryId = memory.id;
+		editingMemory = memory;
 		editedDescription = memory.description || '';
 		editedMoodTag = memory.mood_tag || '';
 		editedMemoryTag = memory.memory_tag || '';
@@ -706,7 +708,8 @@
 	}
 
 	function handleCancelEdit() {
-		isEditing = false;
+		editingMemoryId = null;
+		editingMemory = null;
 		editedDescription = '';
 		editedMoodTag = '';
 		editedMemoryTag = '';
@@ -720,6 +723,7 @@
 	}
 
 	function handleSaveEdit(memory) {
+		if (!memory) return;
 		isSaving = true;
 		
 		// Create FormData for file upload
@@ -745,7 +749,8 @@
 		});
 		
 		isSaving = false;
-		isEditing = false;
+		editingMemoryId = null;
+		editingMemory = null;
 	}
 
 	// Gesture Drag Animation State (Mobile Touch & Pointer Optimized)
@@ -909,9 +914,235 @@
 			</div>
 		</div>
 
-	<!-- Memories List - Scrollable (Hidden scrollbar) -->
+	<!-- Memories List or Single Dedicated Edit View - Scrollable -->
 	<div class="flex-1 overflow-y-auto">
-	{#if memories.length === 0}
+	{#if editingMemoryId && editingMemory}
+		<!-- Dedicated Single Memory Edit Card (Isang memory lang ang mae-edit at walang ibang memory sa baba) -->
+		<div class="p-3.5 sm:p-4 bg-white border border-pink-200/90 rounded-2xl shadow-xs animate-fade-in mb-3">
+			<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-pink-100">
+				<div class="flex items-center space-x-2">
+					<div class="w-6 h-6 rounded-lg bg-pink-100 text-[#f43f8e] flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+						</svg>
+					</div>
+					<h3 class="text-xs sm:text-sm font-black text-pink-950">Editing Memory</h3>
+				</div>
+				<button
+					type="button"
+					onclick={handleCancelEdit}
+					class="text-[11px] font-bold text-pink-400 hover:text-pink-600 px-2 py-0.5 rounded-lg hover:bg-pink-50 transition-colors cursor-pointer"
+				>
+					Cancel
+				</button>
+			</div>
+
+			<!-- Edit Mode (2-column on desktop, 1-column on mobile) -->
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 items-start">
+				<!-- Left Column: Mood, Tag, Description, Save/Cancel -->
+				<div class="space-y-2.5">
+					<!-- Mood Tag -->
+					<div>
+						<label class="block text-[10px] font-bold text-pink-500 mb-1">Mood Tag</label>
+						<button
+							type="button"
+							onclick={() => showMoodTagModal = true}
+							class="w-full px-3 py-1.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs text-left flex items-center justify-between font-bold text-pink-950 cursor-pointer transition-colors hover:bg-pink-100"
+						>
+							<span class={editedMoodTag ? 'text-pink-950 truncate' : 'text-pink-400 truncate'}>
+								{editedMoodTag || 'Select mood'}
+							</span>
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+							</svg>
+						</button>
+					</div>
+
+					<!-- Memory Tag -->
+					<div>
+						<label class="block text-[10px] font-bold text-pink-500 mb-1">Memory Tag</label>
+						<button
+							type="button"
+							onclick={() => showMemoryTagModal = true}
+							class="w-full px-3 py-1.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs text-left flex items-center justify-between font-bold text-pink-950 cursor-pointer transition-colors hover:bg-pink-100"
+						>
+							<span class={editedMemoryTag ? 'text-pink-950 truncate' : 'text-pink-400 truncate'}>
+								{editedMemoryTag || 'Select tag'}
+							</span>
+							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+							</svg>
+						</button>
+					</div>
+
+					<!-- Description -->
+					<div>
+						<label class="block text-[10px] font-bold text-pink-500 mb-1">Description</label>
+						<div class="relative">
+							<textarea
+								bind:value={editedDescription}
+								placeholder="Write about this memory..."
+								rows="3"
+								class="w-full px-3 py-2 pr-9 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-pink-950 placeholder:text-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 focus:border-[#f43f8e] focus:bg-white text-xs font-bold resize-none"
+							></textarea>
+							<button
+								type="button"
+								onclick={() => showEmojiPicker = !showEmojiPicker}
+								class="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-white border border-pink-200 flex items-center justify-center text-xs hover:scale-110 transition-transform cursor-pointer"
+							>
+								<span>😊</span>
+							</button>
+							{#if showEmojiPicker}
+								<div class="absolute bottom-full right-0 mb-1.5 p-2 bg-white border border-pink-100 rounded-2xl z-10 max-w-[180px] shadow-lg">
+									<div class="grid grid-cols-6 gap-1">
+										{#each emojis as emoji}
+											<button
+												type="button"
+												onclick={() => insertEmoji(emoji)}
+												class="p-1 hover:bg-pink-50 rounded-lg transition-colors text-sm cursor-pointer"
+											>
+												{emoji}
+											</button>
+										{/each}
+									</div>
+								</div>
+							{/if}
+						</div>
+					</div>
+
+					<!-- Save/Cancel Buttons -->
+					<div class="flex space-x-2 pt-1">
+						<button
+							onclick={() => handleSaveEdit(editingMemory)}
+							disabled={isSaving}
+							class="flex-1 py-2 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] transition-all text-xs font-bold disabled:opacity-50 active:scale-95 shadow-xs cursor-pointer"
+						>
+							{#if isSaving}Saving...{:else}Save{/if}
+						</button>
+						<button
+							onclick={handleCancelEdit}
+							class="flex-1 py-2 px-3 bg-white border border-pink-200 text-pink-600 rounded-xl hover:bg-pink-50 transition-all text-xs font-bold active:scale-95 cursor-pointer"
+						>
+							Cancel
+						</button>
+					</div>
+				</div>
+
+				<!-- Right Column: Media Uploads (Photo/Video & Music) -->
+				<div class="space-y-2.5">
+					<!-- Upload Photo or Video -->
+					<div>
+						<div class="flex items-center justify-between mb-1">
+							<label class="block text-[10px] font-bold text-pink-500">Photo or Video</label>
+							{#if editedPhotoVideo || editingMemory.photo_video}
+								<button
+									type="button"
+									onclick={() => { photoVideoInput?.click(); }}
+									class="text-[10px] font-bold text-[#f43f8e] hover:text-[#e0337f] bg-pink-50 px-2 py-0.5 rounded-full transition-all flex items-center space-x-1 cursor-pointer"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+									</svg>
+									<span>Change</span>
+								</button>
+							{/if}
+						</div>
+
+						<div
+							class="relative flex flex-col items-center justify-center w-full min-h-[80px] max-h-36 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/70 cursor-pointer hover:bg-pink-100/70 transition-all duration-200 overflow-hidden group"
+							onclick={() => { photoVideoInput?.click(); }}
+						>
+							{#if editedPhotoVideoPreview}
+								{#if editedPhotoVideoType.startsWith('image/')}
+									<img src={editedPhotoVideoPreview} alt="Preview" class="w-full max-h-36 object-contain" />
+								{:else}
+									<div class="relative w-full h-full flex items-center justify-center bg-black/80 py-1.5">
+										<video src={editedPhotoVideoPreview} class="w-full max-h-36 object-contain pointer-events-none" muted playsinline></video>
+										<div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
+											<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1">
+												<span>Change Video</span>
+											</span>
+										</div>
+									</div>
+								{/if}
+							{:else if editingMemory.photo_video}
+								{#if (editingMemory.photo_video_type && editingMemory.photo_video_type.startsWith('video/')) || (typeof editingMemory.photo_video === 'string' && (editingMemory.photo_video.endsWith('.mp4') || editingMemory.photo_video.endsWith('.webm') || editingMemory.photo_video.endsWith('.mov')))}
+									<div class="relative w-full h-full flex items-center justify-center bg-black/80 py-1.5">
+										<video src={getMediaUrl(editingMemory.photo_video)} class="w-full max-h-36 object-contain pointer-events-none" muted playsinline></video>
+										<div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
+											<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1">
+												<span>Change Video</span>
+											</span>
+										</div>
+									</div>
+								{:else}
+									<div class="relative w-full h-full flex items-center justify-center">
+										<img src={getMediaUrl(editingMemory.photo_video)} alt="Current" class="w-full max-h-36 object-contain" />
+										<div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-all">
+											<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm">Change Photo</span>
+										</div>
+									</div>
+								{/if}
+							{:else}
+								<div class="flex items-center space-x-2.5 py-2 px-3">
+									<div class="w-7 h-7 rounded-lg bg-pink-100 text-[#f43f8e] flex items-center justify-center flex-shrink-0">
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+										</svg>
+									</div>
+									<div class="flex-1 min-w-0">
+										<p class="text-xs font-bold text-[#f43f8e]">Upload Photo/Video</p>
+										<p class="text-[10px] text-pink-400 font-medium">Click to select file</p>
+									</div>
+								</div>
+							{/if}
+
+							<input
+								type="file"
+								accept="image/*,video/*"
+								onchange={handleEditedPhotoVideoChange}
+								bind:this={photoVideoInput}
+								class="hidden"
+							/>
+						</div>
+					</div>
+
+					<!-- Upload Music -->
+					<div>
+						<label class="block text-[10px] font-bold text-pink-500 mb-1">Music</label>
+						<label class="flex flex-col items-center justify-center w-full py-2 px-3 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/70 cursor-pointer hover:bg-pink-100 transition-all duration-200">
+							<div class="flex items-center space-x-2.5 w-full max-w-full min-w-0 overflow-hidden">
+								<div class="w-7 h-7 rounded-lg bg-pink-100 text-[#f43f8e] flex items-center justify-center flex-shrink-0">
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
+									</svg>
+								</div>
+								<div class="flex-1 min-w-0">
+									{#if editedMusic}
+										<p class="text-xs text-pink-950 font-bold truncate">{editedMusic.name}</p>
+										<p class="text-[10px] text-pink-400">Click to change</p>
+									{:else if editingMemory.music}
+										<p class="text-xs text-pink-950 font-bold truncate">Current: {getMusicName(editingMemory.music)}</p>
+										<p class="text-[10px] text-pink-400">Click to change</p>
+									{:else}
+										<p class="text-xs text-[#f43f8e] font-bold">Upload Music</p>
+										<p class="text-[10px] text-pink-400">Click to select audio</p>
+									{/if}
+								</div>
+							</div>
+							<input
+								type="file"
+								accept="audio/*"
+								onchange={handleEditedMusicChange}
+								bind:this={musicInput}
+								class="hidden"
+							/>
+						</label>
+					</div>
+				</div>
+			</div>
+		</div>
+	{:else if memories.length === 0}
 		<div class="text-center py-6">
 			<div class="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-2 text-pink-300 border border-pink-100 shadow-2xs">
 				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
@@ -930,209 +1161,9 @@
 	{:else}
 		<div class="space-y-2.5">
 			{#each memories as memory (memory.id)}
-				{@debug memory}
+				{@const details = getMemoryDisplayDetails(memory)}
 				<div class="p-3.5 bg-white border border-pink-100/90 rounded-2xl shadow-2xs hover:border-pink-200 transition-all">
-					{#if isEditing && memory.id}
-						<!-- Edit Mode (2-column on desktop, 1-column on mobile) -->
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 items-start">
-							<!-- Left Column: Mood, Tag, Description, Save/Cancel -->
-							<div class="space-y-2.5">
-								<!-- Mood Tag -->
-								<button
-									type="button"
-									onclick={() => showMoodTagModal = true}
-									class="w-full px-3 py-1.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs text-left flex items-center justify-between font-bold text-pink-950 cursor-pointer transition-colors hover:bg-pink-100"
-								>
-									<span class={editedMoodTag ? 'text-pink-950 truncate' : 'text-pink-400 truncate'}>
-										{editedMoodTag || 'Select mood'}
-									</span>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-									</svg>
-								</button>
-
-								<!-- Memory Tag -->
-								<button
-									type="button"
-									onclick={() => showMemoryTagModal = true}
-									class="w-full px-3 py-1.5 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-xs text-left flex items-center justify-between font-bold text-pink-950 cursor-pointer transition-colors hover:bg-pink-100"
-								>
-									<span class={editedMemoryTag ? 'text-pink-950 truncate' : 'text-pink-400 truncate'}>
-										{editedMemoryTag || 'Select tag'}
-									</span>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-									</svg>
-								</button>
-
-								<!-- Description -->
-								<div class="relative">
-									<textarea
-										bind:value={editedDescription}
-										placeholder="Write about this memory..."
-										rows="3"
-										class="w-full px-3 py-2 pr-9 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-pink-950 placeholder:text-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 focus:border-[#f43f8e] focus:bg-white text-xs font-bold resize-none"
-									></textarea>
-									<button
-										type="button"
-										onclick={() => showEmojiPicker = !showEmojiPicker}
-										class="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-white border border-pink-200 flex items-center justify-center text-xs hover:scale-110 transition-transform cursor-pointer"
-									>
-										<span>😊</span>
-									</button>
-									{#if showEmojiPicker}
-										<div class="absolute bottom-full right-0 mb-1.5 p-2 bg-white border border-pink-100 rounded-2xl z-10 max-w-[180px] shadow-lg">
-											<div class="grid grid-cols-6 gap-1">
-												{#each emojis as emoji}
-													<button
-														type="button"
-														onclick={() => insertEmoji(emoji)}
-														class="p-1 hover:bg-pink-50 rounded-lg transition-colors text-sm cursor-pointer"
-													>
-														{emoji}
-													</button>
-												{/each}
-											</div>
-										</div>
-									{/if}
-								</div>
-
-								<!-- Save/Cancel Buttons -->
-								<div class="flex space-x-2 pt-1">
-									<button
-										onclick={() => handleSaveEdit(memory)}
-										disabled={isSaving}
-										class="flex-1 py-1.5 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] transition-all text-xs font-bold disabled:opacity-50 active:scale-95 shadow-xs cursor-pointer"
-									>
-										{#if isSaving}Saving...{:else}Save{/if}
-									</button>
-									<button
-										onclick={handleCancelEdit}
-										class="flex-1 py-1.5 px-3 bg-white border border-pink-200 text-pink-600 rounded-xl hover:bg-pink-50 transition-all text-xs font-bold active:scale-95 cursor-pointer"
-									>
-										Cancel
-									</button>
-								</div>
-							</div>
-
-							<!-- Right Column: Media Uploads (Photo/Video & Music) -->
-							<div class="space-y-2.5">
-								<!-- Upload Photo or Video -->
-								<div>
-									<div class="flex items-center justify-between mb-1">
-										<label class="block text-[10px] font-bold text-pink-500">Photo or Video</label>
-										{#if editedPhotoVideo || memory.photo_video}
-											<button
-												type="button"
-												onclick={() => { photoVideoInput?.click(); }}
-												class="text-[10px] font-bold text-[#f43f8e] hover:text-[#e0337f] bg-pink-50 px-2 py-0.5 rounded-full transition-all flex items-center space-x-1"
-											>
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-												</svg>
-												<span>Change</span>
-											</button>
-										{/if}
-									</div>
-
-									<div
-										class="relative flex flex-col items-center justify-center w-full min-h-[80px] max-h-36 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/70 cursor-pointer hover:bg-pink-100/70 transition-all duration-200 overflow-hidden group"
-										onclick={() => { photoVideoInput?.click(); }}
-									>
-										{#if editedPhotoVideoPreview}
-											{#if editedPhotoVideoType.startsWith('image/')}
-												<img src={editedPhotoVideoPreview} alt="Preview" class="w-full max-h-36 object-contain" />
-											{:else}
-												<div class="relative w-full h-full flex items-center justify-center bg-black/80 py-1.5">
-													<video src={editedPhotoVideoPreview} class="w-full max-h-36 object-contain pointer-events-none" muted playsinline></video>
-													<div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
-														<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1">
-															<span>Change Video</span>
-														</span>
-													</div>
-												</div>
-											{/if}
-										{:else if memory.photo_video}
-											{#if (memory.photo_video_type && memory.photo_video_type.startsWith('video/')) || (typeof memory.photo_video === 'string' && (memory.photo_video.endsWith('.mp4') || memory.photo_video.endsWith('.webm') || memory.photo_video.endsWith('.mov')))}
-												<div class="relative w-full h-full flex items-center justify-center bg-black/80 py-1.5">
-													<video src={getMediaUrl(memory.photo_video)} class="w-full max-h-36 object-contain pointer-events-none" muted playsinline></video>
-													<div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
-														<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1">
-															<span>Change Video</span>
-														</span>
-													</div>
-												</div>
-											{:else}
-												<div class="relative w-full h-full flex items-center justify-center">
-													<img src={getMediaUrl(memory.photo_video)} alt="Current" class="w-full max-h-36 object-contain" />
-													<div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-all">
-														<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm">Change Photo</span>
-													</div>
-												</div>
-											{/if}
-										{:else}
-											<div class="flex items-center space-x-2.5 py-2 px-3">
-												<div class="w-7 h-7 rounded-lg bg-pink-100 text-[#f43f8e] flex items-center justify-center flex-shrink-0">
-													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-														<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-													</svg>
-												</div>
-												<div class="flex-1 min-w-0">
-													<p class="text-xs font-bold text-[#f43f8e]">Upload Photo/Video</p>
-													<p class="text-[10px] text-pink-400 font-medium">Click to select file</p>
-												</div>
-											</div>
-										{/if}
-
-										<input
-											type="file"
-											accept="image/*,video/*"
-											onchange={handleEditedPhotoVideoChange}
-											bind:this={photoVideoInput}
-											class="hidden"
-										/>
-									</div>
-								</div>
-
-								<!-- Upload Music -->
-								<div>
-									<label class="block text-[10px] font-bold text-pink-500 mb-1">Music</label>
-									<label class="flex flex-col items-center justify-center w-full py-2 px-3 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/70 cursor-pointer hover:bg-pink-100 transition-all duration-200">
-										<div class="flex items-center space-x-2.5 w-full max-w-full min-w-0 overflow-hidden">
-											<div class="w-7 h-7 rounded-lg bg-pink-100 text-[#f43f8e] flex items-center justify-center flex-shrink-0">
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
-												</svg>
-											</div>
-											<div class="flex-1 min-w-0">
-												{#if editedMusic}
-													<p class="text-xs text-pink-950 font-bold truncate">{editedMusic.name}</p>
-													<p class="text-[10px] text-pink-400">Click to change</p>
-												{:else if memory.music}
-													<p class="text-xs text-pink-950 font-bold truncate">Current: {getMusicName(memory.music)}</p>
-													<p class="text-[10px] text-pink-400">Click to change</p>
-												{:else}
-													<p class="text-xs text-[#f43f8e] font-bold">Upload Music</p>
-													<p class="text-[10px] text-pink-400">Click to select audio</p>
-												{/if}
-											</div>
-										</div>
-										<input
-											type="file"
-											accept="audio/*"
-											onchange={handleEditedMusicChange}
-											bind:this={musicInput}
-											class="hidden"
-										/>
-									</label>
-								</div>
-							</div>
-						</div>
-					{:else}
-						<!-- View Mode -->
-						{@const details = getMemoryDisplayDetails(memory)}
-
-						<!-- Hidden audio element mounted once per memory -->
+					<!-- Hidden audio element mounted once per memory -->
 						{#if memory.music}
 							<audio
 								bind:this={audioElements[memory.id]}
@@ -1496,25 +1527,26 @@
 								</div>
 							</div>
 						{/if}
-					{/if}
 				</div>
 			{/each}
 		</div>
 	{/if}
 	</div>
 
-	<!-- Add Memory Button - Fixed at Bottom -->
-	<div class="mt-3 pt-3 border-t border-pink-200/70 flex-shrink-0">
-		<button
-			onclick={() => dispatch('addMemory')}
-			class="w-full py-2.5 sm:py-3 px-4 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold text-white rounded-xl flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer"
-		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-			</svg>
-			<span>Add Another Memory</span>
-		</button>
-	</div>
+	<!-- Add Memory Button - Fixed at Bottom (Only shown when not editing) -->
+	{#if !editingMemoryId}
+		<div class="mt-3 pt-3 border-t border-pink-200/70 flex-shrink-0">
+			<button
+				onclick={() => dispatch('addMemory')}
+				class="w-full py-2.5 sm:py-3 px-4 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold text-white rounded-xl flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+				</svg>
+				<span>Add Another Memory</span>
+			</button>
+		</div>
+	{/if}
 	</div>
 </div>
 
