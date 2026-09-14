@@ -6,6 +6,8 @@
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { playIncomingMessageSound, playNotificationSound, playClickSound } from '$lib/soundEffects.js';
 
+	let { children } = $props();
+
 	let user = $state(null);
 	let globalMsgChannel = null;
 	let globalEventsChannel = null;
@@ -453,7 +455,7 @@
 	{/if}
 </svelte:head>
 
-<slot />
+{@render children?.()}
 
 <style>
 	:global(video::-webkit-media-controls-fullscreen-button),

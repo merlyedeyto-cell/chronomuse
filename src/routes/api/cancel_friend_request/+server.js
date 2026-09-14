@@ -55,31 +55,6 @@ export async function POST({ request }) {
 			return json({ error: error.message }, { status: 500 });
 		}
 
-		if (targetRecipientId) {
-			try {
-				const channel = supabase.channel(`chronomuse_user_inbox_${targetRecipientId}`);
-				channel.subscribe((status) => {
-					if (status === 'SUBSCRIBED') {
-						channel.send({
-							type: 'broadcast',
-							event: 'friend_change',
-							payload: { sender_id: user_id, receiver_id: targetRecipientId, eventType: 'cancel_request' }
-						});
-					}
-				});
-				const globalChannel = supabase.channel('chronomuse_global_events');
-				globalChannel.subscribe((status) => {
-					if (status === 'SUBSCRIBED') {
-						globalChannel.send({
-							type: 'broadcast',
-							event: 'global_friend_event',
-							payload: { sender_id: user_id, target_id: targetRecipientId, eventType: 'cancel_request' }
-						});
-					}
-				});
-			} catch (e) {}
-		}
-
 		return json({ success: true, message: 'Friend request cancelled' });
 	} catch (err) {
 		return json({ error: err.message }, { status: 500 });

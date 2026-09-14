@@ -36,29 +36,6 @@ export async function POST({ request }) {
 					], { onConflict: 'user_id,friend_id' })
 			]);
 
-			try {
-				const channel = supabase.channel(`chronomuse_user_inbox_${friendReq.sender_id}`);
-				channel.subscribe((status) => {
-					if (status === 'SUBSCRIBED') {
-						channel.send({
-							type: 'broadcast',
-							event: 'friend_change',
-							payload: { sender_id: user_id, receiver_id: friendReq.sender_id, eventType: 'accept_request' }
-						});
-					}
-				});
-				const globalChannel = supabase.channel('chronomuse_global_events');
-				globalChannel.subscribe((status) => {
-					if (status === 'SUBSCRIBED') {
-						globalChannel.send({
-							type: 'broadcast',
-							event: 'global_friend_event',
-							payload: { sender_id: user_id, target_id: friendReq.sender_id, eventType: 'accept_request' }
-						});
-					}
-				});
-			} catch (e) {}
-
 			return json({ success: true, message: 'Friend request accepted!' });
 		} else if (action === 'decline') {
 			// Cleanly remove from database so declined requests do not pile up in pending
@@ -66,29 +43,6 @@ export async function POST({ request }) {
 				.from('chronomuse_friend_requests')
 				.delete()
 				.eq('id', request_id);
-
-			try {
-				const channel = supabase.channel(`chronomuse_user_inbox_${friendReq.sender_id}`);
-				channel.subscribe((status) => {
-					if (status === 'SUBSCRIBED') {
-						channel.send({
-							type: 'broadcast',
-							event: 'friend_change',
-							payload: { sender_id: user_id, receiver_id: friendReq.sender_id, eventType: 'decline_request' }
-						});
-					}
-				});
-				const globalChannel = supabase.channel('chronomuse_global_events');
-				globalChannel.subscribe((status) => {
-					if (status === 'SUBSCRIBED') {
-						globalChannel.send({
-							type: 'broadcast',
-							event: 'global_friend_event',
-							payload: { sender_id: user_id, target_id: friendReq.sender_id, eventType: 'decline_request' }
-						});
-					}
-				});
-			} catch (e) {}
 
 			return json({ success: true, message: 'Friend request declined' });
 		} else {

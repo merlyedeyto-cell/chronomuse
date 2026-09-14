@@ -1168,7 +1168,6 @@
 	}
 
 	let unsubscribePage = $state(/** @type {any} */ (null));
-	let realtimeChannel = $state(/** @type {any} */ (null));
 	let bcBus = /** @type {any} */ (null);
 
 	onMount(() => {
@@ -1213,37 +1212,6 @@
 		};
 		window.addEventListener('popstate', handlePopState);
 
-		try {
-			realtimeChannel = supabase
-				.channel('public:profile_updates')
-				.on('postgres_changes', { event: '*', schema: 'public', table: 'friend_requests' }, () => {
-					loadProfile(targetUserId, true);
-				})
-				.on('postgres_changes', { event: '*', schema: 'public', table: 'friends' }, () => {
-					loadProfile(targetUserId, true);
-				})
-				.on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chronomuse_users' }, (payload) => {
-					const updated = payload.new;
-					const currentId = targetUserId || profileData?.user?.id;
-					if (updated && currentId && String(updated.id) === String(currentId)) {
-						if (updated.note !== undefined) {
-							userNote = updated.note || '';
-						}
-						if (profileData?.user) {
-							profileData = {
-								...profileData,
-								user: {
-									...profileData.user,
-									...updated
-								}
-							};
-						}
-						loadProfile(currentId, true);
-					}
-				})
-				.subscribe();
-		} catch (e) {}
-
 		if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
 			try {
 				bcBus = new BroadcastChannel('chronomuse_realtime_bus');
@@ -1279,11 +1247,6 @@
 
 	onDestroy(() => {
 		if (unsubscribePage) unsubscribePage();
-		if (realtimeChannel) {
-			try {
-				supabase.removeChannel(realtimeChannel);
-			} catch (e) {}
-		}
 		if (bcBus) {
 			try {
 				bcBus.close();

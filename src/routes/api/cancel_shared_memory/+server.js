@@ -63,31 +63,6 @@ export async function POST({ request }) {
 				}
 			}
 
-			// Broadcast cancellation to recipient
-			if (row.recipient_id) {
-				try {
-					const recChannel = supabase.channel(`chronomuse_user_inbox_${row.recipient_id}`);
-					recChannel.subscribe((status) => {
-						if (status === 'SUBSCRIBED') {
-							recChannel.send({
-								type: 'broadcast',
-								event: 'notification',
-								payload: { sender_id: user_id, receiver_id: row.recipient_id, eventType: 'shared_memory_cancelled', memory_id: row.memory_id }
-							});
-						}
-					});
-					const globalChannel = supabase.channel('chronomuse_global_events');
-					globalChannel.subscribe((status) => {
-						if (status === 'SUBSCRIBED') {
-							globalChannel.send({
-								type: 'broadcast',
-								event: 'global_memory_event',
-								payload: { sender_id: user_id, target_id: row.recipient_id, eventType: 'shared_memory_cancelled', memory_id: row.memory_id }
-							});
-						}
-					});
-				} catch (e) {}
-			}
 		}
 
 		return json({

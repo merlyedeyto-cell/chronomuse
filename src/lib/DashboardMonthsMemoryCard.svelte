@@ -14,10 +14,9 @@
 		isEmbedded = false
 	} = $props();
 
-	let selectedYear = $state(currentYear);
+	let selectedYear = $state(new Date().getFullYear());
 	let allMemories = $state([]);
 	let isLoading = $state(true);
-	let realtimeChannel = null;
 
 	const monthNames = [
 		'January', 'February', 'March', 'April', 'May', 'June',
@@ -40,7 +39,6 @@
 	$effect(() => {
 		if (userId) {
 			loadAllMemories();
-			setupRealtime();
 		}
 	});
 
@@ -54,7 +52,6 @@
 	onMount(() => {
 		if (userId) {
 			loadAllMemories();
-			setupRealtime();
 		}
 
 		const handleMemoryChange = () => {
@@ -66,41 +63,8 @@
 		window.addEventListener('chronomuse_memory_change', handleMemoryChange);
 		return () => {
 			window.removeEventListener('chronomuse_memory_change', handleMemoryChange);
-			cleanupRealtime();
 		};
 	});
-
-	function cleanupRealtime() {
-		if (realtimeChannel) {
-			supabase.removeChannel(realtimeChannel);
-			realtimeChannel = null;
-		}
-	}
-
-	function setupRealtime() {
-		if (!userId) return;
-		cleanupRealtime();
-
-		try {
-			realtimeChannel = supabase
-				.channel(`realtime_months_card_${userId}_${Math.random().toString(36).substring(2, 7)}`)
-				.on(
-					'postgres_changes',
-					{
-						event: '*',
-						schema: 'public',
-						table: 'chronomuse_memories',
-						filter: `user_id=eq.${userId}`
-					},
-					() => {
-						loadAllMemories();
-					}
-				)
-				.subscribe();
-		} catch (err) {
-			console.error('Error setting up realtime channel for months card:', err);
-		}
-	}
 
 	async function loadAllMemories() {
 		if (!userId) return;
@@ -321,29 +285,3 @@
 		{@render monthsContent()}
 	</div>
 {/if}
-
-<style>
-	/* Custom scrollbar matching Pinned Memories */
-	.custom-pinned-scroll::-webkit-scrollbar {
-		width: 4px;
-	}
-
-	.custom-pinned-scroll::-webkit-scrollbar-track {
-		background: rgba(254, 226, 238, 0.4);
-		border-radius: 8px;
-	}
-
-	.custom-pinned-scroll::-webkit-scrollbar-thumb {
-		background: #f472b6;
-		border-radius: 8px;
-	}
-
-	.custom-pinned-scroll::-webkit-scrollbar-thumb:hover {
-		background: #f43f8e;
-	}
-
-	.custom-pinned-scroll {
-		scrollbar-width: thin;
-		scrollbar-color: #f472b6 rgba(254, 226, 238, 0.4);
-	}
-</style>

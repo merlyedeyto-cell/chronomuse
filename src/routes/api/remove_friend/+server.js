@@ -36,30 +36,6 @@ export async function POST({ request }) {
 					.delete()
 					.or(`and(sender_id.eq.${user_id},receiver_id.eq.${targetFriendId}),and(sender_id.eq.${targetFriendId},receiver_id.eq.${user_id})`)
 			]);
-
-			// Broadcast realtime unfriend event
-			try {
-				const channel = supabase.channel(`chronomuse_user_inbox_${targetFriendId}`);
-				channel.subscribe((status) => {
-					if (status === 'SUBSCRIBED') {
-						channel.send({
-							type: 'broadcast',
-							event: 'friend_change',
-							payload: { sender_id: user_id, receiver_id: targetFriendId, eventType: 'unfriend' }
-						});
-					}
-				});
-				const globalChannel = supabase.channel('chronomuse_global_events');
-				globalChannel.subscribe((status) => {
-					if (status === 'SUBSCRIBED') {
-						globalChannel.send({
-							type: 'broadcast',
-							event: 'global_friend_event',
-							payload: { sender_id: user_id, target_id: targetFriendId, eventType: 'unfriend' }
-						});
-					}
-				});
-			} catch (e) {}
 		} else if (friendship_id) {
 			await supabase
 				.from('chronomuse_friends')

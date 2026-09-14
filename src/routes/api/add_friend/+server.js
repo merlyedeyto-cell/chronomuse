@@ -85,30 +85,6 @@ export async function POST({ request }) {
 					return json({ error: 'Failed to update friend request: ' + updateError.message }, { status: 500 });
 				}
 
-				// Broadcast friend request event to recipient inbox & global channel
-				try {
-					const channel = supabase.channel(`chronomuse_user_inbox_${targetUser.id}`);
-					channel.subscribe((status) => {
-						if (status === 'SUBSCRIBED') {
-							channel.send({
-								type: 'broadcast',
-								event: 'friend_request',
-								payload: { sender_id: user_id, receiver_id: targetUser.id }
-							});
-						}
-					});
-					const globalChannel = supabase.channel('chronomuse_global_events');
-					globalChannel.subscribe((status) => {
-						if (status === 'SUBSCRIBED') {
-							globalChannel.send({
-								type: 'broadcast',
-								event: 'global_friend_event',
-								payload: { sender_id: user_id, target_id: targetUser.id, eventType: 'friend_request' }
-							});
-						}
-					});
-				} catch (e) {}
-
 				return json({ success: true, request_id: existingRequest.id, message: `Friend request sent to @${targetUser.username}!` });
 			}
 		}
@@ -132,30 +108,6 @@ export async function POST({ request }) {
 			}
 			return json({ error: 'Database error: ' + insertError.message }, { status: 500 });
 		}
-
-		// Broadcast friend request event to recipient inbox & global channel
-		try {
-			const channel = supabase.channel(`chronomuse_user_inbox_${targetUser.id}`);
-			channel.subscribe((status) => {
-				if (status === 'SUBSCRIBED') {
-					channel.send({
-						type: 'broadcast',
-						event: 'friend_request',
-						payload: { sender_id: user_id, receiver_id: targetUser.id }
-					});
-				}
-			});
-			const globalChannel = supabase.channel('chronomuse_global_events');
-			globalChannel.subscribe((status) => {
-				if (status === 'SUBSCRIBED') {
-					globalChannel.send({
-						type: 'broadcast',
-						event: 'global_friend_event',
-						payload: { sender_id: user_id, target_id: targetUser.id, eventType: 'friend_request' }
-					});
-				}
-			});
-		} catch (e) {}
 
 		return json({ success: true, request_id: newReq?.id || null, message: `Friend request sent to ${targetUser.username}!` });
 	} catch (err) {

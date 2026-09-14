@@ -48,33 +48,6 @@ export async function POST({ request }) {
 			.update({ last_activity: new Date().toISOString() })
 			.eq('id', user_id);
 
-		// Real-time broadcast directly to recipient inbox and conversation channel
-		try {
-			const recipientInbox = supabase.channel(`chronomuse_user_inbox_${friend_id}`);
-			recipientInbox.subscribe((status) => {
-				if (status === 'SUBSCRIBED') {
-					recipientInbox.send({
-						type: 'broadcast',
-						event: 'new_message',
-						payload: newMessage
-					});
-				}
-			});
-
-			const id1 = Number(user_id);
-			const id2 = Number(friend_id);
-			const chatChan = supabase.channel(`chat_presence_${Math.min(id1, id2)}_${Math.max(id1, id2)}`);
-			chatChan.subscribe((status) => {
-				if (status === 'SUBSCRIBED') {
-					chatChan.send({
-						type: 'broadcast',
-						event: 'direct_message',
-						payload: newMessage
-					});
-				}
-			});
-		} catch (e) {}
-
 		return json({ success: true, data: newMessage });
 	} catch (err) {
 		return json({ error: err.message }, { status: 500 });

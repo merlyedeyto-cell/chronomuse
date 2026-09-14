@@ -78,29 +78,6 @@ export async function POST({ request }) {
 				.delete()
 				.eq('memory_id', memory_id);
 
-			// 4. Broadcast realtime event to inbox & global channel
-			try {
-				const userChannel = supabase.channel(`chronomuse_user_inbox_${memory.user_id}`);
-				userChannel.subscribe((status) => {
-					if (status === 'SUBSCRIBED') {
-						userChannel.send({
-							type: 'broadcast',
-							event: 'memory_deleted',
-							payload: { memory_id, date: memory.date, user_id: memory.user_id }
-						});
-					}
-				});
-				const globalChannel = supabase.channel('chronomuse_global_events');
-				globalChannel.subscribe((status) => {
-					if (status === 'SUBSCRIBED') {
-						globalChannel.send({
-							type: 'broadcast',
-							event: 'global_memory_event',
-							payload: { memory_id, date: memory.date, user_id: memory.user_id, eventType: 'memory_deleted' }
-						});
-					}
-				});
-			} catch (e) {}
 		}
 
 		return json({

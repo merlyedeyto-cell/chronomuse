@@ -87,77 +87,18 @@ export async function POST({ request }) {
 				}
 			}
 
-			// Broadcast realtime notification to sender
-			if (originalSenderId) {
-				try {
-					const senderChannel = supabase.channel(`chronomuse_user_inbox_${originalSenderId}`);
-					senderChannel.subscribe((status) => {
-						if (status === 'SUBSCRIBED') {
-							senderChannel.send({
-								type: 'broadcast',
-								event: 'notification',
-								payload: { sender_id: user_id, receiver_id: originalSenderId, eventType: 'shared_memory_accepted', memory_id }
-							});
-						}
-					});
-					const globalChannel = supabase.channel('chronomuse_global_events');
-					globalChannel.subscribe((status) => {
-						if (status === 'SUBSCRIBED') {
-							globalChannel.send({
-								type: 'broadcast',
-								event: 'global_memory_event',
-								payload: { sender_id: user_id, target_id: originalSenderId, eventType: 'shared_memory_accepted', memory_id }
-							});
-						}
-					});
-				} catch (e) {}
-			}
-
 			return json({
 				success: true,
 				message: 'Shared memory accepted and saved to your calendar!',
 				memory_date: memoryToCopy ? memoryToCopy.date : null
 			});
 		} else if (action === 'decline') {
-			let originalSenderId = null;
 			if (share_id) {
-				const { data: shareRow } = await supabase
-					.from('chronomuse_shared_memories')
-					.select('sender_id')
-					.eq('id', share_id)
-					.maybeSingle();
-				originalSenderId = shareRow?.sender_id || null;
-
 				await supabase
 					.from('chronomuse_shared_memories')
 					.delete()
 					.eq('id', share_id)
 					.eq('recipient_id', user_id);
-			}
-
-			if (originalSenderId) {
-				try {
-					const senderChannel = supabase.channel(`chronomuse_user_inbox_${originalSenderId}`);
-					senderChannel.subscribe((status) => {
-						if (status === 'SUBSCRIBED') {
-							senderChannel.send({
-								type: 'broadcast',
-								event: 'notification',
-								payload: { sender_id: user_id, receiver_id: originalSenderId, eventType: 'shared_memory_declined', memory_id }
-							});
-						}
-					});
-					const globalChannel = supabase.channel('chronomuse_global_events');
-					globalChannel.subscribe((status) => {
-						if (status === 'SUBSCRIBED') {
-							globalChannel.send({
-								type: 'broadcast',
-								event: 'global_memory_event',
-								payload: { sender_id: user_id, target_id: originalSenderId, eventType: 'shared_memory_declined', memory_id }
-							});
-						}
-					});
-				} catch (e) {}
 			}
 
 			return json({ success: true, message: 'Shared memory request declined.' });
