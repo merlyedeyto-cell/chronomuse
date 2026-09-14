@@ -2,6 +2,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import SelectOptionModal from '$lib/SelectOptionModal.svelte';
+	import { compressImage } from '$lib/imageOptimizer.js';
 
 	const dispatch = createEventDispatcher();
 
@@ -147,6 +148,10 @@
 			photoVideo = file;
 			if (photoVideoPreview) URL.revokeObjectURL(photoVideoPreview);
 			photoVideoPreview = URL.createObjectURL(file);
+			// Optimize image in background for lightning-fast uploads & reduced storage
+			compressImage(file).then(compressed => {
+				photoVideo = compressed;
+			}).catch(() => {});
 		}
 	}
 

@@ -43,9 +43,6 @@
 			} catch (e) {}
 			globalEventsChannel = null;
 		}
-		try {
-			supabase.removeAllChannels();
-		} catch (e) {}
 		subscribedUserId = null;
 		lastTotalNotifs = null;
 		lastSeenMessageId = 0;
@@ -58,7 +55,7 @@
 		}
 
 		const activeUser = getActiveLoggedInUser();
-		if (!activeUser?.id || Number(activeUser.id) !== Number(subscribedUserId)) {
+		if (!activeUser?.id || String(activeUser.id) !== String(subscribedUserId)) {
 			// User logged out or switched accounts
 			syncUserStateAndListeners();
 			return;
@@ -74,7 +71,7 @@
 			
 			// Verify again that user is still active before playing any sound
 			const verifiedUser = getActiveLoggedInUser();
-			if (!verifiedUser?.id || Number(verifiedUser.id) !== Number(subscribedUserId)) {
+			if (!verifiedUser?.id || String(verifiedUser.id) !== String(subscribedUserId)) {
 				syncUserStateAndListeners();
 				return;
 			}
@@ -111,7 +108,7 @@
 		}
 
 		// Case 2: Already subscribed to this exact active user
-		if (subscribedUserId === activeUser.id && globalMsgChannel && globalEventsChannel) {
+		if (subscribedUserId !== null && String(subscribedUserId) === String(activeUser.id) && globalMsgChannel && globalEventsChannel) {
 			user = activeUser;
 			return;
 		}

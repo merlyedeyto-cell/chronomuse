@@ -1,5 +1,5 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { playClickSound } from '$lib/soundEffects.js';
 
@@ -30,9 +30,14 @@
 	}
 
 	$effect(() => {
-		if (userId) {
-			loadStats();
-		}
+		const uid = userId;
+		untrack(() => {
+			if (uid) {
+				loadStats();
+			} else {
+				isLoading = false;
+			}
+		});
 	});
 
 	onMount(() => {
@@ -41,6 +46,8 @@
 
 		if (userId) {
 			loadStats();
+		} else {
+			isLoading = false;
 		}
 
 		const handleUpdate = () => {

@@ -9,6 +9,7 @@
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
 	import EditProfileModal from '$lib/EditProfileModal.svelte';
+	import { compressImage } from '$lib/imageOptimizer.js';
 
 	let currentUser = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let targetUserId = $state(null);
@@ -204,16 +205,17 @@
 		playClickSound();
 
 		try {
+			const optimizedFile = await compressImage(file, { maxWidth: 1920, maxHeight: 1080, quality: 0.85 });
 			const reader = new FileReader();
 			const dataUrlPromise = new Promise((resolve) => {
 				reader.onload = (readerEvent) => {
 					resolve(readerEvent.target?.result?.toString() || '');
 				};
 			});
-			reader.readAsDataURL(file);
+			reader.readAsDataURL(optimizedFile);
 			const dataUrl = await dataUrlPromise;
 
-			const fileExt = file.name.split('.').pop() || 'jpg';
+			const fileExt = optimizedFile.name.split('.').pop() || 'jpg';
 			const filePath = `covers/${currentUser.id}_${Date.now()}.${fileExt}`;
 
 			let finalCoverUrl = null;
@@ -221,7 +223,7 @@
 			// Try avatars bucket first
 			const { error: uploadError } = await supabase.storage
 				.from('avatars')
-				.upload(filePath, file, { upsert: true });
+				.upload(filePath, optimizedFile, { upsert: true });
 
 			if (!uploadError) {
 				const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
@@ -861,6 +863,7 @@
 		playClickSound();
 
 		try {
+			const optimizedFile = await compressImage(file, { maxWidth: 800, maxHeight: 800, quality: 0.85 });
 			let dataUrl = '';
 			const reader = new FileReader();
 			const readerPromise = new Promise((resolve) => {
@@ -869,9 +872,9 @@
 					resolve(dataUrl);
 				};
 			});
-			reader.readAsDataURL(file);
+			reader.readAsDataURL(optimizedFile);
 
-			const fileExt = file.name.split('.').pop() || 'jpg';
+			const fileExt = optimizedFile.name.split('.').pop() || 'jpg';
 			const filePath = `avatars/${currentUser.id}_${Date.now()}.${fileExt}`;
 
 			let avatarUrl = null;
@@ -879,7 +882,7 @@
 			// Try avatars bucket first
 			const { error: uploadError } = await supabase.storage
 				.from('avatars')
-				.upload(filePath, file, { upsert: true });
+				.upload(filePath, optimizedFile, { upsert: true });
 
 			if (!uploadError) {
 				const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);

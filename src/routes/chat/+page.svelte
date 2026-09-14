@@ -8,6 +8,7 @@
 	import { broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
+	import { compressImage } from '$lib/imageOptimizer.js';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let friends = $state([]);
@@ -1631,13 +1632,14 @@
 		isUploadingImage = true;
 		try {
 			for (const file of files) {
-				const fileExt = file.name.split('.').pop();
+				const optimizedFile = await compressImage(file, { maxWidth: 1600, maxHeight: 1600, quality: 0.82 });
+				const fileExt = optimizedFile.name.split('.').pop() || 'jpg';
 				const fileName = `chat_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
 				const filePath = `${user.id}/${fileName}`;
 
 				const { error: uploadError } = await supabase.storage
 					.from('memories')
-					.upload(filePath, file);
+					.upload(filePath, optimizedFile);
 
 				if (uploadError) {
 					console.error('Image upload failed:', file.name, uploadError.message);

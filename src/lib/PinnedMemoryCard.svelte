@@ -1,5 +1,5 @@
 <script>
-	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
+	import { onMount, onDestroy, createEventDispatcher, untrack } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { playClickSound } from '$lib/soundEffects.js';
 	import DashboardMonthsMemoryCard from '$lib/DashboardMonthsMemoryCard.svelte';
@@ -20,14 +20,22 @@
 	let showMonthsFilter = $state(false);
 
 	$effect(() => {
-		if (userId) {
-			loadPinnedMemories();
-		}
+		const uid = userId;
+		untrack(() => {
+			if (uid) {
+				loadPinnedMemories();
+			} else {
+				isLoading = false;
+				pinnedMemories = [];
+			}
+		});
 	});
 
 	onMount(() => {
 		if (userId) {
 			loadPinnedMemories();
+		} else {
+			isLoading = false;
 		}
 
 		const handleRealtimeChange = () => {
@@ -59,7 +67,6 @@
 		fetch(`${API_ENDPOINTS.getPinnedMemories}?user_id=${userId}`, { cache: 'no-store' })
 			.then(response => response.json())
 			.then(data => {
-				isLoading = false;
 				if (data.success && Array.isArray(data.data)) {
 					pinnedMemories = data.data;
 				} else {
@@ -67,9 +74,11 @@
 				}
 			})
 			.catch(error => {
-				isLoading = false;
 				console.error('Error fetching pinned memories:', error);
 				pinnedMemories = [];
+			})
+			.finally(() => {
+				isLoading = false;
 			});
 	}
 

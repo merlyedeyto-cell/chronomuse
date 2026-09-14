@@ -1,5 +1,5 @@
 <script>
-	import { onMount, createEventDispatcher } from 'svelte';
+	import { onMount, createEventDispatcher, untrack } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { playClickSound } from '$lib/soundEffects.js';
 
@@ -11,13 +11,22 @@
 	let isLoading = $state(true);
 
 	$effect(() => {
-		if (userId) {
-			loadFlashback();
-		}
+		const uid = userId;
+		untrack(() => {
+			if (uid) {
+				loadFlashback();
+			} else {
+				isLoading = false;
+			}
+		});
 	});
 
 	onMount(() => {
-		if (userId) loadFlashback();
+		if (userId) {
+			loadFlashback();
+		} else {
+			isLoading = false;
+		}
 
 		const handleUpdate = () => {
 			if (userId) loadFlashback();
