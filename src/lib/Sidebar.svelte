@@ -169,12 +169,17 @@
 
 	onMount(() => {
 		fetchPendingRequests();
-		const interval = setInterval(fetchPendingRequests, 2500);
+		const interval = setInterval(fetchPendingRequests, 45000);
 
 		const handleRealtimeChange = () => {
 			fetchPendingRequests();
 		};
 
+		const handleWindowFocus = () => {
+			fetchPendingRequests();
+		};
+
+		window.addEventListener('focus', handleWindowFocus);
 		window.addEventListener('chronomuse_friend_change', handleRealtimeChange);
 		window.addEventListener('chronomuse_notification_change', handleRealtimeChange);
 		window.addEventListener('chronomuse_new_message', handleRealtimeChange);
@@ -182,6 +187,7 @@
 
 		return () => {
 			clearInterval(interval);
+			window.removeEventListener('focus', handleWindowFocus);
 			window.removeEventListener('chronomuse_friend_change', handleRealtimeChange);
 			window.removeEventListener('chronomuse_notification_change', handleRealtimeChange);
 			window.removeEventListener('chronomuse_new_message', handleRealtimeChange);

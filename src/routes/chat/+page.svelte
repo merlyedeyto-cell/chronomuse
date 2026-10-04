@@ -307,11 +307,12 @@
 		fetchNotes();
 
 		pollInterval = setInterval(() => {
+			if (typeof document !== 'undefined' && document.hidden) return;
 			fetchChatList();
 			if (activeFriend) {
 				fetchMessages(activeFriend.friend_id, false);
 			}
-		}, 2000);
+		}, 20000);
 
 		const handleRealtimeChatMessage = (e) => {
 			fetchChatList();

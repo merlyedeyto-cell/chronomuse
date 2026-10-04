@@ -159,10 +159,11 @@
 
 			// Fallback interval to ensure memory updates across devices
 			syncInterval = setInterval(() => {
+				if (typeof document !== 'undefined' && document.hidden) return;
 				if (selectedDate) {
 					loadMemoriesForDate(selectedDate);
 				}
-			}, 10000);
+			}, 60000);
 		}
 
 		return () => {

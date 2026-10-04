@@ -37,7 +37,9 @@ export async function POST({ request }) {
 			supabase
 				.from('chronomuse_memories')
 				.select('date, description, memory_tag, title')
-				.eq('user_id', targetUserId),
+				.eq('user_id', targetUserId)
+				.order('created_at', { ascending: false })
+				.limit(50),
 			supabase
 				.from('chronomuse_friend_requests')
 				.select('id, sender_id, created_at')

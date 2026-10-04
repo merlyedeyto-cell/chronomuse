@@ -188,7 +188,7 @@
 	onMount(() => {
 		lastPathname = $page?.url?.pathname || '';
 		fetchBadgeCounts();
-		const interval = setInterval(fetchBadgeCounts, 2500);
+		const interval = setInterval(fetchBadgeCounts, 45000);
 
 		// Show 1-time per login "Open Menu" callout prompt
 		if (typeof window !== 'undefined') {
@@ -210,12 +210,18 @@
 			fetchBadgeCounts();
 		};
 
+		const handleWindowFocus = () => {
+			fetchBadgeCounts();
+		};
+
+		window.addEventListener('focus', handleWindowFocus);
 		window.addEventListener('chronomuse_new_message', handleRealtime);
 		window.addEventListener('chronomuse_friend_change', handleRealtime);
 		window.addEventListener('chronomuse_notification_change', handleRealtime);
 
 		return () => {
 			clearInterval(interval);
+			window.removeEventListener('focus', handleWindowFocus);
 			window.removeEventListener('chronomuse_new_message', handleRealtime);
 			window.removeEventListener('chronomuse_friend_change', handleRealtime);
 			window.removeEventListener('chronomuse_notification_change', handleRealtime);

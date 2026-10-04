@@ -9,30 +9,35 @@ export async function POST({ request }) {
 			return json({ error: 'User ID is required' }, { status: 400 });
 		}
 
-		// 1. Get all friends of this user
-		const { data: friendships } = await supabase
-			.from('chronomuse_friends')
-			.select('friend_id')
-			.eq('user_id', user_id);
+		// 1 & 2. Get friends and recent conversation partners concurrently
+		const [friendshipsRes, sentRes, receivedRes] = await Promise.all([
+			supabase
+				.from('chronomuse_friends')
+				.select('friend_id')
+				.eq('user_id', user_id),
+			supabase
+				.from('chronomuse_messages')
+				.select('receiver_id')
+				.eq('sender_id', user_id)
+				.order('created_at', { ascending: false })
+				.limit(100),
+			supabase
+				.from('chronomuse_messages')
+				.select('sender_id')
+				.eq('receiver_id', user_id)
+				.order('created_at', { ascending: false })
+				.limit(100)
+		]);
 
-		const friendIds = (friendships || []).map(f => Number(f.friend_id));
+		const friendIds = (friendshipsRes.data || []).map(f => Number(f.friend_id));
 		const friendIdSet = new Set(friendIds);
-
-		// 2. Get distinct conversation partners from chronomuse_messages (both sent and received)
-		const { data: sentMessages } = await supabase
-			.from('chronomuse_messages')
-			.select('receiver_id')
-			.eq('sender_id', user_id);
-
-		const { data: receivedMessages } = await supabase
-			.from('chronomuse_messages')
-			.select('sender_id')
-			.eq('receiver_id', user_id);
+		const sentMessages = sentRes.data || [];
+		const receivedMessages = receivedRes.data || [];
 
 		const allPartnerIds = new Set();
 		friendIds.forEach(id => allPartnerIds.add(id));
-		(sentMessages || []).forEach(m => allPartnerIds.add(Number(m.receiver_id)));
-		(receivedMessages || []).forEach(m => allPartnerIds.add(Number(m.sender_id)));
+		sentMessages.forEach(m => allPartnerIds.add(Number(m.receiver_id)));
+		receivedMessages.forEach(m => allPartnerIds.add(Number(m.sender_id)));
 		allPartnerIds.delete(Number(user_id));
 
 		const allPartnerIdsArray = Array.from(allPartnerIds);

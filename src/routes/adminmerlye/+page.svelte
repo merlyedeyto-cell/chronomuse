@@ -154,12 +154,13 @@
 			currentTime = Date.now();
 		}, 15000);
 
-		// Polling interval for background metrics (5s debounce interval)
+		// Polling interval for background metrics (60s fallback interval)
 		const autoRefreshInterval = setInterval(() => {
+			if (typeof document !== 'undefined' && document.hidden) return;
 			if (isAuthenticated && !isLoadingData) {
 				loadAdminData(true);
 			}
-		}, 5000);
+		}, 60000);
 
 		// Postgres Table Changes (DB-level sync with debounce)
 		const dbChannel = supabase.channel('chronomuse_admin_db_sync');

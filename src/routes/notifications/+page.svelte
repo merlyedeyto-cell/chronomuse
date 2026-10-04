@@ -76,12 +76,20 @@
 		window.addEventListener('chronomuse_friend_change', handleRealtimeNotifs);
 		window.addEventListener('chronomuse_memory_change', handleRealtimeNotifs);
 
-		// Periodic background polling
-		autoSyncNotifsInterval = setInterval(() => {
+		const handleWindowFocus = () => {
 			fetchNotifications(true);
-		}, 3000);
+		};
+
+		window.addEventListener('focus', handleWindowFocus);
+
+		// Fallback background polling
+		autoSyncNotifsInterval = setInterval(() => {
+			if (typeof document !== 'undefined' && document.hidden) return;
+			fetchNotifications(true);
+		}, 45000);
 
 		return () => {
+			window.removeEventListener('focus', handleWindowFocus);
 			window.removeEventListener('chronomuse_auth_change', handleAuthOrStorage);
 			window.removeEventListener('storage', handleAuthOrStorage);
 			window.removeEventListener('chronomuse_notification_change', handleRealtimeNotifs);

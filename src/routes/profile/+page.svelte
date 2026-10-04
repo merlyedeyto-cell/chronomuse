@@ -792,12 +792,22 @@
 		updateNoteTimer();
 		noteTimerInterval = setInterval(updateNoteTimer, 1000);
 
-		const autoSyncTimer = setInterval(() => {
+		const handleWindowFocus = () => {
 			const activeId = targetUserId || $page.url.searchParams.get('id') || $page.url.searchParams.get('user_id') || currentUser?.id;
 			if (activeId) {
 				loadProfile(activeId, true);
 			}
-		}, 2000);
+		};
+
+		window.addEventListener('focus', handleWindowFocus);
+
+		const autoSyncTimer = setInterval(() => {
+			if (typeof document !== 'undefined' && document.hidden) return;
+			const activeId = targetUserId || $page.url.searchParams.get('id') || $page.url.searchParams.get('user_id') || currentUser?.id;
+			if (activeId) {
+				loadProfile(activeId, true);
+			}
+		}, 60000);
 
 		const handleRealtimeNoteChange = (e) => {
 			const detail = e?.detail;
@@ -837,6 +847,7 @@
 		window.addEventListener('chronomuse_note_change', handleRealtimeNoteChange);
 		window.addEventListener('chronomuse_profile_change', handleRealtimeProfileChange);
 		return () => {
+			window.removeEventListener('focus', handleWindowFocus);
 			if (autoSyncTimer) clearInterval(autoSyncTimer);
 			if (noteTimerInterval) clearInterval(noteTimerInterval);
 			window.removeEventListener('chronomuse_note_change', handleRealtimeNoteChange);

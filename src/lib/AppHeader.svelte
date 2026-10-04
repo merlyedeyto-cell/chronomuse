@@ -121,17 +121,23 @@
 		fetchNotifications();
 		fetchUnreadChats();
 
-		// Sane fallback polling interval (12 seconds) to avoid network clogging
+		// Sane fallback polling interval (60 seconds) to avoid network clogging
 		const interval = setInterval(() => {
 			fetchNotifications();
 			fetchUnreadChats();
-		}, 12000);
+		}, 60000);
 
 		const handleRealtime = () => {
 			fetchNotifications();
 			fetchUnreadChats();
 		};
 
+		const handleWindowFocus = () => {
+			fetchNotifications();
+			fetchUnreadChats();
+		};
+
+		window.addEventListener('focus', handleWindowFocus);
 		window.addEventListener('chronomuse_notification_change', handleRealtime);
 		window.addEventListener('chronomuse_friend_change', handleRealtime);
 		window.addEventListener('chronomuse_memory_change', handleRealtime);
@@ -139,6 +145,7 @@
 
 		return () => {
 			clearInterval(interval);
+			window.removeEventListener('focus', handleWindowFocus);
 			window.removeEventListener('chronomuse_notification_change', handleRealtime);
 			window.removeEventListener('chronomuse_friend_change', handleRealtime);
 			window.removeEventListener('chronomuse_memory_change', handleRealtime);

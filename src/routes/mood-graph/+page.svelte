@@ -448,8 +448,9 @@
 		window.addEventListener('chronomuse_auth_change', handleAuthChange);
 
 		autoSyncNotifsInterval = setInterval(() => {
+			if (typeof document !== 'undefined' && document.hidden) return;
 			checkNotifications();
-		}, 8000);
+		}, 60000);
 
 		return () => {
 			if (autoSyncNotifsInterval) clearInterval(autoSyncNotifsInterval);

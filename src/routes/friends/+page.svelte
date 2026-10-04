@@ -76,15 +76,26 @@
 		window.addEventListener('chronomuse_profile_change', handleRealtimeUpdate);
 		window.addEventListener('chronomuse_note_change', handleRealtimeUpdate);
 
-		// Fast periodic polling to ensure zero delay across different tabs/browsers without flashing loading state
-		autoSyncInterval = setInterval(() => {
+		const handleWindowFocus = () => {
 			if (user && user.id) {
 				fetchFriends(true);
 				fetchPendingRequests(true);
 			}
-		}, 2500);
+		};
+
+		window.addEventListener('focus', handleWindowFocus);
+
+		// Fallback periodic polling
+		autoSyncInterval = setInterval(() => {
+			if (typeof document !== 'undefined' && document.hidden) return;
+			if (user && user.id) {
+				fetchFriends(true);
+				fetchPendingRequests(true);
+			}
+		}, 45000);
 
 		return () => {
+			window.removeEventListener('focus', handleWindowFocus);
 			window.removeEventListener('chronomuse_friend_change', handleRealtimeUpdate);
 			window.removeEventListener('chronomuse_notification_change', handleRealtimeUpdate);
 			window.removeEventListener('chronomuse_profile_change', handleRealtimeUpdate);

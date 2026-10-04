@@ -123,7 +123,7 @@
 		const targetUserId = activeUser.id;
 
 		checkNotificationsCount();
-		notifPollInterval = setInterval(checkNotificationsCount, 10000);
+		notifPollInterval = setInterval(checkNotificationsCount, 60000);
 
 		// Global Realtime Events channel for fast cross-client sync
 		globalEventsChannel = supabase.channel('chronomuse_global_events');
