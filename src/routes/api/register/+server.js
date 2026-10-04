@@ -36,13 +36,25 @@ export async function POST({ request }) {
 		const hashedPassword = await bcrypt.hash(password, 10);
 
 		// Insert user
-		const { data: newUser, error: insertError } = await supabase
+		let { data: newUser, error: insertError } = await supabase
 			.from('chronomuse_users')
 			.insert([
 				{ username, email, password: hashedPassword, last_activity: new Date().toISOString() }
 			])
 			.select('id, username, email, avatar_url')
 			.single();
+
+		if (insertError && insertError.message?.includes('avatar_url')) {
+			const fallback = await supabase
+				.from('chronomuse_users')
+				.insert([
+					{ username, email, password: hashedPassword, last_activity: new Date().toISOString() }
+				])
+				.select('id, username, email')
+				.single();
+			newUser = fallback.data;
+			insertError = fallback.error;
+		}
 
 		if (insertError) {
 			return json({ error: 'Database error: ' + insertError.message }, { status: 500 });
