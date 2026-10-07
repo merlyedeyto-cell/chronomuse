@@ -1960,7 +1960,7 @@
 										</div>
 									</button>
 
-									<div class="flex items-center space-x-1.5 flex-shrink-0">
+									<div class="flex items-center space-x-1 flex-shrink-0">
 										{#if String(friend.id || friend.friend_id || friend.user_id) === String(currentUser?.id)}
 											<span class="px-2.5 py-1 bg-pink-50 text-[#f43f8e] font-black text-[11px] rounded-lg border border-pink-200">
 												You
@@ -1968,16 +1968,21 @@
 										{:else}
 											<button
 												onclick={() => viewUserProfile(friend)}
-												class="px-2.5 py-1 bg-white border border-pink-200 text-pink-500 font-black text-[11px] rounded-lg hover:bg-pink-50 transition-all cursor-pointer shadow-2xs"
+												class="p-1.5 sm:p-2 rounded-xl flex items-center justify-center text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-150 cursor-pointer"
+												title="View Profile"
+												aria-label="View Profile"
 											>
-												Profile
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+												</svg>
 											</button>
 											<button
 												onclick={() => openChatWithUser(friend)}
-												class="w-8 h-8 rounded-lg bg-[#f43f8e] hover:bg-[#e0337f] text-white flex items-center justify-center shadow-2xs transition-all active:scale-95 cursor-pointer"
+												class="p-1.5 sm:p-2 rounded-xl flex items-center justify-center text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-150 cursor-pointer"
 												title="Chat"
+												aria-label="Chat"
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
 													<path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.818-.818 5.969 5.969 0 011.057-3.035C4.646 15.657 4 13.916 4 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
 												</svg>
 											</button>
@@ -2019,12 +2024,18 @@
 									</div>
 								</button>
 
-								<button
-									onclick={() => viewUserProfile(mutual)}
-									class="px-2.5 py-1 bg-white border border-pink-200 text-pink-500 font-black text-[11px] rounded-lg hover:bg-pink-50 transition-all cursor-pointer shadow-2xs"
-								>
-									Profile
-								</button>
+								<div class="flex items-center space-x-1 flex-shrink-0">
+									<button
+										onclick={() => viewUserProfile(mutual)}
+										class="p-1.5 sm:p-2 rounded-xl flex items-center justify-center text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-150 cursor-pointer"
+										title="View Profile"
+										aria-label="View Profile"
+									>
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+											<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+										</svg>
+									</button>
+								</div>
 							</div>
 						{/each}
 					</div>
