@@ -93,11 +93,7 @@
 
 	<!-- Main Content Area -->
 	<main class="flex-grow flex flex-col justify-center items-center p-0 w-full">
-		{#if children}
-			{@render children()}
-		{:else}
-			<slot />
-		{/if}
+		{@render children?.()}
 	</main>
 
 	<!-- Footer -->
