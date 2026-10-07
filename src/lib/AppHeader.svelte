@@ -154,7 +154,7 @@
 	});
 </script>
 
-<header class="bg-pink-100/90 sm:bg-pink-100/95 backdrop-blur-md sticky top-0 z-40 transition-all border-b border-pink-200/60 shadow-xs">
+<header class="bg-white/95 backdrop-blur-md sticky top-0 z-40 transition-all border-b border-pink-100/90 shadow-2xs">
 	<div class="max-w-6xl xl:max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 flex items-center justify-between gap-3">
 		<!-- Left: Logo & App Brand -->
 		<a href="/dashboard" class="flex items-center space-x-2.5 sm:space-x-3 group cursor-pointer select-none">
@@ -165,44 +165,26 @@
 		</a>
 
 		<!-- Right Container: Desktop Navigation + Action Buttons -->
-		<div class="flex items-center space-x-2.5 sm:space-x-3 lg:space-x-4">
-			<!-- Desktop Navigation Bar (Tabs) -->
-			<nav class="hidden md:flex items-center space-x-1 sm:space-x-1.5 bg-white/95 backdrop-blur-md px-2 py-1 rounded-full border border-pink-200/90 shadow-2xs font-sans">
+		<div class="flex items-center space-x-4 sm:space-x-6 lg:space-x-7">
+			<!-- Desktop Navigation Bar (Text only with active pink underline) -->
+			<nav class="hidden md:flex items-center space-x-5 lg:space-x-7 font-sans">
 				{#each navItems as item, idx}
 					<button
 						type="button"
 						onclick={() => handleNavigate(item.path)}
-						class="px-3 lg:px-3.5 py-1.5 rounded-full text-xs lg:text-[13px] font-black transition-all flex items-center space-x-1.5 cursor-pointer select-none active:scale-95 {activeIndex === idx ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-[#f43f8e] hover:bg-pink-50'}"
+						class="relative py-1 text-xs lg:text-[13.5px] font-black tracking-tight transition-colors cursor-pointer select-none flex items-center {activeIndex === idx ? 'text-[#f43f8e]' : 'text-pink-600 hover:text-[#f43f8e]'}"
 					>
-						{#if item.id === 'dashboard'}
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 lg:w-4 lg:h-4">
-								<path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75A3.75 3.75 0 0122.5 8.25v10.5A3.75 3.75 0 0118.75 22.5H5.25A3.75 3.75 0 011.5 18.75V8.25A3.75 3.75 0 015.25 4.5H6V3a.75.75 0 01.75-.75zm12 6.75H5.25a2.25 2.25 0 00-2.25 2.25v7.5a2.25 2.25 0 002.25 2.25h13.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25zM6.75 12.75a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H7.5a.75.75 0 01-.75-.75zm4.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H12a.75.75 0 01-.75-.75zm4.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H16.5a.75.75 0 01-.75-.75zm-9 3.75a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H7.5a.75.75 0 01-.75-.75zm4.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H12a.75.75 0 01-.75-.75zm4.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H16.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
-							</svg>
-						{:else if item.id === 'moods'}
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 lg:w-4 lg:h-4">
-								<path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z" />
-							</svg>
-						{:else if item.id === 'friends'}
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 lg:w-4 lg:h-4">
-								<path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.122a.75.75 0 01-.749.75H4a.75.75 0 01-.749-.75l-.001-.122v-.003zM18.75 6.75a.75.75 0 00-.75.75v1.5h-1.5a.75.75 0 000 1.5h1.5v1.5a.75.75 0 001.5 0v-1.5h1.5a.75.75 0 000-1.5h-1.5v-1.5a.75.75 0 00-.75-.75z" />
-							</svg>
-						{:else if item.id === 'chat'}
-							<div class="relative flex items-center justify-center">
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 lg:w-4 lg:h-4">
-									<path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.523 0 10-4.03 10-9s-4.477-9-10-9-10 4.03-10 9c0 2.215.88 4.25 2.377 5.797l-1.077 3.32a.75.75 0 00.904.927zM7.5 12a1 1 0 112 0 1 1 0 01-2 0zm3.5 0a1 1 0 112 0 1 1 0 01-2 0zm4.5-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
-								</svg>
-								{#if unreadChatsCount > 0}
-									<span class="absolute -top-1.5 -right-2 min-w-3.5 h-3.5 px-0.5 bg-amber-400 text-rose-900 border border-white text-[8px] font-black rounded-full flex items-center justify-center shadow-xs animate-pulse">
-										{unreadChatsCount > 9 ? '9+' : unreadChatsCount}
-									</span>
-								{/if}
-							</div>
-						{:else if item.id === 'profile'}
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 lg:w-4 lg:h-4">
-								<path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
-							</svg>
+						<span class="relative">
+							{item.label}
+							{#if item.id === 'chat' && unreadChatsCount > 0}
+								<span class="absolute -top-1.5 -right-3.5 min-w-3.5 h-3.5 px-0.5 bg-[#f43f5e] text-white text-[8px] font-black rounded-full flex items-center justify-center shadow-xs animate-pulse">
+									{unreadChatsCount > 9 ? '9+' : unreadChatsCount}
+								</span>
+							{/if}
+						</span>
+						{#if activeIndex === idx}
+							<span class="absolute -bottom-1 left-0 right-0 h-[2.5px] bg-[#f43f8e] rounded-full"></span>
 						{/if}
-						<span>{item.label}</span>
 					</button>
 				{/each}
 			</nav>
@@ -213,7 +195,7 @@
 				<button
 					type="button"
 					onclick={handleNotificationClick}
-					class="p-1.5 sm:p-2 rounded-xl flex items-center justify-center relative text-pink-500 hover:text-[#f43f8e] hover:bg-pink-200/40 active:scale-95 transition-all duration-150 cursor-pointer"
+					class="p-1.5 sm:p-2 rounded-xl flex items-center justify-center relative text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-150 cursor-pointer"
 					class:text-[#f43f8e]={$page.url.pathname === '/notifications'}
 					aria-label="Notifications"
 					title="Notifications"
@@ -233,7 +215,7 @@
 				<button
 					type="button"
 					onclick={handleSettingsClick}
-					class="p-1.5 sm:p-2 rounded-xl flex items-center justify-center text-pink-500 hover:text-[#f43f8e] hover:bg-pink-200/40 active:scale-95 transition-all duration-150 cursor-pointer"
+					class="p-1.5 sm:p-2 rounded-xl flex items-center justify-center text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-150 cursor-pointer"
 					class:text-[#f43f8e]={$page.url.pathname === '/settings'}
 					aria-label="Settings"
 					title="Settings"
@@ -247,7 +229,7 @@
 				<button
 					type="button"
 					onclick={() => { playClickSound(); showLogoutModal = true; }}
-					class="p-1.5 sm:p-2 rounded-xl flex items-center justify-center text-pink-500 hover:text-rose-600 hover:bg-pink-200/40 active:scale-95 transition-all duration-150 cursor-pointer"
+					class="p-1.5 sm:p-2 rounded-xl flex items-center justify-center text-pink-500 hover:text-rose-600 hover:bg-pink-50 active:scale-95 transition-all duration-150 cursor-pointer"
 					aria-label="Logout"
 					title="Log Out"
 				>
