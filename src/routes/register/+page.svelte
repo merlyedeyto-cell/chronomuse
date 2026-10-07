@@ -3,6 +3,7 @@
 	import TopBar from '$lib/TopBar.svelte';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import { CheckCircle, AlertCircle } from 'lucide-svelte';
 
 	let showToast = $state(false);
 	let toastMessage = $state('');
@@ -80,13 +81,9 @@
 					class="px-6 py-3 rounded-2xl border flex items-center space-x-3 shadow-xl {toastType === 'success' ? 'bg-gradient-to-r from-[#f43f8e] to-pink-500 border-pink-300/40 text-white shadow-pink-500/20' : 'bg-gradient-to-r from-rose-500 to-pink-600 border-rose-400 text-white shadow-pink-500/20'}"
 				>
 					{#if toastType === 'success'}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-white flex-shrink-0">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-						</svg>
+						<CheckCircle class="w-5 h-5 text-white flex-shrink-0" />
 					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-white flex-shrink-0">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-						</svg>
+						<AlertCircle class="w-5 h-5 text-white flex-shrink-0" />
 					{/if}
 					<span class="text-sm font-black">{toastMessage}</span>
 				</div>

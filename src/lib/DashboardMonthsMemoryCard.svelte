@@ -3,6 +3,7 @@
 	import { supabase } from '$lib/supabaseClient';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { playClickSound } from '$lib/soundEffects.js';
+	import { ChevronLeft, ChevronRight, Calendar, Info } from 'lucide-svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -170,9 +171,7 @@
 					title="Previous Year"
 					aria-label="Previous Year"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-					</svg>
+					<ChevronLeft class="w-3 h-3" />
 				</button>
 				<span class="text-[11px] font-black text-[#f43f8e] px-1 select-none">{selectedYear}</span>
 				<button
@@ -182,9 +181,7 @@
 					title="Next Year"
 					aria-label="Next Year"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
-						<path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-					</svg>
+					<ChevronRight class="w-3 h-3" />
 				</button>
 			</div>
 		{/if}
@@ -209,9 +206,7 @@
 	{:else if displayedMonths.length === 0}
 		<div class="flex-1 flex flex-col items-center justify-center text-center py-2">
 			<div class="w-9 h-9 rounded-2xl bg-pink-50 border border-pink-100 text-pink-300 flex items-center justify-center mx-auto mb-1.5">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-				</svg>
+				<Calendar class="w-4 h-4" />
 			</div>
 			<p class="text-xs font-bold text-pink-400">No memories for {selectedYear}</p>
 			<p class="text-[10px] text-pink-400/80 mt-0.5 font-medium">Add a memory on the calendar to see it here</p>
@@ -252,9 +247,7 @@
 			<!-- Description & Hint Note in the bottom space -->
 			<div class="pt-1.5 border-t border-pink-100/70 flex items-center justify-between text-[9.5px] sm:text-[10px] text-pink-400 font-bold px-0.5">
 				<span class="flex items-center gap-1 truncate min-w-0 pr-1">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-[#f43f8e] flex-shrink-0">
-						<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" />
-					</svg>
+					<Info class="w-3 h-3 text-[#f43f8e] flex-shrink-0" />
 					<span class="truncate">Tap any month to switch view</span>
 				</span>
 				<span class="text-[9px] text-pink-500 bg-pink-50 px-1.5 py-0.5 rounded-md border border-pink-200/60 font-black flex-shrink-0">
@@ -277,9 +270,7 @@
 		<div class="flex items-center justify-between mb-3 border-b border-pink-100/80 pb-2">
 			<div class="flex items-center space-x-1.5">
 				<div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#f43f8e] to-[#ec4899] text-white flex items-center justify-center shadow-2xs flex-shrink-0">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-					</svg>
+					<Calendar class="w-3.5 h-3.5" />
 				</div>
 				<h3 class="text-xs sm:text-sm font-black text-pink-950">Months with Memories</h3>
 			</div>

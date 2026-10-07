@@ -6,6 +6,10 @@
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
 	import { initPWAInstall, subscribePWAStatus, promptPWAInstall, openInstalledApp } from '$lib/pwaInstall.js';
+	import {
+		Smartphone, ChevronDown, CheckCircle2, ExternalLink, Download,
+		Lock, Volume2, Ban, Search, KeyRound, LogOut
+	} from 'lucide-svelte';
 
 	let currentUser = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let sidebarOpen = $state(false);
@@ -417,9 +421,7 @@
 					<div class="flex items-center space-x-3 min-w-0 pr-2">
 						<!-- Squircle Icon Box -->
 						<div class="w-9 h-9 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center flex-shrink-0 text-[#f43f8e] shadow-xs">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
-							</svg>
+							<Smartphone class="w-4 h-4" />
 						</div>
 						<div class="min-w-0">
 							<h3 class="text-xs sm:text-sm font-extrabold text-pink-950 truncate">
@@ -434,9 +436,7 @@
 							{pwaStatus.isStandalone ? 'Installed' : pwaStatus.isAppInstalled ? 'Open App' : 'Install'}
 						</span>
 						<div class="w-5 h-5 flex items-center justify-center text-pink-400 transition-transform duration-300 {activeTab === 'install' ? 'rotate-180 text-[#f43f8e]' : ''}">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-							</svg>
+							<ChevronDown class="w-3.5 h-3.5" strokeWidth={2.5} />
 						</div>
 					</div>
 				</button>
@@ -456,9 +456,7 @@
 
 						{#if pwaStatus.isStandalone}
 							<div class="w-full py-2 px-3 bg-emerald-50 text-emerald-600 border border-emerald-200 font-extrabold text-xs rounded-xl flex items-center justify-center space-x-1.5">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-								</svg>
+								<CheckCircle2 class="w-3.5 h-3.5" strokeWidth={2.5} />
 								<span>App is Already Installed</span>
 							</div>
 						{:else if pwaStatus.isAppInstalled}
@@ -467,9 +465,7 @@
 								onclick={handleInstallAppFromSettings}
 								class="w-full py-2 px-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center space-x-1.5 active:scale-95 cursor-pointer"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-								</svg>
+								<ExternalLink class="w-3.5 h-3.5" strokeWidth={2.5} />
 								<span>Open ChronoMuse App</span>
 							</button>
 						{:else}
@@ -478,9 +474,7 @@
 								onclick={handleInstallAppFromSettings}
 								class="w-full py-2 px-3 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center space-x-1.5 active:scale-95 cursor-pointer"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-								</svg>
+								<Download class="w-3.5 h-3.5" strokeWidth={2.5} />
 								<span>Install ChronoMuse App</span>
 							</button>
 						{/if}
@@ -505,9 +499,7 @@
 					<div class="flex items-center space-x-3 min-w-0 pr-2">
 						<!-- Squircle Icon Box -->
 						<div class="w-9 h-9 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center flex-shrink-0 text-[#f43f8e] shadow-xs">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-								<path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clip-rule="evenodd" />
-							</svg>
+							<Lock class="w-4 h-4 fill-current" />
 						</div>
 						<div class="min-w-0">
 							<h3 class="text-xs sm:text-sm font-extrabold text-pink-950 truncate">
@@ -522,9 +514,7 @@
 							{activeStatusEnabled ? 'Active ON' : 'Active OFF'}
 						</span>
 						<div class="w-5 h-5 flex items-center justify-center text-pink-400 transition-transform duration-300 {activeTab === 'privacy' ? 'rotate-180 text-[#f43f8e]' : ''}">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-							</svg>
+							<ChevronDown class="w-3.5 h-3.5" strokeWidth={2.5} />
 						</div>
 					</div>
 				</button>
@@ -592,10 +582,7 @@
 					<div class="flex items-center space-x-3 min-w-0 pr-2">
 						<!-- Squircle Icon Box -->
 						<div class="w-9 h-9 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center flex-shrink-0 text-[#f43f8e] shadow-xs">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-								<path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.5A2.25 2.25 0 002.25 9.75v4.5A2.25 2.25 0 004.5 16.5h1.94l4.5 4.5c.944.945 2.56.276 2.56-1.06V4.06zM18.584 5.106a.75.75 0 011.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 01-1.06-1.06 8.25 8.25 0 000-11.668.75.75 0 010-1.06z" />
-								<path d="M15.932 7.757a.75.75 0 011.061 0 6 6 0 010 8.486.75.75 0 01-1.06-1.061 4.5 4.5 0 000-6.364.75.75 0 010-1.06z" />
-							</svg>
+							<Volume2 class="w-4 h-4 fill-current" />
 						</div>
 						<div class="min-w-0">
 							<h3 class="text-xs sm:text-sm font-extrabold text-pink-950 truncate">
@@ -610,9 +597,7 @@
 							{soundEffectsEnabled ? 'Sound ON' : 'Sound OFF'}
 						</span>
 						<div class="w-5 h-5 flex items-center justify-center text-pink-400 transition-transform duration-300 {activeTab === 'audio' ? 'rotate-180 text-[#f43f8e]' : ''}">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-							</svg>
+							<ChevronDown class="w-3.5 h-3.5" strokeWidth={2.5} />
 						</div>
 					</div>
 				</button>
@@ -658,9 +643,7 @@
 					<div class="flex items-center space-x-3 min-w-0 pr-2">
 						<!-- Squircle Icon Box -->
 						<div class="w-9 h-9 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center flex-shrink-0 text-[#f43f8e] shadow-xs">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-							</svg>
+							<Ban class="w-4 h-4" />
 						</div>
 						<div class="min-w-0">
 							<h3 class="text-xs sm:text-sm font-extrabold text-pink-950 truncate">
@@ -675,9 +658,7 @@
 							{blockedUsers.length} Blocked
 						</span>
 						<div class="w-5 h-5 flex items-center justify-center text-pink-400 transition-transform duration-300 {activeTab === 'blocked' ? 'rotate-180 text-[#f43f8e]' : ''}">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-							</svg>
+							<ChevronDown class="w-3.5 h-3.5" strokeWidth={2.5} />
 						</div>
 					</div>
 				</button>
@@ -698,9 +679,7 @@
 									placeholder="Type username to search..."
 									class="w-full pl-9 pr-9 py-2 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/40 transition-all"
 								/>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-pink-400 absolute left-3 top-2.5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-								</svg>
+								<Search class="w-3.5 h-3.5 text-pink-400 absolute left-3 top-2.5" />
 
 								{#if isSearchingUsers}
 									<div class="absolute right-3 top-2.5 w-3.5 h-3.5 border-2 border-[#f43f8e] border-t-transparent rounded-full animate-spin"></div>
@@ -799,9 +778,7 @@
 					<div class="flex items-center space-x-3 min-w-0 pr-2">
 						<!-- Squircle Icon Box -->
 						<div class="w-9 h-9 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center flex-shrink-0 text-[#f43f8e] shadow-xs">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-								<path fill-rule="evenodd" d="M15.75 1.5a6.75 6.75 0 00-6.651 7.906c-.067.39-.199.762-.39 1.096L2.47 16.74a1.5 1.5 0 00-.44 1.06v3.45a.75.75 0 00.75.75h3.75a.75.75 0 00.75-.75v-1.5h1.5a.75.75 0 00.75-.75v-1.5h1.5a.75.75 0 00.53-.22l1.637-1.638c.334-.191.706-.323 1.096-.39A6.75 6.75 0 1015.75 1.5zm0 3a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" clip-rule="evenodd" />
-							</svg>
+							<KeyRound class="w-4 h-4" />
 						</div>
 						<div class="min-w-0">
 							<h3 class="text-xs sm:text-sm font-extrabold text-pink-950 truncate">
@@ -816,9 +793,7 @@
 							Credentials
 						</span>
 						<div class="w-5 h-5 flex items-center justify-center text-pink-400 transition-transform duration-300 {activeTab === 'security' ? 'rotate-180 text-[#f43f8e]' : ''}">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-							</svg>
+							<ChevronDown class="w-3.5 h-3.5" strokeWidth={2.5} />
 						</div>
 					</div>
 				</button>
@@ -963,9 +938,7 @@
 		>
 			<div class="bg-white border border-pink-100/90 rounded-3xl max-w-xs sm:max-w-md w-full p-5 sm:p-7 text-center relative overflow-hidden shadow-2xl animate-scale-up">
 				<div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center mx-auto mb-3 shadow-2xs">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 sm:w-7 sm:h-7 text-[#f43f8e]">
-						<path fill-rule="evenodd" d="M7.5 3.75A1.5 1.5 0 0 0 6 5.25v13.5a1.5 1.5 0 0 0 1.5 1.5h6a1.5 1.5 0 0 0 1.5-1.5V15a.75.75 0 0 1 1.5 0v3.75a3 3 0 0 1-3 3h-6a3 3 0 0 1-3-3V5.25a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3V9a.75.75 0 0 1-1.5 0V5.25a1.5 1.5 0 0 0-1.5-1.5h-6Zm10.72 4.72a.75.75 0 0 1 1.06 0l3 3a.75.75 0 0 1 0 1.06l-3 3a.75.75 0 1 1-1.06-1.06l1.72-1.72H9a.75.75 0 0 1 0-1.5h10.94l-1.72-1.72a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-					</svg>
+					<LogOut class="w-6 h-6 sm:w-7 sm:h-7 text-[#f43f8e]" />
 				</div>
 
 				<h3 class="text-sm sm:text-lg font-black text-pink-950 mb-1 sm:mb-1.5">Log Out of ChronoMuse?</h3>

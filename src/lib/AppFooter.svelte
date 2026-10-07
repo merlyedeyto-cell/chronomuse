@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { playClickSound } from '$lib/soundEffects.js';
+	import { ChevronLeft, ChevronRight, Calendar, BarChart2, Users, MessageCircle, User } from 'lucide-svelte';
 
 	let { hideOnMobile = false } = $props();
 
@@ -246,28 +247,10 @@
 			<div class="relative flex items-center justify-center">
 				{#if side === 'left'}
 					<!-- Left side arrow points right -->
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="2.5"
-						stroke="currentColor"
-						class="w-5 h-5 transition-transform duration-200 group-hover/tab:translate-x-0.5"
-					>
-						<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-					</svg>
+					<ChevronRight class="w-5 h-5 transition-transform duration-200 group-hover/tab:translate-x-0.5" />
 				{:else}
 					<!-- Right side arrow points left -->
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="2.5"
-						stroke="currentColor"
-						class="w-5 h-5 transition-transform duration-200 group-hover/tab:-translate-x-0.5"
-					>
-						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-					</svg>
+					<ChevronLeft class="w-5 h-5 transition-transform duration-200 group-hover/tab:-translate-x-0.5" />
 				{/if}
 
 				<!-- Combined Activity Indicator Badge on Collapsed Tab -->
@@ -306,28 +289,10 @@
 		>
 			{#if side === 'left'}
 				<!-- Left side collapse points left -->
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke-width="2.5"
-					stroke="currentColor"
-					class="w-4.5 h-4.5 transition-transform duration-200 group-hover/btn:-translate-x-0.5"
-				>
-					<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-				</svg>
+				<ChevronLeft class="w-4.5 h-4.5 transition-transform duration-200 group-hover/btn:-translate-x-0.5" />
 			{:else}
 				<!-- Right side collapse points right -->
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke-width="2.5"
-					stroke="currentColor"
-					class="w-4.5 h-4.5 transition-transform duration-200 group-hover/btn:translate-x-0.5"
-				>
-					<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-				</svg>
+				<ChevronRight class="w-4.5 h-4.5 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
 			{/if}
 
 			<!-- Themed Tooltip -->
@@ -352,18 +317,12 @@
 			>
 				<div class="w-5 h-5 flex items-center justify-center">
 					{#if item.id === 'dashboard'}
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-							<path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75A3.75 3.75 0 0122.5 8.25v10.5A3.75 3.75 0 0118.75 22.5H5.25A3.75 3.75 0 011.5 18.75V8.25A3.75 3.75 0 015.25 4.5H6V3a.75.75 0 01.75-.75zm12 6.75H5.25a2.25 2.25 0 00-2.25 2.25v7.5a2.25 2.25 0 002.25 2.25h13.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25zM6.75 12.75a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H7.5a.75.75 0 01-.75-.75zm4.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H12a.75.75 0 01-.75-.75zm4.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H16.5a.75.75 0 01-.75-.75zm-9 3.75a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H7.5a.75.75 0 01-.75-.75zm4.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H12a.75.75 0 01-.75-.75zm4.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H16.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
-						</svg>
+						<Calendar class="w-5 h-5" />
 					{:else if item.id === 'moods'}
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-							<path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z" />
-						</svg>
+						<BarChart2 class="w-5 h-5" />
 					{:else if item.id === 'friends'}
 						<div class="relative flex items-center justify-center">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-								<path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.122a.75.75 0 01-.749.75H4a.75.75 0 01-.749-.75l-.001-.122v-.003zM18.75 6.75a.75.75 0 00-.75.75v1.5h-1.5a.75.75 0 000 1.5h1.5v1.5a.75.75 0 001.5 0v-1.5h1.5a.75.75 0 000-1.5h-1.5v-1.5a.75.75 0 00-.75-.75z" />
-							</svg>
+							<Users class="w-5 h-5" />
 							{#if pendingFriendRequestsCount > 0}
 								<span class="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 px-0.5 bg-amber-400 text-rose-900 border border-white text-[8px] font-black rounded-full flex items-center justify-center shadow-2xs animate-pulse">
 									{pendingFriendRequestsCount > 9 ? '9+' : pendingFriendRequestsCount}
@@ -372,9 +331,7 @@
 						</div>
 					{:else if item.id === 'chat'}
 						<div class="relative flex items-center justify-center">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-								<path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.523 0 10-4.03 10-9s-4.477-9-10-9-10 4.03-10 9c0 2.215.88 4.25 2.377 5.797l-1.077 3.32a.75.75 0 00.904.927zM7.5 12a1 1 0 112 0 1 1 0 01-2 0zm3.5 0a1 1 0 112 0 1 1 0 01-2 0zm4.5-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
-							</svg>
+							<MessageCircle class="w-5 h-5" />
 							{#if unreadChatsCount > 0}
 								<span class="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 px-0.5 bg-amber-400 text-rose-900 border border-white text-[8px] font-black rounded-full flex items-center justify-center shadow-2xs animate-pulse">
 									{unreadChatsCount > 9 ? '9+' : unreadChatsCount}
@@ -382,9 +339,7 @@
 							{/if}
 						</div>
 					{:else if item.id === 'profile'}
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-							<path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
-						</svg>
+						<User class="w-5 h-5" />
 					{/if}
 				</div>
 

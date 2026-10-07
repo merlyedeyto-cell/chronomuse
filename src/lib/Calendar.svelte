@@ -1,5 +1,16 @@
 <script>
 	import { createEventDispatcher, onMount } from 'svelte';
+	import {
+		ChevronLeft,
+		ChevronRight,
+		ChevronDown,
+		Calendar as CalendarIcon,
+		Trash2,
+		X,
+		Check,
+		Bookmark,
+		Clock
+	} from 'lucide-svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -411,9 +422,7 @@
 		<div class="mb-3 p-2 sm:p-2.5 bg-gradient-to-r from-[#f43f8e] via-[#e11d48] to-[#be123c] text-white rounded-xl shadow-md border border-pink-300/40 animate-fade-in flex items-center justify-between gap-2">
 			<div class="flex items-center space-x-2 min-w-0">
 				<div class="w-7 h-7 rounded-lg bg-white/20 backdrop-blur-xs flex items-center justify-center flex-shrink-0 shadow-inner">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-white">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-					</svg>
+					<Trash2 class="w-3.5 h-3.5 text-white" />
 				</div>
 				<div class="min-w-0">
 					<p class="text-[11px] font-black tracking-wide flex items-center gap-1.5 flex-wrap">
@@ -442,9 +451,7 @@
 					class="w-6 h-6 bg-white/20 hover:bg-white/30 active:scale-95 text-white rounded-full flex items-center justify-center transition-all cursor-pointer"
 					title="Exit Select Mode"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-3 h-3" />
 				</button>
 			</div>
 		</div>
@@ -459,9 +466,7 @@
 			class="w-7 sm:w-8 h-7 sm:h-8 rounded-full bg-white hover:bg-pink-50 text-[#e0337f] border border-pink-200/90 flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-xs flex-shrink-0"
 			title="Previous month"
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-			</svg>
+			<ChevronLeft class="w-3.5 h-3.5" />
 		</button>
 
 		<!-- Center Month & Year Pill Selectors -->
@@ -473,9 +478,7 @@
 				class="px-2.5 sm:px-3 py-1 bg-white hover:bg-pink-50 text-[#e0337f] font-bold text-xs rounded-full border border-pink-200/90 transition-all duration-200 cursor-pointer active:scale-95 flex items-center space-x-1 shadow-xs"
 			>
 				<span>{monthNames[currentMonth]}</span>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-[#e0337f] transition-transform duration-200 {showMonthMenu ? 'rotate-180' : ''}">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-				</svg>
+				<ChevronDown class="w-3 h-3 text-[#e0337f] transition-transform duration-200 {showMonthMenu ? 'rotate-180' : ''}" />
 			</button>
 
 			<!-- Year Pill Button -->
@@ -485,9 +488,7 @@
 				class="px-2.5 sm:px-3 py-1 bg-white hover:bg-pink-50 text-[#e0337f] font-bold text-xs rounded-full border border-pink-200/90 transition-all duration-200 cursor-pointer active:scale-95 flex items-center space-x-1 shadow-xs"
 			>
 				<span>{currentYear}</span>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-[#e0337f] transition-transform duration-200 {showYearMenu ? 'rotate-180' : ''}">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-				</svg>
+				<ChevronDown class="w-3 h-3 text-[#e0337f] transition-transform duration-200 {showYearMenu ? 'rotate-180' : ''}" />
 			</button>
 		</div>
 
@@ -498,9 +499,7 @@
 			class="w-7 sm:w-8 h-7 sm:h-8 rounded-full bg-white hover:bg-pink-50 text-[#e0337f] border border-pink-200/90 flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-xs flex-shrink-0"
 			title="Next month"
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-			</svg>
+			<ChevronRight class="w-3.5 h-3.5" />
 		</button>
 	</div>
 
@@ -534,9 +533,7 @@
 						<!-- Selection Checkbox Overlay in Selection Mode -->
 						{#if isSelectionMode && hasMemories(day)}
 							<div class="absolute top-1 right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all shadow-xs {isDateSelectedForDelete(day) ? 'bg-white text-rose-600 scale-105' : 'bg-white/90 border border-pink-300 text-transparent'}">
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-2.5 h-2.5">
-									<path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 011.04-.207z" clip-rule="evenodd" />
-								</svg>
+								<Check class="w-2.5 h-2.5" />
 							</div>
 						{/if}
 
@@ -561,9 +558,7 @@
 							<!-- Pinned Ribbon Bookmark (Tucked in top corner) -->
 							{#if isDatePinned(day)}
 								<span class="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 w-2 sm:w-2.5 h-2 sm:h-2.5 {isToday(day) ? 'text-white' : 'text-[#e0337f]'}" title="Pinned date">
-									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-full h-full drop-shadow-2xs">
-										<path fill-rule="evenodd" d="M6.32 2.577a49.255 49.255 0 0111.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 01-1.085.67L12 18.089l-7.165 3.58A.75.75 0 013.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93z" clip-rule="evenodd" />
-									</svg>
+									<Bookmark class="w-full h-full drop-shadow-2xs fill-current" />
 								</span>
 							{/if}
 						{:else if hasMemories(day)}
@@ -596,9 +591,7 @@
 								}}
 								class="w-full px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-pink-100 hover:text-white text-xs font-bold transition-all duration-150 cursor-pointer flex items-center space-x-2 active:scale-95 text-left shadow-2xs"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0">
-									<path fill-rule="evenodd" d="M6.32 2.577a49.255 49.255 0 0111.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 01-1.085.67L12 18.089l-7.165 3.58A.75.75 0 013.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93z" clip-rule="evenodd" />
-								</svg>
+								<Bookmark class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 fill-current" />
 								<span>{isDatePinned(day) ? 'Unpin Date' : 'Pin Date'}</span>
 							</button>
 
@@ -611,9 +604,7 @@
 								}}
 								class="w-full px-2.5 py-1.5 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-black transition-all duration-150 cursor-pointer flex items-center space-x-2 active:scale-95 text-left shadow-2xs"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-white flex-shrink-0">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-								</svg>
+								<Trash2 class="w-3.5 h-3.5 text-white flex-shrink-0" />
 								<span>Select & Delete</span>
 							</button>
 
@@ -636,9 +627,7 @@
 				onclick={exitSelectionMode}
 				class="w-1/3 py-2 px-2.5 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 active:scale-95 transition-all cursor-pointer"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-				</svg>
+				<X class="w-3.5 h-3.5" />
 				<span>Cancel</span>
 			</button>
 
@@ -648,9 +637,7 @@
 				disabled={selectedDaysForDelete.size === 0}
 				class="w-2/3 py-2 px-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-				</svg>
+				<Trash2 class="w-3.5 h-3.5" />
 				<span>Delete Selected ({selectedDaysForDelete.size})</span>
 			</button>
 		</div>
@@ -661,9 +648,7 @@
 				onclick={jumpToToday}
 				class="w-full py-2 px-3 bg-[#e0337f] hover:bg-[#c9256d] text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-				</svg>
+				<Clock class="w-3.5 h-3.5" />
 				<span>Today</span>
 			</button>
 		</div>
@@ -724,9 +709,7 @@
 		<div class="bg-white border border-rose-100 rounded-3xl p-5 sm:p-6 max-w-sm sm:max-w-md w-full space-y-4 shadow-2xl animate-scale-in">
 			<div class="flex items-center space-x-3">
 				<div class="w-11 h-11 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 shadow-inner">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-6 h-6">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-					</svg>
+					<Trash2 class="w-6 h-6" />
 				</div>
 				<div>
 					<h3 class="text-base font-black text-rose-950 leading-tight">Delete Selected Memories?</h3>
@@ -776,9 +759,7 @@
 						<div class="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full"></div>
 						<span>Deleting...</span>
 					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-						</svg>
+						<Trash2 class="w-3.5 h-3.5" />
 						<span>Delete All ({getSelectedMemoriesCount()})</span>
 					{/if}
 				</button>
@@ -801,9 +782,7 @@
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2">
 				<div class="flex items-center space-x-1.5">
 					<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-						</svg>
+						<CalendarIcon class="w-3.5 h-3.5" />
 					</div>
 					<h3 class="text-sm font-black text-pink-950">Select Month</h3>
 				</div>
@@ -812,9 +791,7 @@
 					onclick={() => showMonthMenu = false}
 					class="w-6 h-6 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-3.5 h-3.5" />
 				</button>
 			</div>
 
@@ -827,9 +804,7 @@
 					>
 						<span>{month}</span>
 						{#if currentMonth === i}
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-3 h-3 text-white flex-shrink-0 ml-1">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-							</svg>
+							<Check class="w-3 h-3 text-white flex-shrink-0 ml-1 stroke-[3]" />
 						{/if}
 					</button>
 				{/each}
@@ -852,9 +827,7 @@
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2">
 				<div class="flex items-center space-x-1.5">
 					<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-						</svg>
+						<CalendarIcon class="w-3.5 h-3.5" />
 					</div>
 					<h3 class="text-sm font-black text-pink-950">Select Year</h3>
 				</div>
@@ -863,9 +836,7 @@
 					onclick={() => showYearMenu = false}
 					class="w-6 h-6 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-3.5 h-3.5" />
 				</button>
 			</div>
 

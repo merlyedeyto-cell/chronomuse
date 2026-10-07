@@ -1,4 +1,5 @@
 <script>
+	import { Pencil, X, ChevronRight, ChevronDown, Calendar, Heart, Check, User } from 'lucide-svelte';
 	let {
 		isOpen = $bindable(false),
 		editBio = $bindable(''),
@@ -108,9 +109,7 @@
 			<!-- Header -->
 			<div class="flex items-center justify-between pb-0.5">
 				<div class="flex items-center space-x-2">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-					</svg>
+					<Pencil class="w-4 h-4 text-[#f43f8e]" />
 					<h3 class="text-sm sm:text-base font-black text-[#f43f8e]">Edit Profile Info</h3>
 				</div>
 
@@ -119,9 +118,7 @@
 					onclick={() => isOpen = false}
 					class="p-1 text-pink-400 hover:text-pink-600 rounded-full transition-colors cursor-pointer"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-4 h-4" />
 				</button>
 			</div>
 
@@ -146,9 +143,7 @@
 						class="w-full px-3.5 py-2.5 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer hover:border-pink-300 active:scale-[0.99] shadow-2xs"
 					>
 						<span>{formatBirthdayDisplay(editBirthday)}</span>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-						</svg>
+						<ChevronRight class="w-3.5 h-3.5 text-[#f43f8e]" />
 					</button>
 				</div>
 
@@ -161,9 +156,7 @@
 						class="w-full px-3.5 py-2.5 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer hover:border-pink-300 active:scale-[0.99] shadow-2xs"
 					>
 						<span>{editRelationshipStatus || 'Select status...'}</span>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-						</svg>
+						<ChevronDown class="w-3.5 h-3.5 text-[#f43f8e]" />
 					</button>
 				</div>
 
@@ -176,9 +169,7 @@
 						class="w-full px-3.5 py-2.5 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 flex items-center justify-between transition-all cursor-pointer hover:border-pink-300 active:scale-[0.99] shadow-2xs"
 					>
 						<span>{editGender || 'Select gender...'}</span>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-						</svg>
+						<ChevronDown class="w-3.5 h-3.5 text-[#f43f8e]" />
 					</button>
 				</div>
 
@@ -220,9 +211,7 @@
 		<div class="bg-white border border-pink-100 rounded-3xl max-w-xs sm:max-w-sm w-full p-5 space-y-3.5 shadow-2xl animate-modal-content">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2">
 				<div class="flex items-center space-x-2">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-					</svg>
+					<Calendar class="w-4 h-4 text-[#f43f8e]" />
 					<h3 class="text-sm font-black text-pink-950">Select Birthday</h3>
 				</div>
 				<button
@@ -230,9 +219,7 @@
 					onclick={() => showBirthdayModal = false}
 					class="p-1 text-pink-400 hover:text-pink-600 rounded-lg transition-colors cursor-pointer"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-4 h-4" />
 				</button>
 			</div>
 
@@ -310,9 +297,7 @@
 		<div class="bg-white border border-pink-100 rounded-3xl max-w-xs sm:max-w-sm w-full p-5 space-y-3.5 shadow-2xl animate-modal-content">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2">
 				<div class="flex items-center space-x-2">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-					</svg>
+					<Heart class="w-4 h-4 text-[#f43f8e]" />
 					<h3 class="text-sm font-black text-pink-950">Relationship Status</h3>
 				</div>
 				<button
@@ -320,9 +305,7 @@
 					onclick={() => showRelationshipModal = false}
 					class="p-1 text-pink-400 hover:text-pink-600 rounded-lg transition-colors cursor-pointer"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-4 h-4" />
 				</button>
 			</div>
 
@@ -335,9 +318,7 @@
 					>
 						<span>{option}</span>
 						{#if editRelationshipStatus === option}
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-3.5 h-3.5 text-white">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-							</svg>
+							<Check class="w-3.5 h-3.5 text-white" strokeWidth={3} />
 						{/if}
 					</button>
 				{/each}
@@ -357,9 +338,7 @@
 		<div class="bg-white border border-pink-100 rounded-3xl max-w-xs sm:max-w-sm w-full p-5 space-y-3.5 shadow-2xl animate-modal-content">
 			<div class="flex items-center justify-between border-b border-pink-100 pb-2">
 				<div class="flex items-center space-x-2">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-					</svg>
+					<User class="w-4 h-4 text-[#f43f8e]" />
 					<h3 class="text-sm font-black text-pink-950">Select Gender</h3>
 				</div>
 				<button
@@ -367,9 +346,7 @@
 					onclick={() => showGenderModal = false}
 					class="p-1 text-pink-400 hover:text-pink-600 rounded-lg transition-colors cursor-pointer"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-4 h-4" />
 				</button>
 			</div>
 
@@ -382,9 +359,7 @@
 					>
 						<span>{option}</span>
 						{#if editGender === option}
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-3.5 h-3.5 text-white">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-							</svg>
+							<Check class="w-3.5 h-3.5 text-white" strokeWidth={3} />
 						{/if}
 					</button>
 				{/each}

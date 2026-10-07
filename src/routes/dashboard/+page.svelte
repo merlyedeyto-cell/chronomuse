@@ -16,6 +16,7 @@
 	import DashboardFlashback from '$lib/DashboardFlashback.svelte';
 	import DashboardClock from '$lib/DashboardClock.svelte';
 	import DashboardMonthsMemoryCard from '$lib/DashboardMonthsMemoryCard.svelte';
+	import { Plus, Bookmark, CheckCircle2, AlertCircle, Check } from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let isLoading = $state(false);
@@ -916,9 +917,7 @@
 										onclick={toggleAddMemory}
 										class="w-full py-2.5 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md cursor-pointer"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-										</svg>
+										<Plus class="w-3.5 h-3.5" strokeWidth={2.5} />
 										<span>Open Add Memory Form</span>
 									</button>
 								</div>
@@ -971,9 +970,7 @@
 				<div class="bg-white border border-pink-100/90 rounded-3xl max-w-sm w-full p-5 sm:p-6 text-center animate-modal-content shadow-2xl space-y-4">
 					<!-- Unpin Circle Icon -->
 					<div class="w-12 h-12 bg-pink-50 text-[#f43f8e] rounded-2xl flex items-center justify-center mx-auto border border-pink-100/80 shadow-xs">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
-						</svg>
+						<Bookmark class="w-6 h-6 fill-current" />
 					</div>
 					<div>
 						<h3 class="text-base sm:text-lg font-black text-pink-950">Unpin Date?</h3>
@@ -1006,13 +1003,9 @@
 					class="px-6 py-3 rounded-2xl border flex items-center space-x-3 shadow-xl {toastType === 'success' ? 'bg-gradient-to-r from-[#f43f8e] to-pink-500 border-pink-300/40 text-white shadow-pink-500/20' : 'bg-gradient-to-r from-rose-500 to-pink-600 border-rose-400 text-white shadow-pink-500/20'}"
 				>
 					{#if toastType === 'success'}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-white flex-shrink-0">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-						</svg>
+						<CheckCircle2 class="w-5 h-5 text-white flex-shrink-0" strokeWidth={2.5} />
 					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-white flex-shrink-0">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-						</svg>
+						<AlertCircle class="w-5 h-5 text-white flex-shrink-0" strokeWidth={2.5} />
 					{/if}
 					<span class="text-sm font-black">{toastMessage}</span>
 				</div>
@@ -1032,13 +1025,9 @@
 				<div class="bg-white border-2 border-pink-200 rounded-3xl p-6 max-w-xs sm:max-w-sm w-full text-center space-y-4 shadow-2xl animate-modal-content">
 					<div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto {notificationModalType === 'error' ? 'bg-rose-50 text-rose-500 border border-rose-100' : 'bg-pink-50 text-[#f43f8e] border border-pink-200'} shadow-xs">
 						{#if notificationModalType === 'error'}
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zM12 15.75h.007v.008H12v-.008z" />
-							</svg>
+							<AlertCircle class="w-7 h-7" strokeWidth={2.5} />
 						{:else}
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7 text-[#f43f8e]">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-							</svg>
+							<Check class="w-7 h-7 text-[#f43f8e]" strokeWidth={2.5} />
 						{/if}
 					</div>
 					

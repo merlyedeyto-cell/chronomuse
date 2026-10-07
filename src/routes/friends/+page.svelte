@@ -7,6 +7,10 @@
 	import { broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
+	import {
+		ArrowLeft, Users, UserPlus, Clock, Search, X, User,
+		MessageSquare, Trash2, Check, Plus, ChevronDown, AlertCircle
+	} from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let isLoading = $state(false);
@@ -703,9 +707,7 @@
 							class="w-7 h-7 rounded-xl bg-pink-50 hover:bg-pink-100 text-[#f43f8e] border border-pink-100 flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-2xs"
 							title="Back to Dashboard"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-							</svg>
+							<ArrowLeft class="w-3.5 h-3.5" strokeWidth={2.5} />
 						</button>
 						<h1 class="text-sm sm:text-base font-black text-[#f43f8e]">Friends & Network</h1>
 					</div>
@@ -718,9 +720,7 @@
 						onclick={() => activeTab = 'friends'}
 						class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center cursor-pointer {activeTab === 'friends' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-[#f43f8e] hover:bg-white/70'}"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-						</svg>
+						<Users class="w-3.5 h-3.5 flex-shrink-0" />
 						<span class="truncate">Friends ({friends.length})</span>
 					</button>
 
@@ -728,9 +728,7 @@
 						onclick={() => activeTab = 'add'}
 						class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center cursor-pointer {activeTab === 'add' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-[#f43f8e] hover:bg-white/70'}"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 19.125a1.125 1.125 0 011.125-1.125h15.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H4.875a1.125 1.125 0 01-1.125-1.125v-2.25z" />
-						</svg>
+						<UserPlus class="w-3.5 h-3.5 flex-shrink-0" />
 						<span class="truncate">Add Friend</span>
 					</button>
 
@@ -738,9 +736,7 @@
 						onclick={() => activeTab = 'pending'}
 						class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 relative active:scale-95 text-center cursor-pointer {activeTab === 'pending' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-[#f43f8e] hover:bg-white/70'}"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-						</svg>
+						<Clock class="w-3.5 h-3.5 flex-shrink-0" />
 						<span class="truncate">Pending ({totalPendingCount})</span>
 						{#if totalPendingCount > 0}
 							<span class="w-2 h-2 rounded-full bg-rose-500 animate-ping absolute top-1 right-1"></span>
@@ -756,9 +752,7 @@
 				<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4">
 					<div class="flex items-center space-x-2">
 						<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-							</svg>
+							<Users class="w-3.5 h-3.5" />
 						</div>
 						<h2 class="text-xs sm:text-sm font-black text-pink-950">
 							All Friends ({filteredFriends().length})
@@ -773,9 +767,7 @@
 							placeholder="Search friends by name..."
 							class="w-full pl-9 pr-9 py-2.5 bg-[#fdf2f6] border border-pink-200/90 rounded-2xl text-xs font-bold text-pink-950 placeholder-pink-400/70 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/25 focus:border-[#f43f8e] transition-all duration-200 focus:bg-white shadow-2xs"
 						/>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-pink-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-						</svg>
+						<Search class="w-4 h-4 text-pink-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" strokeWidth={2.5} />
 						{#if friendsSearchQuery}
 							<button
 								type="button"
@@ -783,9 +775,7 @@
 								class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-pink-400 hover:text-pink-600 rounded-full cursor-pointer transition-colors"
 								title="Clear search"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
-									<path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-								</svg>
+								<X class="w-3.5 h-3.5" />
 							</button>
 						{/if}
 					</div>
@@ -838,9 +828,7 @@
 										class="px-2.5 py-1 bg-white border border-pink-200 text-pink-700 hover:text-[#f43f8e] hover:border-pink-300 hover:bg-pink-50/50 active:scale-95 rounded-xl transition-all duration-200 flex items-center space-x-1 text-xs font-bold cursor-pointer shadow-2xs"
 										title="View Profile"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3 text-[#f43f8e]">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-										</svg>
+										<User class="w-3 h-3 text-[#f43f8e]" />
 										<span class="hidden sm:inline">Profile</span>
 									</button>
 
@@ -849,9 +837,7 @@
 										class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white active:scale-95 rounded-xl transition-all duration-200 flex items-center space-x-1 text-xs font-bold shadow-xs cursor-pointer"
 										title="Open Chat"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-										</svg>
+										<MessageSquare class="w-3 h-3" />
 										<span class="hidden sm:inline">Chat</span>
 									</button>
 
@@ -860,9 +846,7 @@
 										class="p-1 bg-white text-pink-400 hover:text-rose-600 hover:bg-rose-50 border border-pink-100 hover:border-rose-200 active:scale-95 rounded-xl transition-all duration-200 cursor-pointer shadow-2xs"
 										title="Remove Friend"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
-											<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-										</svg>
+										<Trash2 class="w-3.5 h-3.5" />
 									</button>
 								</div>
 							</div>
@@ -871,9 +855,7 @@
 				{:else}
 					<div class="text-center py-10 bg-[#fdf2f6]/40 rounded-2xl border border-dashed border-pink-200 animate-pop-in">
 						<div class="w-10 h-10 bg-pink-100 text-[#f43f8e] rounded-full flex items-center justify-center mx-auto mb-2 shadow-2xs">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-							</svg>
+							<Users class="w-5 h-5" />
 						</div>
 						<p class="text-xs font-black text-pink-950">No friends found</p>
 						<p class="text-[11px] text-pink-400 font-medium mt-0.5">Use the "Add Friend" tab to discover and connect with people!</p>
@@ -887,9 +869,7 @@
 			<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 max-w-lg mx-auto animate-pop-in shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
 				<div class="text-center mb-4">
 					<div class="w-10 h-10 bg-pink-50 border border-pink-100 text-[#f43f8e] rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-2xs">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-5 h-5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 19.125a1.125 1.125 0 011.125-1.125h15.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H4.875a1.125 1.125 0 01-1.125-1.125v-2.25z" />
-						</svg>
+						<UserPlus class="w-5 h-5" />
 					</div>
 					<h2 class="text-sm sm:text-base font-black text-[#f43f8e]">Find & Add Friends</h2>
 					<p class="text-[11px] text-pink-400 font-bold mt-0.5">Search for usernames and check their profiles before sending a request</p>
@@ -925,9 +905,7 @@
 								class="absolute right-2.5 top-2 p-1 text-pink-400 hover:text-pink-600 rounded-full cursor-pointer"
 								title="Clear search"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
-									<path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-								</svg>
+								<X class="w-3.5 h-3.5" />
 							</button>
 						{/if}
 					</div>
@@ -997,9 +975,7 @@
 											class="px-2.5 py-1 bg-white border border-pink-200 hover:border-pink-300 hover:bg-pink-50 text-pink-700 active:scale-95 text-xs font-bold rounded-xl transition-all flex items-center space-x-1 cursor-pointer shadow-2xs"
 											title="View Full Profile"
 										>
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-[#f43f8e]">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-											</svg>
+											<User class="w-3 h-3 text-[#f43f8e]" strokeWidth={2} />
 											<span>Profile</span>
 										</button>
 
@@ -1014,9 +990,7 @@
 												onclick={() => openChatWithFriend({ friend_id: targetUser.id, username: targetUser.username })}
 												class="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-all flex items-center space-x-1 cursor-pointer active:scale-95 shadow-xs"
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
-													<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-												</svg>
+												<Check class="w-3 h-3" strokeWidth={2.5} />
 												<span>Friends</span>
 											</button>
 										{:else if targetUser.relationship === 'request_sent'}
@@ -1053,9 +1027,7 @@
 													<div class="animate-spin h-3 w-3 border-2 border-white/40 border-t-white rounded-full"></div>
 													<span>Sending...</span>
 												{:else}
-													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
-														<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-													</svg>
+													<Plus class="w-3 h-3" strokeWidth={2.5} />
 													<span>Add Friend</span>
 												{/if}
 											</button>
@@ -1068,9 +1040,7 @@
 				{:else if hasSearched && friendUsername.trim()}
 					<div class="text-center py-6 bg-pink-50/40 rounded-2xl border border-dashed border-pink-200 animate-fade-in">
 						<div class="w-9 h-9 bg-pink-50 border border-pink-100 rounded-full flex items-center justify-center mx-auto mb-1.5 text-[#f43f8e]">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-							</svg>
+							<User class="w-4 h-4" strokeWidth={2} />
 						</div>
 						<p class="text-xs font-black text-pink-950">No user found matching "@{friendUsername.trim()}"</p>
 						<p class="text-[11px] text-pink-400 font-medium mt-0.5">Please check the spelling and try again.</p>
@@ -1091,9 +1061,7 @@
 					<div class="flex items-center justify-between">
 						<div class="flex items-center space-x-1.5">
 							<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-								</svg>
+								<Users class="w-3.5 h-3.5" strokeWidth={2.2} />
 							</div>
 							<h3 class="text-xs font-black text-pink-950 uppercase tracking-wide">
 								Discover People
@@ -1181,9 +1149,7 @@
 													<div class="animate-spin h-3 w-3 border-2 border-white/40 border-t-white rounded-full"></div>
 													<span>Sending...</span>
 												{:else}
-													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3">
-														<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-													</svg>
+													<Plus class="w-3 h-3" strokeWidth={2.5} />
 													<span>Add Friend</span>
 												{/if}
 											</button>
@@ -1206,9 +1172,7 @@
 										<div class="animate-spin h-3 w-3 border-2 border-pink-300 border-t-[#f43f8e] rounded-full"></div>
 										<span>Loading...</span>
 									{:else}
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-[#f43f8e]">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-										</svg>
+										<ChevronDown class="w-3 h-3 text-[#f43f8e]" strokeWidth={2.5} />
 										<span>Load More Users (20)</span>
 									{/if}
 								</button>
@@ -1339,9 +1303,7 @@
 		<div class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in">
 			<div class="bg-white border border-pink-100 rounded-3xl max-w-sm w-full p-5 sm:p-6 text-center animate-modal-content shadow-2xl space-y-3.5">
 				<div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto border border-rose-100 shadow-xs">
-					<svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-						<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.088 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 00-3.273 0C6.39 3.05 6 3.678 6 4.478v.113a49.488 49.488 0 0012 0v-.113c0-.8-.39-1.428-1.091-1.452a51.196 51.196 0 00-3.273 0zM9.75 9.75a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75zm4.5 0a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-					</svg>
+					<Trash2 class="w-5 h-5" strokeWidth={2} />
 				</div>
 				<div>
 					<h3 class="text-sm sm:text-base font-black text-pink-950 mb-0.5">Remove Friend?</h3>
@@ -1378,13 +1340,9 @@
 			<div class="bg-white border border-pink-100 rounded-3xl p-5 sm:p-6 max-w-xs sm:max-w-sm w-full text-center space-y-3.5 animate-modal-content shadow-2xl">
 				<div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto {notificationModalType === 'error' ? 'bg-rose-50 text-rose-500 border border-rose-100' : 'bg-pink-50 text-[#f43f8e] border border-pink-200'} shadow-xs">
 					{#if notificationModalType === 'error'}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zM12 15.75h.007v.008H12v-.008z" />
-						</svg>
+						<AlertCircle class="w-6 h-6" strokeWidth={2.5} />
 					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6 text-[#f43f8e]">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-						</svg>
+						<Check class="w-6 h-6 text-[#f43f8e]" strokeWidth={2.5} />
 					{/if}
 				</div>
 				

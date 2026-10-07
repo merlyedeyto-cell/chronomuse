@@ -5,6 +5,10 @@
 	import { supabase } from '$lib/supabaseClient';
 	import { broadcastMemoryEvent } from '$lib/realtimeBroadcast.js';
 	import SelectOptionModal from '$lib/SelectOptionModal.svelte';
+	import {
+		X, Calendar, Pencil, ChevronDown, RefreshCw, Image as ImageIcon,
+		Music, Bookmark, Share2, Trash2, Maximize2, Pause, Play, Plus, Scissors, Check
+	} from 'lucide-svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -896,17 +900,13 @@
 			class="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 w-8 h-8 rounded-full text-pink-400 hover:text-[#f43f8e] bg-white/90 hover:bg-white border border-pink-200/90 flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 z-10"
 			title="Close"
 		>
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-			</svg>
+			<X class="w-4 h-4" />
 		</button>
 
 		<!-- Selected Date Banner -->
 		<div class="mb-3.5 p-3.5 sm:p-4 bg-gradient-to-r from-[#f43f8e] via-[#ec4899] to-[#db2777] text-white rounded-2xl text-left shadow-[0_4px_20px_rgba(244,63,94,0.22)] flex items-center space-x-3.5 flex-shrink-0">
 			<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center flex-shrink-0 text-white shadow-inner">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-5 h-5">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-				</svg>
+				<Calendar class="w-5 h-5" />
 			</div>
 			<div class="min-w-0 flex-1">
 				<span class="text-[10px] sm:text-[11px] font-black tracking-wider uppercase text-white/80 block leading-tight">SELECTED DATE</span>
@@ -922,9 +922,7 @@
 			<div class="flex items-center justify-between pb-2.5 mb-3 border-b border-pink-100">
 				<div class="flex items-center space-x-2">
 					<div class="w-6 h-6 rounded-lg bg-pink-100 text-[#f43f8e] flex items-center justify-center">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-						</svg>
+						<Pencil class="w-3.5 h-3.5" />
 					</div>
 					<h3 class="text-xs sm:text-sm font-black text-pink-950">Editing Memory</h3>
 				</div>
@@ -952,9 +950,7 @@
 							<span class={editedMoodTag ? 'text-pink-950 truncate' : 'text-pink-400 truncate'}>
 								{editedMoodTag || 'Select mood'}
 							</span>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-							</svg>
+							<ChevronDown class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1" />
 						</button>
 					</div>
 
@@ -969,9 +965,7 @@
 							<span class={editedMemoryTag ? 'text-pink-950 truncate' : 'text-pink-400 truncate'}>
 								{editedMemoryTag || 'Select tag'}
 							</span>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-							</svg>
+							<ChevronDown class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1" />
 						</button>
 					</div>
 
@@ -1040,9 +1034,7 @@
 									onclick={() => { photoVideoInput?.click(); }}
 									class="text-[10px] font-bold text-[#f43f8e] hover:text-[#e0337f] bg-pink-50 px-2 py-0.5 rounded-full transition-all flex items-center space-x-1 cursor-pointer"
 								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-									</svg>
+									<RefreshCw class="w-3 h-3" />
 									<span>Change</span>
 								</button>
 							{/if}
@@ -1086,9 +1078,7 @@
 							{:else}
 								<div class="flex items-center space-x-2.5 py-2 px-3">
 									<div class="w-7 h-7 rounded-lg bg-pink-100 text-[#f43f8e] flex items-center justify-center flex-shrink-0">
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-										</svg>
+										<ImageIcon class="w-4 h-4" />
 									</div>
 									<div class="flex-1 min-w-0">
 										<p class="text-xs font-bold text-[#f43f8e]">Upload Photo/Video</p>
@@ -1113,9 +1103,7 @@
 						<label class="flex flex-col items-center justify-center w-full py-2 px-3 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/70 cursor-pointer hover:bg-pink-100 transition-all duration-200">
 							<div class="flex items-center space-x-2.5 w-full max-w-full min-w-0 overflow-hidden">
 								<div class="w-7 h-7 rounded-lg bg-pink-100 text-[#f43f8e] flex items-center justify-center flex-shrink-0">
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
-									</svg>
+									<Music class="w-4 h-4" />
 								</div>
 								<div class="flex-1 min-w-0">
 									{#if editedMusic}
@@ -1145,9 +1133,7 @@
 	{:else if memories.length === 0}
 		<div class="text-center py-6">
 			<div class="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-2 text-pink-300 border border-pink-100 shadow-2xs">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
-				</svg>
+				<Bookmark class="w-5 h-5" />
 			</div>
 			<p class="text-xs font-black text-pink-950 mb-0.5">No memories for this date yet</p>
 			<p class="text-[10px] text-pink-400 font-medium mb-3">Add memories to keep track of this special day!</p>
@@ -1215,9 +1201,7 @@
 											class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-pink-50/80 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] active:scale-95 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
 											title="Share with Friend"
 										>
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zm0-12a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
-											</svg>
+											<Share2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
 										</button>
 
 										<button
@@ -1226,9 +1210,7 @@
 											class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-pink-50/80 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] active:scale-95 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
 											title="Edit"
 										>
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-											</svg>
+											<Pencil class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
 										</button>
 									{/if}
 
@@ -1238,9 +1220,7 @@
 										class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-pink-50/80 hover:bg-rose-50 text-pink-400 hover:text-rose-600 active:scale-95 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
 										title="Delete"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
-											<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-										</svg>
+										<Trash2 class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
 									</button>
 								</div>
 							</div>
@@ -1259,9 +1239,7 @@
 									/>
 									<div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
 										<span class="bg-black/60 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-xs flex items-center space-x-1.5 shadow-sm">
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-											</svg>
+											<Maximize2 class="w-3.5 h-3.5" />
 											<span>Full view</span>
 										</span>
 									</div>
@@ -1284,9 +1262,7 @@
 										class="absolute top-2.5 right-2.5 bg-[#f43f8e]/90 hover:bg-[#e0337f] text-white text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-lg backdrop-blur-xs flex items-center space-x-1 transition-all z-10 shadow-xs active:scale-95 cursor-pointer"
 										title="Full view"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-										</svg>
+										<Maximize2 class="w-3.5 h-3.5" />
 										<span>Full view</span>
 									</button>
 								</div>
@@ -1305,13 +1281,9 @@
 											class="w-6 h-6 rounded-full bg-[#f43f8e] hover:bg-[#e0337f] text-white flex items-center justify-center flex-shrink-0 transition-all active:scale-95 shadow-2xs cursor-pointer"
 										>
 											{#if playingAudioId === memory.id}
-												<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
-													<path fill-rule="evenodd" d="M6.75 5.25a.75.75 0 01.75.75v12a.75.75 0 01-1.5 0v-12a.75.75 0 01.75-.75zm9 0a.75.75 0 01.75.75v12a.75.75 0 01-1.5 0v-12a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-												</svg>
+												<Pause class="w-3 h-3 fill-current" />
 											{:else}
-												<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
-													<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
-												</svg>
+												<Play class="w-3 h-3 fill-current" />
 											{/if}
 										</button>
 
@@ -1428,9 +1400,7 @@
 				onclick={() => dispatch('addMemory')}
 				class="w-full py-2.5 sm:py-3 px-4 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs sm:text-sm font-bold text-white rounded-xl flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-				</svg>
+				<Plus class="w-4 h-4" />
 				<span>Add Another Memory</span>
 			</button>
 		</div>
@@ -1460,9 +1430,7 @@
 				class="p-2 text-pink-700 hover:text-pink-900 bg-white/90 hover:bg-white border border-pink-300 rounded-full transition-all backdrop-blur-sm cursor-pointer active:scale-95 flex items-center justify-center"
 				title="Close Full View"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-				</svg>
+				<X class="w-5 h-5" strokeWidth={2.5} />
 			</button>
 		</div>
 
@@ -1500,9 +1468,7 @@
 			<div class="flex items-center justify-between pb-2.5 border-b border-pink-100">
 				<div class="flex items-center space-x-2">
 					<div class="w-8 h-8 rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center font-bold shadow-2xs">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-							<path d="M6 3.75a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm12-1.5a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM9.545 10.379l-4.59 7.87a.75.75 0 101.3.758l4.086-7.006 4.085 7.006a.75.75 0 001.3-.758l-4.59-7.87a.75.75 0 00-1.591 0z" />
-						</svg>
+						<Scissors class="w-4 h-4" />
 					</div>
 					<div>
 						<h3 class="text-sm sm:text-base font-black text-pink-950 leading-tight">Trim Video Clip</h3>
@@ -1529,9 +1495,7 @@
 					class="w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
 					title="Cancel"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-3.5 h-3.5" strokeWidth={2.5} />
 				</button>
 			</div>
 
@@ -1553,9 +1517,7 @@
 				{#if !isPlayingTrimVideo}
 					<div class="absolute inset-0 bg-black/30 flex items-center justify-center transition-all">
 						<div class="w-12 h-12 rounded-full bg-[#f43f8e] text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 ml-0.5">
-								<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
-							</svg>
+							<Play class="w-6 h-6 ml-0.5 fill-current" />
 						</div>
 					</div>
 				{/if}
@@ -1689,9 +1651,7 @@
 						<div class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
 						<span>Attaching...</span>
 					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-							<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-						</svg>
+						<Check class="w-4 h-4" />
 						<span>Attach 15s Clip</span>
 					{/if}
 				</button>
@@ -1794,9 +1754,7 @@
 		<div class="bg-white border border-pink-100 rounded-3xl max-w-xs w-full p-5 text-center animate-modal-content relative overflow-hidden shadow-2xl my-auto">
 			<!-- Trash Bin Circle Icon -->
 			<div class="w-12 h-12 bg-rose-50 text-rose-500 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-2.5 shadow-2xs">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-					<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-				</svg>
+				<Trash2 class="w-6 h-6" />
 			</div>
 			<h3 class="text-sm font-black text-pink-950 mb-1">Delete Memory?</h3>
 			<p class="text-xs text-pink-950/70 mb-4 font-medium leading-relaxed">

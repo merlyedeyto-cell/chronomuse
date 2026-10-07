@@ -1,5 +1,6 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
+	import { Clock } from 'lucide-svelte';
 
 	let currentTime = $state(new Date());
 	let timer;
@@ -77,9 +78,7 @@
 	<div class="flex items-center justify-between mb-3 border-b border-pink-50 pb-2">
 		<div class="flex items-center space-x-1.5">
 			<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-				</svg>
+				<Clock class="w-3.5 h-3.5" />
 			</div>
 			<span class="text-xs font-black text-pink-950">{greeting}</span>
 		</div>

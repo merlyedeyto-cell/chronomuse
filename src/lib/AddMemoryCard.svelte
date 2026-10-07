@@ -3,6 +3,7 @@
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import SelectOptionModal from '$lib/SelectOptionModal.svelte';
 	import { compressImage } from '$lib/imageOptimizer.js';
+	import { X, Calendar, Play, Camera, Music, ChevronDown, Share2, Loader2, Bookmark, Scissors } from 'lucide-svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -506,9 +507,7 @@
 		class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
 		title="Close"
 	>
-		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-			<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-		</svg>
+		<X class="w-4 h-4" />
 	</button>
 
 	<!-- Header -->
@@ -521,9 +520,7 @@
 	<div class="mb-3 sm:mb-3.5 p-2.5 bg-gradient-to-r from-[#f43f8e] to-[#e0337f] rounded-xl text-white shadow-xs">
 		<div class="flex items-center space-x-2.5">
 			<div class="p-1.5 bg-white/20 rounded-lg">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-				</svg>
+				<Calendar class="w-4 h-4" />
 			</div>
 			<div>
 				<p class="text-[9px] text-pink-100 uppercase tracking-wide font-bold">Selected Date</p>
@@ -543,9 +540,7 @@
 					{#if photoVideoPreview}
 						{#if isVideo}
 							<div class="flex items-center space-x-1.5 py-1 px-2 text-center">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
-								</svg>
+								<Play class="w-4 h-4 text-[#f43f8e]" />
 								<span class="text-[10px] text-pink-800 font-bold">{Math.max(1, Math.round(videoEndTime - videoStartTime))}s Clip Attached</span>
 							</div>
 						{:else}
@@ -553,9 +548,7 @@
 						{/if}
 					{:else}
 						<div class="flex items-center space-x-1.5 py-1 text-center">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-							</svg>
+							<Camera class="w-4 h-4 text-[#f43f8e]" />
 							<span class="text-[11px] text-pink-700 font-bold">Add Photo/Video</span>
 						</div>
 					{/if}
@@ -574,9 +567,7 @@
 				<label class="block text-[11px] font-bold text-pink-900 mb-1">Music (Optional)</label>
 				<label class="flex flex-col items-center justify-center w-full h-16 sm:h-18 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/60 cursor-pointer hover:bg-pink-100/70 transition-all duration-200 overflow-hidden shadow-2xs">
 					<div class="flex items-center space-x-1.5 py-1 px-2 w-full max-w-full min-w-0 overflow-hidden justify-center">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4 text-[#f43f8e] flex-shrink-0">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
-						</svg>
+						<Music class="w-4 h-4 text-[#f43f8e] flex-shrink-0" />
 						{#if music}
 							<span class="text-[11px] text-pink-900 font-bold truncate block max-w-full min-w-0">{music.name}</span>
 						{:else}
@@ -607,9 +598,7 @@
 					<span class={memoryTag ? 'text-pink-950 font-bold truncate' : 'text-pink-400 truncate'}>
 						{memoryTag || 'Select a tag'}
 					</span>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-					</svg>
+					<ChevronDown class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1" />
 				</button>
 			</div>
 
@@ -624,9 +613,7 @@
 					<span class={moodTag ? 'text-pink-950 font-bold truncate' : 'text-pink-400 truncate'}>
 						{moodTag || 'How are you feeling?'}
 					</span>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-					</svg>
+					<ChevronDown class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 ml-1" />
 				</button>
 			</div>
 		</div>
@@ -640,9 +627,7 @@
 					class="flex items-center gap-1.5 text-xs font-black text-pink-950 hover:text-[#f43f8e] cursor-pointer text-left w-full justify-between"
 				>
 					<span class="flex items-center gap-1.5">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
-						</svg>
+						<Share2 class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0" />
 						<span>Share Directly with Friends</span>
 						{#if selectedFriendIds.length > 0}
 							<span class="px-1.5 py-0.2 bg-[#f43f8e] text-white rounded-full text-[10px] font-bold">
@@ -652,9 +637,7 @@
 					</span>
 					<span class="text-[10px] font-bold text-[#f43f8e] hover:underline flex items-center gap-0.5">
 						<span>{showFriendSelector ? 'Hide List' : (selectedFriendIds.length > 0 ? 'Edit Friends' : 'Select Friends')}</span>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 transition-transform duration-200 {showFriendSelector ? 'rotate-180' : ''}">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-						</svg>
+						<ChevronDown class="w-3 h-3 transition-transform duration-200 {showFriendSelector ? 'rotate-180' : ''}" />
 					</span>
 				</button>
 			</div>
@@ -805,15 +788,10 @@
 					class="w-2/3 py-2 px-3.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl transition-all text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-1.5 shadow-xs active:scale-95 cursor-pointer"
 				>
 					{#if isSaving}
-						<svg class="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-						</svg>
+						<Loader2 class="animate-spin h-3.5 w-3.5 text-white" />
 						<span>Saving...</span>
 					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
-						</svg>
+						<Bookmark class="w-3.5 h-3.5" />
 						<span>Save {selectedFriendIds.length > 0 ? '& Share' : 'Memory'}</span>
 					{/if}
 				</button>
@@ -834,9 +812,7 @@
 			<div class="flex items-center justify-between gap-2 border-b border-pink-100 pb-2.5">
 				<div class="flex items-center space-x-2">
 					<div class="w-8 h-8 rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center font-bold shadow-2xs">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-							<path d="M6 3.75a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm12-1.5a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM9.545 10.379l-4.59 7.87a.75.75 0 101.3.758l4.086-7.006 4.085 7.006a.75.75 0 001.3-.758l-4.59-7.87a.75.75 0 00-1.591 0z" />
-						</svg>
+						<Scissors class="w-4 h-4" />
 					</div>
 					<div>
 						<h3 class="text-sm sm:text-base font-black text-pink-950 leading-tight">Trim Video Clip</h3>
@@ -863,9 +839,7 @@
 					class="w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
 					title="Cancel"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-3.5 h-3.5" />
 				</button>
 			</div>
 
@@ -887,9 +861,7 @@
 				{#if !isPlayingTrimVideo}
 					<div class="absolute inset-0 bg-black/30 flex items-center justify-center transition-all">
 						<div class="w-12 h-12 rounded-full bg-[#f43f8e] text-white flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 ml-0.5">
-								<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
-							</svg>
+							<Play class="w-6 h-6 ml-0.5 fill-current" />
 						</div>
 					</div>
 				{/if}
@@ -1020,15 +992,10 @@
 					class="w-2/3 py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 text-white rounded-xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
 				>
 					{#if isTrimmingVideo}
-						<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-						</svg>
+						<Loader2 class="animate-spin h-4 w-4 text-white" />
 						<span>Trimming 15s Clip...</span>
 					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-							<path d="M6 3.75a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm12-1.5a3 3 0 100 6 3 3 0 000-6zm0 1.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM9.545 10.379l-4.59 7.87a.75.75 0 101.3.758l4.086-7.006 4.085 7.006a.75.75 0 001.3-.758l-4.59-7.87a.75.75 0 00-1.591 0z" />
-						</svg>
+						<Scissors class="w-4 h-4" />
 						<span>Use 15s Clip</span>
 					{/if}
 				</button>

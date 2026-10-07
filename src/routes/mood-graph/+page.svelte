@@ -7,6 +7,9 @@
 	import ViewMemoryModal from '$lib/ViewMemoryModal.svelte';
 	import { playClickSound } from '$lib/soundEffects.js';
 	import { broadcastMemoryEvent } from '$lib/realtimeBroadcast.js';
+	import {
+		ArrowLeft, Trophy, BookOpen, Heart, PieChart, Tag, Clock, X, Calculator, BarChart3
+	} from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 
@@ -624,9 +627,7 @@
 							class="w-7 h-7 rounded-xl bg-pink-50 hover:bg-pink-100 text-[#f43f8e] border border-pink-100 flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-2xs"
 							title="Back to Dashboard"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-							</svg>
+							<ArrowLeft class="w-3.5 h-3.5" strokeWidth={2.5} />
 						</button>
 						<h1 class="text-sm sm:text-base font-black text-[#f43f8e]">Mood Graph & Analytics</h1>
 					</div>
@@ -683,9 +684,7 @@
 							<span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
 								{mostFrequentMoods.length > 1 ? 'Dominant Moods (Tied)' : 'Dominant Mood'}
 							</span>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 opacity-90">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0V5.625a1.125 1.125 0 011.125-1.125h2.25c1.052 0 2.125.703 2.125 2.25v0c0 1.125-.872 2.25-2.125 2.25h-2.25m-9 0h2.25c1.052 0 2.125-.703 2.125-2.25v0c0-1.125-.872-2.25-2.125-2.25H9.497m0 14.25V5.625a1.125 1.125 0 011.125-1.125h2.25c1.052 0 2.125.703 2.125 2.25v0c0 1.125-.872 2.25-2.125 2.25h-2.25" />
-							</svg>
+							<Trophy class="w-4 h-4 opacity-90" strokeWidth={2.2} />
 						</div>
 						<div>
 							<p class="text-base sm:text-lg font-black leading-tight truncate">
@@ -701,9 +700,7 @@
 					<div class="col-span-1 bg-white/95 border border-pink-100/90 rounded-2xl p-3.5 sm:p-4 shadow-[0_2px_12px_rgba(244,114,182,0.06)] flex flex-col justify-between">
 						<div class="flex items-center justify-between mb-2 text-pink-500">
 							<span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-pink-400">Total Entries</span>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 text-pink-400">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-							</svg>
+							<BookOpen class="w-4 h-4 text-pink-400" strokeWidth={2.2} />
 						</div>
 						<div>
 							<p class="text-base sm:text-lg font-black text-pink-950 leading-tight">
@@ -728,9 +725,7 @@
 								<span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-pink-400 group-hover:text-[#f43f8e] transition-colors">Positive Ratio</span>
 								<span class="w-3.5 h-3.5 rounded-full bg-pink-50 border border-pink-200 text-[#f43f8e] text-[9px] font-black flex items-center justify-center group-hover:bg-[#f43f8e] group-hover:text-white transition-colors" title="Info">?</span>
 							</div>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 text-[#f43f8e] group-hover:scale-110 transition-transform">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-							</svg>
+							<Heart class="w-4 h-4 text-[#f43f8e] group-hover:scale-110 transition-transform" strokeWidth={2.2} />
 						</div>
 						<div>
 							<div class="flex items-baseline space-x-1">
@@ -751,10 +746,7 @@
 					<div class="flex items-center justify-between mb-4 pb-2.5 border-b border-pink-50">
 						<div class="flex items-center space-x-2">
 							<div class="w-6 h-6 rounded-lg sm:rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
-									<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
-								</svg>
+								<PieChart class="w-3.5 h-3.5" strokeWidth={2.2} />
 							</div>
 							<div>
 								<h2 class="text-xs sm:text-sm font-black text-pink-950">Mood Breakdown & Distribution</h2>
@@ -839,10 +831,7 @@
 					<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up" style="animation-delay: 0.2s">
 						<div class="flex items-center justify-between mb-2.5">
 							<h3 class="text-xs sm:text-sm font-black text-pink-950 flex items-center gap-1.5">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.871 2.652.418l4.568-2.378c.872-.453 1.258-1.503.84-2.392l-4.568-9.7c-.361-.767-1.125-1.259-1.974-1.259H9.568z" />
-									<path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
-								</svg>
+								<Tag class="w-3.5 h-3.5 text-[#f43f8e]" strokeWidth={2} />
 								<span>Mood Explorer</span>
 							</h3>
 							<span class="text-[10px] text-pink-400 font-bold">Quick filter tags</span>
@@ -870,9 +859,7 @@
 					<div class="flex items-center justify-between mb-3 pb-2.5 border-b border-pink-50">
 						<div class="flex items-center space-x-2">
 							<div class="w-6 h-6 rounded-lg sm:rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-								</svg>
+								<Clock class="w-3.5 h-3.5" strokeWidth={2.2} />
 							</div>
 							<div>
 								<h2 class="text-xs sm:text-sm font-black text-pink-950">Recent Memories</h2>
@@ -949,9 +936,7 @@
 					class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
 					title="Close"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-3.5 h-3.5" strokeWidth={2.5} />
 				</button>
 
 				<!-- Modal Header -->
@@ -1020,9 +1005,7 @@
 				<div class="flex items-center justify-between border-b border-pink-100/80 pb-2.5">
 					<div class="flex items-center space-x-2">
 						<div class="w-8 h-8 rounded-xl bg-pink-50 text-[#f43f8e] border border-pink-100 flex items-center justify-center shadow-2xs">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-[#f43f8e]">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-							</svg>
+							<Heart class="w-4 h-4 text-[#f43f8e]" fill="currentColor" />
 						</div>
 						<div>
 							<h3 class="text-sm font-black text-pink-950">Positive Ratio</h3>
@@ -1034,9 +1017,7 @@
 						aria-label="Close"
 						class="w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-all cursor-pointer active:scale-95"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-						</svg>
+						<X class="w-3.5 h-3.5" strokeWidth={2.5} />
 					</button>
 				</div>
 
@@ -1092,9 +1073,7 @@
 				<div class="p-3 bg-pink-50/40 border border-pink-100 rounded-2xl space-y-2">
 					<div class="flex items-center justify-between text-[10px] font-extrabold text-pink-950">
 						<span class="flex items-center gap-1.5">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M4.745 3A23.933 23.933 0 003 12c0 3.183.62 6.22 1.745 9M19.255 3c1.125 2.78 1.745 5.817 1.745 9 0 3.183-.62 6.22-1.745 9m-1.5-12.75h-10.5m10.5 7.5h-10.5" />
-							</svg>
+							<Calculator class="w-3.5 h-3.5 text-[#f43f8e]" strokeWidth={2.2} />
 							<span>Formula Used</span>
 						</span>
 						<span class="text-[9px] text-[#f43f8e] font-black uppercase bg-white px-2 py-0.5 rounded-full border border-pink-100 shadow-2xs">Calculation</span>
@@ -1115,9 +1094,7 @@
 				<div class="space-y-2">
 					<div class="flex items-center justify-between">
 						<span class="text-[11px] font-black text-pink-950 flex items-center gap-1.5">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-							</svg>
+							<BarChart3 class="w-3.5 h-3.5 text-[#f43f8e]" strokeWidth={2.2} />
 							<span>Moods Breakdown</span>
 						</span>
 						<span class="text-[10px] text-pink-500 font-bold bg-pink-50 px-2 py-0.5 rounded-full border border-pink-100">

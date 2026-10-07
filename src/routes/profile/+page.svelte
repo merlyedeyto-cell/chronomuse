@@ -10,6 +10,11 @@
 	import AppFooter from '$lib/AppFooter.svelte';
 	import EditProfileModal from '$lib/EditProfileModal.svelte';
 	import { compressImage } from '$lib/imageOptimizer.js';
+	import {
+		User, Ban, Camera, Check, Link, Pencil, Clock, X, UserPlus,
+		MessageSquare, Users, Calendar, Info, BarChart3, Heart, Search,
+		UserCircle, MessageCircle, Trash2
+	} from 'lucide-svelte';
 
 	let currentUser = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let targetUserId = $state(null);
@@ -1466,9 +1471,7 @@
 		{:else if !profileData}
 			<div class="bg-white rounded-2xl p-6 border border-pink-100 shadow-[0_4px_20px_rgba(244,114,182,0.1)] flex flex-col items-center justify-center text-center space-y-3">
 				<div class="w-12 h-12 bg-pink-50 text-[#f43f8e] rounded-full flex items-center justify-center mx-auto border border-pink-100 shadow-xs">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-					</svg>
+					<User class="w-6 h-6" strokeWidth={2} />
 				</div>
 				<div class="space-y-0.5">
 					<p class="text-base font-black text-pink-950">Profile not available</p>
@@ -1486,9 +1489,7 @@
 			<!-- Blocked Profile View Screen -->
 			<div class="bg-white border border-pink-100 rounded-2xl shadow-[0_4px_20px_rgba(244,114,182,0.1)] p-6 sm:p-7 text-center space-y-4">
 				<div class="w-14 h-14 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto border border-rose-100 shadow-xs">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-					</svg>
+					<Ban class="w-7 h-7" strokeWidth={2} />
 				</div>
 				
 				<div class="space-y-1">
@@ -1509,9 +1510,7 @@
 						onclick={handleUnblockTargetUser}
 						class="px-5 py-2 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-xs rounded-xl active:scale-95 transition-all cursor-pointer shadow-md inline-flex items-center space-x-1.5"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-						</svg>
+						<Ban class="w-3.5 h-3.5" strokeWidth={2} />
 						<span>Unblock @{profileData.user.username}</span>
 					</button>
 				{/if}
@@ -1542,10 +1541,7 @@
 								<div class="w-3.5 h-3.5 border-2 border-[#f43f8e] border-t-transparent rounded-full animate-spin"></div>
 								<span>Uploading...</span>
 							{:else}
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-									<path d="M12 9a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" />
-									<path fill-rule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.24.383.645.643 1.11.71a41.402 41.402 0 016.581 1.764c.94.33 1.5 1.258 1.5 2.25v9.75c0 1.242-1.008 2.25-2.25 2.25H3.75A2.25 2.25 0 011.5 20.25v-9.75c0-.992.56-1.92 1.5-2.25a41.402 41.402 0 016.58-1.764c.466-.067.871-.327 1.111-.71l.821-1.317c.502-.805 1.365-1.338 2.332-1.39zM6.75 12.75a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0zm12-1.5a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
-								</svg>
+								<Camera class="w-4 h-4" />
 								<span>Edit Cover</span>
 							{/if}
 						</label>
@@ -1612,10 +1608,7 @@
 									{#if isUploadingAvatar}
 										<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
 									{:else}
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
-											<path d="M12 9a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" />
-											<path fill-rule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.24.383.645.643 1.11.71a41.402 41.402 0 016.581 1.764c.94.33 1.5 1.258 1.5 2.25v9.75c0 1.242-1.008 2.25-2.25 2.25H3.75A2.25 2.25 0 011.5 20.25v-9.75c0-.992.56-1.92 1.5-2.25a41.402 41.402 0 016.58-1.764c.466-.067.871-.327 1.111-.71l.821-1.317c.502-.805 1.365-1.338 2.332-1.39zM6.75 12.75a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0zm12-1.5a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
-										</svg>
+										<Camera class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
 									{/if}
 								</label>
 							{/if}
@@ -1632,14 +1625,10 @@
 									aria-label="Copy Profile Link"
 								>
 									{#if isCopiedLink}
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0">
-											<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-										</svg>
+										<Check class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.5} />
 										<span class="text-[#f43f8e] font-black hidden sm:inline">Link Copied!</span>
 									{:else}
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-										</svg>
+										<Link class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.2} />
 										<span class="hidden sm:inline">Copy Link</span>
 									{/if}
 								</button>
@@ -1650,9 +1639,7 @@
 									title="Edit Profile Info"
 									aria-label="Edit Profile"
 								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-									</svg>
+									<Pencil class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.2} />
 									<span class="hidden sm:inline">Edit Profile</span>
 								</button>
 							</div>
@@ -1667,14 +1654,10 @@
 									aria-label="Share Profile Link"
 								>
 									{#if isCopiedLink}
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0">
-											<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-										</svg>
+										<Check class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.5} />
 										<span class="text-[#f43f8e] font-black hidden sm:inline">Copied!</span>
 									{:else}
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-										</svg>
+										<Link class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.2} />
 										<span class="hidden sm:inline">Share</span>
 									{/if}
 								</button>
@@ -1686,12 +1669,8 @@
 										class="group px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-amber-50 hover:bg-rose-50 text-amber-700 hover:text-rose-600 border border-amber-200 hover:border-rose-200 text-[11px] sm:text-xs font-black rounded-full transition-all cursor-pointer active:scale-95 shadow-2xs flex items-center space-x-1"
 										title="Click to cancel friend request"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-amber-600 group-hover:hidden flex-shrink-0">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-										</svg>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-rose-500 hidden group-hover:inline flex-shrink-0">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-										</svg>
+										<Clock class="w-3.5 h-3.5 text-amber-600 group-hover:hidden flex-shrink-0" strokeWidth={2.2} />
+										<X class="w-3.5 h-3.5 text-rose-500 hidden group-hover:inline flex-shrink-0" strokeWidth={2.2} />
 										<span class="group-hover:hidden whitespace-nowrap"><span class="hidden sm:inline">Request </span>Pending</span>
 										<span class="hidden group-hover:inline whitespace-nowrap">Cancel<span class="hidden sm:inline"> Request</span></span>
 									</button>
@@ -1702,9 +1681,7 @@
 										disabled={isSaving}
 										class="px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] sm:text-xs rounded-full transition-all shadow-xs active:scale-95 cursor-pointer flex items-center space-x-1"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 19.125a1.125 1.125 0 011.125-1.125h15.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H4.875a1.125 1.125 0 01-1.125-1.125v-2.25z" />
-										</svg>
+										<UserPlus class="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2.2} />
 										<span class="whitespace-nowrap">Add Friend</span>
 									</button>
 								{:else}
@@ -1721,9 +1698,7 @@
 									onclick={() => openChatWithUser(profileData.user)}
 									class="px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] sm:text-xs rounded-full transition-all shadow-xs active:scale-95 cursor-pointer flex items-center space-x-1"
 								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.812-.907 5.034 5.034 0 00.41-1.39A8.134 8.134 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-									</svg>
+									<MessageSquare class="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2.2} />
 									<span class="whitespace-nowrap">Message</span>
 								</button>
 							</div>
@@ -1756,17 +1731,13 @@
 							onclick={() => activeTab = 'friends'}
 							class="px-2.5 py-1 bg-pink-50 border border-pink-200 text-[#f43f8e] text-[11px] font-black rounded-xl flex items-center space-x-1 cursor-pointer hover:bg-pink-100 transition-colors"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
-								<path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.633 13.067 13.067 0 01-6.761 1.87 13.067 13.067 0 01-6.761-1.87.75.75 0 01-.363-.633l-.001-.122zM16.231 17.5a8.625 8.625 0 00-6.031-4.875 6 6 0 016.031 4.875z" />
-							</svg>
+							<Users class="w-3 h-3" strokeWidth={2} />
 							<span>{profileData.total_friends !== null && profileData.total_friends !== undefined ? `${profileData.total_friends} Friends` : '0 Friends'}</span>
 						</button>
 
 						{#if profileData.user.created_at}
 							<div class="px-2.5 py-1 bg-pink-50 border border-pink-200 text-[#f43f8e] text-[11px] font-black rounded-xl flex items-center space-x-1">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-								</svg>
+								<Calendar class="w-3 h-3" strokeWidth={2} />
 								<span>Joined {formatDate(profileData.user.created_at)}</span>
 							</div>
 						{/if}
@@ -1786,9 +1757,7 @@
 					onclick={() => activeTab = 'about'}
 					class="flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all flex items-center justify-center space-x-1 cursor-pointer {activeTab === 'about' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-500 hover:text-pink-700'}"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-					</svg>
+					<User class="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2} />
 					<span>About {profileData.is_self ? 'You' : ''}</span>
 				</button>
 
@@ -1797,9 +1766,7 @@
 					onclick={() => activeTab = 'friends'}
 					class="flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all flex items-center justify-center space-x-1 cursor-pointer {activeTab === 'friends' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-500 hover:text-pink-700'}"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
-						<path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.633 13.067 13.067 0 01-6.761 1.87 13.067 13.067 0 01-6.761-1.87.75.75 0 01-.363-.633l-.001-.122zM16.231 17.5a8.625 8.625 0 00-6.031-4.875 6 6 0 016.031 4.875z" />
-					</svg>
+					<Users class="w-3.5 h-3.5 flex-shrink-0" />
 					<span>Friends {profileData.total_friends !== null && profileData.total_friends !== undefined ? `(${profileData.total_friends})` : ''}</span>
 				</button>
 
@@ -1809,9 +1776,7 @@
 						onclick={() => activeTab = 'mood'}
 						class="flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all flex items-center justify-center space-x-1 cursor-pointer {activeTab === 'mood' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-500 hover:text-pink-700'}"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-						</svg>
+						<BarChart3 class="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2} />
 						<span class="truncate">Mood Insights</span>
 					</button>
 				{/if}
@@ -1823,9 +1788,7 @@
 			{#if activeTab === 'about'}
 				<div class="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
 					<div class="flex items-center space-x-2.5">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-[#f43f8e]">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-						</svg>
+						<User class="w-4 h-4 text-[#f43f8e]" strokeWidth={2} />
 						<div>
 							<h3 class="text-sm font-black text-pink-950">
 								{profileData.is_self ? 'About You' : `About @${profileData.user.username}`}
@@ -1856,9 +1819,7 @@
 						<!-- Relationship Status Card -->
 						<div class="p-2.5 bg-pink-50/30 border border-pink-100 rounded-xl flex items-center space-x-3 shadow-2xs">
 							<div class="w-8 h-8 rounded-lg bg-pink-100/70 text-[#f43f8e] border border-pink-200/60 flex items-center justify-center flex-shrink-0">
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-									<path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
-								</svg>
+								<Heart class="w-4 h-4" />
 							</div>
 							<div>
 								<p class="text-[9px] font-black text-pink-400 uppercase tracking-wider">RELATIONSHIP STATUS</p>
@@ -1871,9 +1832,7 @@
 						<!-- Birthday Card -->
 						<div class="p-2.5 bg-pink-50/30 border border-pink-100 rounded-xl flex items-center space-x-3 shadow-2xs">
 							<div class="w-8 h-8 rounded-lg bg-pink-100/70 text-[#f43f8e] border border-pink-200/60 flex items-center justify-center flex-shrink-0">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-								</svg>
+								<Calendar class="w-4 h-4" strokeWidth={2} />
 							</div>
 							<div>
 								<p class="text-[9px] font-black text-pink-400 uppercase tracking-wider">BIRTHDAY</p>
@@ -1887,9 +1846,7 @@
 						{#if profileData.user.gender && profileData.user.gender !== 'Prefer not to say'}
 							<div class="p-2.5 bg-pink-50/30 border border-pink-100 rounded-xl flex items-center space-x-3 shadow-2xs">
 								<div class="w-8 h-8 rounded-lg bg-pink-100/70 text-[#f43f8e] border border-pink-200/60 flex items-center justify-center flex-shrink-0">
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-									</svg>
+									<User class="w-4 h-4" strokeWidth={2} />
 								</div>
 								<div>
 									<p class="text-[9px] font-black text-pink-400 uppercase tracking-wider">GENDER</p>
@@ -1921,9 +1878,7 @@
 							placeholder="Search friends..."
 							class="w-full pl-8 pr-3.5 py-2 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 transition-all"
 						/>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-pink-400 absolute left-2.5 top-2.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-						</svg>
+						<Search class="w-3.5 h-3.5 text-pink-400 absolute left-2.5 top-2.5" strokeWidth={2} />
 					</div>
 
 					{#if filteredFriends.length === 0}
@@ -1972,9 +1927,7 @@
 												title="View Profile"
 												aria-label="View Profile"
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-												</svg>
+												<UserCircle class="w-5 h-5" strokeWidth={2} />
 											</button>
 											<button
 												onclick={() => openChatWithUser(friend)}
@@ -1982,9 +1935,7 @@
 												title="Chat"
 												aria-label="Chat"
 											>
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.818-.818 5.969 5.969 0 011.057-3.035C4.646 15.657 4 13.916 4 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-												</svg>
+												<MessageSquare class="w-5 h-5" strokeWidth={2} />
 											</button>
 										{/if}
 									</div>
@@ -2031,9 +1982,7 @@
 										title="View Profile"
 										aria-label="View Profile"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-										</svg>
+										<UserCircle class="w-5 h-5" strokeWidth={2} />
 									</button>
 								</div>
 							</div>
@@ -2117,9 +2066,7 @@
 
 							<!-- System Feedback Quote -->
 							<div class="p-2.5 bg-white border border-pink-100 rounded-xl flex items-start space-x-2 shadow-2xs">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] flex-shrink-0 mt-0.5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-								</svg>
+								<MessageCircle class="w-3.5 h-3.5 text-[#f43f8e] shrink-0 mt-0.5" strokeWidth={2} />
 								<p class="text-xs text-pink-950/80 font-bold italic leading-relaxed">
 									"{getSystemFeedbackMessage(dominantMood, dominantMoods)}"
 								</p>
@@ -2142,9 +2089,7 @@
 		>
 			<div class="bg-white border border-pink-100 rounded-3xl max-w-sm w-full p-5 sm:p-6 text-center animate-modal-content shadow-2xl space-y-3.5">
 				<div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto border border-rose-100 shadow-xs">
-					<svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-						<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.088 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 00-3.273 0C6.39 3.05 6 3.678 6 4.478v.113a49.488 49.488 0 0012 0v-.113c0-.8-.39-1.428-1.091-1.452a51.196 51.196 0 00-3.273 0zM9.75 9.75a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75zm4.5 0a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-					</svg>
+					<Trash2 class="w-5 h-5" strokeWidth={2} />
 				</div>
 				<div>
 					<h3 class="text-sm sm:text-base font-black text-pink-950 mb-0.5">Unfriend @{unfriendTarget.username}?</h3>
@@ -2188,9 +2133,7 @@
 		>
 			<div class="bg-white border border-pink-100 rounded-3xl max-w-sm w-full p-5 sm:p-6 text-center animate-modal-content shadow-2xl space-y-3.5">
 				<div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto border border-rose-100 shadow-xs">
-					<svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-						<path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd" />
-					</svg>
+					<Ban class="w-5 h-5" strokeWidth={2} />
 				</div>
 				<div>
 					<h3 class="text-sm sm:text-base font-black text-pink-950 mb-0.5">Block @{blockTarget.username || 'User'}?</h3>
@@ -2246,9 +2189,7 @@
 			<div class="bg-white border border-pink-100 rounded-3xl max-w-sm w-full p-5 sm:p-6 text-center animate-modal-content relative shadow-2xl space-y-3.5">
 				<!-- Chat Icon on Top -->
 				<div class="w-11 h-11 bg-pink-50 text-[#f43f8e] border border-pink-100 rounded-full flex items-center justify-center mx-auto shadow-xs">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.818-.818 5.969 5.969 0 011.057-3.035C4.646 15.657 4 13.916 4 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-					</svg>
+					<MessageSquare class="w-5 h-5" strokeWidth={2} />
 				</div>
 
 				<div>
@@ -2263,9 +2204,7 @@
 				<!-- 24h Expiration Timer -->
 				<div class="p-2.5 bg-pink-50/50 border border-pink-200/80 rounded-xl flex items-center justify-between shadow-2xs">
 					<span class="flex items-center gap-1.5 text-xs font-black text-[#f43f8e]">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-						</svg>
+						<Clock class="w-3.5 h-3.5" strokeWidth={2.2} />
 						24h Expiration:
 					</span>
 					<span class="font-black text-pink-950 border border-pink-200 bg-white px-2 py-0.5 rounded-lg text-xs font-mono">{noteCountdownTimer}</span>
@@ -2341,9 +2280,7 @@
 						onclick={() => viewingUserNote = false}
 						class="p-1 text-pink-400 hover:text-pink-700 rounded-full"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-						</svg>
+						<X class="w-3.5 h-3.5" strokeWidth={2.5} />
 					</button>
 				</div>
 

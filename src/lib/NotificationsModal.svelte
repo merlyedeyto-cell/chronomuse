@@ -3,6 +3,7 @@
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { goto } from '$app/navigation';
 	import { playClickSound } from '$lib/soundEffects.js';
+	import { X, CheckCircle, Calendar, Clock } from 'lucide-svelte';
 
 	const dispatch = createEventDispatcher();
 	let { isOpen = $bindable(false), userId = null } = $props();
@@ -326,9 +327,7 @@
 					class="p-1.5 rounded-full hover:bg-pink-50 text-pink-400 hover:text-[#f43f8e] bg-white border border-pink-200 transition-all cursor-pointer shadow-xs active:scale-95"
 					aria-label="Close"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-4 h-4" />
 				</button>
 			</div>
 
@@ -394,10 +393,7 @@
 					{#if acceptedSharedMemories.length === 0}
 						<div class="py-10 text-center">
 							<div class="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-2.5 text-pink-300">
-								<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-									<circle cx="12" cy="12" r="10"></circle>
-									<path d="m9 12 2 2 4-4"></path>
-								</svg>
+								<CheckCircle class="w-6 h-6" />
 							</div>
 							<p class="text-sm font-black text-[#f43f8e]">No shared memories yet</p>
 							<p class="text-xs text-pink-400 font-bold mt-0.5">Memories accepted from friends are saved to your calendar.</p>
@@ -433,9 +429,7 @@
 											onclick={() => { closeModal(); goto(`/dashboard?date=${item.memory.date}`); }}
 											class="px-3 py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl text-xs font-black flex items-center space-x-1.5 active:scale-95 transition-all cursor-pointer"
 										>
-											<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-											</svg>
+											<Calendar class="w-3.5 h-3.5" />
 											<span>Open on Calendar</span>
 										</button>
 									</div>
@@ -447,10 +441,7 @@
 					{#if pendingSharedMemories.length === 0}
 						<div class="py-10 text-center">
 							<div class="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-2.5 text-pink-300">
-								<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-									<circle cx="12" cy="12" r="10"></circle>
-									<polyline points="12 6 12 12 16 14"></polyline>
-								</svg>
+								<Clock class="w-6 h-6" />
 							</div>
 							<p class="text-sm font-black text-[#f43f8e]">No pending memories</p>
 							<p class="text-xs text-pink-400 font-bold mt-0.5">Incoming memory share requests will show up here.</p>

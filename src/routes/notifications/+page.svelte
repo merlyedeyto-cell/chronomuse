@@ -7,6 +7,10 @@
 	import { broadcastMemoryEvent, broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
+	import {
+		ArrowLeft, CheckCircle2, Eye, Calendar, Clock, Check,
+		Send, X, Users, Music, Pause, Play, MessageSquare, Trash2
+	} from 'lucide-svelte';
 
 	let user = $state(null);
 	let isLoading = $state(false);
@@ -470,9 +474,7 @@
 					class="p-1 -ml-1 text-[#f43f8e] hover:text-[#d0256e] hover:bg-pink-50 rounded-lg transition-all active:scale-95 cursor-pointer"
 					title="Back to Dashboard"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-					</svg>
+					<ArrowLeft class="w-4 h-4" strokeWidth={2.5} />
 				</button>
 				<h1 class="text-base sm:text-lg font-black text-[#f43f8e] tracking-tight">
 					Notifications & Requests
@@ -552,10 +554,7 @@
 			{#if acceptedSharedMemories.length === 0}
 				<div class="bg-white rounded-2xl p-8 text-center shadow-xs border border-pink-100/90 animate-fade-in">
 					<div class="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center mx-auto mb-2.5 text-pink-300">
-						<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-							<circle cx="12" cy="12" r="10"></circle>
-							<path d="m9 12 2 2 4-4"></path>
-						</svg>
+						<CheckCircle2 class="w-6 h-6" />
 					</div>
 					<h2 class="text-sm font-black text-[#f43f8e] mb-0.5">No Shared Memories Yet</h2>
 					<p class="text-[11px] text-pink-400 font-medium max-w-xs mx-auto leading-relaxed">
@@ -566,10 +565,7 @@
 				<div class="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-pink-100/90 animate-fade-in">
 					<!-- Section Title Header -->
 					<div class="flex items-center space-x-1.5 text-[11px] font-black text-[#f43f8e] uppercase tracking-wider mb-3">
-						<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-[#f43f8e]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-							<circle cx="12" cy="12" r="10"></circle>
-							<path d="m9 12 2 2 4-4"></path>
-						</svg>
+						<CheckCircle2 class="w-3.5 h-3.5 text-[#f43f8e]" />
 						<span>SAVED ON CALENDAR ({acceptedSharedMemories.length})</span>
 					</div>
 
@@ -627,10 +623,7 @@
 								<!-- Bottom Action Row -->
 								<div class="flex items-center justify-between pt-1.5 border-t border-pink-50">
 									<div class="text-[10px] text-pink-400 font-bold flex items-center space-x-1 whitespace-nowrap">
-										<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-pink-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-											<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-										</svg>
+										<Eye class="w-3 h-3 text-pink-400 flex-shrink-0" />
 										<span>Tap to preview details</span>
 									</div>
 
@@ -639,9 +632,7 @@
 										onclick={(e) => { e.stopPropagation(); playClickSound(); goToCalendarDate(item.memory.date, e); }}
 										class="h-7.5 py-1 px-3 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] rounded-xl shadow-xs flex items-center space-x-1 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-										</svg>
+										<Calendar class="w-3 h-3" />
 										<span>Open on Calendar</span>
 									</button>
 								</div>
@@ -655,10 +646,7 @@
 			{#if pendingSharedMemories.length === 0}
 				<div class="bg-white rounded-2xl p-8 text-center shadow-xs border border-pink-100/90 animate-fade-in">
 					<div class="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center mx-auto mb-2.5 text-pink-300">
-						<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-							<circle cx="12" cy="12" r="10"></circle>
-							<polyline points="12 6 12 12 16 14"></polyline>
-						</svg>
+						<Clock class="w-6 h-6" />
 					</div>
 					<h2 class="text-sm font-black text-[#f43f8e] mb-0.5">No Pending Memories</h2>
 					<p class="text-[11px] text-pink-400 font-medium max-w-xs mx-auto leading-relaxed">
@@ -668,10 +656,7 @@
 			{:else}
 				<div class="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-pink-100/90 animate-fade-in">
 					<div class="flex items-center space-x-1.5 text-[11px] font-black text-[#f43f8e] uppercase tracking-wider mb-3">
-						<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-[#f43f8e]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-							<circle cx="12" cy="12" r="10"></circle>
-							<polyline points="12 6 12 12 16 14"></polyline>
-						</svg>
+						<Clock class="w-3.5 h-3.5 text-[#f43f8e]" />
 						<span>ACTION REQUIRED: PENDING ({pendingSharedMemories.length})</span>
 					</div>
 
@@ -728,10 +713,7 @@
 								<!-- Bottom Row: Tap to Preview & Accept / Decline -->
 								<div class="flex items-center justify-between pt-1.5 border-t border-pink-50">
 									<div class="text-[10px] text-pink-400 font-bold flex items-center space-x-1 whitespace-nowrap">
-										<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-pink-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-											<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-										</svg>
+										<Eye class="w-3 h-3 text-pink-400 flex-shrink-0" />
 										<span>Tap to preview</span>
 									</div>
 
@@ -741,9 +723,7 @@
 											onclick={(e) => { e.stopPropagation(); playClickSound(); handleRespondSharedMemory(item, 'accept', e); }}
 											class="h-7.5 py-1 px-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] rounded-xl shadow-xs flex items-center space-x-1 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
 										>
-											<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-											</svg>
+											<Check class="w-3 h-3" strokeWidth={2.5} />
 											<span>Accept</span>
 										</button>
 
@@ -766,9 +746,7 @@
 			{#if sentSharedMemories.length === 0}
 				<div class="bg-white rounded-2xl p-8 text-center shadow-xs border border-pink-100/90 animate-fade-in">
 					<div class="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center mx-auto mb-2.5 text-pink-300">
-						<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-						</svg>
+						<Send class="w-6 h-6" strokeWidth={2} />
 					</div>
 					<h2 class="text-sm font-black text-[#f43f8e] mb-0.5">No Memories Shared Yet</h2>
 					<p class="text-[11px] text-pink-400 font-medium max-w-xs mx-auto leading-relaxed">
@@ -779,9 +757,7 @@
 				<div class="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-pink-100/90 animate-fade-in">
 					<div class="mb-3">
 						<div class="flex items-center space-x-1.5 text-[11px] font-black text-[#f43f8e] uppercase tracking-wider">
-							<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-[#f43f8e]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-							</svg>
+							<Send class="w-3.5 h-3.5 text-[#f43f8e]" />
 							<span>YOUR SHARED MEMORIES ({sentSharedMemories.length})</span>
 						</div>
 						<p class="text-[11px] text-pink-400 font-medium mt-0.5">You can cancel or unshare anytime</p>
@@ -843,10 +819,7 @@
 								<!-- Bottom Row: Tap to Preview & Cancel Share -->
 								<div class="flex items-center justify-between pt-1.5 border-t border-pink-50">
 									<div class="text-[10px] text-pink-400 font-bold flex items-center space-x-1 whitespace-nowrap">
-										<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-pink-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-											<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-										</svg>
+										<Eye class="w-3 h-3 text-pink-400 flex-shrink-0" />
 										<span>Tap to preview</span>
 										{#if item.shared_at}
 											<span class="text-pink-300">• {formatTimeAgo(item.shared_at)}</span>
@@ -858,9 +831,7 @@
 										onclick={(e) => { e.stopPropagation(); playClickSound(); promptCancelShare(item, e); }}
 										class="h-7.5 py-1 px-3 bg-white border border-pink-200 hover:border-pink-300 text-[#f43f8e] hover:bg-pink-50 font-black text-[11px] rounded-xl active:scale-95 transition-all cursor-pointer flex items-center space-x-1 whitespace-nowrap"
 									>
-										<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-[#f43f8e]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-											<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-										</svg>
+										<X class="w-3 h-3 text-[#f43f8e]" strokeWidth={2.5} />
 										<span>Cancel Share</span>
 									</button>
 								</div>
@@ -893,9 +864,7 @@
 					class="absolute top-3.5 right-3.5 p-1 text-pink-400 hover:text-pink-600 hover:bg-pink-50 rounded-full transition-all cursor-pointer"
 					title="Close"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-4 h-4" strokeWidth={2.5} />
 				</button>
 
 				<!-- Header -->
@@ -908,9 +877,7 @@
 				<div class="mb-3 p-2.5 bg-[#f43f8e] rounded-xl text-white shadow-xs flex-shrink-0">
 					<div class="flex items-center space-x-2.5">
 						<div class="p-1.5 bg-white/20 rounded-lg flex items-center justify-center">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-white">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-							</svg>
+							<Calendar class="w-4 h-4 text-white" />
 						</div>
 						<div>
 							<p class="text-[9px] text-pink-100 uppercase tracking-wider font-extrabold">Selected Date</p>
@@ -926,9 +893,7 @@
 						<div class="flex items-center justify-between gap-1.5">
 							<div class="flex items-center flex-wrap gap-1">
 								<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink-100/70 text-[#f43f8e] font-black inline-flex items-center space-x-1">
-									<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-[#f43f8e]" viewBox="0 0 24 24" fill="currentColor">
-										<path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.104.75.75 0 00.424-.674v-.178a6.375 6.375 0 00-5.25-6.262v1.543c1.69.587 3.01 1.956 3.01 3.571h-3.01z" />
-									</svg>
+									<Users class="w-3 h-3 text-[#f43f8e]" />
 									<span>{selectedMemoryToView.sender_username ? `Shared by @${selectedMemoryToView.sender_username}` : `Shared with @${selectedMemoryToView.recipient_username}`}</span>
 								</span>
 
@@ -984,9 +949,7 @@
 							<div class="bg-pink-50/90 border border-pink-200/90 rounded-xl p-2.5 space-y-1.5">
 								<div class="flex items-center space-x-1.5 min-w-0">
 									<div class="w-5 h-5 rounded-full bg-[#f43f8e] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-										<svg xmlns="http://www.w3.org/2000/svg" class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
-											<path d="M19.95 2.1a1 1 0 00-.95.1L8 6.4a1 1 0 00-.8 1V17.5a3.5 3.5 0 102 3.14V11.2l9-3.6v6.9a3.5 3.5 0 102 3.14V3a1 1 0 00-.25-.9z" />
-										</svg>
+										<Music class="w-2.5 h-2.5" />
 									</div>
 									<p class="text-[11px] font-black text-[#e8367f] truncate" title={getMusicName(selectedMemoryToView.memory.music)}>
 										{getMusicName(selectedMemoryToView.memory.music)}
@@ -1001,13 +964,9 @@
 										title={isAudioPlaying ? 'Pause' : 'Play'}
 									>
 										{#if isAudioPlaying}
-											<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-												<path fill-rule="evenodd" d="M6.75 5.25a.75.75 0 01.75.75v12a.75.75 0 01-1.5 0v-12a.75.75 0 01.75-.75zm10.5 0a.75.75 0 01.75.75v12a.75.75 0 01-1.5 0v-12a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-											</svg>
+											<Pause class="w-3 h-3 fill-current" />
 										{:else}
-											<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 translate-x-0.5" viewBox="0 0 24 24" fill="currentColor">
-												<path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
-											</svg>
+											<Play class="w-3 h-3 translate-x-0.5 fill-current" />
 										{/if}
 									</button>
 
@@ -1062,9 +1021,7 @@
 							onclick={(e) => { playClickSound(); goToCalendarDate(selectedMemoryToView.memory.date, e); }}
 							class="h-8 py-1.5 px-2.5 bg-[#10b981] hover:bg-[#059669] text-white rounded-xl active:scale-95 transition-all duration-200 text-[11px] font-black flex items-center justify-center space-x-1 shadow-xs cursor-pointer whitespace-nowrap"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3 flex-shrink-0">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-							</svg>
+							<Calendar class="w-3 h-3 flex-shrink-0" />
 							<span>Open on Calendar</span>
 						</button>
 
@@ -1072,9 +1029,7 @@
 							onclick={() => { playClickSound(); handleSayThanks(selectedMemoryToView); }}
 							class="h-8 py-1.5 px-2.5 bg-white border border-pink-200 hover:border-pink-300 hover:bg-pink-50 text-[#f43f8e] rounded-xl active:scale-95 transition-all duration-200 text-[11px] font-black flex items-center justify-center space-x-1 cursor-pointer whitespace-nowrap"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3 flex-shrink-0">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-							</svg>
+							<MessageSquare class="w-3 h-3 flex-shrink-0" />
 							<span>Say Thanks</span>
 						</button>
 					{:else}
@@ -1082,9 +1037,7 @@
 							onclick={(e) => { playClickSound(); handleRespondSharedMemory(selectedMemoryToView, 'accept', e); }}
 							class="h-8 py-1.5 px-2.5 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 text-white rounded-xl text-[11px] font-black transition-all duration-200 flex items-center justify-center space-x-1 shadow-xs cursor-pointer whitespace-nowrap"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 flex-shrink-0">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-							</svg>
+							<Check class="w-3 h-3 flex-shrink-0" strokeWidth={2.5} />
 							<span>Accept</span>
 						</button>
 
@@ -1111,9 +1064,7 @@
 				onclick={(e) => e.stopPropagation()}
 			>
 				<div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-2.5">
-					<svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-						<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.088 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 00-3.273 0C6.39 3.05 6 3.678 6 4.478v.113a49.488 49.488 0 0012 0v-.113c0-.8-.39-1.428-1.091-1.452a51.196 51.196 0 00-3.273 0zM9.75 9.75a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75zm4.5 0a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-					</svg>
+					<Trash2 class="w-6 h-6" />
 				</div>
 				<h3 class="text-base font-black text-pink-950 mb-1">Cancel Shared Memory?</h3>
 				<p class="text-xs text-pink-600 mb-5 font-semibold leading-relaxed">
@@ -1161,9 +1112,7 @@
 					class="p-1.5 text-pink-700 hover:text-pink-900 bg-white border border-pink-200 rounded-full transition-all cursor-pointer active:scale-95 shadow-xs flex items-center justify-center"
 					title="Close Full View"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-4 h-4" strokeWidth={2.5} />
 				</button>
 			</div>
 

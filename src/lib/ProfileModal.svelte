@@ -2,6 +2,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
+	import { X, Loader2, Check, Pencil, LogOut } from 'lucide-svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -242,9 +243,7 @@
 				class="absolute top-4 right-4 sm:top-5 sm:right-5 w-8 h-8 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 z-10"
 				aria-label="Close modal"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-				</svg>
+				<X class="w-4 h-4" />
 			</button>
 
 			{#if messageText}
@@ -335,15 +334,10 @@
 						class="w-full py-2 px-3 bg-[#f43f8e] text-white rounded-xl font-bold hover:bg-[#e0337f] active:scale-95 transition-all text-xs disabled:opacity-50 flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer"
 					>
 						{#if isSaving}
-							<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-							</svg>
+							<Loader2 class="animate-spin h-4 w-4 text-white" />
 							<span>Saving...</span>
 						{:else}
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-							</svg>
+							<Check class="w-4 h-4" />
 							<span>Save Changes</span>
 						{/if}
 					</button>
@@ -351,9 +345,7 @@
 						onclick={handleCancel}
 						class="w-full py-2 px-3 bg-white border border-pink-200 text-pink-600 rounded-xl hover:bg-pink-50 transition-all text-xs font-bold flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-						</svg>
+						<X class="w-4 h-4" />
 						<span>Cancel</span>
 					</button>
 				{:else}
@@ -361,18 +353,14 @@
 						onclick={handleEdit}
 						class="w-full py-2.5 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] transition-all text-xs font-bold flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer active:scale-95"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-						</svg>
+						<Pencil class="w-4 h-4" />
 						<span>Edit Profile</span>
 					</button>
 					<button
 						onclick={handleLogout}
 						class="w-full py-2.5 px-3 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl transition-all text-xs font-bold flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-						</svg>
+						<LogOut class="w-4 h-4" />
 						<span>Logout</span>
 					</button>
 				{/if}

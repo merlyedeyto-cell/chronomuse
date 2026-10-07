@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
+	import { X, UserPlus, CheckCircle, AlertCircle, Search } from 'lucide-svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -509,17 +510,13 @@
 				class="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 w-8 h-8 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 z-10"
 				title="Close"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-				</svg>
+				<X class="w-4 h-4" />
 			</button>
 
 			<!-- Header -->
 			<div class="text-center mb-3 pr-10 pl-10 flex-shrink-0">
 				<div class="w-10 h-10 bg-gradient-to-tr from-[#f43f8e] to-[#ec4899] rounded-2xl flex items-center justify-center mx-auto mb-1.5 text-white shadow-xs">
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.765z" />
-					</svg>
+					<UserPlus class="w-5 h-5" />
 				</div>
 				<h2 class="text-base sm:text-lg font-black text-pink-950 mb-0.5">Find & Add Friends</h2>
 				<p class="text-[11px] text-pink-400 font-bold">Search or discover registered users to connect on ChronoMuse</p>
@@ -528,9 +525,7 @@
 			<!-- Success Message -->
 			{#if successMessage}
 				<div class="mb-3.5 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-bold flex items-center space-x-2">
-					<svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-						<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-					</svg>
+					<CheckCircle class="w-4 h-4 text-emerald-600 flex-shrink-0" />
 					<span>{successMessage}</span>
 				</div>
 			{/if}
@@ -538,9 +533,7 @@
 			<!-- Error Message -->
 			{#if errorMessage}
 				<div class="mb-3.5 p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 font-bold flex items-center space-x-2">
-					<svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-						<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-					</svg>
+					<AlertCircle class="w-4 h-4 text-rose-600 flex-shrink-0" />
 					<span>{errorMessage}</span>
 				</div>
 			{/if}
@@ -550,9 +543,7 @@
 				<label for="modal_friend_username" class="block text-[11px] font-black text-[#f43f8e] mb-1">Search by Username</label>
 				<div class="relative">
 					<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-pink-400">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-						</svg>
+						<Search class="w-3.5 h-3.5" />
 					</div>
 					<input
 						id="modal_friend_username"
@@ -569,9 +560,7 @@
 							class="absolute right-2.5 top-2 p-1 text-pink-400 hover:text-pink-600 rounded-full cursor-pointer"
 							title="Clear search"
 						>
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5">
-								<path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-							</svg>
+							<X class="w-3.5 h-3.5" />
 						</button>
 					{/if}
 				</div>

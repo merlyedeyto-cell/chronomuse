@@ -9,6 +9,11 @@
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
 	import { compressImage } from '$lib/imageOptimizer.js';
+	import {
+		MessageSquare, Search, Clock, Check, X, ChevronLeft, ChevronRight,
+		User, Ban, Trash2, UserPlus, Reply, Image as ImageIcon, ZoomIn,
+		ZoomOut, Download, Smile, Send, AlertCircle, CheckCircle2, MessageCircle
+	} from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let friends = $state([]);
@@ -2301,9 +2306,7 @@
 			<div class="p-3.5 sm:p-4 bg-[#fdf2f6] text-pink-950 border-b border-pink-100 font-black text-xs sm:text-sm flex items-center justify-between">
 				<div class="flex items-center space-x-2">
 					<div class="w-7 h-7 rounded-xl bg-[#f43f8e]/10 text-[#f43f8e] flex items-center justify-center">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-						</svg>
+						<MessageSquare class="w-4 h-4" strokeWidth={2.2} />
 					</div>
 					<span class="font-black text-pink-950 text-sm">Messages</span>
 				</div>
@@ -2319,9 +2322,7 @@
 						placeholder="Search conversations..."
 						class="w-full pl-8 pr-3 py-2 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-pink-900 placeholder-pink-400/70 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 focus:border-[#f43f8e] focus:bg-white transition-all shadow-2xs"
 					/>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-pink-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-					</svg>
+					<Search class="w-3.5 h-3.5 text-pink-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" strokeWidth={2.5} />
 				</div>
 			</div>
 
@@ -2367,9 +2368,7 @@
 						<span class="text-[9px] font-bold text-pink-800 mt-1 truncate w-full text-center">Your note</span>
 						{#if myNote}
 							<span class="text-[8px] font-black text-[#f43f8e] tracking-tight bg-pink-50 border border-pink-200/80 px-1.5 py-0.5 rounded-full mt-0.5 shadow-2xs flex items-center gap-0.5">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-2 h-2">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-								</svg>
+								<Clock class="w-2 h-2" strokeWidth={2.5} />
 								<span>{getMyNoteTimeRemaining()}</span>
 							</span>
 						{/if}
@@ -2544,17 +2543,13 @@
 												{#if friend.last_is_read}
 													<!-- Seen indicator -->
 													<span class="inline-flex items-center text-[#f43f8e] font-medium text-[10px] flex-shrink-0" title="Seen">
-														<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3 text-[#f43f8e] mr-0.5">
-															<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-														</svg>
+														<Check class="w-3 h-3 text-[#f43f8e] mr-0.5" strokeWidth={2.5} />
 														<span class="text-[9px] font-semibold text-[#f43f8e]">Seen:</span>
 													</span>
 												{:else}
 													<!-- Sent indicator -->
 													<span class="inline-flex items-center text-pink-400 text-[10px] flex-shrink-0" title="Sent">
-														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-2.5 h-2.5 text-pink-400 mr-0.5">
-															<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-														</svg>
+														<Check class="w-2.5 h-2.5 text-pink-400 mr-0.5" strokeWidth={2.5} />
 														<span class="text-[9px] text-pink-400">Sent:</span>
 													</span>
 												{/if}
@@ -2589,9 +2584,7 @@
 					<div class="p-3 bg-[#f43f8e] text-white flex items-center justify-between animate-fade-in flex-shrink-0 sticky top-0 z-30 shadow-xs">
 						<div class="flex items-center space-x-2">
 							<button onclick={exitSelectionMode} class="p-1.5 rounded-xl hover:bg-white/20 text-white transition-colors cursor-pointer" aria-label="Exit selection">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-								</svg>
+								<X class="w-5 h-5" strokeWidth={2.5} />
 							</button>
 							<span class="font-bold text-sm">{selectedMessageIds.size} selected</span>
 						</div>
@@ -2625,9 +2618,7 @@
 								title="Back to Chat List"
 								aria-label="Back to Chat List"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-								</svg>
+								<ChevronLeft class="w-4 h-4" strokeWidth={2.5} />
 							</button>
 							<a
 								href="/profile?id={activeFriend.friend_id}"
@@ -2651,9 +2642,7 @@
 								<div class="min-w-0">
 									<h3 class="font-black text-xs sm:text-sm leading-tight text-pink-950 truncate group-hover:underline flex items-center gap-1">
 										<span>@{activeFriend.username}</span>
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e] opacity-70 group-hover:opacity-100">
-											<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 111.04-1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-										</svg>
+										<ChevronRight class="w-3.5 h-3.5 text-[#f43f8e] opacity-70 group-hover:opacity-100" strokeWidth={2.5} />
 									</h3>
 									<div class="text-[10px] text-pink-600 flex items-center gap-1 mt-0.5">
 										{#if isOtherUserTyping}
@@ -2689,9 +2678,7 @@
 								title="View Profile"
 								aria-label="View Profile"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-pink-500">
-									<path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
-								</svg>
+								<User class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-pink-500" strokeWidth={2.5} />
 							</a>
 							<button
 								onclick={() => promptToggleBlockUser(activeFriend)}
@@ -2699,9 +2686,7 @@
 								title={isCurrentFriendBlockedByMe ? "Unblock User" : "Block User"}
 								aria-label={isCurrentFriendBlockedByMe ? "Unblock User" : "Block User"}
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 sm:w-4.5 sm:h-4.5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-								</svg>
+								<Ban class="w-4 h-4 sm:w-4.5 sm:h-4.5" strokeWidth={2} />
 							</button>
 							<button
 								onclick={() => showClearModal = true}
@@ -2709,9 +2694,7 @@
 								title="Clear Chat History"
 								aria-label="Clear Chat History"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-pink-500 hover:text-rose-600 transition-colors">
-									<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.272 0c.8.025 1.414.71 1.414 1.477v.187a49.71 49.71 0 00-6.1 0v-.187c0-.767.614-1.452 1.414-1.477zM9 9.75a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6A.75.75 0 019 9.75zm4.5 0a.75.75 0 01.75.75v6a.75.75 0 01-1.5 0v-6a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-								</svg>
+								<Trash2 class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-pink-500 hover:text-rose-600 transition-colors" strokeWidth={2} />
 							</button>
 						</div>
 					</div>
@@ -2729,9 +2712,7 @@
 								href="/profile?id={activeFriend.friend_id || activeFriend.id}"
 								class="px-2.5 py-1 bg-white hover:bg-pink-50 text-pink-700 border border-pink-200 font-bold rounded-lg transition-colors flex items-center space-x-1 cursor-pointer shadow-2xs"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-								</svg>
+								<User class="w-3.5 h-3.5" strokeWidth={2} />
 								<span>Profile</span>
 							</a>
 							{#if isPendingRequest}
@@ -2742,12 +2723,8 @@
 									class="group px-2.5 py-1 bg-amber-50 hover:bg-rose-50 text-amber-800 hover:text-rose-600 border border-amber-300 hover:border-rose-200 font-bold rounded-lg transition-all flex items-center space-x-1 shadow-2xs cursor-pointer active:scale-95 disabled:opacity-50"
 									title="Click to cancel friend request"
 								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-amber-700 group-hover:hidden">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-									</svg>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5 text-rose-500 hidden group-hover:inline">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-									</svg>
+									<Clock class="w-3.5 h-3.5 text-amber-700 group-hover:hidden" strokeWidth={2.2} />
+									<X class="w-3.5 h-3.5 text-rose-500 hidden group-hover:inline" strokeWidth={2.2} />
 									<span class="group-hover:hidden">Pending</span>
 									<span class="hidden group-hover:inline">Cancel</span>
 								</button>
@@ -2758,9 +2735,7 @@
 									disabled={isSendingFriendRequest}
 									class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-bold rounded-lg transition-all flex items-center space-x-1 active:scale-95 cursor-pointer shadow-xs disabled:opacity-50"
 								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3.5 h-3.5">
-										<path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 19.125a1.125 1.125 0 011.125-1.125h15.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H4.875a1.125 1.125 0 01-1.125-1.125v-2.25z" />
-									</svg>
+									<UserPlus class="w-3.5 h-3.5" strokeWidth={2.2} />
 									<span>Add Friend</span>
 								</button>
 							{/if}
@@ -2800,9 +2775,7 @@
 					{:else if messages.length === 0}
 						<div class="h-full flex flex-col items-center justify-center text-pink-400 text-xs py-10">
 							<div class="w-11 h-11 rounded-2xl bg-pink-100 border border-pink-200 text-pink-600 flex items-center justify-center mb-2">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-								</svg>
+								<MessageSquare class="w-5 h-5" strokeWidth={1.8} />
 							</div>
 							<p class="font-bold text-pink-950 text-xs sm:text-sm">Start a conversation with @{activeFriend.username}</p>
 							<p class="text-[11px] text-pink-600 mt-0.5 max-w-xs text-center font-medium">Say hi, share photos, or swipe to reply!</p>
@@ -2855,9 +2828,7 @@
 											class:bg-white={!isSelected}
 										>
 											{#if isSelected}
-												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-2.5 h-2.5 text-white">
-													<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-												</svg>
+												<Check class="w-2.5 h-2.5 text-white" strokeWidth={3} />
 											{/if}
 										</button>
 									{/if}
@@ -2872,9 +2843,7 @@
 											class:order-last={!isUserSender}
 											title="Reply"
 										>
-											<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
-												<path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
-											</svg>
+											<Reply class="w-3.5 h-3.5" strokeWidth={2} />
 										</button>
 									{/if}
 
@@ -2909,9 +2878,7 @@
 												<div
 													class="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center transition-all duration-200 {isSwipeThresholdReached ? 'bg-[#f43f8e] text-white ring-2 ring-white scale-110 shadow-xs' : 'bg-pink-100 text-[#f43f8e] border border-pink-200'}"
 												>
-													<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 sm:w-3.5 sm:h-3.5 transition-transform duration-200 {isSwipeThresholdReached ? 'scale-110 -rotate-12' : ''} {!isUserSender ? 'rotate-180' : ''}">
-														<path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
-													</svg>
+													<Reply class="w-3 h-3 sm:w-3.5 sm:h-3.5 transition-transform duration-200 {isSwipeThresholdReached ? 'scale-110 -rotate-12' : ''} {!isUserSender ? 'rotate-180' : ''}" strokeWidth={2.5} />
 												</div>
 											</div>
 										{/if}
@@ -2953,9 +2920,7 @@
 													title="{parsed.reply.type === 'note' ? 'Replied to note' : parsed.reply.type === 'memory' ? 'Replied to shared memory' : 'Click to jump to replied message'}"
 												>
 													<span class="font-bold text-[#f43f8e] flex items-center gap-1 group-hover/reply:text-pink-900 transition-colors">
-														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-2.5 h-2.5 text-[#f43f8e] group-hover/reply:-translate-x-0.5 transition-transform flex-shrink-0">
-															<path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
-														</svg>
+														<Reply class="w-2.5 h-2.5 text-[#f43f8e] group-hover/reply:-translate-x-0.5 transition-transform flex-shrink-0" strokeWidth={2.5} />
 														{#if parsed.reply.type === 'memory'}
 															<span>Replied to memory you shared on {parsed.reply.text}</span>
 														{:else if parsed.reply.type === 'note'}
@@ -2974,9 +2939,7 @@
 																{#if replyDetails.imageUrl}
 																	<img src={replyDetails.imageUrl} alt="Replying photo" class="w-3.5 h-3.5 rounded-xs object-cover border border-pink-200 flex-shrink-0" />
 																{:else}
-																	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-3 h-3 text-pink-700 flex-shrink-0">
-																		<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-																	</svg>
+																	<ImageIcon class="w-3 h-3 text-pink-700 flex-shrink-0" strokeWidth={1.8} />
 																{/if}
 																<span class="font-bold text-pink-700 text-[9px]">Photo</span>
 															</div>
@@ -3002,9 +2965,7 @@
 												<div class="relative z-10">
 													{#if isUnsent}
 														<p class="italic text-xs sm:text-sm text-pink-400/90 flex items-center gap-1 select-none font-medium">
-															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5 opacity-70 flex-shrink-0">
-																<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-															</svg>
+															<Ban class="w-3.5 h-3.5 opacity-70 flex-shrink-0" strokeWidth={1.5} />
 															<span>{isUserSender ? 'You unsent a message' : `${activeFriend?.username || 'User'} unsent a message`}</span>
 														</p>
 													{:else if parsed.isImage}
@@ -3024,9 +2985,7 @@
 															/>
 															<div class="absolute inset-0 bg-pink-950/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-1 text-white">
 																<div class="p-1 bg-black/40 backdrop-blur-xs rounded-full">
-																	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-white">
-																		<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
-																	</svg>
+																	<ZoomIn class="w-3.5 h-3.5 text-white" strokeWidth={2} />
 																</div>
 															</div>
 														</div>
@@ -3041,16 +3000,12 @@
 												{#if isUserSender && !isUnsent}
 													{#if msg.is_read}
 														<span class="inline-flex items-center gap-0.5 text-[#f43f8e] font-semibold" title="Seen by @{activeFriend?.username}">
-															<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-																<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-															</svg>
+															<Check class="w-3.5 h-3.5 text-[#f43f8e]" strokeWidth={2.5} />
 															<span>Seen</span>
 														</span>
 													{:else}
 														<span class="inline-flex items-center gap-0.5 text-pink-500 font-bold" title="Sent">
-															<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3 h-3 text-pink-500">
-																<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-															</svg>
+															<Check class="w-3 h-3 text-pink-500" strokeWidth={2.5} />
 															<span>Sent</span>
 														</span>
 													{/if}
@@ -3114,9 +3069,7 @@
 							</div>
 						</div>
 						<button onclick={cancelReply} class="p-1 text-pink-400 hover:text-[#f43f8e] rounded-full cursor-pointer transition-colors" aria-label="Cancel reply">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-							</svg>
+							<X class="w-3.5 h-3.5" strokeWidth={2.5} />
 						</button>
 					</div>
 				{/if}
@@ -3164,9 +3117,7 @@
 							{#if isUploadingImage}
 								<div class="animate-spin w-5 h-5 border-2 border-pink-300 border-t-[#f43f8e] rounded-full"></div>
 							{:else}
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-								</svg>
+								<ImageIcon class="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2} />
 							{/if}
 							<input
 								type="file"
@@ -3199,9 +3150,7 @@
 								class="absolute right-2 p-1.5 text-pink-400 hover:text-[#f43f8e] rounded-lg transition-colors cursor-pointer flex items-center justify-center active:scale-95"
 								title="Emojis"
 							>
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
-								</svg>
+								<Smile class="w-5 h-5" strokeWidth={2} />
 							</button>
 						</div>
 
@@ -3212,18 +3161,14 @@
 							class="py-2 sm:py-2.5 px-3.5 sm:px-4 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-2xl font-bold text-sm sm:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1.5 flex-shrink-0 active:scale-95 group cursor-pointer shadow-xs"
 						>
 							<span>Send</span>
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 flex-shrink-0 group-hover:translate-x-0.5 transition-transform duration-200">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-							</svg>
+							<Send class="w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform duration-200" strokeWidth={2} />
 						</button>
 					</form>
 				{/if}
 			{:else}
 				<div class="h-full flex flex-col items-center justify-center p-6 text-center text-gray-400">
 					<div class="w-14 h-14 rounded-2xl bg-pink-100 text-[#f43f8e] flex items-center justify-center mb-3">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 text-[#f43f8e]">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-						</svg>
+						<MessageSquare class="w-7 h-7 text-[#f43f8e]" strokeWidth={1.5} />
 					</div>
 					<h3 class="text-base sm:text-lg font-bold text-gray-700 mb-0.5">Select a friend to start chatting</h3>
 					<p class="text-xs text-gray-400 max-w-xs">Pick any friend from your list on the left to start sending messages, photos, and replies.</p>
@@ -3247,9 +3192,7 @@
 			onclick={(e) => e.stopPropagation()}
 		>
 			<div class="w-14 h-14 bg-rose-50 text-rose-500 rounded-2xl border border-rose-100 flex items-center justify-center mx-auto mb-3">
-				<svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
-					<path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.088 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 00-3.273 0C6.39 3.05 6 3.678 6 4.478v.113a49.488 49.488 0 0012 0v-.113c0-.8-.39-1.428-1.091-1.452a51.196 51.196 0 00-3.273 0zM9.75 9.75a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75zm4.5 0a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-				</svg>
+				<Trash2 class="w-7 h-7" strokeWidth={2} />
 			</div>
 			<h3 class="text-lg font-black text-pink-950 mb-1.5">Clear Conversation?</h3>
 			<p class="text-xs sm:text-sm text-pink-700/80 mb-6 leading-relaxed">
@@ -3286,9 +3229,7 @@
 			onclick={(e) => e.stopPropagation()}
 		>
 			<div class="w-14 h-14 bg-rose-50 text-rose-500 rounded-2xl border border-rose-100 flex items-center justify-center mx-auto mb-3">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-7 h-7">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-				</svg>
+				<Ban class="w-7 h-7" strokeWidth={1.8} />
 			</div>
 			<h3 class="text-lg font-black text-pink-950 mb-1.5">Block @{blockModalTarget.username}?</h3>
 			<p class="text-xs sm:text-sm text-pink-700/80 mb-6 leading-relaxed bg-[#fdf2f6] p-3 rounded-2xl border border-pink-100">
@@ -3352,9 +3293,7 @@
 					class="p-2 text-pink-700 hover:text-pink-900 bg-white hover:bg-pink-50 disabled:opacity-40 border border-pink-200 rounded-full transition-all shadow-2xs cursor-pointer active:scale-95"
 					title="Zoom Out"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5h-6" />
-					</svg>
+					<ZoomOut class="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
 				</button>
 				<button 
 					type="button"
@@ -3363,9 +3302,7 @@
 					class="p-2 text-pink-700 hover:text-pink-900 bg-white hover:bg-pink-50 disabled:opacity-40 border border-pink-200 rounded-full transition-all shadow-2xs cursor-pointer active:scale-95"
 					title="Zoom In"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
-					</svg>
+					<ZoomIn class="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
 				</button>
 				<button 
 					type="button"
@@ -3373,9 +3310,7 @@
 					class="p-2 text-pink-700 hover:text-pink-900 bg-white hover:bg-pink-50 border border-pink-200 rounded-full transition-all shadow-2xs cursor-pointer active:scale-95 flex items-center justify-center"
 					title="Close Preview (Esc)"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-5 h-5" strokeWidth={2.5} />
 				</button>
 			</div>
 		</div>
@@ -3397,9 +3332,7 @@
 					class="absolute left-2 sm:left-4 z-30 p-2.5 sm:p-3 bg-white/95 hover:bg-white text-pink-700 hover:text-pink-900 border border-pink-200 rounded-full transition-all active:scale-90 cursor-pointer shadow-md"
 					title="Previous Photo (Left Arrow)"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-					</svg>
+					<ChevronLeft class="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={3} />
 				</button>
 			{/if}
 
@@ -3434,9 +3367,7 @@
 					class="absolute right-2 sm:right-4 z-30 p-2.5 sm:p-3 bg-white/95 hover:bg-white text-pink-700 hover:text-pink-900 border border-pink-200 rounded-full transition-all active:scale-90 cursor-pointer shadow-md"
 					title="Next Photo (Right Arrow)"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-					</svg>
+					<ChevronRight class="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={3} />
 				</button>
 			{/if}
 		</div>
@@ -3450,9 +3381,7 @@
 					class="px-5 py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-2xl font-bold text-xs sm:text-sm transition-all shadow-xs flex items-center space-x-2 active:scale-95 cursor-pointer"
 					title="Download Photo"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-					</svg>
+					<Download class="w-4 h-4" strokeWidth={2.2} />
 					<span>Download Photo</span>
 				</button>
 
@@ -3483,13 +3412,9 @@
 		<div class="bg-white border border-pink-100 rounded-3xl p-6 max-w-xs sm:max-w-sm w-full text-center space-y-4 shadow-2xl animate-modal-content">
 			<div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto {notificationModalType === 'error' ? 'bg-rose-50 text-rose-500 border border-rose-100' : 'bg-pink-50 text-[#f43f8e] border border-pink-200'} shadow-xs">
 				{#if notificationModalType === 'error'}
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zM12 15.75h.007v.008H12v-.008z" />
-					</svg>
+					<AlertCircle class="w-7 h-7" strokeWidth={2.5} />
 				{:else}
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7 text-[#f43f8e]">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-					</svg>
+					<CheckCircle2 class="w-7 h-7 text-[#f43f8e]" strokeWidth={2.5} />
 				{/if}
 			</div>
 			
@@ -3540,9 +3465,7 @@
 					onclick={() => { showNoteModal = false; noteInput = ''; }}
 					class="p-1.5 text-pink-400 hover:text-pink-700 hover:bg-pink-50 rounded-full transition-all cursor-pointer"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-5 h-5" strokeWidth={2.5} />
 				</button>
 			</div>
 
@@ -3578,9 +3501,7 @@
 				{#if myNote}
 					<div class="flex items-center justify-between px-3 py-1.5 bg-[#fdf2f6] rounded-xl border border-pink-200/80 text-[11px] font-bold text-pink-700 mt-2.5">
 						<span class="flex items-center gap-1.5">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-							</svg>
+							<Clock class="w-3.5 h-3.5 text-[#f43f8e]" strokeWidth={2} />
 							<span>Expires in:</span>
 						</span>
 						<span class="font-mono text-pink-900 bg-white px-2 py-0.5 rounded-md border border-pink-200 shadow-2xs font-bold">{chatNoteCountdown}</span>
@@ -3595,9 +3516,7 @@
 						onclick={deleteNote}
 						class="flex-shrink-0 px-4 py-2.5 border border-rose-200 text-rose-500 hover:bg-rose-50 rounded-2xl font-bold text-sm transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-						</svg>
+						<Trash2 class="w-4 h-4" strokeWidth={2.2} />
 						Delete
 					</button>
 				{/if}
@@ -3609,9 +3528,7 @@
 					{#if isSavingNote}
 						<div class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
 					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-						</svg>
+						<Send class="w-4 h-4" strokeWidth={2.2} />
 					{/if}
 					{myNote ? 'Update Note' : 'Post Note'}
 				</button>
@@ -3639,9 +3556,7 @@
 				<div class="flex-grow min-w-0">
 					<p class="font-bold text-pink-950 text-sm truncate">@{viewingNote.username}</p>
 					<p class="text-[10px] text-[#f43f8e] font-medium flex items-center gap-1">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-3 h-3 text-[#f43f8e] flex-shrink-0">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-						</svg>
+						<MessageSquare class="w-3 h-3 text-[#f43f8e] shrink-0" strokeWidth={2.2} />
 						Note
 					</p>
 				</div>
@@ -3649,9 +3564,7 @@
 					onclick={() => viewingNote = null}
 					class="p-1.5 text-pink-400 hover:text-pink-700 hover:bg-pink-50 rounded-full transition-all flex-shrink-0 cursor-pointer"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<X class="w-5 h-5" strokeWidth={2.5} />
 				</button>
 			</div>
 
@@ -3670,9 +3583,7 @@
 				<!-- Live 24h Expiration Countdown Timer -->
 				<div class="flex items-center justify-between px-2.5 py-1.5 bg-[#fdf2f6] rounded-xl border border-pink-200/80 text-[11px] font-bold text-pink-700">
 					<span class="flex items-center gap-1">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-[#f43f8e]">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-						</svg>
+						<Clock class="w-3.5 h-3.5 text-[#f43f8e]" strokeWidth={2} />
 						Expires in:
 					</span>
 					<span class="font-mono text-pink-900 bg-white px-2 py-0.5 rounded-md border border-pink-200 shadow-2xs">{chatNoteCountdown}</span>
@@ -3684,9 +3595,7 @@
 					onclick={() => { triggerNoteReply(viewingNote); }}
 					class="flex-grow py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-2xl font-bold text-sm shadow-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-					</svg>
+					<MessageSquare class="w-4 h-4" strokeWidth={2.2} />
 					Reply in Chat
 				</button>
 				<button
