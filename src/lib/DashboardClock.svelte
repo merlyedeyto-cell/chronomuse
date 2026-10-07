@@ -85,10 +85,6 @@
 			</div>
 			<span class="text-xs font-black text-pink-950">{greeting}</span>
 		</div>
-		<span class="inline-flex items-center gap-1 text-[10px] bg-pink-50 text-[#f43f8e] font-extrabold px-2.5 py-0.5 rounded-full border border-pink-200/60 shadow-2xs">
-			<span class="w-1.5 h-1.5 rounded-full bg-[#f43f8e] animate-ping inline-block"></span>
-			<span>Live Clock</span>
-		</span>
 	</div>
 
 	<!-- Analog Clock Widget Dial Container -->
