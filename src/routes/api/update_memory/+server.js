@@ -43,13 +43,14 @@ export async function POST({ request }) {
 				if (photoVideoFile && photoVideoFile.size > 0) {
 					if (existingMemory) await deleteFileFromStorage(existingMemory.photo_video);
 
-					const fileExt = photoVideoFile.name.split('.').pop();
-					const fileName = `photo_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+					const fileExt = ((photoVideoFile.name || 'photo.webp').split('.').pop() || 'webp').toLowerCase().replace(/[^a-z0-9]/g, '');
+					const fileName = `photo_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt || 'webp'}`;
 					const filePath = `${userId || 'unknown'}/${fileName}`;
+					const mimeType = photoVideoFile.type || (fileExt === 'mp4' ? 'video/mp4' : fileExt === 'webm' ? 'video/webm' : fileExt === 'webp' ? 'image/webp' : 'image/jpeg');
 
 					const { error: uploadError } = await supabase.storage
 						.from('memories')
-						.upload(filePath, photoVideoFile);
+						.upload(filePath, photoVideoFile, { contentType: mimeType });
 
 					if (uploadError) {
 						return json({ error: 'Photo upload failed: ' + uploadError.message }, { status: 500 });
@@ -57,7 +58,7 @@ export async function POST({ request }) {
 
 					const { data: urlData } = supabase.storage.from('memories').getPublicUrl(filePath);
 					updateData.photo_video = urlData.publicUrl;
-					updateData.photo_video_type = photoVideoFile.type;
+					updateData.photo_video_type = mimeType;
 				}
 
 				// Handle New Music Upload

@@ -5,6 +5,7 @@
 	import { supabase } from '$lib/supabaseClient';
 	import { broadcastMemoryEvent } from '$lib/realtimeBroadcast.js';
 	import SelectOptionModal from '$lib/SelectOptionModal.svelte';
+	import { compressImage, compressAndTrimVideo } from '$lib/mediaOptimizer.js';
 	import {
 		X, Calendar, Pencil, ChevronDown, RefreshCw, Image as ImageIcon,
 		Music, Bookmark, Share2, Trash2, Maximize2, Pause, Play, Plus, Scissors, Check
@@ -43,6 +44,7 @@
 	let videoCurrentTime = $state(0);
 	let isPlayingTrimVideo = $state(false);
 	let isTrimmingVideo = $state(false);
+	let trimProgress = $state(0);
 	let trimVideoElement = $state();
 	let videoThumbnails = $state([]);
 	let isGeneratingThumbnails = $state(false);
@@ -317,6 +319,10 @@
 			editedPhotoVideoType = file.type;
 			if (editedPhotoVideoPreview) URL.revokeObjectURL(editedPhotoVideoPreview);
 			editedPhotoVideoPreview = URL.createObjectURL(file);
+			compressImage(file, { maxWidth: 1400, maxHeight: 1400, quality: 0.80, outputType: 'image/webp' }).then(compressed => {
+				editedPhotoVideo = compressed;
+				editedPhotoVideoType = compressed.type;
+			}).catch(() => {});
 		}
 	}
 
@@ -507,12 +513,23 @@
 		}
 
 		isTrimmingVideo = true;
+		trimProgress = 0;
 
 		try {
-			editedPhotoVideo = rawVideoFile;
-			editedPhotoVideoType = rawVideoFile.type || 'video/mp4';
+			const optimizedVideo = await compressAndTrimVideo(rawVideoFile, {
+				startTime: videoStartTime,
+				endTime: videoEndTime,
+				maxWidth: 1280,
+				maxHeight: 720,
+				onProgress: (p) => {
+					trimProgress = p;
+				}
+			});
+
+			editedPhotoVideo = optimizedVideo;
+			editedPhotoVideoType = optimizedVideo.type;
 			if (editedPhotoVideoPreview) URL.revokeObjectURL(editedPhotoVideoPreview);
-			editedPhotoVideoPreview = URL.createObjectURL(rawVideoFile);
+			editedPhotoVideoPreview = URL.createObjectURL(optimizedVideo);
 		} catch (err) {
 			console.error('Video trim error in ViewMemoryModal:', err);
 			editedPhotoVideo = rawVideoFile;
@@ -1649,7 +1666,7 @@
 				>
 					{#if isTrimmingVideo}
 						<div class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-						<span>Attaching...</span>
+						<span>{trimProgress > 0 ? `Optimizing Clip (${trimProgress}%)...` : 'Trimming 15s Clip...'}</span>
 					{:else}
 						<Check class="w-4 h-4" />
 						<span>Attach 15s Clip</span>

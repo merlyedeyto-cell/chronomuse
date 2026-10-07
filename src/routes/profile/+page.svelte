@@ -210,7 +210,7 @@
 		playClickSound();
 
 		try {
-			const optimizedFile = await compressImage(file, { maxWidth: 1920, maxHeight: 1080, quality: 0.85 });
+			const optimizedFile = await compressImage(file, { maxWidth: 1280, maxHeight: 720, quality: 0.80, outputType: 'image/webp' });
 			const reader = new FileReader();
 			const dataUrlPromise = new Promise((resolve) => {
 				reader.onload = (readerEvent) => {
@@ -220,7 +220,7 @@
 			reader.readAsDataURL(optimizedFile);
 			const dataUrl = await dataUrlPromise;
 
-			const fileExt = optimizedFile.name.split('.').pop() || 'jpg';
+			const fileExt = optimizedFile.name.split('.').pop() || 'webp';
 			const filePath = `covers/${currentUser.id}_${Date.now()}.${fileExt}`;
 
 			let finalCoverUrl = null;
@@ -237,7 +237,7 @@
 				// Fallback to memories bucket
 				const { error: memError } = await supabase.storage
 					.from('memories')
-					.upload(filePath, file, { upsert: true });
+					.upload(filePath, optimizedFile, { upsert: true });
 
 				if (!memError) {
 					const { data } = supabase.storage.from('memories').getPublicUrl(filePath);
@@ -879,7 +879,7 @@
 		playClickSound();
 
 		try {
-			const optimizedFile = await compressImage(file, { maxWidth: 800, maxHeight: 800, quality: 0.85 });
+			const optimizedFile = await compressImage(file, { maxWidth: 400, maxHeight: 400, quality: 0.80, outputType: 'image/webp' });
 			let dataUrl = '';
 			const reader = new FileReader();
 			const readerPromise = new Promise((resolve) => {
@@ -890,7 +890,7 @@
 			});
 			reader.readAsDataURL(optimizedFile);
 
-			const fileExt = optimizedFile.name.split('.').pop() || 'jpg';
+			const fileExt = optimizedFile.name.split('.').pop() || 'webp';
 			const filePath = `avatars/${currentUser.id}_${Date.now()}.${fileExt}`;
 
 			let avatarUrl = null;
@@ -907,7 +907,7 @@
 				// Fallback to memories bucket
 				const { error: memError } = await supabase.storage
 					.from('memories')
-					.upload(filePath, file, { upsert: true });
+					.upload(filePath, optimizedFile, { upsert: true });
 
 				if (!memError) {
 					const { data } = supabase.storage.from('memories').getPublicUrl(filePath);

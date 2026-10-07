@@ -1638,8 +1638,8 @@
 		isUploadingImage = true;
 		try {
 			for (const file of files) {
-				const optimizedFile = await compressImage(file, { maxWidth: 1600, maxHeight: 1600, quality: 0.82 });
-				const fileExt = optimizedFile.name.split('.').pop() || 'jpg';
+				const optimizedFile = await compressImage(file, { maxWidth: 1400, maxHeight: 1400, quality: 0.80, outputType: 'image/webp' });
+				const fileExt = optimizedFile.name.split('.').pop() || 'webp';
 				const fileName = `chat_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
 				const filePath = `${user.id}/${fileName}`;
 

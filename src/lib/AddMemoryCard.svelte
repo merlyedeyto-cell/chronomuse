@@ -2,7 +2,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import SelectOptionModal from '$lib/SelectOptionModal.svelte';
-	import { compressImage } from '$lib/imageOptimizer.js';
+	import { compressImage, compressAndTrimVideo } from '$lib/mediaOptimizer.js';
 	import { X, Calendar, Play, Camera, Music, ChevronDown, Share2, Loader2, Bookmark, Scissors } from 'lucide-svelte';
 
 	const dispatch = createEventDispatcher();
@@ -38,6 +38,7 @@
 	let videoCurrentTime = $state(0);
 	let isPlayingTrimVideo = $state(false);
 	let isTrimmingVideo = $state(false);
+	let trimProgress = $state(0);
 	let trimVideoElement = $state();
 	let videoThumbnails = $state([]);
 	let isGeneratingThumbnails = $state(false);
@@ -343,17 +344,28 @@
 		}
 
 		isTrimmingVideo = true;
+		trimProgress = 0;
 
 		try {
-			// Instant 0ms attachment: Assign video file and preview immediately
-			photoVideo = rawVideoFile;
+			// Extract 15s segment and transcode down to ~1.5MB 720p WebM
+			const optimizedVideo = await compressAndTrimVideo(rawVideoFile, {
+				startTime: videoStartTime,
+				endTime: videoEndTime,
+				maxWidth: 1280,
+				maxHeight: 720,
+				onProgress: (p) => {
+					trimProgress = p;
+				}
+			});
+
+			photoVideo = optimizedVideo;
 			isVideo = true;
 			if (photoVideoPreview) URL.revokeObjectURL(photoVideoPreview);
-			photoVideoPreview = URL.createObjectURL(rawVideoFile);
+			photoVideoPreview = URL.createObjectURL(optimizedVideo);
 
-			const clipLength = Math.max(1, (videoEndTime - videoStartTime)).toFixed(1);
+			const sizeMb = ((optimizedVideo.size || 0) / (1024 * 1024)).toFixed(1);
 			dispatch('showToast', {
-				message: `15s Clip Attached (${videoStartTime.toFixed(1)}s - ${videoEndTime.toFixed(1)}s)!`,
+				message: `15s Clip Optimized & Attached (${sizeMb} MB)!`,
 				type: 'success'
 			});
 		} catch (err) {
@@ -371,6 +383,12 @@
 	function handleMusicChange(event) {
 		const file = event.target.files[0];
 		if (file) {
+			if (file.size > 15 * 1024 * 1024) {
+				dispatch('showToast', {
+					message: 'Audio is large (>15MB). We suggest MP3 under 10MB for fast loading.',
+					type: 'warning'
+				});
+			}
 			music = file;
 		}
 	}
@@ -993,7 +1011,7 @@
 				>
 					{#if isTrimmingVideo}
 						<Loader2 class="animate-spin h-4 w-4 text-white" />
-						<span>Trimming 15s Clip...</span>
+						<span>{trimProgress > 0 ? `Optimizing Clip (${trimProgress}%)...` : 'Trimming 15s Clip...'}</span>
 					{:else}
 						<Scissors class="w-4 h-4" />
 						<span>Use 15s Clip</span>

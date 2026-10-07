@@ -41,7 +41,7 @@ export async function POST({ request }) {
 				const fileExt = (originalName.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g, '');
 				const fileName = `media_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt || 'mp4'}`;
 				const filePath = `${userId}/${fileName}`;
-				const mimeType = photoVideoFile.type || (fileExt === 'mp4' ? 'video/mp4' : fileExt === 'webm' ? 'video/webm' : 'image/jpeg');
+				const mimeType = photoVideoFile.type || (fileExt === 'mp4' ? 'video/mp4' : fileExt === 'webm' ? 'video/webm' : fileExt === 'webp' ? 'image/webp' : 'image/jpeg');
 
 				// Convert file to Buffer for robust Node.js upload
 				const arrayBuffer = await photoVideoFile.arrayBuffer();

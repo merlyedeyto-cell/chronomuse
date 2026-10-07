@@ -16,6 +16,7 @@
 	import DashboardFlashback from '$lib/DashboardFlashback.svelte';
 	import DashboardClock from '$lib/DashboardClock.svelte';
 	import DashboardMonthsMemoryCard from '$lib/DashboardMonthsMemoryCard.svelte';
+	import { compressImage } from '$lib/mediaOptimizer.js';
 	import { Plus, Bookmark, CheckCircle2, AlertCircle, Check } from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
@@ -373,12 +374,15 @@
 				photoVideoUrl = memoryData.photoVideo;
 			} else {
 				try {
-					const file = memoryData.photoVideo;
-					const originalName = file.name || (file.type?.startsWith('video/') ? 'video.mp4' : 'image.jpg');
-					const fileExt = (originalName.split('.').pop() || (file.type?.startsWith('video/') ? 'mp4' : 'jpg')).toLowerCase().replace(/[^a-z0-9]/g, '');
-					const fileName = `media_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt || 'mp4'}`;
+					let file = memoryData.photoVideo;
+					if (file.type?.startsWith('image/')) {
+						file = await compressImage(file, { maxWidth: 1400, maxHeight: 1400, quality: 0.80, outputType: 'image/webp' });
+					}
+					const originalName = file.name || (file.type?.startsWith('video/') ? 'video.mp4' : 'image.webp');
+					const fileExt = (originalName.split('.').pop() || (file.type?.startsWith('video/') ? 'mp4' : 'webp')).toLowerCase().replace(/[^a-z0-9]/g, '');
+					const fileName = `media_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt || 'webp'}`;
 					const filePath = `${user.id}/${fileName}`;
-					const mimeType = file.type || (fileExt === 'mp4' ? 'video/mp4' : fileExt === 'webm' ? 'video/webm' : 'image/jpeg');
+					const mimeType = file.type || (fileExt === 'mp4' ? 'video/mp4' : fileExt === 'webm' ? 'video/webm' : 'image/webp');
 
 					const { error: uploadError } = await supabase.storage
 						.from('memories')
