@@ -220,7 +220,7 @@
 						onclick={() => handleMonthClick(month.index)}
 						class="py-1.5 sm:py-2 px-1 rounded-xl border transition-all duration-200 flex flex-col items-center justify-center text-center relative group cursor-pointer active:scale-95
 							{month.isCurrentSelected
-								? 'bg-gradient-to-b from-pink-100 to-pink-50 border-[#f43f8e] shadow-[0_0_0_1.5px_#f43f8e]'
+								? 'bg-gradient-to-b from-pink-100 to-pink-50 border-[#f43f8e] shadow-2xs'
 								: 'bg-white hover:bg-pink-50/90 border-pink-200/90 hover:border-[#f43f8e] shadow-2xs hover:shadow-xs'}"
 						title="Jump to {month.name} {selectedYear} ({month.count} memories)"
 					>
