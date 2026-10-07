@@ -68,10 +68,8 @@
 	let formattedDate = $derived(getFormattedDate(currentTime));
 	let greeting = $derived(getGreeting(currentTime));
 
-	// 12 hour numbers with exact rotational position
-	const hourNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-	// 60 minute ticks
-	const minuteTicks = Array.from({ length: 60 }, (_, i) => i);
+	// 12 hour ticks
+	const hourTicks = Array.from({ length: 12 }, (_, i) => i);
 </script>
 
 <div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans transition-all">
@@ -88,92 +86,59 @@
 	</div>
 
 	<!-- Analog Clock Widget Dial Container -->
-	<div class="flex flex-col items-center justify-center pt-0.5 pb-0.5">
-		<!-- Circular Clock Body (Bilog na Analog Clock Widget) -->
-		<div class="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full border-[3px] border-pink-200/90 shadow-[0_8px_24px_rgba(244,114,182,0.18)] bg-gradient-to-br from-white via-[#fff5f8] to-pink-100/70 flex items-center justify-center ring-2 ring-pink-100/60 select-none">
-			<!-- Clock Inner Bezel Shadow Ring -->
-			<div class="absolute inset-1 rounded-full border border-pink-200/40 shadow-inner pointer-events-none"></div>
-
-			<!-- Minute/Second Ticks around dial -->
-			{#each minuteTicks as tick}
-				{@const tickAngle = tick * 6}
-				{#if tick % 5 === 0}
-					<!-- 5-minute major tick -->
-					<div
-						class="absolute w-0.5 h-1.5 bg-pink-300 rounded-full pointer-events-none"
-						style="transform: rotate({tickAngle}deg) translateY(-54px);"
-					></div>
-				{:else}
-					<!-- Sub tick -->
-					<div
-						class="absolute w-0.5 h-0.5 bg-pink-200 rounded-full pointer-events-none"
-						style="transform: rotate({tickAngle}deg) translateY(-54px);"
-					></div>
-				{/if}
-			{/each}
-
-			<!-- 12 Hour Numbers (Modern Circular Dial Numbers) -->
-			{#each hourNumbers as num}
-				{@const numAngle = num * 30}
+	<div class="flex flex-col items-center justify-center pt-1 pb-1">
+		<!-- Minimalist Analog Clock Dial -->
+		<div class="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-gradient-to-br from-white via-pink-50/40 to-pink-100/30 flex items-center justify-center select-none shadow-[inset_0_2px_8px_rgba(244,114,182,0.06)]">
+			<!-- 12 Hour Capsule Ticks -->
+			{#each hourTicks as tick}
+				{@const tickAngle = tick * 30}
 				<div
-					class="absolute font-black pointer-events-none select-none text-center flex items-center justify-center {num % 3 === 0 ? 'text-pink-950 text-[11px] font-black' : 'text-pink-800/80 text-[9px] font-extrabold'}"
-					style="
-						transform: rotate({numAngle}deg) translateY(-42px) rotate(-{numAngle}deg);
-						width: 14px;
-						height: 14px;
-					"
+					class="absolute top-1.5 bottom-1.5 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none"
+					style="transform: rotate({tickAngle}deg);"
 				>
-					{num}
+					<div class="w-1 h-3 sm:h-3.5 bg-pink-950 rounded-full"></div>
 				</div>
 			{/each}
 
-			<!-- Subtle ChronoMuse Brand Accent inside dial -->
-			<div class="absolute top-[28%] text-[7px] font-black text-[#f43f8e]/40 uppercase tracking-widest pointer-events-none select-none">
-				CHRONOMUSE
-			</div>
-
 			<!-- Hour Hand -->
 			<div
-				class="absolute bottom-1/2 left-1/2 -translate-x-1/2 w-1.5 h-8 sm:h-9 rounded-full bg-gradient-to-t from-pink-950 via-pink-900 to-pink-800 shadow-md origin-bottom pointer-events-none"
+				class="absolute bottom-1/2 left-1/2 -translate-x-1/2 w-1.5 h-8 sm:h-9 rounded-full bg-pink-950 origin-bottom pointer-events-none z-10"
 				style="transform: translateX(-50%) rotate({hourAngle}deg); transition: transform 0.2s cubic-bezier(0.4, 2.08, 0.55, 0.44);"
 			></div>
 
 			<!-- Minute Hand -->
 			<div
-				class="absolute bottom-1/2 left-1/2 -translate-x-1/2 w-1 h-11 sm:h-12 rounded-full bg-gradient-to-t from-[#f43f8e] via-pink-600 to-pink-500 shadow-md origin-bottom pointer-events-none"
+				class="absolute bottom-1/2 left-1/2 -translate-x-1/2 w-1 h-11 sm:h-13 rounded-full bg-pink-950 origin-bottom pointer-events-none z-10"
 				style="transform: translateX(-50%) rotate({minuteAngle}deg); transition: transform 0.2s cubic-bezier(0.4, 2.08, 0.55, 0.44);"
 			></div>
 
-			<!-- Second Hand with Tail Counterweight -->
+			<!-- Second Hand (Classic Full-Length Hand) -->
 			<div
-				class="absolute bottom-1/2 left-1/2 -translate-x-1/2 w-0.5 h-13 sm:h-15 bg-[#ff1493] rounded-full shadow-xs origin-bottom pointer-events-none"
+				class="absolute bottom-1/2 left-1/2 -translate-x-1/2 w-0.5 h-[55px] sm:h-[62px] bg-[#f43f8e] rounded-full origin-bottom pointer-events-none z-10"
 				style="transform: translateX(-50%) rotate({secondAngle}deg); transition: transform 0.15s cubic-bezier(0.18, 0.89, 0.32, 1.28);"
 			>
-				<!-- Tail of second hand -->
-				<div class="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-0.5 h-2.5 bg-[#ff1493] rounded-full"></div>
+				<!-- Tail counterbalance of second hand -->
+				<div class="absolute -bottom-3 sm:-bottom-3.5 left-1/2 -translate-x-1/2 w-0.5 h-3 sm:h-3.5 bg-[#f43f8e] rounded-full"></div>
 			</div>
 
-			<!-- Center Pivot Pin Cap -->
-			<div class="absolute w-2.5 h-2.5 rounded-full bg-[#f43f8e] border-2 border-white shadow-xs z-20 pointer-events-none"></div>
+			<!-- Center Pivot Pin Dot -->
+			<div class="absolute w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-pink-950 ring-2 ring-white z-20 pointer-events-none shadow-xs"></div>
 		</div>
 
-		<!-- Digital Time & Date Below Analog Clock (Inside the Card) -->
+		<!-- Digital Time & Date Below Analog Clock (Without borders on badges) -->
 		<div class="mt-3 flex flex-col items-center text-center space-y-1.5 w-full">
-			<!-- Digital Time Pill -->
-			<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#fff5f8] border border-pink-200/80 rounded-full shadow-2xs font-mono">
+			<!-- Digital Time Pill (No border) -->
+			<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-pink-50/80 rounded-full font-mono">
 				<span class="text-xs font-black text-pink-950 tracking-wider">
 					{dt.hours}:{dt.minutes}:{dt.seconds}
 				</span>
-				<span class="text-[8.5px] font-black text-[#f43f8e] uppercase px-1 py-0.2 bg-white rounded-md border border-pink-200 shadow-2xs">
+				<span class="text-[8.5px] font-black text-[#f43f8e] uppercase px-1.5 py-0.5 bg-white/90 rounded-md">
 					{dt.ampm}
 				</span>
 			</div>
 
-			<!-- Full Date Display below Clock in card -->
-			<div class="inline-flex items-center gap-1 text-[10.5px] sm:text-[11px] text-pink-700 font-bold bg-pink-50/70 border border-pink-100/90 px-2.5 py-0.5 rounded-xl shadow-2xs">
-				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-[#f43f8e]">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.253 18.75h18a2.25 2.25 0 002.25-2.25V7.5a2.25 2.25 0 00-2.25-2.25H3.75A2.25 2.25 0 001.5 7.5v11.25c0 1.242 1.008 2.25 2.25 2.25z" />
-				</svg>
+			<!-- Full Date Display below Clock (No border, clean text) -->
+			<div class="inline-flex items-center text-[10.5px] sm:text-[11px] text-pink-900 font-bold bg-pink-50/70 px-2.5 py-1 rounded-xl">
 				<span>{formattedDate}</span>
 			</div>
 		</div>
