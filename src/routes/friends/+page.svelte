@@ -10,7 +10,7 @@
 	import {
 		ArrowLeft, Users, UserPlus, Clock, Search, X, User, UserCircle,
 		MessageSquare, Trash2, Check, Plus, ChevronDown, AlertCircle,
-		Share2, Copy, Sparkles, UserCheck, Inbox, Send, ExternalLink
+		Share2, Copy, UserCheck, Inbox, Send, ExternalLink
 	} from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
@@ -822,7 +822,7 @@
 		<div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 			
 			<!-- LEFT COLUMN (Span 8): Friends List + Discover People -->
-			<div class="lg:col-span-8 space-y-5 {mobileTab === 'requests' ? 'hidden lg:block' : 'block'}">
+			<div class="lg:col-span-8 flex flex-col gap-5 {mobileTab === 'requests' ? 'hidden lg:block' : 'block'}">
 				
 				<!-- Section 1: My Friends Card -->
 				<div class="{mobileTab === 'friends' ? 'block' : 'hidden'} lg:block bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
@@ -964,7 +964,7 @@
 						<!-- Clean & Engaging Empty State -->
 						<div class="text-center py-6 px-4 bg-gradient-to-b from-[#fdf2f6]/80 to-pink-50/40 rounded-2xl border border-pink-100/90">
 							<div class="w-12 h-12 bg-white text-[#f43f8e] rounded-2xl border border-pink-100 flex items-center justify-center mx-auto mb-2.5 shadow-2xs">
-								<Sparkles class="w-6 h-6 text-[#f43f8e]" />
+								<Users class="w-6 h-6 text-[#f43f8e]" strokeWidth={2} />
 							</div>
 							<h3 class="text-xs sm:text-sm font-black text-pink-950">No friends added yet</h3>
 							<p class="text-[11px] text-pink-400 font-medium max-w-sm mx-auto mt-0.5">
@@ -1314,7 +1314,7 @@
 		</div>
 
 		<!-- RIGHT COLUMN (Span 4): Requests & Community Actions Sidebar -->
-		<div class="lg:col-span-4 space-y-5 lg:sticky lg:top-20 {mobileTab === 'requests' ? 'block' : 'hidden lg:block'}">
+		<div class="lg:col-span-4 flex flex-col gap-5 lg:sticky lg:top-20 {mobileTab === 'requests' ? 'block' : 'hidden lg:block'}">
 				
 				<!-- Card 1: Friend Requests Widget (Incoming & Sent) -->
 				<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)]">

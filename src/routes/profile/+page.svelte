@@ -1526,7 +1526,7 @@
 			<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
 				
 				<!-- COLUMN 1 (Desktop Left Column: Profile Header Card) -->
-				<div class="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-20 space-y-4">
+				<div class="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-20 flex flex-col gap-4">
 					<div class="bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(244,114,182,0.1)] border border-pink-100/90 relative">
 						<!-- Cover Banner Background -->
 						<div class="relative h-44 sm:h-52 lg:h-44 w-full bg-gradient-to-tr from-[#3b82f6] via-[#ec4899] to-[#8b5cf6] overflow-hidden group">
@@ -1840,7 +1840,7 @@
 				</div>
 
 				<!-- COLUMN 2 (Desktop Right Column: Mobile Tab Switcher + Cards) -->
-				<div class="lg:col-span-7 xl:col-span-7 space-y-4 sm:space-y-5">
+				<div class="lg:col-span-7 xl:col-span-7 flex flex-col gap-4 sm:gap-5">
 					
 					<!-- Mobile-only Centered Tab Switcher Bar -->
 					<div class="lg:hidden bg-white rounded-xl p-1 shadow-[0_2px_12px_rgba(244,114,182,0.08)] border border-pink-100/90 flex items-center justify-between gap-1">
@@ -1969,7 +1969,10 @@
 						</div>
 
 						{#if filteredFriends.length === 0}
-							<div class="text-center py-8 border border-dashed border-pink-200 rounded-xl">
+							<div class="text-center py-7 bg-pink-50/30 border border-dashed border-pink-200 rounded-xl">
+								<div class="w-9 h-9 bg-white text-[#f43f8e] rounded-xl border border-pink-100 flex items-center justify-center mx-auto mb-1.5 shadow-2xs">
+									<Users class="w-4 h-4 text-[#f43f8e]" strokeWidth={2} />
+								</div>
 								<p class="text-xs font-bold text-pink-400">
 									{friendsSearch ? 'No friends matched your search.' : 'No friends yet.'}
 								</p>
