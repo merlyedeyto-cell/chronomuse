@@ -1300,13 +1300,21 @@
 
 	<!-- Confirmation Modal for Removing Friend -->
 	{#if showConfirmDelete}
-		<div class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in">
+		<div
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="remove-friend-title"
+			tabindex="-1"
+			onkeydown={(e) => { if (e.key === 'Escape') { showConfirmDelete = false; friendToRemove = null; } }}
+			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
+			onclick={(e) => { if (e.target === e.currentTarget) { showConfirmDelete = false; friendToRemove = null; } }}
+		>
 			<div class="bg-white border border-pink-100 rounded-3xl max-w-sm w-full p-5 sm:p-6 text-center animate-modal-content shadow-2xl space-y-3.5">
 				<div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto border border-rose-100 shadow-xs">
 					<Trash2 class="w-5 h-5" strokeWidth={2} />
 				</div>
 				<div>
-					<h3 class="text-sm sm:text-base font-black text-pink-950 mb-0.5">Remove Friend?</h3>
+					<h3 id="remove-friend-title" class="text-sm sm:text-base font-black text-pink-950 mb-0.5">Remove Friend?</h3>
 					<p class="text-xs text-pink-400 font-bold leading-relaxed">
 						Are you sure you want to remove <span class="font-black text-pink-950">@{friendToRemove?.username}</span> from your friends list?
 					</p>
@@ -1314,12 +1322,14 @@
 
 				<div class="flex items-center space-x-2.5 pt-1">
 					<button
+						type="button"
 						onclick={() => { showConfirmDelete = false; friendToRemove = null; }}
 						class="w-1/2 py-2.5 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer border border-pink-100"
 					>
 						Cancel
 					</button>
 					<button
+						type="button"
 						onclick={confirmRemoveFriend}
 						disabled={isRemoving}
 						class="w-1/2 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black text-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50 shadow-md"
@@ -1334,6 +1344,12 @@
 	<!-- Custom Success / Alert Notification Modal -->
 	{#if showNotificationModalPopup}
 		<div
+			role="alertdialog"
+			aria-modal="true"
+			aria-labelledby="friends-alert-title"
+			aria-describedby="friends-alert-desc"
+			tabindex="-1"
+			onkeydown={(e) => { if (e.key === 'Escape') showNotificationModalPopup = false; }}
 			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[100] flex items-center justify-center p-4 animate-fade-in"
 			onclick={(e) => { if (e.target === e.currentTarget) showNotificationModalPopup = false; }}
 		>
@@ -1347,10 +1363,10 @@
 				</div>
 				
 				<div>
-					<h3 class="text-sm sm:text-base font-black text-pink-950 mb-0.5">
+					<h3 id="friends-alert-title" class="text-sm sm:text-base font-black text-pink-950 mb-0.5">
 						{notificationModalType === 'error' ? 'Notice' : 'Success!'}
 					</h3>
-					<p class="text-xs text-pink-700 font-bold leading-relaxed">
+					<p id="friends-alert-desc" class="text-xs text-pink-700 font-bold leading-relaxed">
 						{notificationModalMessage}
 					</p>
 				</div>

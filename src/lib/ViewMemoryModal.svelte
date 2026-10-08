@@ -29,8 +29,8 @@
 	let editingMemoryId = $state(/** @type {any} */ (null));
 	let editingMemory = $state(/** @type {any} */ (null));
 	let isSaving = $state(false);
-	let photoVideoInput;
-	let musicInput;
+	let photoVideoInput = $state(null);
+	let musicInput = $state(null);
 	
 	let editedPhotoVideoType = $state('');
 	
@@ -876,22 +876,28 @@
 	class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 pointer-events-auto"
 	style="opacity: {isClosing ? 0 : Math.max(0.1, 1 - (dragTranslateY / 380))}; transition: {isDragging ? 'none' : 'opacity 0.25s ease'};"
 	onclick={handleClose}
+	onkeydown={(e) => { if (e.key === 'Escape') handleClose(); }}
+	role="button"
+	tabindex="-1"
+	aria-label="Close modal backdrop"
 ></div>
 
 <!-- Bottom Sheet Modal Container -->
 <div
 	class="fixed inset-0 z-50 flex items-end justify-center font-sans pointer-events-none select-none"
-	onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
+	role="dialog"
+	aria-modal="true"
+	tabindex="-1"
 >
 	<div
 		class="bg-gradient-to-b from-[#fff5f8] via-[#fff0f5] to-white border-t-2 border-x border-pink-200/90 rounded-t-[32px] sm:rounded-t-[38px] p-4 sm:p-6 pb-6 relative w-full max-w-xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[96vh] sm:max-h-[92vh] h-[93vh] sm:h-[89vh] md:h-[88vh] overflow-hidden flex flex-col shadow-[0_-12px_45px_rgba(244,63,142,0.22)] pointer-events-auto {!hasMounted ? 'animate-bottom-sheet' : ''}"
 		style="transform: translateY({isClosing ? '100%' : `${dragTranslateY}px`}); transition: {isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease'}; opacity: {isClosing ? 0 : 1}; will-change: transform;"
-		onclick={(e) => e.stopPropagation()}
 	>
 		<!-- Large Draggable Header Area (Drag up or down from handle or header on mobile/desktop) -->
 		<div
 			class="w-full pt-1 pb-2 -mt-1.5 mb-1 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none flex-shrink-0 touch-none"
 			style="touch-action: none; -webkit-user-select: none;"
+			aria-hidden="true"
 			onpointerdown={handleModalDragPointerDown}
 			onpointermove={handleModalDragPointerMove}
 			onpointerup={handleModalDragPointerUp}
@@ -958,7 +964,7 @@
 				<div class="space-y-2.5">
 					<!-- Mood Tag -->
 					<div>
-						<label class="block text-[10px] font-bold text-pink-500 mb-1">Mood Tag</label>
+						<span class="block text-[10px] font-bold text-pink-500 mb-1">Mood Tag</span>
 						<button
 							type="button"
 							onclick={() => showMoodTagModal = true}
@@ -973,7 +979,7 @@
 
 					<!-- Memory Tag -->
 					<div>
-						<label class="block text-[10px] font-bold text-pink-500 mb-1">Memory Tag</label>
+						<span class="block text-[10px] font-bold text-pink-500 mb-1">Memory Tag</span>
 						<button
 							type="button"
 							onclick={() => showMemoryTagModal = true}
@@ -988,9 +994,10 @@
 
 					<!-- Description -->
 					<div>
-						<label class="block text-[10px] font-bold text-pink-500 mb-1">Description</label>
+						<label for="view-memory-description" class="block text-[10px] font-bold text-pink-500 mb-1">Description</label>
 						<div class="relative">
 							<textarea
+								id="view-memory-description"
 								bind:value={editedDescription}
 								placeholder="Write about this memory..."
 								rows="3"
@@ -1044,7 +1051,7 @@
 					<!-- Upload Photo or Video -->
 					<div>
 						<div class="flex items-center justify-between mb-1">
-							<label class="block text-[10px] font-bold text-pink-500">Photo or Video</label>
+							<span class="block text-[10px] font-bold text-pink-500">Photo or Video</span>
 							{#if editedPhotoVideo || editingMemory.photo_video}
 								<button
 									type="button"
@@ -1057,8 +1064,9 @@
 							{/if}
 						</div>
 
-						<div
-							class="relative flex flex-col items-center justify-center w-full min-h-[80px] max-h-36 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/70 cursor-pointer hover:bg-pink-100/70 transition-all duration-200 overflow-hidden group"
+						<button
+							type="button"
+							class="relative flex flex-col items-center justify-center w-full min-h-[80px] max-h-36 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/70 cursor-pointer hover:bg-pink-100/70 transition-all duration-200 overflow-hidden group p-0 text-left"
 							onclick={() => { photoVideoInput?.click(); }}
 						>
 							{#if editedPhotoVideoPreview}
@@ -1066,7 +1074,7 @@
 									<img src={editedPhotoVideoPreview} alt="Preview" class="w-full max-h-36 object-contain" />
 								{:else}
 									<div class="relative w-full h-full flex items-center justify-center bg-black/80 py-1.5">
-										<video src={editedPhotoVideoPreview} class="w-full max-h-36 object-contain pointer-events-none" muted playsinline></video>
+										<video src={editedPhotoVideoPreview} class="w-full max-h-36 object-contain pointer-events-none" muted playsinline aria-label="Video preview"><track kind="captions" /></video>
 										<div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
 											<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1">
 												<span>Change Video</span>
@@ -1077,7 +1085,7 @@
 							{:else if editingMemory.photo_video}
 								{#if (editingMemory.photo_video_type && editingMemory.photo_video_type.startsWith('video/')) || (typeof editingMemory.photo_video === 'string' && (editingMemory.photo_video.endsWith('.mp4') || editingMemory.photo_video.endsWith('.webm') || editingMemory.photo_video.endsWith('.mov')))}
 									<div class="relative w-full h-full flex items-center justify-center bg-black/80 py-1.5">
-										<video src={getMediaUrl(editingMemory.photo_video)} class="w-full max-h-36 object-contain pointer-events-none" muted playsinline></video>
+										<video src={getMediaUrl(editingMemory.photo_video)} class="w-full max-h-36 object-contain pointer-events-none" muted playsinline aria-label="Current video"><track kind="captions" /></video>
 										<div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all">
 											<span class="text-[10px] font-bold text-white bg-[#f43f8e] px-2.5 py-0.5 rounded-full shadow-sm flex items-center space-x-1">
 												<span>Change Video</span>
@@ -1111,12 +1119,12 @@
 								bind:this={photoVideoInput}
 								class="hidden"
 							/>
-						</div>
+						</button>
 					</div>
 
 					<!-- Upload Music -->
 					<div>
-						<label class="block text-[10px] font-bold text-pink-500 mb-1">Music</label>
+						<span class="block text-[10px] font-bold text-pink-500 mb-1">Music</span>
 						<label class="flex flex-col items-center justify-center w-full py-2 px-3 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/70 cursor-pointer hover:bg-pink-100 transition-all duration-200">
 							<div class="flex items-center space-x-2.5 w-full max-w-full min-w-0 overflow-hidden">
 								<div class="w-7 h-7 rounded-lg bg-pink-100 text-[#f43f8e] flex items-center justify-center flex-shrink-0">
@@ -1245,9 +1253,11 @@
 
 						{#snippet mediaBox()}
 							{#if (!memory.photo_video_type || memory.photo_video_type.startsWith('image/')) && !(typeof memory.photo_video === 'string' && (memory.photo_video.endsWith('.mp4') || memory.photo_video.endsWith('.webm') || memory.photo_video.endsWith('.mov')))}
-								<div 
-									class="relative rounded-xl overflow-hidden border border-pink-100/90 cursor-pointer hover:border-pink-300 transition-all duration-200 bg-pink-50/50 shadow-2xs group w-full h-44 sm:h-48 md:h-full md:min-h-[160px] md:max-h-[220px] flex items-center justify-center" 
+								<button 
+									type="button"
+									class="relative rounded-xl overflow-hidden border border-pink-100/90 cursor-pointer hover:border-pink-300 transition-all duration-200 bg-pink-50/50 shadow-2xs group w-full h-44 sm:h-48 md:h-full md:min-h-[160px] md:max-h-[220px] flex items-center justify-center p-0" 
 									onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'image')}
+									aria-label="Open image full view"
 								>
 									<img 
 										src={getMediaUrl(memory.photo_video)} 
@@ -1260,7 +1270,7 @@
 											<span>Full view</span>
 										</span>
 									</div>
-								</div>
+								</button>
 							{:else}
 								<div class="relative rounded-xl overflow-hidden border border-pink-100/90 bg-black shadow-2xs group w-full h-44 sm:h-48 md:h-full md:min-h-[160px] md:max-h-[220px] flex items-center justify-center">
 									<video 
@@ -1272,7 +1282,7 @@
 										controlslist="nofullscreen nodownload noremoteplayback"
 										disablepictureinpicture
 										aria-label="Memory video"
-									></video>
+									><track kind="captions" /></video>
 									<button
 										type="button"
 										onclick={() => openFullScreenImage(getMediaUrl(memory.photo_video), 'video')}
@@ -1430,6 +1440,10 @@
 	<div 
 		class="fixed inset-0 z-[100] bg-pink-100/95 backdrop-blur-md flex flex-col justify-between p-3 sm:p-5 select-none animate-fade-in touch-none overflow-hidden"
 		onclick={(e) => { if (e.target === e.currentTarget) closeFullScreenImage(); }}
+		onkeydown={(e) => { if (e.key === 'Escape') closeFullScreenImage(); }}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
 	>
 		<!-- Header Toolbar -->
 		<div class="w-full max-w-5xl mx-auto flex items-center justify-between z-20 flex-shrink-0 pt-1">
@@ -1462,7 +1476,8 @@
 					playsinline
 					controlslist="nofullscreen nodownload noremoteplayback"
 					disablepictureinpicture
-				></video>
+					aria-label="Full screen video"
+				><track kind="captions" /></video>
 			{:else}
 				<img src={fullScreenImageUrl} alt="Full size" class="max-w-full max-h-[72vh] sm:max-h-[78vh] object-contain rounded-xl" />
 			{/if}
@@ -1476,10 +1491,13 @@
 		use:portal
 		class="fixed inset-0 z-[120] bg-transparent flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in font-sans select-none"
 		onclick={(e) => { if (e.target === e.currentTarget && !isTrimmingVideo) { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; } }}
+		onkeydown={(e) => { if (e.key === 'Escape' && !isTrimmingVideo) { showVideoTrimmerModal = false; rawVideoFile = null; if (photoVideoInput) photoVideoInput.value = ''; } }}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
 	>
 		<div
 			class="bg-white border border-pink-100 rounded-3xl max-w-md w-full p-4 sm:p-5 space-y-3.5 shadow-2xl relative animate-modal-content max-h-[88vh] overflow-y-auto my-auto"
-			onclick={(e) => e.stopPropagation()}
 		>
 			<!-- Top Header -->
 			<div class="flex items-center justify-between pb-2.5 border-b border-pink-100">
@@ -1517,9 +1535,11 @@
 			</div>
 
 			<!-- Center: Video Player Viewport -->
-			<div
-				class="relative w-full rounded-2xl overflow-hidden bg-black border border-pink-100 flex items-center justify-center cursor-pointer group max-h-56 shadow-xs"
+			<button
+				type="button"
+				class="relative w-full rounded-2xl overflow-hidden bg-black border border-pink-100 flex items-center justify-center cursor-pointer group max-h-56 shadow-xs p-0"
 				onclick={togglePlayTrimVideo}
+				aria-label="Toggle video playback"
 			>
 				<video
 					src={rawVideoUrl}
@@ -1528,7 +1548,8 @@
 					ontimeupdate={handleTrimTimeUpdate}
 					playsinline
 					class="w-full max-h-56 object-contain"
-				></video>
+					aria-label="Trim video preview"
+				><track kind="captions" /></video>
 
 				<!-- Play/Pause Overlay Icon -->
 				{#if !isPlayingTrimVideo}
@@ -1538,7 +1559,7 @@
 						</div>
 					</div>
 				{/if}
-			</div>
+			</button>
 
 			<!-- Messenger Storyboard Filmstrip Scrubber Tool -->
 			<div class="bg-[#fdf2f6]/70 border border-pink-100 rounded-2xl p-3.5 space-y-2.5">
@@ -1555,6 +1576,10 @@
 					style="touch-action: none;"
 					bind:this={filmstripElement}
 					onclick={handleFilmstripTrackClick}
+					role="button"
+					tabindex="0"
+					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleFilmstripTrackClick(e); }}
+					aria-label="Seek video position"
 				>
 					<!-- Frame Thumbnails Strip -->
 					<div class="absolute inset-0 flex w-full h-full pointer-events-none">
@@ -1593,12 +1618,24 @@
 						<div
 							class="absolute top-0 bottom-0 border-y-3 border-[#f43f8e] bg-[#f43f8e]/25 cursor-grab active:cursor-grabbing flex items-center justify-between"
 							style="left: {leftPercent}%; width: {widthPercent}%; touch-action: none;"
+							role="slider"
+							aria-label="Trim window"
+							tabindex="0"
+							aria-valuemin="0"
+							aria-valuemax={videoDuration}
+							aria-valuenow={videoStartTime}
 							onpointerdown={(e) => handlePointerDown(e, 'window')}
 						>
 							<!-- Left Drag Handle -->
 							<div
 								class="w-6 h-full bg-[#f43f8e] hover:bg-[#e0337f] text-white cursor-ew-resize flex items-center justify-center rounded-l-md active:scale-95 transition-transform"
 								style="touch-action: none;"
+								role="slider"
+								aria-label="Trim start"
+								tabindex="0"
+								aria-valuemin="0"
+								aria-valuemax={videoDuration}
+								aria-valuenow={videoStartTime}
 								onpointerdown={(e) => handlePointerDown(e, 'left')}
 							>
 								<div class="w-1 h-4 bg-white rounded-full"></div>
@@ -1608,6 +1645,12 @@
 							<div
 								class="w-6 h-full bg-[#f43f8e] hover:bg-[#e0337f] text-white cursor-ew-resize flex items-center justify-center rounded-r-md active:scale-95 transition-transform"
 								style="touch-action: none;"
+								role="slider"
+								aria-label="Trim end"
+								tabindex="0"
+								aria-valuemin="0"
+								aria-valuemax={videoDuration}
+								aria-valuenow={videoEndTime}
 								onpointerdown={(e) => handlePointerDown(e, 'right')}
 							>
 								<div class="w-1 h-4 bg-white rounded-full"></div>
@@ -1679,16 +1722,26 @@
 
 <!-- Share Memory Modal -->
 {#if showShareModal}
-	<div class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 font-sans">
+	<div
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="share-memory-title"
+		tabindex="-1"
+		onkeydown={(e) => { if (e.key === 'Escape') showShareModal = false; }}
+		onclick={(e) => { if (e.target === e.currentTarget) showShareModal = false; }}
+		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 font-sans"
+	>
 		<div class="bg-white border border-pink-100 rounded-3xl p-5 max-w-sm w-full max-h-[82vh] overflow-y-auto relative animate-modal-content shadow-2xl my-auto">
 			<button
+				type="button"
+				aria-label="Close share memory modal"
 				onclick={() => showShareModal = false}
 				class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer"
 			>
 				✕
 			</button>
 			<div class="text-center mb-3">
-				<h3 class="text-base font-black text-pink-950">Share Memory</h3>
+				<h3 id="share-memory-title" class="text-base font-black text-pink-950">Share Memory</h3>
 				<p class="text-xs text-pink-400 font-bold">Select friends to tag/share this memory with so both of you can see it on this date!</p>
 			</div>
 
@@ -1751,6 +1804,7 @@
 					{/each}
 				</div>
 				<button
+					type="button"
 					onclick={handleShareMemorySubmit}
 					disabled={selectedShareFriendIds.length === 0 || isSharing}
 					class="w-full py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl font-bold text-xs transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed shadow-xs active:scale-95"
@@ -1765,6 +1819,12 @@
 <!-- Delete Memory Confirmation Modal -->
 {#if showDeleteConfirmModal}
 	<div
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="delete-memory-title"
+		aria-describedby="delete-memory-desc"
+		tabindex="-1"
+		onkeydown={(e) => { if (e.key === 'Escape') { showDeleteConfirmModal = false; memoryToDeleteId = null; } }}
 		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[70] flex items-center justify-center p-3 sm:p-4 animate-fade-in font-sans"
 		onclick={(e) => { if (e.target === e.currentTarget) { showDeleteConfirmModal = false; memoryToDeleteId = null; } }}
 	>
@@ -1773,8 +1833,8 @@
 			<div class="w-12 h-12 bg-rose-50 text-rose-500 border border-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-2.5 shadow-2xs">
 				<Trash2 class="w-6 h-6" />
 			</div>
-			<h3 class="text-sm font-black text-pink-950 mb-1">Delete Memory?</h3>
-			<p class="text-xs text-pink-950/70 mb-4 font-medium leading-relaxed">
+			<h3 id="delete-memory-title" class="text-sm font-black text-pink-950 mb-1">Delete Memory?</h3>
+			<p id="delete-memory-desc" class="text-xs text-pink-950/70 mb-4 font-medium leading-relaxed">
 				Are you sure you want to delete this memory? This action cannot be undone.
 			</p>
 

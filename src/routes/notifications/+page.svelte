@@ -1056,22 +1056,25 @@
 	<!-- Cancel Shared Memory Confirmation Modal -->
 	{#if showCancelModal && cancelConfirmItem}
 		<div
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="cancel-shared-title"
+			tabindex="-1"
+			onkeydown={(e) => { if (e.key === 'Escape' && !isCancelling) showCancelModal = false; }}
 			class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fade-in font-sans"
-			onclick={() => { if (!isCancelling) showCancelModal = false; }}
+			onclick={(e) => { if (e.target === e.currentTarget && !isCancelling) showCancelModal = false; }}
 		>
-			<div
-				class="bg-white border border-pink-100 rounded-2xl p-5 max-w-xs w-full animate-pop-in text-center shadow-2xl"
-				onclick={(e) => e.stopPropagation()}
-			>
+			<div class="bg-white border border-pink-100 rounded-2xl p-5 max-w-xs w-full animate-pop-in text-center shadow-2xl">
 				<div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-2.5">
 					<Trash2 class="w-6 h-6" />
 				</div>
-				<h3 class="text-base font-black text-pink-950 mb-1">Cancel Shared Memory?</h3>
+				<h3 id="cancel-shared-title" class="text-base font-black text-pink-950 mb-1">Cancel Shared Memory?</h3>
 				<p class="text-xs text-pink-600 mb-5 font-semibold leading-relaxed">
 					Are you sure you want to cancel sharing this memory with <strong class="text-[#f43f8e] font-black">@{cancelConfirmItem.recipient_username}</strong>?
 				</p>
 				<div class="flex items-center space-x-2.5">
 					<button
+						type="button"
 						onclick={() => { playClickSound(); showCancelModal = false; }}
 						disabled={isCancelling}
 						class="w-1/2 py-2.5 bg-[#fff0f5] text-[#f43f8e] hover:bg-pink-100 text-xs font-black rounded-xl transition-all active:scale-95 cursor-pointer disabled:opacity-50"
@@ -1079,6 +1082,7 @@
 						Keep
 					</button>
 					<button
+						type="button"
 						onclick={() => { playClickSound(); confirmCancelShare(); }}
 						disabled={isCancelling}
 						class="w-1/2 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-black rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
@@ -1093,6 +1097,11 @@
 	<!-- Full-screen Media Modal Lightbox -->
 	{#if showFullScreenImage}
 		<div 
+			role="dialog"
+			aria-modal="true"
+			aria-label="Media preview"
+			tabindex="-1"
+			onkeydown={(e) => { if (e.key === 'Escape') closeFullScreenImage(); }}
 			class="fixed inset-0 z-[100] bg-pink-100/95 backdrop-blur-md flex flex-col justify-between p-3 sm:p-4 select-none animate-fade-in touch-none overflow-hidden font-sans"
 			onclick={(e) => { if (e.target === e.currentTarget) closeFullScreenImage(); }}
 		>
@@ -1108,6 +1117,7 @@
 				<!-- Close Button -->
 				<button
 					type="button"
+					aria-label="Close full preview"
 					onclick={() => { playClickSound(); closeFullScreenImage(); }}
 					class="p-1.5 text-pink-700 hover:text-pink-900 bg-white border border-pink-200 rounded-full transition-all cursor-pointer active:scale-95 shadow-xs flex items-center justify-center"
 					title="Close Full View"
@@ -1127,7 +1137,9 @@
 						playsinline
 						controlslist="nofullscreen nodownload noremoteplayback"
 						disablepictureinpicture
-					></video>
+					>
+						<track kind="captions" />
+					</video>
 				{:else}
 					<img src={fullScreenImageUrl} alt="Full size" class="max-w-full max-h-[72vh] sm:max-h-[78vh] object-contain rounded-xl" />
 				{/if}

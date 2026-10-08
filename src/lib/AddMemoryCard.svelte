@@ -553,7 +553,7 @@
 		<div class="grid grid-cols-2 gap-2.5 sm:gap-3">
 			<!-- Upload Photo / Video -->
 			<div>
-				<label class="block text-[11px] font-bold text-pink-900 mb-1">Photo / Video (15s Max)</label>
+				<span class="block text-[11px] font-bold text-pink-900 mb-1">Photo / Video (15s Max)</span>
 				<label class="flex flex-col items-center justify-center w-full h-16 sm:h-18 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/60 cursor-pointer hover:bg-pink-100/70 transition-all duration-200 overflow-hidden relative shadow-2xs">
 					{#if photoVideoPreview}
 						{#if isVideo}
@@ -582,7 +582,7 @@
 
 			<!-- Upload Music -->
 			<div>
-				<label class="block text-[11px] font-bold text-pink-900 mb-1">Music (Optional)</label>
+				<span class="block text-[11px] font-bold text-pink-900 mb-1">Music (Optional)</span>
 				<label class="flex flex-col items-center justify-center w-full h-16 sm:h-18 border border-dashed border-pink-300 rounded-xl bg-[#fdf2f6]/60 cursor-pointer hover:bg-pink-100/70 transition-all duration-200 overflow-hidden shadow-2xs">
 					<div class="flex items-center space-x-1.5 py-1 px-2 w-full max-w-full min-w-0 overflow-hidden justify-center">
 						<Music class="w-4 h-4 text-[#f43f8e] flex-shrink-0" />
@@ -607,7 +607,7 @@
 		<div class="grid grid-cols-2 gap-2.5 sm:gap-3">
 			<!-- Memory Tag Field -->
 			<div>
-				<label class="block text-[11px] font-bold text-pink-900 mb-1">Memory Tag</label>
+				<span class="block text-[11px] font-bold text-pink-900 mb-1">Memory Tag</span>
 				<button
 					type="button"
 					onclick={() => showMemoryTagModal = true}
@@ -622,7 +622,7 @@
 
 			<!-- Mood Tag Field -->
 			<div>
-				<label class="block text-[11px] font-bold text-pink-900 mb-1">Mood Tag</label>
+				<span class="block text-[11px] font-bold text-pink-900 mb-1">Mood Tag</span>
 				<button
 					type="button"
 					onclick={() => showMoodTagModal = true}
@@ -746,9 +746,10 @@
 
 		<!-- Memory Description with Emoji Picker -->
 		<div>
-			<label class="block text-[11px] font-bold text-pink-900 mb-1">Description</label>
+			<label for="add-memory-description" class="block text-[11px] font-bold text-pink-900 mb-1">Description</label>
 			<div class="relative">
 				<textarea
+					id="add-memory-description"
 					bind:value={memoryDescription}
 					placeholder="Write about this memory..."
 					rows="2"
@@ -824,6 +825,10 @@
 		use:portal
 		class="fixed inset-0 bg-transparent z-[9999] flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in select-none"
 		onclick={(e) => { if (e.target === e.currentTarget && !isTrimmingVideo) showVideoTrimmerModal = false; }}
+		onkeydown={(e) => { if (e.key === 'Escape' && !isTrimmingVideo) showVideoTrimmerModal = false; }}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
 	>
 		<div class="bg-white border border-pink-100 rounded-3xl max-w-lg w-full p-4 sm:p-5 flex flex-col space-y-3.5 relative animate-modal-content m-auto max-h-[92vh] overflow-y-auto shadow-2xl">
 			<!-- Top Header: Title, Live Island Timer, Close Button -->
@@ -862,9 +867,11 @@
 			</div>
 
 			<!-- Center: Video Player Viewport -->
-			<div
-				class="relative w-full rounded-2xl overflow-hidden bg-black border border-pink-100 flex items-center justify-center cursor-pointer group max-h-56 shadow-xs"
+			<button
+				type="button"
+				class="relative w-full rounded-2xl overflow-hidden bg-black border border-pink-100 flex items-center justify-center cursor-pointer group max-h-56 shadow-xs p-0"
 				onclick={togglePlayTrimVideo}
+				aria-label="Toggle video playback"
 			>
 				<video
 					src={rawVideoUrl}
@@ -873,7 +880,8 @@
 					ontimeupdate={handleTrimTimeUpdate}
 					playsinline
 					class="w-full max-h-56 object-contain"
-				></video>
+					aria-label="Trim video preview"
+				><track kind="captions" /></video>
 
 				<!-- Play/Pause Overlay Icon -->
 				{#if !isPlayingTrimVideo}
@@ -883,7 +891,7 @@
 						</div>
 					</div>
 				{/if}
-			</div>
+			</button>
 
 			<!-- Messenger Storyboard Filmstrip Scrubber Tool -->
 			<div class="bg-[#fdf2f6]/70 border border-pink-100 rounded-2xl p-3.5 space-y-2.5">
@@ -900,6 +908,10 @@
 					style="touch-action: none;"
 					bind:this={filmstripElement}
 					onclick={handleFilmstripTrackClick}
+					role="button"
+					tabindex="0"
+					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleFilmstripTrackClick(e); }}
+					aria-label="Seek video position"
 				>
 					<!-- Frame Thumbnails Strip -->
 					<div class="absolute inset-0 flex w-full h-full pointer-events-none">
@@ -938,12 +950,24 @@
 						<div
 							class="absolute top-0 bottom-0 border-y-3 border-[#f43f8e] bg-[#f43f8e]/25 cursor-grab active:cursor-grabbing flex items-center justify-between"
 							style="left: {leftPercent}%; width: {widthPercent}%; touch-action: none;"
+							role="slider"
+							aria-label="Trim window"
+							tabindex="0"
+							aria-valuemin="0"
+							aria-valuemax={videoDuration}
+							aria-valuenow={videoStartTime}
 							onpointerdown={(e) => handlePointerDown(e, 'window')}
 						>
 							<!-- Left Drag Handle -->
 							<div
 								class="w-6 h-full bg-[#f43f8e] hover:bg-[#e0337f] text-white cursor-ew-resize flex items-center justify-center rounded-l-md active:scale-95 transition-transform"
 								style="touch-action: none;"
+								role="slider"
+								aria-label="Trim start"
+								tabindex="0"
+								aria-valuemin="0"
+								aria-valuemax={videoDuration}
+								aria-valuenow={videoStartTime}
 								onpointerdown={(e) => handlePointerDown(e, 'left')}
 							>
 								<div class="w-1 h-4 bg-white rounded-full"></div>
@@ -953,6 +977,12 @@
 							<div
 								class="w-6 h-full bg-[#f43f8e] hover:bg-[#e0337f] text-white cursor-ew-resize flex items-center justify-center rounded-r-md active:scale-95 transition-transform"
 								style="touch-action: none;"
+								role="slider"
+								aria-label="Trim end"
+								tabindex="0"
+								aria-valuemin="0"
+								aria-valuemax={videoDuration}
+								aria-valuenow={videoEndTime}
 								onpointerdown={(e) => handlePointerDown(e, 'right')}
 							>
 								<div class="w-1 h-4 bg-white rounded-full"></div>

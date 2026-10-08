@@ -669,10 +669,11 @@
 						
 						<!-- Live Search & Select User Bar -->
 						<div class="relative space-y-1.5">
-							<label class="block text-xs font-extrabold text-pink-950">Search User to Block</label>
+							<label for="block-search-input" class="block text-xs font-extrabold text-pink-950">Search User to Block</label>
 							
 							<div class="relative">
 								<input
+									id="block-search-input"
 									type="text"
 									value={blockSearchInput}
 									oninput={handleBlockSearchInput}
@@ -804,8 +805,9 @@
 						
 						<form onsubmit={(e) => { e.preventDefault(); handleSaveProfileCredentials(); }} class="space-y-3">
 							<div>
-								<label class="block text-xs font-extrabold text-pink-950 mb-1">Username</label>
+								<label for="settings-username" class="block text-xs font-extrabold text-pink-950 mb-1">Username</label>
 								<input
+									id="settings-username"
 									type="text"
 									bind:value={editUsername}
 									class="w-full px-3 py-2 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/40 transition-all"
@@ -815,8 +817,9 @@
 							</div>
 
 							<div>
-								<label class="block text-xs font-extrabold text-pink-950 mb-1">Email Address</label>
+								<label for="settings-email" class="block text-xs font-extrabold text-pink-950 mb-1">Email Address</label>
 								<input
+									id="settings-email"
 									type="email"
 									bind:value={editEmail}
 									class="w-full px-3 py-2 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/40 transition-all"
@@ -830,8 +833,9 @@
 
 								<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
 									<div>
-										<label class="block text-[10px] font-bold text-pink-400 mb-0.5">New Password</label>
+										<label for="settings-new-password" class="block text-[10px] font-bold text-pink-400 mb-0.5">New Password</label>
 										<input
+											id="settings-new-password"
 											type="password"
 											bind:value={editNewPassword}
 											placeholder="At least 6 chars"
@@ -840,8 +844,9 @@
 									</div>
 
 									<div>
-										<label class="block text-[10px] font-bold text-pink-400 mb-0.5">Confirm Password</label>
+										<label for="settings-confirm-password" class="block text-[10px] font-bold text-pink-400 mb-0.5">Confirm Password</label>
 										<input
+											id="settings-confirm-password"
 											type="password"
 											bind:value={editConfirmPassword}
 											placeholder="Re-type new password"
@@ -885,6 +890,11 @@
 	<!-- Confirm Block User Selection Modal -->
 	{#if showConfirmBlockModal && selectedUserToBlock}
 		<div
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="confirm-block-title"
+			tabindex="-1"
+			onkeydown={(e) => { if (e.key === 'Escape') { showConfirmBlockModal = false; selectedUserToBlock = null; } }}
 			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3 animate-fade-in"
 			onclick={(e) => { if (e.target === e.currentTarget) showConfirmBlockModal = false; }}
 		>
@@ -897,7 +907,7 @@
 					{/if}
 				</div>
 
-				<h3 class="text-sm font-black text-pink-950 mb-0.5">
+				<h3 id="confirm-block-title" class="text-sm font-black text-pink-950 mb-0.5">
 					Block @{selectedUserToBlock.username || selectedUserToBlock.email?.split('@')[0]}?
 				</h3>
 				<p class="text-[11px] text-pink-400 font-bold mb-3">{selectedUserToBlock.email}</p>

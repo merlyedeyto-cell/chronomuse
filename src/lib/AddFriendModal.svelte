@@ -8,7 +8,7 @@
 	const dispatch = createEventDispatcher();
 
 	let { open = false } = $props();
-	let isOpen = $state(open);
+	let isOpen = $state(false);
 	let isClosing = $state(false);
 	let isLoading = $state(false);
 	let addingFriendUserId = $state(null);
@@ -482,16 +482,20 @@
 		class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center font-sans pointer-events-auto select-none"
 		style="opacity: {isClosing ? 0 : Math.max(0.1, 1 - (dragTranslateY / 380))}; transition: {isDragging ? 'none' : 'opacity 0.25s ease'};"
 		onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
+		onkeydown={(e) => { if (e.key === 'Escape') handleClose(); }}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
 	>
 		<div
 			class="bg-gradient-to-b from-[#fff5f8] via-[#fff0f5] to-white border-t-2 border-x border-pink-200/90 rounded-t-[32px] sm:rounded-t-[38px] p-4 sm:p-6 pb-6 relative w-full max-w-xl sm:max-w-2xl md:max-w-3xl max-h-[96vh] sm:max-h-[92vh] h-[93vh] sm:h-[89vh] md:h-[88vh] overflow-hidden flex flex-col shadow-[0_-12px_45px_rgba(244,63,142,0.22)]"
 			style="transform: translateY({isClosing ? '100%' : `${dragTranslateY}px`}); transition: {isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease'}; opacity: {isClosing ? 0 : 1}; will-change: transform;"
-			onclick={(e) => e.stopPropagation()}
 		>
 			<!-- Pull / Drag Handle Bar Touch Area -->
 			<div
 				class="w-full pt-1 pb-2 -mt-1.5 mb-1.5 flex items-center justify-center cursor-grab active:cursor-grabbing select-none flex-shrink-0 touch-none"
 				style="touch-action: none; -webkit-user-select: none;"
+				aria-hidden="true"
 				onpointerdown={handlePointerDown}
 				onpointermove={handlePointerMove}
 				onpointerup={handlePointerUp}
@@ -887,37 +891,4 @@
 	</div>
 {/if}
 
-<style>
-	@keyframes bottom-sheet-slide {
-		from {
-			transform: translateY(100%);
-			opacity: 0.8;
-		}
-		to {
-			transform: translateY(0);
-			opacity: 1;
-		}
-	}
 
-	.animate-bottom-sheet {
-		animation: bottom-sheet-slide 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-	}
-
-	@keyframes modal-backdrop {
-		from { opacity: 0; }
-		to { opacity: 1; }
-	}
-
-	@keyframes modal-content {
-		from { opacity: 0; transform: scale(0.95); }
-		to { opacity: 1; transform: scale(1); }
-	}
-
-	.animate-modal-backdrop {
-		animation: modal-backdrop 0.2s ease-out;
-	}
-
-	.animate-modal-content {
-		animation: modal-content 0.25s ease-out;
-	}
-</style>

@@ -7,7 +7,7 @@
 	const dispatch = createEventDispatcher();
 
 	let { open = false } = $props();
-	let isOpen = $state(open);
+	let isOpen = $state(false);
 	let isClosing = $state(false);
 	let isEditing = $state(false);
 	let isSaving = $state(false);
@@ -213,18 +213,22 @@
 	<div
 		class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center font-sans pointer-events-auto select-none"
 		style="opacity: {isClosing ? 0 : Math.max(0.1, 1 - (dragTranslateY / 380))}; transition: {isDragging ? 'none' : 'opacity 0.25s ease'};"
-		onclick={handleClose}
+		onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
+		onkeydown={(e) => { if (e.key === 'Escape') handleClose(); }}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
 	>
 		<!-- Modal Content -->
 		<div
 			class="bg-gradient-to-b from-[#fff5f8] via-[#fff0f5] to-white rounded-t-[32px] sm:rounded-t-[38px] p-5 sm:p-6 pb-6 border-t-2 border-x border-pink-200/90 max-w-md sm:max-w-lg w-full relative max-h-[96vh] sm:max-h-[92vh] overflow-y-auto shadow-[0_-12px_45px_rgba(244,63,142,0.22)] pointer-events-auto"
 			style="transform: translateY({isClosing ? '100%' : `${dragTranslateY}px`}); transition: {isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease'}; opacity: {isClosing ? 0 : 1}; will-change: transform;"
-			onclick={(e) => e.stopPropagation()}
 		>
 			<!-- Pull / Drag Handle Bar Area -->
 			<div
 				class="w-full pt-1 pb-2 -mt-2 mb-2 flex items-center justify-center cursor-grab active:cursor-grabbing select-none flex-shrink-0 touch-none"
 				style="touch-action: none; -webkit-user-select: none;"
+				aria-hidden="true"
 				onpointerdown={handlePointerDown}
 				onpointermove={handlePointerMove}
 				onpointerup={handlePointerUp}
@@ -269,28 +273,32 @@
 			<div class="space-y-2.5 mb-4">
 				<!-- Username -->
 				<div>
-					<label class="block text-[11px] font-black text-[#f43f8e] mb-1">Username</label>
 					{#if isEditing}
+						<label for="profile-username" class="block text-[11px] font-black text-[#f43f8e] mb-1">Username</label>
 						<input
+							id="profile-username"
 							type="text"
 							bind:value={username}
 							class="w-full px-3 py-2 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-pink-950 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 focus:border-[#f43f8e] focus:bg-white transition-all text-xs font-bold"
 						/>
 					{:else}
+						<span class="block text-[11px] font-black text-[#f43f8e] mb-1">Username</span>
 						<p class="text-xs text-pink-950 font-bold px-3 py-2 bg-[#fdf2f6]/70 border border-pink-100 rounded-xl">{username}</p>
 					{/if}
 				</div>
 
 				<!-- Email -->
 				<div>
-					<label class="block text-[11px] font-black text-[#f43f8e] mb-1">Email</label>
 					{#if isEditing}
+						<label for="profile-email" class="block text-[11px] font-black text-[#f43f8e] mb-1">Email</label>
 						<input
+							id="profile-email"
 							type="email"
 							bind:value={email}
 							class="w-full px-3 py-2 bg-[#fdf2f6] border border-pink-200/80 rounded-xl text-pink-950 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 focus:border-[#f43f8e] focus:bg-white transition-all text-xs font-bold"
 						/>
 					{:else}
+						<span class="block text-[11px] font-black text-[#f43f8e] mb-1">Email</span>
 						<p class="text-xs text-pink-950 font-bold px-3 py-2 bg-[#fdf2f6]/70 border border-pink-100 rounded-xl">{email}</p>
 					{/if}
 				</div>
@@ -302,8 +310,9 @@
 						
 						<div class="space-y-2">
 							<div>
-								<label class="block text-[10px] font-bold text-pink-500 mb-1">New Password</label>
+								<label for="profile-new-password" class="block text-[10px] font-bold text-pink-500 mb-1">New Password</label>
 								<input
+									id="profile-new-password"
 									type="password"
 									bind:value={newPassword}
 									placeholder="Enter new password"
@@ -312,8 +321,9 @@
 							</div>
 
 							<div>
-								<label class="block text-[10px] font-bold text-pink-500 mb-1">Confirm New Password</label>
+								<label for="profile-confirm-password" class="block text-[10px] font-bold text-pink-500 mb-1">Confirm New Password</label>
 								<input
+									id="profile-confirm-password"
 									type="password"
 									bind:value={confirmPassword}
 									placeholder="Confirm new password"
@@ -368,53 +378,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	/* Prevent body scroll when modal is open */
-	:global(body.modal-open) {
-		overflow: hidden;
-	}
-
-	@keyframes bottom-sheet-slide {
-		from {
-			transform: translateY(100%);
-			opacity: 0.8;
-		}
-		to {
-			transform: translateY(0);
-			opacity: 1;
-		}
-	}
-
-	.animate-bottom-sheet {
-		animation: bottom-sheet-slide 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-	}
-
-	@keyframes modal-backdrop {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
-	}
-
-	@keyframes modal-content {
-		from {
-			opacity: 0;
-			transform: scale(0.9) translateY(-20px);
-		}
-		to {
-			opacity: 1;
-			transform: scale(1) translateY(0);
-		}
-	}
-
-	.animate-modal-backdrop {
-		animation: modal-backdrop 0.3s ease-out;
-	}
-
-	.animate-modal-content {
-		animation: modal-content 0.3s ease-out cubic-bezier(0.34, 1.56, 0.64, 1);
-	}
-</style>

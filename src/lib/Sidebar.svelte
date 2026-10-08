@@ -351,38 +351,4 @@
 		-ms-overflow-style: none;
 		scrollbar-width: none;
 	}
-
-
-
-	@keyframes fade-in-up {
-		0% {
-			opacity: 0;
-			transform: translateY(20px);
-		}
-		100% {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	.animate-fade-in-up {
-		animation: fade-in-up 0.4s ease-out forwards;
-		opacity: 0;
-	}
-
-	@keyframes slide-in-right {
-		0% {
-			opacity: 0;
-			transform: translateX(-10px);
-		}
-		100% {
-			opacity: 1;
-			transform: translateX(0);
-		}
-	}
-
-	.animate-slide-in-right {
-		animation: slide-in-right 0.3s ease-out forwards;
-		opacity: 0;
-	}
 </style>

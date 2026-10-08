@@ -2744,9 +2744,18 @@
 				{/if}
 
 				<!-- Message Stream Container -->
+				<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 				<div
 					bind:this={chatContainer}
+					role="region"
+					aria-label="Chat messages"
+					tabindex="-1"
 					onscroll={handleChatScroll}
+					onkeydown={(e) => {
+						if (e.key === 'Escape' && isSelectionMode) {
+							exitSelectionMode();
+						}
+					}}
 					onclick={(e) => {
 						if (isSelectionMode) {
 							const isMessageBubble = e.target.closest('[id^="msg-"]');
@@ -2937,7 +2946,7 @@
 														{#if replyDetails.isImage}
 															<div class="inline-flex items-center space-x-1 bg-white/80 px-1 py-0.2 rounded-xs border border-pink-200">
 																{#if replyDetails.imageUrl}
-																	<img src={replyDetails.imageUrl} alt="Replying photo" class="w-3.5 h-3.5 rounded-xs object-cover border border-pink-200 flex-shrink-0" />
+																	<img src={replyDetails.imageUrl} alt="" class="w-3.5 h-3.5 rounded-xs object-cover border border-pink-200 flex-shrink-0" />
 																{:else}
 																	<ImageIcon class="w-3 h-3 text-pink-700 flex-shrink-0" strokeWidth={1.8} />
 																{/if}
@@ -3052,7 +3061,7 @@
 							<div class="w-1 h-6 bg-[#f43f8e] rounded-full flex-shrink-0"></div>
 							<div class="min-w-0 flex items-center space-x-1.5">
 								{#if replyingTo.isImage && replyingTo.imageUrl}
-									<img src={replyingTo.imageUrl} alt="Replying photo" class="w-6 h-6 rounded-md object-cover border border-pink-200 flex-shrink-0" />
+									<img src={replyingTo.imageUrl} alt="" class="w-6 h-6 rounded-md object-cover border border-pink-200 flex-shrink-0" />
 								{/if}
 								<div class="min-w-0">
 									{#if replyingTo.kind === 'note'}
@@ -3113,7 +3122,7 @@
 				{:else}
 					<form onsubmit={(e) => { e.preventDefault(); sendMessage(); }} class="p-2 sm:p-2.5 bg-white border-t border-pink-100 flex items-center space-x-2 w-full min-w-0 flex-shrink-0 sticky bottom-0 z-20">
 						<!-- Upload Photo Button -->
-						<label class="p-1.5 sm:p-2 text-[#f43f8e] hover:bg-pink-50 rounded-xl cursor-pointer transition-colors flex-shrink-0 active:scale-95" title="Attach Photo" onclick={() => { if (isSelectionMode) { isSelectionMode = false; selectedMessageIds = new Set(); } }}>
+						<label class="p-1.5 sm:p-2 text-[#f43f8e] hover:bg-pink-50 rounded-xl cursor-pointer transition-colors flex-shrink-0 active:scale-95" title="Attach Photo">
 							{#if isUploadingImage}
 								<div class="animate-spin w-5 h-5 border-2 border-pink-300 border-t-[#f43f8e] rounded-full"></div>
 							{:else}
@@ -3124,6 +3133,7 @@
 								accept="image/*"
 								multiple
 								bind:this={imageInput}
+								onclick={() => { if (isSelectionMode) { isSelectionMode = false; selectedMessageIds = new Set(); } }}
 								onchange={handleImageUpload}
 								disabled={isUploadingImage}
 								class="hidden"
@@ -3184,22 +3194,25 @@
 <!-- Clear Chat Confirmation Modal -->
 {#if showClearModal}
 	<div
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="clear-chat-title"
+		tabindex="-1"
+		onkeydown={(e) => { if (e.key === 'Escape') showClearModal = false; }}
 		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) showClearModal = false; }}
 	>
-		<div
-			class="bg-white border border-pink-100 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl animate-modal-content"
-			onclick={(e) => e.stopPropagation()}
-		>
+		<div class="bg-white border border-pink-100 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl animate-modal-content">
 			<div class="w-14 h-14 bg-rose-50 text-rose-500 rounded-2xl border border-rose-100 flex items-center justify-center mx-auto mb-3">
 				<Trash2 class="w-7 h-7" strokeWidth={2} />
 			</div>
-			<h3 class="text-lg font-black text-pink-950 mb-1.5">Clear Conversation?</h3>
+			<h3 id="clear-chat-title" class="text-lg font-black text-pink-950 mb-1.5">Clear Conversation?</h3>
 			<p class="text-xs sm:text-sm text-pink-700/80 mb-6 leading-relaxed">
 				Are you sure you want to clear all chat messages with <span class="font-bold text-pink-900">@{activeFriend?.username}</span>? This action cannot be undone.
 			</p>
 			<div class="flex space-x-3">
 				<button
+					type="button"
 					onclick={() => showClearModal = false}
 					disabled={isClearing}
 					class="flex-1 py-2.5 bg-pink-100 text-pink-700 rounded-2xl font-bold text-sm hover:bg-pink-200/80 active:scale-95 transition-all cursor-pointer"
@@ -3207,6 +3220,7 @@
 					Cancel
 				</button>
 				<button
+					type="button"
 					onclick={clearConversation}
 					disabled={isClearing}
 					class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-bold text-sm shadow-xs active:scale-95 transition-all flex items-center justify-center space-x-1 cursor-pointer"
@@ -3221,17 +3235,19 @@
 <!-- Block User Confirmation Modal -->
 {#if showBlockConfirmModal && blockModalTarget}
 	<div
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="block-user-title"
+		tabindex="-1"
+		onkeydown={(e) => { if (e.key === 'Escape') { showBlockConfirmModal = false; blockModalTarget = null; } }}
 		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) { showBlockConfirmModal = false; blockModalTarget = null; } }}
 	>
-		<div
-			class="bg-white border border-pink-100 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl animate-modal-content"
-			onclick={(e) => e.stopPropagation()}
-		>
+		<div class="bg-white border border-pink-100 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl animate-modal-content">
 			<div class="w-14 h-14 bg-rose-50 text-rose-500 rounded-2xl border border-rose-100 flex items-center justify-center mx-auto mb-3">
 				<Ban class="w-7 h-7" strokeWidth={1.8} />
 			</div>
-			<h3 class="text-lg font-black text-pink-950 mb-1.5">Block @{blockModalTarget.username}?</h3>
+			<h3 id="block-user-title" class="text-lg font-black text-pink-950 mb-1.5">Block @{blockModalTarget.username}?</h3>
 			<p class="text-xs sm:text-sm text-pink-700/80 mb-6 leading-relaxed bg-[#fdf2f6] p-3 rounded-2xl border border-pink-100">
 				Are you sure you want to block <strong class="text-pink-950">@{blockModalTarget.username}</strong>? You will no longer be able to message each other or view each other's profile details.
 			</p>
@@ -3317,6 +3333,8 @@
 
 		<!-- Main Image Preview & Controls -->
 		<div 
+			role="region"
+			aria-label="Image viewer gestures area"
 			class="flex-grow flex items-center justify-center relative w-full max-w-5xl mx-auto overflow-hidden my-auto py-2 touch-none select-none overscroll-none"
 			ontouchstart={handleViewerTouchStart}
 			ontouchmove={handleViewerTouchMove}
@@ -3337,14 +3355,15 @@
 			{/if}
 
 			<!-- Stationary Frame Container -->
+			<!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_no_static_element_interactions -->
 			<div 
+				role="region"
+				aria-label="Image preview interactive frame"
 				class="relative overflow-hidden rounded-3xl border border-pink-200 bg-white/60 max-h-[72vh] flex items-center justify-center select-none shadow-sm"
 				onmousedown={handleMouseDown}
 				onmousemove={handleMouseMove}
 				onmouseup={handleMouseUp}
 				onmouseleave={handleMouseUp}
-				role="button"
-				tabindex="0"
 			>
 				<img 
 					src={currentImg.url} 
@@ -3406,6 +3425,12 @@
 <!-- Custom Success / Alert Notification Modal -->
 {#if showNotificationModalPopup}
 	<div
+		role="alertdialog"
+		aria-modal="true"
+		aria-labelledby="chat-notification-title"
+		aria-describedby="chat-notification-desc"
+		tabindex="-1"
+		onkeydown={(e) => { if (e.key === 'Escape') showNotificationModalPopup = false; }}
 		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[100] flex items-center justify-center p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) showNotificationModalPopup = false; }}
 	>
@@ -3419,10 +3444,10 @@
 			</div>
 			
 			<div class="space-y-1">
-				<h3 class="text-base sm:text-lg font-black text-pink-950">
+				<h3 id="chat-notification-title" class="text-base sm:text-lg font-black text-pink-950">
 					{notificationModalType === 'error' ? 'Notice' : 'Success!'}
 				</h3>
-				<p class="text-xs sm:text-sm font-bold text-pink-700 leading-relaxed">
+				<p id="chat-notification-desc" class="text-xs sm:text-sm font-bold text-pink-700 leading-relaxed">
 					{notificationModalMessage}
 				</p>
 			</div>
@@ -3441,6 +3466,11 @@
 <!-- ═══ Note Write / Edit Modal ═══════════════════════════════ -->
 {#if showNoteModal}
 	<div
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="note-modal-title"
+		tabindex="-1"
+		onkeydown={(e) => { if (e.key === 'Escape') { showNoteModal = false; noteInput = ''; } }}
 		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) { showNoteModal = false; noteInput = ''; } }}
 	>
@@ -3457,11 +3487,13 @@
 						{/if}
 					</div>
 					<div>
-						<p class="font-bold text-pink-950 text-sm leading-tight">Your Note</p>
+						<p id="note-modal-title" class="font-bold text-pink-950 text-sm leading-tight">Your Note</p>
 						<p class="text-[10px] text-pink-500 font-medium">Visible to friends • expires in 24h</p>
 					</div>
 				</div>
 				<button
+					type="button"
+					aria-label="Close note modal"
 					onclick={() => { showNoteModal = false; noteInput = ''; }}
 					class="p-1.5 text-pink-400 hover:text-pink-700 hover:bg-pink-50 rounded-full transition-all cursor-pointer"
 				>
@@ -3513,6 +3545,7 @@
 			<div class="px-5 pb-5 flex gap-2.5">
 				{#if myNote}
 					<button
+						type="button"
 						onclick={deleteNote}
 						class="flex-shrink-0 px-4 py-2.5 border border-rose-200 text-rose-500 hover:bg-rose-50 rounded-2xl font-bold text-sm transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
 					>
@@ -3521,6 +3554,7 @@
 					</button>
 				{/if}
 				<button
+					type="button"
 					onclick={saveNote}
 					disabled={!noteInput.trim() || isSavingNote}
 					class="flex-grow py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-bold text-sm shadow-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
@@ -3540,6 +3574,11 @@
 <!-- ═══ Friend Note Viewer Popup ════════════════════════════════ -->
 {#if viewingNote}
 	<div
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="viewing-note-user"
+		tabindex="-1"
+		onkeydown={(e) => { if (e.key === 'Escape') viewingNote = null; }}
 		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[110] flex items-center justify-center p-5 animate-fade-in"
 		onclick={(e) => { if (e.target === e.currentTarget) viewingNote = null; }}
 	>
@@ -3554,13 +3593,15 @@
 					{/if}
 				</div>
 				<div class="flex-grow min-w-0">
-					<p class="font-bold text-pink-950 text-sm truncate">@{viewingNote.username}</p>
+					<p id="viewing-note-user" class="font-bold text-pink-950 text-sm truncate">@{viewingNote.username}</p>
 					<p class="text-[10px] text-[#f43f8e] font-medium flex items-center gap-1">
 						<MessageSquare class="w-3 h-3 text-[#f43f8e] shrink-0" strokeWidth={2.2} />
 						Note
 					</p>
 				</div>
 				<button
+					type="button"
+					aria-label="Close note viewer"
 					onclick={() => viewingNote = null}
 					class="p-1.5 text-pink-400 hover:text-pink-700 hover:bg-pink-50 rounded-full transition-all flex-shrink-0 cursor-pointer"
 				>
@@ -3685,7 +3726,7 @@
 		background: linear-gradient(180deg, #f472b6, #ec4899);
 		border-radius: 9999px;
 		border: 1.5px solid rgba(255, 255, 255, 0.7);
-		box-: 0 2px 6px rgba(236, 72, 153, 0.25);
+		box-shadow: 0 2px 6px rgba(236, 72, 153, 0.25);
 	}
 	:global(::-webkit-scrollbar-thumb:hover) {
 		background: linear-gradient(180deg, #ec4899, #db2777);
@@ -3721,6 +3762,7 @@
 	.line-clamp-2 {
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

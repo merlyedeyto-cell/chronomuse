@@ -573,6 +573,7 @@
 					{#if hoveredDate === day && hasMemories(day) && !isSelectionMode}
 						<div
 							class="pin-tooltip absolute bottom-full mb-2 p-1.5 bg-[#2a0618]/95 backdrop-blur-md text-white rounded-2xl whitespace-nowrap z-50 flex flex-col gap-1 shadow-[0_12px_32px_rgba(0,0,0,0.4)] border border-pink-400/30 animate-scale-in min-w-[130px] {index % 7 >= 5 ? 'right-0 translate-x-0' : (index % 7 <= 1 ? 'left-0 translate-x-0' : 'left-1/2 -translate-x-1/2')}"
+							role="tooltip"
 							onmouseenter={() => {
 								if (closeTimer) clearTimeout(closeTimer);
 							}}

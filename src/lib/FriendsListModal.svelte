@@ -7,7 +7,7 @@
 	const dispatch = createEventDispatcher();
 
 	let { open = false } = $props();
-	let isOpen = $state(open);
+	let isOpen = $state(false);
 	let isClosing = $state(false);
 	let friends = $state([]);
 	let isLoading = $state(true);
@@ -131,7 +131,11 @@
 	<div
 		class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 transition-opacity duration-300 flex items-center justify-center p-3 sm:p-4 animate-modal-backdrop font-sans"
 		class:opacity-0={isClosing}
-		onclick={handleClose}
+		onclick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
+		onkeydown={(e) => { if (e.key === 'Escape') handleClose(); }}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
 	>
 		<!-- Modal Content -->
 		<div
@@ -139,7 +143,6 @@
 			class:opacity-0={isClosing}
 			class:scale-95={isClosing}
 			class:transform={isClosing}
-			onclick={(e) => e.stopPropagation()}
 		>
 			<!-- Close Button -->
 			<button

@@ -125,8 +125,9 @@
 			<form onsubmit={handleSubmit} class="space-y-3.5">
 				<!-- Bio -->
 				<div>
-					<label class="block text-[11px] font-black text-[#f43f8e] mb-1">Bio / Status Quote</label>
+					<label for="edit-bio" class="block text-[11px] font-black text-[#f43f8e] mb-1">Bio / Status Quote</label>
 					<textarea
+						id="edit-bio"
 						bind:value={editBio}
 						rows="2"
 						placeholder="Share a short bio or status message..."
@@ -136,7 +137,7 @@
 
 				<!-- Birthday -->
 				<div>
-					<label class="block text-[11px] font-black text-[#f43f8e] mb-1">Birthday</label>
+					<span class="block text-[11px] font-black text-[#f43f8e] mb-1">Birthday</span>
 					<button
 						type="button"
 						onclick={openBirthdayModal}
@@ -149,7 +150,7 @@
 
 				<!-- Relationship Status -->
 				<div>
-					<label class="block text-[11px] font-black text-[#f43f8e] mb-1">Relationship Status</label>
+					<span class="block text-[11px] font-black text-[#f43f8e] mb-1">Relationship Status</span>
 					<button
 						type="button"
 						onclick={() => showRelationshipModal = true}
@@ -162,7 +163,7 @@
 
 				<!-- Gender -->
 				<div>
-					<label class="block text-[11px] font-black text-[#f43f8e] mb-1">Gender <span class="text-pink-400 font-bold">(Optional)</span></label>
+					<span class="block text-[11px] font-black text-[#f43f8e] mb-1">Gender <span class="text-pink-400 font-bold">(Optional)</span></span>
 					<button
 						type="button"
 						onclick={() => showGenderModal = true}
@@ -226,7 +227,7 @@
 			<div class="space-y-2.5">
 				<!-- Month Selection Grid -->
 				<div>
-					<label class="block text-[11px] font-bold text-[#f43f8e] mb-1">Month</label>
+					<span class="block text-[11px] font-bold text-[#f43f8e] mb-1">Month</span>
 					<div class="grid grid-cols-3 gap-1.5 max-h-32 overflow-y-auto p-0.5">
 						{#each monthsList as mName, idx}
 							<button
@@ -243,8 +244,9 @@
 				<!-- Day & Year Row -->
 				<div class="grid grid-cols-2 gap-2">
 					<div>
-						<label class="block text-[11px] font-bold text-[#f43f8e] mb-1">Day (1-{getDaysInMonth(tempMonth, tempYear)})</label>
+						<label for="edit-bday-day" class="block text-[11px] font-bold text-[#f43f8e] mb-1">Day (1-{getDaysInMonth(tempMonth, tempYear)})</label>
 						<input
+							id="edit-bday-day"
 							type="number"
 							min="1"
 							max={getDaysInMonth(tempMonth, tempYear)}
@@ -254,8 +256,9 @@
 					</div>
 
 					<div>
-						<label class="block text-[11px] font-bold text-[#f43f8e] mb-1">Year</label>
+						<label for="edit-bday-year" class="block text-[11px] font-bold text-[#f43f8e] mb-1">Year</label>
 						<input
+							id="edit-bday-year"
 							type="number"
 							min="1920"
 							max="2026"
