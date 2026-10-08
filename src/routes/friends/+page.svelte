@@ -8,15 +8,29 @@
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
 	import {
-		ArrowLeft, Users, UserPlus, Clock, Search, X, User,
-		MessageSquare, Trash2, Check, Plus, ChevronDown, AlertCircle
+		ArrowLeft, Users, UserPlus, Clock, Search, X, User, UserCircle,
+		MessageSquare, Trash2, Check, Plus, ChevronDown, AlertCircle,
+		Share2, Copy, Sparkles, UserCheck, Inbox, Send, ExternalLink
 	} from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let isLoading = $state(false);
 	let hasLoadedOnce = $state(false);
-	let activeTab = $state('friends'); // 'friends', 'add', 'pending'
+	let activeTab = $state('all'); // 'all', 'friends', 'discover'
+	let mobileTab = $state('friends'); // 'friends', 'discover', 'requests'
+	let pendingSubTab = $state('incoming'); // 'incoming', 'sent'
+	let copiedLink = $state(false);
 	let autoSyncInterval = null;
+
+	function copyMyProfileLink() {
+		if (!user || !user.id || typeof window === 'undefined') return;
+		const url = `${window.location.origin}/profile?id=${user.id}`;
+		navigator.clipboard.writeText(url);
+		copiedLink = true;
+		setTimeout(() => {
+			copiedLink = false;
+		}, 2500);
+	}
 
 	// Friends List State
 	let friends = $state([]);
@@ -58,8 +72,18 @@
 		if (storedUser) {
 			user = JSON.parse(storedUser);
 			const tabParam = $page.url.searchParams.get('tab');
-			if (tabParam && ['friends', 'add', 'pending', 'sent'].includes(tabParam)) {
-				activeTab = tabParam;
+			if (tabParam) {
+				if (['friends'].includes(tabParam)) {
+					activeTab = tabParam;
+					mobileTab = 'friends';
+				} else if (['add', 'discover'].includes(tabParam)) {
+					activeTab = 'add';
+					mobileTab = 'discover';
+				} else if (['pending', 'requests', 'sent'].includes(tabParam)) {
+					activeTab = 'pending';
+					mobileTab = 'requests';
+					if (tabParam === 'sent') pendingSubTab = 'sent';
+				}
 			}
 			loadAllData();
 		} else {
@@ -671,6 +695,15 @@
 		goto(`/chat?friend_id=${targetId}&username=${encodeURIComponent(friend.username)}`);
 	}
 
+	function formatLastActive(lastActivity) {
+		if (!lastActivity) return 'Offline';
+		const diff = (Date.now() - new Date(lastActivity).getTime()) / 1000;
+		if (diff < 120) return 'Active now';
+		if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+		if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+		return `${Math.floor(diff / 86400)}d ago`;
+	}
+
 	function formatDate(dateStr) {
 		if (!dateStr) return '';
 		const d = new Date(dateStr);
@@ -696,188 +729,283 @@
 	<AppHeader />
 
 	<!-- Main Content -->
-	<main class="flex-grow container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-24 sm:pb-28 max-w-6xl xl:max-w-7xl">
+	<main class="flex-grow container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-24 sm:pb-28 max-w-6xl">
 		<!-- Header Banner -->
-		<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 mb-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up">
-			<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-				<div>
-					<div class="flex items-center space-x-2 mb-0.5">
-						<button
-							onclick={() => goto('/dashboard')}
-							class="w-7 h-7 rounded-xl bg-pink-50 hover:bg-pink-100 text-[#f43f8e] border border-pink-100 flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-2xs"
-							title="Back to Dashboard"
-						>
-							<ArrowLeft class="w-3.5 h-3.5" strokeWidth={2.5} />
-						</button>
-						<h1 class="text-sm sm:text-base font-black text-[#f43f8e]">Friends & Network</h1>
+		<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 mb-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up">
+			<div class="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+				<div class="flex items-start sm:items-center space-x-3">
+					<button
+						onclick={() => goto('/dashboard')}
+						class="w-8 h-8 rounded-xl bg-pink-50 hover:bg-pink-100 text-[#f43f8e] border border-pink-100 flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-2xs flex-shrink-0 mt-0.5 sm:mt-0"
+						title="Back to Dashboard"
+					>
+						<ArrowLeft class="w-4 h-4" strokeWidth={2.5} />
+					</button>
+					<div>
+						<div class="flex items-center space-x-2">
+							<h1 class="text-base sm:text-lg font-black text-pink-950">Friends & Network</h1>
+							<span class="px-2 py-0.5 rounded-full bg-pink-50 text-[#f43f8e] border border-pink-100 text-[10px] font-black uppercase tracking-wider">
+								Community
+							</span>
+						</div>
+						<p class="text-xs text-pink-400 font-semibold mt-0.5">Manage connections, discover friends, and sync moments</p>
 					</div>
-					<p class="text-[11px] text-pink-400 font-bold ml-9">Manage connections, discover people, and handle requests</p>
 				</div>
 
-				<!-- Navigation Tabs -->
-				<div class="w-full lg:w-auto grid grid-cols-3 sm:flex items-center gap-1 bg-[#fdf2f6] p-1 rounded-2xl border border-pink-100 shadow-2xs">
-					<button
-						onclick={() => activeTab = 'friends'}
-						class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center cursor-pointer {activeTab === 'friends' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-[#f43f8e] hover:bg-white/70'}"
-					>
-						<Users class="w-3.5 h-3.5 flex-shrink-0" />
-						<span class="truncate">Friends ({friends.length})</span>
-					</button>
+				<!-- Header Quick Stats & Action -->
+				<div class="flex items-center flex-wrap gap-2">
+					{#if pendingRequests.length > 0}
+						<div class="flex items-center space-x-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl text-xs font-bold text-rose-600 animate-pulse shadow-2xs">
+							<Clock class="w-3.5 h-3.5" />
+							<span>{pendingRequests.length} New {pendingRequests.length === 1 ? 'Request' : 'Requests'}</span>
+						</div>
+					{/if}
 
 					<button
-						onclick={() => activeTab = 'add'}
-						class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 active:scale-95 text-center cursor-pointer {activeTab === 'add' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-[#f43f8e] hover:bg-white/70'}"
+						onclick={copyMyProfileLink}
+						class="flex lg:hidden items-center space-x-1.5 px-3 py-1.5 bg-pink-50 hover:bg-pink-100 border border-pink-200 text-[#f43f8e] rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-2xs"
+						title="Copy Profile Link"
 					>
-						<UserPlus class="w-3.5 h-3.5 flex-shrink-0" />
-						<span class="truncate">Add Friend</span>
-					</button>
-
-					<button
-						onclick={() => activeTab = 'pending'}
-						class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center space-x-1 relative active:scale-95 text-center cursor-pointer {activeTab === 'pending' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-[#f43f8e] hover:bg-white/70'}"
-					>
-						<Clock class="w-3.5 h-3.5 flex-shrink-0" />
-						<span class="truncate">Pending ({totalPendingCount})</span>
-						{#if totalPendingCount > 0}
-							<span class="w-2 h-2 rounded-full bg-rose-500 animate-ping absolute top-1 right-1"></span>
+						{#if copiedLink}
+							<Check class="w-3.5 h-3.5 text-emerald-600" strokeWidth={2.5} />
+							<span class="text-emerald-700 font-black">Copied Link!</span>
+						{:else}
+							<Share2 class="w-3.5 h-3.5" />
+							<span>Share Profile</span>
 						{/if}
 					</button>
 				</div>
 			</div>
 		</div>
 
-		<!-- Tab 1: My Friends List -->
-		{#if activeTab === 'friends'}
-			<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 animate-fade-in shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
-				<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4">
-					<div class="flex items-center space-x-2">
-						<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-							<Users class="w-3.5 h-3.5" />
-						</div>
-						<h2 class="text-xs sm:text-sm font-black text-pink-950">
-							All Friends ({filteredFriends().length})
-						</h2>
-					</div>
+		<!-- Mobile-Only Segmented Tabs (Visible on mobile/tablet < lg) -->
+		<div class="block lg:hidden mb-4 bg-white border border-pink-100/90 p-1.5 rounded-2xl shadow-[0_4px_16px_rgba(244,114,182,0.06)] animate-fade-in">
+			<div class="grid grid-cols-3 gap-1.5">
+				<button
+					type="button"
+					onclick={() => mobileTab = 'friends'}
+					class="py-2.5 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer {mobileTab === 'friends' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:bg-pink-50'}"
+				>
+					<Users class="w-3.5 h-3.5" />
+					<span>Friends</span>
+					<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold {mobileTab === 'friends' ? 'bg-white/20 text-white' : 'bg-[#fdf2f6] text-[#f43f8e] border border-pink-100'}">
+						{friends.length}
+					</span>
+				</button>
 
-					<!-- Search Friends (Full-width on mobile, flexible & generous on desktop, never truncated) -->
-					<div class="relative w-full sm:w-80 md:w-96 flex-shrink-0 min-w-0">
-						<input
-							type="text"
-							bind:value={friendsSearchQuery}
-							placeholder="Search friends by name..."
-							class="w-full pl-9 pr-9 py-2.5 bg-[#fdf2f6] border border-pink-200/90 rounded-2xl text-xs font-bold text-pink-950 placeholder-pink-400/70 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/25 focus:border-[#f43f8e] transition-all duration-200 focus:bg-white shadow-2xs"
-						/>
-						<Search class="w-4 h-4 text-pink-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" strokeWidth={2.5} />
-						{#if friendsSearchQuery}
-							<button
-								type="button"
-								onclick={() => friendsSearchQuery = ''}
-								class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-pink-400 hover:text-pink-600 rounded-full cursor-pointer transition-colors"
-								title="Clear search"
-							>
-								<X class="w-3.5 h-3.5" />
-							</button>
-						{/if}
-					</div>
-				</div>
+				<button
+					type="button"
+					onclick={() => mobileTab = 'discover'}
+					class="py-2.5 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer {mobileTab === 'discover' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:bg-pink-50'}"
+				>
+					<UserPlus class="w-3.5 h-3.5" />
+					<span>Discover</span>
+				</button>
 
-				{#if isFetchingFriends && friends.length === 0}
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 animate-pulse">
-						{#each Array(4) as _}
-							<div class="p-2.5 bg-[#fdf2f6]/60 border border-pink-100/80 rounded-2xl flex items-center justify-between gap-2 shadow-2xs">
-								<div class="flex items-center space-x-2.5 min-w-0 flex-1">
-									<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-pink-200/70 flex-shrink-0"></div>
-									<div class="space-y-1.5 flex-1">
-										<div class="h-3.5 bg-pink-200/70 rounded w-2/3"></div>
-										<div class="h-2.5 bg-pink-200/50 rounded w-1/3"></div>
-									</div>
-								</div>
-								<div class="h-7 w-16 bg-pink-100/80 rounded-xl flex-shrink-0"></div>
-							</div>
-						{/each}
-					</div>
-				{:else if filteredFriends().length > 0}
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-						{#each filteredFriends() as friend (friend.friend_id || friend.friendship_id || friend.id)}
-							<div
-								class="p-2.5 bg-[#fdf2f6]/60 hover:bg-[#fff5f8] border border-pink-100 hover:border-pink-200 rounded-2xl flex items-center justify-between gap-2 transition-all duration-200 shadow-2xs hover:shadow-xs"
-							>
-								<a
-									href="/profile?id={friend.friend_id || friend.id}"
-									class="flex items-center space-x-2.5 min-w-0 hover:opacity-85 transition-opacity group cursor-pointer"
-									title="View @{friend.username}'s Profile"
-								>
-									<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-pink-200 shadow-2xs overflow-hidden bg-pink-100 text-[#f43f8e] font-black text-xs flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-										{#if friend.avatar_url}
-											<img src={friend.avatar_url} alt={friend.username} class="w-full h-full object-cover" />
-										{:else}
-											{friend.username.charAt(0).toUpperCase()}
-										{/if}
-									</div>
-									<div class="min-w-0">
-										<h3 class="text-xs sm:text-sm font-black text-pink-950 truncate group-hover:text-[#f43f8e] transition-colors flex items-center gap-1">
-											<span>@{friend.username}</span>
-										</h3>
-										<p class="text-[10px] text-pink-400 font-semibold">Friend since {formatDate(friend.created_at)}</p>
-									</div>
-								</a>
-
-								<div class="flex items-center space-x-1.5 flex-shrink-0 ml-1">
-									<button
-										onclick={() => goto(`/profile?id=${friend.friend_id || friend.id}`)}
-										class="px-2.5 py-1 bg-white border border-pink-200 text-pink-700 hover:text-[#f43f8e] hover:border-pink-300 hover:bg-pink-50/50 active:scale-95 rounded-xl transition-all duration-200 flex items-center space-x-1 text-xs font-bold cursor-pointer shadow-2xs"
-										title="View Profile"
-									>
-										<User class="w-3 h-3 text-[#f43f8e]" />
-										<span class="hidden sm:inline">Profile</span>
-									</button>
-
-									<button
-										onclick={() => openChatWithFriend(friend)}
-										class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white active:scale-95 rounded-xl transition-all duration-200 flex items-center space-x-1 text-xs font-bold shadow-xs cursor-pointer"
-										title="Open Chat"
-									>
-										<MessageSquare class="w-3 h-3" />
-										<span class="hidden sm:inline">Chat</span>
-									</button>
-
-									<button
-										onclick={() => handleRemoveFriend(friend)}
-										class="p-1 bg-white text-pink-400 hover:text-rose-600 hover:bg-rose-50 border border-pink-100 hover:border-rose-200 active:scale-95 rounded-xl transition-all duration-200 cursor-pointer shadow-2xs"
-										title="Remove Friend"
-									>
-										<Trash2 class="w-3.5 h-3.5" />
-									</button>
-								</div>
-							</div>
-						{/each}
-					</div>
-				{:else}
-					<div class="text-center py-10 bg-[#fdf2f6]/40 rounded-2xl border border-dashed border-pink-200 animate-pop-in">
-						<div class="w-10 h-10 bg-pink-100 text-[#f43f8e] rounded-full flex items-center justify-center mx-auto mb-2 shadow-2xs">
-							<Users class="w-5 h-5" />
-						</div>
-						<p class="text-xs font-black text-pink-950">No friends found</p>
-						<p class="text-[11px] text-pink-400 font-medium mt-0.5">Use the "Add Friend" tab to discover and connect with people!</p>
-					</div>
-				{/if}
+				<button
+					type="button"
+					onclick={() => mobileTab = 'requests'}
+					class="relative py-2.5 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer {mobileTab === 'requests' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:bg-pink-50'}"
+				>
+					<Clock class="w-3.5 h-3.5" />
+					<span>Requests</span>
+					{#if pendingRequests.length > 0}
+						<span class="text-[9px] px-1.5 py-0.2 rounded-full font-black {mobileTab === 'requests' ? 'bg-white text-[#f43f8e]' : 'bg-rose-500 text-white animate-pulse'}">
+							{pendingRequests.length}
+						</span>
+					{/if}
+				</button>
 			</div>
-		{/if}
+		</div>
 
-		<!-- Tab 2: Search & Add Friend -->
-		{#if activeTab === 'add'}
-			<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 max-w-lg mx-auto animate-pop-in shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
-				<div class="text-center mb-4">
-					<div class="w-10 h-10 bg-pink-50 border border-pink-100 text-[#f43f8e] rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-2xs">
-						<UserPlus class="w-5 h-5" />
+		<!-- 2-Column Split Layout Grid -->
+		<div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+			
+			<!-- LEFT COLUMN (Span 8): Friends List + Discover People -->
+			<div class="lg:col-span-8 space-y-5 {mobileTab === 'requests' ? 'hidden lg:block' : 'block'}">
+				
+				<!-- Section 1: My Friends Card -->
+				<div class="{mobileTab === 'friends' ? 'block' : 'hidden'} lg:block bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
+					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-pink-100/80">
+						<div class="flex items-center space-x-2.5">
+							<div class="w-7 h-7 rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
+								<Users class="w-4 h-4" />
+							</div>
+							<div>
+								<h2 class="text-sm font-black text-pink-950 flex items-center gap-1.5">
+									<span>All Friends</span>
+									<span class="text-xs px-2 py-0.2 bg-[#fdf2f6] text-[#f43f8e] rounded-full border border-pink-100 font-bold">
+										{filteredFriends().length}
+									</span>
+								</h2>
+							</div>
+						</div>
+
+						<!-- Search Friends Bar -->
+						<div class="relative w-full sm:w-72 flex-shrink-0">
+							<input
+								type="text"
+								bind:value={friendsSearchQuery}
+								placeholder="Search friends by name..."
+								class="w-full pl-8 pr-8 py-2 bg-[#fdf2f6] border border-pink-200/90 rounded-xl text-xs font-bold text-pink-950 placeholder-pink-400/70 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/25 focus:border-[#f43f8e] transition-all duration-200 focus:bg-white shadow-2xs"
+							/>
+							<Search class="w-3.5 h-3.5 text-pink-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" strokeWidth={2.5} />
+							{#if friendsSearchQuery}
+								<button
+									type="button"
+									onclick={() => friendsSearchQuery = ''}
+									class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-pink-400 hover:text-pink-600 rounded-full cursor-pointer transition-colors"
+									title="Clear search"
+								>
+									<X class="w-3.5 h-3.5" />
+								</button>
+							{/if}
+						</div>
 					</div>
-					<h2 class="text-sm sm:text-base font-black text-[#f43f8e]">Find & Add Friends</h2>
-					<p class="text-[11px] text-pink-400 font-bold mt-0.5">Search for usernames and check their profiles before sending a request</p>
+
+					<!-- Friends List Render -->
+					{#if isFetchingFriends && friends.length === 0}
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-pulse">
+							{#each Array(4) as _}
+								<div class="p-3 bg-[#fdf2f6]/60 border border-pink-100/80 rounded-2xl flex items-center justify-between gap-2">
+									<div class="flex items-center space-x-2.5 min-w-0 flex-1">
+										<div class="w-10 h-10 rounded-full bg-pink-200/70 flex-shrink-0"></div>
+										<div class="space-y-1.5 flex-1">
+											<div class="h-3.5 bg-pink-200/70 rounded w-2/3"></div>
+											<div class="h-2.5 bg-pink-200/50 rounded w-1/3"></div>
+										</div>
+									</div>
+									<div class="h-7 w-16 bg-pink-100/80 rounded-xl flex-shrink-0"></div>
+								</div>
+							{/each}
+						</div>
+					{:else if filteredFriends().length > 0}
+						<div class="max-h-[640px] overflow-y-auto pr-1">
+							<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-2.5">
+								{#each filteredFriends() as friend (friend.friend_id || friend.friendship_id || friend.id)}
+									<div class="bg-[#fcdde9] hover:bg-[#f8cadc] rounded-2xl p-2 transition-all duration-300 flex flex-col justify-between group relative border-0">
+										<!-- Top Photo Container with floating Remove action -->
+										<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-b from-white to-pink-50 mb-1.5 flex items-center justify-center">
+											{#if friend.avatar_url}
+												<img
+													src={friend.avatar_url}
+													alt={friend.username}
+													class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+												/>
+											{:else}
+												<div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-tr from-pink-200 via-rose-100 to-pink-300 text-[#f43f8e]">
+													<span class="text-xl sm:text-2xl font-black opacity-80">{friend.username?.charAt(0).toUpperCase()}</span>
+												</div>
+											{/if}
+
+											<!-- Status Badge on Photo -->
+											<div class="absolute top-1 right-1 px-1.5 py-0.2 rounded-full bg-black/45 backdrop-blur-md text-white text-[8px] font-bold flex items-center space-x-1 shadow-xs">
+												<span class="w-1 h-1 rounded-full {formatLastActive(friend.last_activity) === 'Active now' || formatLastActive(friend.last_activity) === 'Active just now' ? 'bg-[#10b981] animate-pulse' : 'bg-white/60'}"></span>
+												<span>{formatLastActive(friend.last_activity)}</span>
+											</div>
+
+											<!-- Subtle Remove Friend Button (top-left) -->
+											<button
+												type="button"
+												onclick={() => handleRemoveFriend(friend)}
+												class="absolute top-1 left-1 p-1 bg-black/40 hover:bg-rose-600 text-white backdrop-blur-md rounded-lg transition-all duration-200 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100"
+												title={`Remove @${friend.username}`}
+											>
+												<Trash2 class="w-2.5 h-2.5" strokeWidth={2.2} />
+											</button>
+										</div>
+
+										<!-- Name & Bio / Description -->
+										<div class="space-y-0.5 mb-1 px-0.5">
+											<h4 class="text-xs font-black text-pink-950 truncate group-hover:text-[#f43f8e] transition-colors">
+												@{friend.username}
+											</h4>
+											<p class="text-[9.5px] sm:text-[10px] text-pink-600/80 font-medium truncate leading-tight">
+												{friend.bio || friend.email || 'ChronoMuse Friend'}
+											</p>
+										</div>
+
+										<!-- Bottom Action Bar (Pure Icons Only, Borderless) -->
+										<div class="flex items-center justify-end pt-1 mt-auto gap-2">
+											<button
+												type="button"
+												onclick={() => goto(`/profile?id=${friend.friend_id || friend.id}`)}
+												class="p-1 text-pink-500 hover:text-[#f43f8e] transition-colors active:scale-90 flex items-center justify-center cursor-pointer"
+												title="View @{friend.username}'s Profile"
+											>
+												<UserCircle class="w-4 h-4" strokeWidth={2} />
+											</button>
+
+											<button
+												type="button"
+												onclick={() => openChatWithFriend(friend)}
+												class="p-1 text-[#f43f8e] hover:text-[#e0337f] transition-colors active:scale-90 flex items-center justify-center cursor-pointer"
+												title="Chat with @{friend.username}"
+											>
+												<MessageSquare class="w-4 h-4" strokeWidth={2} />
+											</button>
+										</div>
+									</div>
+								{/each}
+							</div>
+						</div>
+					{:else if friendsSearchQuery}
+						<div class="text-center py-8 bg-[#fdf2f6]/40 rounded-2xl border border-dashed border-pink-200">
+							<Search class="w-6 h-6 text-pink-300 mx-auto mb-1.5" />
+							<p class="text-xs font-bold text-pink-950">No friends found matching "{friendsSearchQuery}"</p>
+							<button
+								onclick={() => friendsSearchQuery = ''}
+								class="text-[11px] text-[#f43f8e] font-bold hover:underline mt-1 cursor-pointer"
+							>
+								Clear filter
+							</button>
+						</div>
+					{:else}
+						<!-- Clean & Engaging Empty State -->
+						<div class="text-center py-6 px-4 bg-gradient-to-b from-[#fdf2f6]/80 to-pink-50/40 rounded-2xl border border-pink-100/90">
+							<div class="w-12 h-12 bg-white text-[#f43f8e] rounded-2xl border border-pink-100 flex items-center justify-center mx-auto mb-2.5 shadow-2xs">
+								<Sparkles class="w-6 h-6 text-[#f43f8e]" />
+							</div>
+							<h3 class="text-xs sm:text-sm font-black text-pink-950">No friends added yet</h3>
+							<p class="text-[11px] text-pink-400 font-medium max-w-sm mx-auto mt-0.5">
+								Discover friends and creators below to share calendars, memories, and mood updates!
+							</p>
+							<div class="mt-3 block lg:hidden">
+								<button
+									type="button"
+									onclick={() => mobileTab = 'discover'}
+									class="px-3 py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-black rounded-xl active:scale-95 transition-all shadow-xs inline-flex items-center space-x-1 cursor-pointer"
+								>
+									<UserPlus class="w-3.5 h-3.5" />
+									<span>Discover People</span>
+								</button>
+							</div>
+						</div>
+					{/if}
 				</div>
 
-				<!-- Search Form -->
-				<form onsubmit={handleAddFriendSubmit} class="space-y-2.5 mb-4">
-					{#if addFriendError}
+				<!-- Section 2: Discover & Search People Card -->
+				<div class="{mobileTab === 'discover' ? 'block' : 'hidden'} lg:block bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
+					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-pink-100/80">
+						<div class="flex items-center space-x-2.5">
+							<div class="w-7 h-7 rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
+								<UserPlus class="w-4 h-4" />
+							</div>
+							<div>
+								<h2 class="text-sm font-black text-pink-950 flex items-center gap-1.5">
+									<span>Discover People</span>
+									<span class="text-[10px] px-2 py-0.2 bg-pink-50 text-[#f43f8e] rounded-full font-bold border border-pink-100">
+										Connect
+									</span>
+								</h2>
+								<p class="text-[11px] text-pink-400 font-semibold">Search by username or connect with suggested members</p>
+							</div>
+						</div>
+					</div>
+
+					<!-- Search Form -->
+					<form onsubmit={handleAddFriendSubmit} class="space-y-2.5 mb-4">
+						{#if addFriendError}
 						<div class="p-2.5 bg-rose-50 border border-rose-200 text-rose-600 text-xs rounded-xl font-bold text-center animate-fade-in shadow-2xs">
 							{addFriendError}
 						</div>
@@ -1183,119 +1311,174 @@
 					{/if}
 				</div>
 			</div>
-		{/if}
+		</div>
 
-		<!-- Tab 3: Pending Requests (Left Card & Right Card) -->
-		{#if activeTab === 'pending'}
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 animate-pop-in">
-				<!-- Left Card: Incoming Requests -->
-				<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 flex flex-col justify-between shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
-					<div>
-						<h2 class="text-xs sm:text-sm font-black text-pink-950 mb-3 flex flex-wrap items-center justify-between gap-1.5">
-							<span class="truncate">Incoming Requests ({pendingRequests.length})</span>
-							<span class="text-[9px] bg-pink-50 text-[#f43f8e] border border-pink-100 px-2 py-0.5 rounded-full font-bold whitespace-nowrap flex-shrink-0 shadow-2xs">Action Required</span>
-						</h2>
+		<!-- RIGHT COLUMN (Span 4): Requests & Community Actions Sidebar -->
+		<div class="lg:col-span-4 space-y-5 lg:sticky lg:top-20 {mobileTab === 'requests' ? 'block' : 'hidden lg:block'}">
+				
+				<!-- Card 1: Friend Requests Widget (Incoming & Sent) -->
+				<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
+					<div class="flex items-center justify-between mb-3.5 pb-3 border-b border-pink-100/80">
+						<div class="flex items-center space-x-2">
+							<div class="w-7 h-7 rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
+								<Clock class="w-3.5 h-3.5" />
+							</div>
+							<h3 class="text-xs sm:text-sm font-black text-pink-950">
+								Requests
+							</h3>
+						</div>
 
+						<!-- Subtabs: Received vs Sent Segmented Switch -->
+						<div class="flex items-center bg-[#fdf2f6] p-1 rounded-xl border border-pink-200/70 text-xs font-black shadow-2xs">
+							<button
+								type="button"
+								onclick={() => pendingSubTab = 'incoming'}
+								class="px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1.5 cursor-pointer {pendingSubTab === 'incoming' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-pink-950 hover:bg-white/60'}"
+							>
+								<span>Received</span>
+								<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold {pendingSubTab === 'incoming' ? 'bg-white/25 text-white' : 'bg-pink-100 text-[#f43f8e]'}">
+									{pendingRequests.length}
+								</span>
+							</button>
+
+							<button
+								type="button"
+								onclick={() => pendingSubTab = 'sent'}
+								class="px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1.5 cursor-pointer {pendingSubTab === 'sent' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-pink-950 hover:bg-white/60'}"
+							>
+								<span>Sent</span>
+								<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold {pendingSubTab === 'sent' ? 'bg-white/25 text-white' : 'bg-pink-100 text-[#f43f8e]'}">
+									{sentRequests.length}
+								</span>
+							</button>
+						</div>
+					</div>
+
+					<!-- Incoming Requests Tab -->
+					{#if pendingSubTab === 'incoming'}
 						{#if pendingRequests.length > 0}
-							<div class="space-y-2">
+							<div class="space-y-2 max-h-80 overflow-y-auto pr-1">
 								{#each pendingRequests as req, idx (req.id || req.request_id || idx)}
-									<div class="p-2.5 bg-[#fdf2f6]/60 border border-pink-100 hover:border-pink-200 rounded-2xl flex items-center justify-between gap-2 transition-all duration-200 shadow-2xs">
+									<div class="p-2.5 bg-[#fdf2f6]/70 border border-pink-100 rounded-2xl flex items-center justify-between gap-2 shadow-2xs">
 										<a
 											href="/profile?id={req.sender_id || req.id}"
-											class="flex items-center space-x-2 min-w-0 hover:opacity-85 transition-opacity group cursor-pointer"
+											class="flex items-center space-x-2 min-w-0 hover:opacity-85 transition-opacity group cursor-pointer flex-1"
 											title="View @{req.username}'s Profile"
 										>
-											<div class="w-9 h-9 rounded-full border border-pink-200 shadow-2xs overflow-hidden bg-pink-100 text-[#f43f8e] font-black flex items-center justify-center flex-shrink-0 text-xs group-hover:scale-105 transition-transform">
+											<div class="w-8 h-8 rounded-full border border-pink-200 overflow-hidden bg-pink-100 text-[#f43f8e] font-black flex items-center justify-center flex-shrink-0 text-xs">
 												{#if req.avatar_url}
 													<img src={req.avatar_url} alt={req.username} class="w-full h-full object-cover" />
 												{:else}
 													{(req.username || 'U').charAt(0).toUpperCase()}
 												{/if}
 											</div>
-											<div class="min-w-0">
-												<p class="text-xs font-black text-pink-950 truncate group-hover:text-[#f43f8e] transition-colors">@{req.username || 'Unknown'}</p>
-												<p class="text-[10px] text-pink-400 font-medium">Sent on {formatDate(req.created_at)}</p>
+											<div class="min-w-0 flex-1">
+												<p class="text-xs font-black text-pink-950 truncate group-hover:text-[#f43f8e]">@{req.username || 'Unknown'}</p>
+												<p class="text-[9px] text-pink-400 font-semibold">{formatDate(req.created_at)}</p>
 											</div>
 										</a>
 
-										<div class="flex items-center space-x-1.5 flex-shrink-0">
+										<div class="flex items-center space-x-1 flex-shrink-0">
 											<button
 												onclick={() => handleRespondRequest(req.id || req.request_id, 'accept')}
 												disabled={isResponding}
-												class="px-2.5 py-1 bg-[#f43f8e] text-white text-xs font-bold rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
+												class="px-2 py-1 bg-[#f43f8e] text-white text-[11px] font-bold rounded-lg hover:bg-[#e0337f] active:scale-95 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
 											>
 												Accept
 											</button>
 											<button
 												onclick={() => handleRespondRequest(req.id || req.request_id, 'decline')}
 												disabled={isResponding}
-												class="px-2 py-1 bg-pink-50 text-pink-700 hover:bg-pink-100 border border-pink-100 active:scale-95 text-xs font-bold rounded-xl transition-all cursor-pointer disabled:opacity-50"
+												class="p-1 bg-white text-pink-400 hover:text-rose-600 hover:bg-rose-50 border border-pink-100 rounded-lg active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+												title="Decline Request"
 											>
-												Decline
+												<X class="w-3 h-3" />
 											</button>
 										</div>
 									</div>
 								{/each}
 							</div>
 						{:else}
-							<div class="text-center py-8 bg-pink-50/20 rounded-2xl border border-pink-100">
-								<p class="text-xs font-bold text-pink-400">No incoming friend requests right now.</p>
+							<div class="min-h-[175px] flex flex-col items-center justify-center text-center py-7 px-4 bg-gradient-to-b from-[#fdf2f6]/80 to-pink-50/40 rounded-2xl border border-pink-100/90 animate-fade-in">
+								<div class="w-11 h-11 bg-white text-[#f43f8e] rounded-2xl border border-pink-100 flex items-center justify-center mx-auto mb-2 shadow-2xs">
+									<Inbox class="w-5 h-5 text-[#f43f8e]" />
+								</div>
+								<h4 class="text-xs sm:text-sm font-black text-pink-950 mb-0.5">No incoming requests</h4>
+								<p class="text-[11px] text-pink-400 font-medium">You're all caught up!</p>
 							</div>
 						{/if}
-					</div>
-				</div>
-
-				<!-- Right Card: Sent Pending Requests -->
-				<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 flex flex-col justify-between shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
-					<div>
-						<h2 class="text-xs sm:text-sm font-black text-pink-950 mb-3 flex flex-wrap items-center justify-between gap-1.5">
-							<span class="truncate">Sent Pending Requests ({sentRequests.length})</span>
-							<span class="text-[9px] bg-pink-50 text-pink-600 border border-pink-100 px-2 py-0.5 rounded-full font-bold whitespace-nowrap flex-shrink-0 shadow-2xs">Waiting</span>
-						</h2>
-
+					{:else}
+						<!-- Sent Requests Tab -->
 						{#if sentRequests.length > 0}
-							<div class="space-y-2">
+							<div class="space-y-2 max-h-80 overflow-y-auto pr-1">
 								{#each sentRequests as req, idx (req.id || req.request_id || idx)}
-									<div class="p-2.5 bg-[#fdf2f6]/60 border border-pink-100 hover:border-pink-200 rounded-2xl flex items-center justify-between gap-2 transition-all duration-200 shadow-2xs">
+									<div class="p-2.5 bg-[#fdf2f6]/70 border border-pink-100 rounded-2xl flex items-center justify-between gap-2 shadow-2xs">
 										<a
 											href="/profile?id={req.receiver_id || req.id}"
-											class="flex items-center space-x-2 min-w-0 hover:opacity-85 transition-opacity group cursor-pointer"
+											class="flex items-center space-x-2 min-w-0 hover:opacity-85 transition-opacity group cursor-pointer flex-1"
 											title="View @{req.username}'s Profile"
 										>
-											<div class="w-9 h-9 rounded-full border border-pink-200 shadow-2xs overflow-hidden bg-pink-100 text-pink-700 font-black flex items-center justify-center flex-shrink-0 text-xs group-hover:scale-105 transition-transform">
+											<div class="w-8 h-8 rounded-full border border-pink-200 overflow-hidden bg-pink-100 text-pink-700 font-black flex items-center justify-center flex-shrink-0 text-xs">
 												{#if req.avatar_url}
 													<img src={req.avatar_url} alt={req.username} class="w-full h-full object-cover" />
 												{:else}
 													{(req.username || 'U').charAt(0).toUpperCase()}
 												{/if}
 											</div>
-											<div class="min-w-0">
-												<p class="text-xs font-black text-pink-950 truncate group-hover:text-[#f43f8e] transition-colors">@{req.username || 'Unknown'}</p>
-												<p class="text-[10px] text-pink-400 font-medium">Sent on {formatDate(req.created_at)}</p>
+											<div class="min-w-0 flex-1">
+												<p class="text-xs font-black text-pink-950 truncate group-hover:text-[#f43f8e]">@{req.username || 'Unknown'}</p>
+												<p class="text-[9px] text-pink-400 font-semibold">{formatDate(req.created_at)}</p>
 											</div>
 										</a>
 
-										<div class="flex items-center space-x-1.5 flex-shrink-0">
-											<button
-												onclick={() => handleCancelSentRequest(req.id || req.request_id)}
-												disabled={isResponding}
-												class="px-2.5 py-1 bg-amber-50 hover:bg-rose-50 border border-amber-200 hover:border-rose-200 text-amber-800 hover:text-rose-600 active:scale-95 text-xs font-bold rounded-xl transition-all flex-shrink-0 cursor-pointer disabled:opacity-50"
-											>
-												Cancel Add
-											</button>
-										</div>
+										<button
+											onclick={() => handleCancelSentRequest(req.id || req.request_id)}
+											disabled={isResponding}
+											class="px-2 py-1 bg-amber-50 hover:bg-rose-50 border border-amber-200 hover:border-rose-200 text-amber-800 hover:text-rose-600 text-[10px] font-bold rounded-lg active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+										>
+											Cancel
+										</button>
 									</div>
 								{/each}
 							</div>
 						{:else}
-							<div class="text-center py-8 bg-pink-50/20 rounded-2xl border border-pink-100">
-								<p class="text-xs font-bold text-pink-400">No sent pending requests.</p>
+							<div class="min-h-[175px] flex flex-col items-center justify-center text-center py-7 px-4 bg-gradient-to-b from-[#fdf2f6]/80 to-pink-50/40 rounded-2xl border border-pink-100/90 animate-fade-in">
+								<div class="w-11 h-11 bg-white text-[#f43f8e] rounded-2xl border border-pink-100 flex items-center justify-center mx-auto mb-2 shadow-2xs">
+									<Send class="w-5 h-5 text-[#f43f8e]" />
+								</div>
+								<h4 class="text-xs sm:text-sm font-black text-pink-950 mb-0.5">No sent requests</h4>
+								<p class="text-[11px] text-pink-400 font-medium">All sent requests have been answered.</p>
 							</div>
 						{/if}
+					{/if}
+				</div>
+
+				<!-- Card 2: Share Profile & Invite Card (Desktop only) -->
+				<div class="hidden lg:block bg-gradient-to-br from-pink-50 via-white to-[#fdf2f6] border border-pink-200/80 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
+					<div class="flex items-center space-x-2.5 mb-2.5">
+						<div class="w-7 h-7 rounded-xl bg-[#f43f8e] text-white flex items-center justify-center shadow-xs">
+							<Share2 class="w-3.5 h-3.5" />
+						</div>
+						<h3 class="text-xs sm:text-sm font-black text-pink-950">Invite Friends</h3>
 					</div>
+					<p class="text-xs text-pink-700 font-semibold mb-3 leading-relaxed">
+						Share your personal profile link so friends can easily find and connect with you!
+					</p>
+					<button
+						onclick={copyMyProfileLink}
+						class="w-full py-2.5 px-3 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center space-x-1.5 cursor-pointer shadow-xs"
+					>
+						{#if copiedLink}
+							<Check class="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+							<span class="font-black">Link Copied to Clipboard!</span>
+						{:else}
+							<Copy class="w-3.5 h-3.5" />
+							<span>Copy Profile Link</span>
+						{/if}
+					</button>
 				</div>
 			</div>
-		{/if}
+		</div>
 	</main>
 
 	<!-- Confirmation Modal for Removing Friend -->

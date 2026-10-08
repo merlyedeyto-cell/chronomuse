@@ -95,7 +95,7 @@ export async function POST({ request }) {
 		if (targetFriendIds.length > 0) {
 			const { data: friendUsers } = await supabase
 				.from('chronomuse_users')
-				.select('id, username, email, avatar_url, last_activity')
+				.select('id, username, email, avatar_url, last_activity, bio')
 				.in('id', targetFriendIds);
 
 			targetFriends = (friendUsers || []).map(u => {
@@ -106,6 +106,7 @@ export async function POST({ request }) {
 					id: u.id,
 					username: u.username,
 					email: u.email,
+					bio: u.bio || null,
 					avatar_url: u.avatar_url || null,
 					last_activity: u.last_activity,
 					friends_since: rel ? rel.created_at : null

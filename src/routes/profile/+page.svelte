@@ -1438,34 +1438,40 @@
 	<!-- Main Profile Container -->
 	<main class="flex-grow container mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-24 sm:pb-28 max-w-4xl lg:max-w-5xl xl:max-w-6xl space-y-3.5 sm:space-y-4">
 		{#if !profileData && (isLoading || !isProfileNotFound)}
-			<div class="space-y-4 animate-pulse">
-				<!-- Cover & Avatar Skeleton -->
-				<div class="bg-white rounded-3xl overflow-hidden border border-pink-100 shadow-sm">
-					<div class="h-32 sm:h-44 bg-pink-100/70"></div>
-					<div class="px-5 pb-5 -mt-12 sm:-mt-16 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-						<div class="flex items-end space-x-3">
-							<div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white bg-pink-200/80 shadow-md flex-shrink-0"></div>
-							<div class="space-y-1.5 pb-1">
-								<div class="h-4 w-32 bg-pink-200/70 rounded"></div>
-								<div class="h-3 w-20 bg-pink-100/80 rounded"></div>
+			<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start animate-pulse">
+				<!-- Left Column Skeleton: Profile Header -->
+				<div class="lg:col-span-5 space-y-4">
+					<div class="bg-white rounded-3xl overflow-hidden border border-pink-100 shadow-sm">
+						<div class="h-32 sm:h-44 bg-pink-100/70"></div>
+						<div class="px-5 pb-5 -mt-12 sm:-mt-16 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+							<div class="flex items-end space-x-3">
+								<div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white bg-pink-200/80 shadow-md flex-shrink-0"></div>
+								<div class="space-y-1.5 pb-1">
+									<div class="h-4 w-32 bg-pink-200/70 rounded"></div>
+									<div class="h-3 w-20 bg-pink-100/80 rounded"></div>
+								</div>
 							</div>
+							<div class="h-8 w-28 bg-pink-100/80 rounded-xl"></div>
 						</div>
-						<div class="h-8 w-28 bg-pink-100/80 rounded-xl"></div>
 					</div>
 				</div>
 
-				<!-- Tabs Skeleton -->
-				<div class="flex space-x-2 bg-pink-100/50 p-1 rounded-xl">
-					<div class="flex-1 h-8 bg-white/80 rounded-lg"></div>
-					<div class="flex-1 h-8 bg-pink-100/60 rounded-lg"></div>
-					<div class="flex-1 h-8 bg-pink-100/60 rounded-lg"></div>
-					<div class="flex-1 h-8 bg-pink-100/60 rounded-lg"></div>
-				</div>
+				<!-- Right Column Skeleton: Tabs (mobile) + Cards -->
+				<div class="lg:col-span-7 space-y-4">
+					<div class="flex lg:hidden space-x-2 bg-pink-100/50 p-1 rounded-xl">
+						<div class="flex-1 h-8 bg-white/80 rounded-lg"></div>
+						<div class="flex-1 h-8 bg-pink-100/60 rounded-lg"></div>
+						<div class="flex-1 h-8 bg-pink-100/60 rounded-lg"></div>
+					</div>
 
-				<!-- Card Content Skeleton -->
-				<div class="bg-white rounded-2xl p-5 border border-pink-100 shadow-xs space-y-3">
-					<div class="h-4 w-40 bg-pink-200/70 rounded"></div>
-					<div class="h-16 bg-pink-50 rounded-xl"></div>
+					<div class="bg-white rounded-2xl p-5 border border-pink-100 shadow-xs space-y-3">
+						<div class="h-4 w-40 bg-pink-200/70 rounded"></div>
+						<div class="h-16 bg-pink-50 rounded-xl"></div>
+					</div>
+					<div class="hidden lg:block bg-white rounded-2xl p-5 border border-pink-100 shadow-xs space-y-3">
+						<div class="h-4 w-32 bg-pink-200/70 rounded"></div>
+						<div class="h-20 bg-pink-50 rounded-xl"></div>
+					</div>
 				</div>
 			</div>
 		{:else if !profileData}
@@ -1516,565 +1522,651 @@
 				{/if}
 			</div>
 		{:else}
-			<!-- Top Hero Profile Card -->
-			<div class="bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(244,114,182,0.1)] border border-pink-100/90 relative">
-				<!-- Cover Banner Background (Roomier height so banners look complete) -->
-				<div class="relative h-52 sm:h-60 w-full bg-gradient-to-tr from-[#3b82f6] via-[#ec4899] to-[#8b5cf6] overflow-hidden group">
-					<!-- Cover Image if present -->
-					{#if profileData.user.cover_url}
-						<img src={profileData.user.cover_url} alt="Cover Banner" class="w-full h-full object-cover" />
-					{/if}
-
-					<!-- Edit Cover Button on bottom right -->
-					{#if profileData.is_self}
-						<label
-							class="absolute bottom-3 right-3 px-3 py-1.5 bg-white/90 hover:bg-white text-[#f43f8e] text-xs font-black rounded-full border border-pink-200/80 shadow-xs flex items-center space-x-1.5 backdrop-blur-xs transition-all active:scale-95 cursor-pointer z-30"
-							title="Upload Cover Photo"
-						>
-							<input
-								type="file"
-								accept="image/*"
-								onchange={handleCoverChange}
-								class="hidden"
-							/>
-							{#if isUploadingCover}
-								<div class="w-3.5 h-3.5 border-2 border-[#f43f8e] border-t-transparent rounded-full animate-spin"></div>
-								<span>Uploading...</span>
-							{:else}
-								<Camera class="w-4 h-4" />
-								<span>Edit Cover</span>
-							{/if}
-						</label>
-					{/if}
-				</div>
-
-				<!-- Profile Info Section -->
-				<div class="px-5 sm:px-6 pb-5 sm:pb-6 pt-0 relative z-10">
-					<!-- Avatar & Note Row -->
-					<div class="flex items-end justify-between -mt-10 sm:-mt-12 mb-3">
-						<div class="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
-							<!-- Floating Note Speech Bubble on Top-Left of Avatar -->
-							{#if profileData.is_self}
-								{#if userNote}
-									<button 
-										type="button"
-										class="absolute -top-8 left-0 z-20 bg-white px-2.5 py-0.5 rounded-xl border-2 border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-md flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
-										onclick={openNoteModal}
-										title="Click to edit status note"
-									>
-										<span class="max-w-[120px] truncate">{userNote}</span>
-										<div class="absolute -bottom-1.5 left-4 w-2 h-2 bg-white border-r-2 border-b-2 border-pink-200 rotate-45"></div>
-									</button>
-								{/if}
-							{:else}
-								{#if userNote}
-									<button
-										type="button"
-										class="absolute -top-8 left-0 z-20 bg-white px-2.5 py-0.5 rounded-xl border-2 border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-md flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
-										onclick={() => viewingUserNote = true}
-										title="View note"
-									>
-										<span class="max-w-[120px] truncate">{userNote}</span>
-										<div class="absolute -bottom-1.5 left-4 w-2 h-2 bg-white border-r-2 border-b-2 border-pink-200 rotate-45"></div>
-									</button>
-								{/if}
+			<!-- Literal 2-Column Layout Grid (Desktop: Left = Profile Header, Right = 3 Cards) -->
+			<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
+				
+				<!-- COLUMN 1 (Desktop Left Column: Profile Header Card) -->
+				<div class="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-20 space-y-4">
+					<div class="bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(244,114,182,0.1)] border border-pink-100/90 relative">
+						<!-- Cover Banner Background -->
+						<div class="relative h-44 sm:h-52 lg:h-44 w-full bg-gradient-to-tr from-[#3b82f6] via-[#ec4899] to-[#8b5cf6] overflow-hidden group">
+							<!-- Cover Image if present -->
+							{#if profileData.user.cover_url}
+								<img src={profileData.user.cover_url} alt="Cover Banner" class="w-full h-full object-cover" />
 							{/if}
 
-							<!-- Avatar Circular Picture -->
-							<div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white shadow-md bg-[#fef08a] flex items-center justify-center text-3xl font-black overflow-hidden relative">
-								{#if profileData.user.avatar_url}
-									<img
-										src={profileData.user.avatar_url}
-										alt={profileData.user.username}
-										class="w-full h-full object-cover"
-									/>
-								{:else}
-									<span class="text-3xl">🤪</span>
-								{/if}
-							</div>
-
-							<!-- Avatar Camera Badge (Positioned outside overflow-hidden) -->
+							<!-- Edit Cover Button on bottom right -->
 							{#if profileData.is_self}
 								<label
-									class="absolute -bottom-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#f43f8e] hover:bg-[#e0337f] text-white border-2 border-white flex items-center justify-center shadow-md cursor-pointer z-30 transition-all active:scale-95"
-									title="Upload Profile Photo"
+									class="absolute bottom-3 right-3 px-3 py-1.5 bg-white/90 hover:bg-white text-[#f43f8e] text-xs font-black rounded-full border border-pink-200/80 shadow-xs flex items-center space-x-1.5 backdrop-blur-xs transition-all active:scale-95 cursor-pointer z-30"
+									title="Upload Cover Photo"
 								>
 									<input
 										type="file"
 										accept="image/*"
-										onchange={handleAvatarChange}
+										onchange={handleCoverChange}
 										class="hidden"
 									/>
-									{#if isUploadingAvatar}
-										<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+									{#if isUploadingCover}
+										<div class="w-3.5 h-3.5 border-2 border-[#f43f8e] border-t-transparent rounded-full animate-spin"></div>
+										<span>Uploading...</span>
 									{:else}
-										<Camera class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+										<Camera class="w-4 h-4" />
+										<span>Edit Cover</span>
 									{/if}
 								</label>
 							{/if}
 						</div>
 
-						<!-- Action buttons on own profile (Icon-only on mobile to save space, full text on desktop) -->
-						{#if profileData.is_self}
-							<div class="flex items-center gap-1.5 flex-nowrap">
-								<button
-									type="button"
-									onclick={handleCopyProfileLink}
-									class="p-2 sm:px-3 sm:py-1.5 bg-pink-50 hover:bg-pink-100 border border-pink-200/90 text-[#f43f8e] text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center justify-center space-x-1.5 cursor-pointer"
-									title="Copy link to your profile"
-									aria-label="Copy Profile Link"
-								>
-									{#if isCopiedLink}
-										<Check class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.5} />
-										<span class="text-[#f43f8e] font-black hidden sm:inline">Link Copied!</span>
+						<!-- Profile Info Section -->
+						<div class="px-5 sm:px-6 pb-5 sm:pb-6 pt-0 relative z-10">
+							<!-- Avatar & Note Row -->
+							<div class="flex items-end justify-between -mt-10 sm:-mt-12 mb-3">
+								<div class="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
+									<!-- Floating Note Speech Bubble on Top-Left of Avatar -->
+									{#if profileData.is_self}
+										{#if userNote}
+											<button 
+												type="button"
+												class="absolute -top-8 left-0 z-20 bg-white px-2.5 py-0.5 rounded-xl border-2 border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-md flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+												onclick={openNoteModal}
+												title="Click to edit status note"
+											>
+												<span class="max-w-[120px] truncate">{userNote}</span>
+												<div class="absolute -bottom-1.5 left-4 w-2 h-2 bg-white border-r-2 border-b-2 border-pink-200 rotate-45"></div>
+											</button>
+										{/if}
 									{:else}
-										<Link class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.2} />
-										<span class="hidden sm:inline">Copy Link</span>
+										{#if userNote}
+											<button
+												type="button"
+												class="absolute -top-8 left-0 z-20 bg-white px-2.5 py-0.5 rounded-xl border-2 border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-md flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+												onclick={() => viewingUserNote = true}
+												title="View note"
+											>
+												<span class="max-w-[120px] truncate">{userNote}</span>
+												<div class="absolute -bottom-1.5 left-4 w-2 h-2 bg-white border-r-2 border-b-2 border-pink-200 rotate-45"></div>
+											</button>
+										{/if}
 									{/if}
-								</button>
-								<button
-									type="button"
-									onclick={openEditProfileModal}
-									class="p-2 sm:px-3 sm:py-1.5 bg-white hover:bg-pink-50 border border-pink-200 text-pink-700 text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center justify-center space-x-1 cursor-pointer"
-									title="Edit Profile Info"
-									aria-label="Edit Profile"
-								>
-									<Pencil class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.2} />
-									<span class="hidden sm:inline">Edit Profile</span>
-								</button>
-							</div>
-						{:else}
-							<!-- Action buttons on other user profile -->
-							<div class="flex items-center gap-1 sm:gap-1.5 flex-nowrap flex-shrink-0">
-								<button
-									type="button"
-									onclick={handleCopyProfileLink}
-									class="p-1.5 sm:px-3 sm:py-1.5 bg-pink-50 hover:bg-pink-100 border border-pink-200/90 text-pink-700 text-[11px] sm:text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center justify-center space-x-1 cursor-pointer"
-									title="Share Profile Link"
-									aria-label="Share Profile Link"
-								>
-									{#if isCopiedLink}
-										<Check class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.5} />
-										<span class="text-[#f43f8e] font-black hidden sm:inline">Copied!</span>
-									{:else}
-										<Link class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.2} />
-										<span class="hidden sm:inline">Share</span>
+
+									<!-- Avatar Circular Picture -->
+									<div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white shadow-md bg-[#fef08a] flex items-center justify-center text-3xl font-black overflow-hidden relative">
+										{#if profileData.user.avatar_url}
+											<img
+												src={profileData.user.avatar_url}
+												alt={profileData.user.username}
+												class="w-full h-full object-cover"
+											/>
+										{:else}
+											<span class="text-3xl">🤪</span>
+										{/if}
+									</div>
+
+									<!-- Avatar Camera Badge -->
+									{#if profileData.is_self}
+										<label
+											class="absolute -bottom-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#f43f8e] hover:bg-[#e0337f] text-white border-2 border-white flex items-center justify-center shadow-md cursor-pointer z-30 transition-all active:scale-95"
+											title="Upload Profile Photo"
+										>
+											<input
+												type="file"
+												accept="image/*"
+												onchange={handleAvatarChange}
+												class="hidden"
+											/>
+											{#if isUploadingAvatar}
+												<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+											{:else}
+												<Camera class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+											{/if}
+										</label>
 									{/if}
-								</button>
-								{#if profileData.has_pending_request}
-									<button
-										type="button"
-										onclick={cancelFriendRequestOnProfile}
-										disabled={isSaving}
-										class="group px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-amber-50 hover:bg-rose-50 text-amber-700 hover:text-rose-600 border border-amber-200 hover:border-rose-200 text-[11px] sm:text-xs font-black rounded-full transition-all cursor-pointer active:scale-95 shadow-2xs flex items-center space-x-1"
-										title="Click to cancel friend request"
-									>
-										<Clock class="w-3.5 h-3.5 text-amber-600 group-hover:hidden flex-shrink-0" strokeWidth={2.2} />
-										<X class="w-3.5 h-3.5 text-rose-500 hidden group-hover:inline flex-shrink-0" strokeWidth={2.2} />
-										<span class="group-hover:hidden whitespace-nowrap"><span class="hidden sm:inline">Request </span>Pending</span>
-										<span class="hidden group-hover:inline whitespace-nowrap">Cancel<span class="hidden sm:inline"> Request</span></span>
-									</button>
-								{:else if !profileData.is_friend}
-									<button
-										type="button"
-										onclick={sendFriendRequestToTargetUser}
-										disabled={isSaving}
-										class="px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] sm:text-xs rounded-full transition-all shadow-xs active:scale-95 cursor-pointer flex items-center space-x-1"
-									>
-										<UserPlus class="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2.2} />
-										<span class="whitespace-nowrap">Add Friend</span>
-									</button>
+								</div>
+
+								<!-- Action buttons -->
+								{#if profileData.is_self}
+									<div class="flex items-center gap-1.5 flex-nowrap">
+										<button
+											type="button"
+											onclick={handleCopyProfileLink}
+											class="p-2 sm:px-3 sm:py-1.5 bg-pink-50 hover:bg-pink-100 border border-pink-200/90 text-[#f43f8e] text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center justify-center space-x-1.5 cursor-pointer"
+											title="Copy link to your profile"
+											aria-label="Copy Profile Link"
+										>
+											{#if isCopiedLink}
+												<Check class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.5} />
+												<span class="text-[#f43f8e] font-black hidden sm:inline">Link Copied!</span>
+											{:else}
+												<Link class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.2} />
+												<span class="hidden sm:inline">Copy Link</span>
+											{/if}
+										</button>
+										<button
+											type="button"
+											onclick={openEditProfileModal}
+											class="p-2 sm:px-3 sm:py-1.5 bg-white hover:bg-pink-50 border border-pink-200 text-pink-700 text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center justify-center space-x-1 cursor-pointer"
+											title="Edit Profile Info"
+											aria-label="Edit Profile"
+										>
+											<Pencil class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.2} />
+											<span class="hidden sm:inline">Edit Profile</span>
+										</button>
+									</div>
 								{:else}
+									<div class="flex items-center gap-1 sm:gap-1.5 flex-nowrap flex-shrink-0">
+										<button
+											type="button"
+											onclick={handleCopyProfileLink}
+											class="p-1.5 sm:px-3 sm:py-1.5 bg-pink-50 hover:bg-pink-100 border border-pink-200/90 text-pink-700 text-[11px] sm:text-xs font-bold rounded-full transition-all active:scale-95 shadow-2xs flex items-center justify-center space-x-1 cursor-pointer"
+											title="Share Profile Link"
+											aria-label="Share Profile Link"
+										>
+											{#if isCopiedLink}
+												<Check class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.5} />
+												<span class="text-[#f43f8e] font-black hidden sm:inline">Copied!</span>
+											{:else}
+												<Link class="w-4 h-4 sm:w-3.5 sm:h-3.5 text-[#f43f8e] flex-shrink-0" strokeWidth={2.2} />
+												<span class="hidden sm:inline">Share</span>
+											{/if}
+										</button>
+										{#if profileData.has_pending_request}
+											<button
+												type="button"
+												onclick={cancelFriendRequestOnProfile}
+												disabled={isSaving}
+												class="group px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-amber-50 hover:bg-rose-50 text-amber-700 hover:text-rose-600 border border-amber-200 hover:border-rose-200 text-[11px] sm:text-xs font-black rounded-full transition-all cursor-pointer active:scale-95 shadow-2xs flex items-center space-x-1"
+												title="Click to cancel friend request"
+											>
+												<Clock class="w-3.5 h-3.5 text-amber-600 group-hover:hidden flex-shrink-0" strokeWidth={2.2} />
+												<X class="w-3.5 h-3.5 text-rose-500 hidden group-hover:inline flex-shrink-0" strokeWidth={2.2} />
+												<span class="group-hover:hidden whitespace-nowrap"><span class="hidden sm:inline">Request </span>Pending</span>
+												<span class="hidden group-hover:inline whitespace-nowrap">Cancel<span class="hidden sm:inline"> Request</span></span>
+											</button>
+										{:else if !profileData.is_friend}
+											<button
+												type="button"
+												onclick={sendFriendRequestToTargetUser}
+												disabled={isSaving}
+												class="px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] sm:text-xs rounded-full transition-all shadow-xs active:scale-95 cursor-pointer flex items-center space-x-1"
+											>
+												<UserPlus class="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2.2} />
+												<span class="whitespace-nowrap">Add Friend</span>
+											</button>
+										{:else}
+											<button
+												type="button"
+												onclick={() => promptRemoveFriend(profileData.user)}
+												class="px-2.5 py-1.5 sm:px-3 sm:py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-black text-[11px] sm:text-xs rounded-full transition-all cursor-pointer whitespace-nowrap"
+											>
+												Friends
+											</button>
+										{/if}
+										<button
+											type="button"
+											onclick={() => openChatWithUser(profileData.user)}
+											class="px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] sm:text-xs rounded-full transition-all shadow-xs active:scale-95 cursor-pointer flex items-center space-x-1"
+										>
+											<MessageSquare class="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2.2} />
+											<span class="whitespace-nowrap">Message</span>
+										</button>
+									</div>
+								{/if}
+							</div>
+
+							<!-- Name & Stats -->
+							<div class="space-y-0.5 mt-1.5">
+								<div class="flex items-center space-x-2">
+									<h2 class="text-base sm:text-lg font-black text-pink-950 tracking-tight">
+										{profileData.user.full_name || profileData.user.username}
+									</h2>
+									{#if profileData.is_self}
+										<span class="px-1.5 py-0.2 bg-pink-50 text-[#f43f8e] border border-pink-200 text-[9px] font-black rounded-full uppercase">
+											You
+										</span>
+									{/if}
+								</div>
+								<p class="text-xs text-pink-400 font-bold">
+									<span>{profileData.total_friends !== null && profileData.total_friends !== undefined ? `${profileData.total_friends} friends` : '0 friends'}</span>
+									<span>•</span>
+									<span>{profileData.total_memories !== null && profileData.total_memories !== undefined ? `${profileData.total_memories} memories` : '0 memories'}</span>
+								</p>
+							</div>
+
+							<!-- Pill Badges Row -->
+							<div class="flex items-center flex-wrap gap-1.5 pt-2.5 pb-1">
+								<button
+									type="button"
+									onclick={() => activeTab = 'friends'}
+									class="px-2.5 py-1 bg-pink-50 border border-pink-200 text-[#f43f8e] text-[11px] font-black rounded-xl flex items-center space-x-1 cursor-pointer hover:bg-pink-100 transition-colors"
+								>
+									<Users class="w-3 h-3" strokeWidth={2} />
+									<span>{profileData.total_friends !== null && profileData.total_friends !== undefined ? `${profileData.total_friends} Friends` : '0 Friends'}</span>
+								</button>
+
+								{#if profileData.user.created_at}
+									<div class="px-2.5 py-1 bg-pink-50 border border-pink-200 text-[#f43f8e] text-[11px] font-black rounded-xl flex items-center space-x-1">
+										<Calendar class="w-3 h-3" strokeWidth={2} />
+										<span>Joined {formatDate(profileData.user.created_at)}</span>
+									</div>
+								{/if}
+
+								<div class="px-2.5 py-1 bg-pink-50 border border-pink-200 text-[#059669] text-[11px] font-black rounded-xl flex items-center space-x-1">
+									<span class="w-1.5 h-1.5 rounded-full {formatLastActive(profileData.user.last_activity) === 'Active now' || formatLastActive(profileData.user.last_activity) === 'Active just now' ? 'bg-[#10b981] animate-pulse' : 'bg-pink-300'}"></span>
+									<span>{formatLastActive(profileData.user.last_activity)}</span>
+								</div>
+							</div>
+
+							<!-- Desktop-only Merged About You Section Inside Header Card -->
+							<div class="hidden lg:block pt-3 mt-2 border-t border-pink-100/90 space-y-2.5">
+								<div class="flex items-center space-x-1.5 text-xs font-black text-pink-950">
+									<User class="w-3.5 h-3.5 text-[#f43f8e]" strokeWidth={2.2} />
+									<span>About {profileData.is_self ? 'You' : `@${profileData.user.username}`}</span>
+								</div>
+
+								<!-- Bio Quote Block or Add Bio Button -->
+								{#if profileData.user.bio}
+									<div class="p-2.5 bg-pink-50/50 border border-pink-100 rounded-xl">
+										<p class="text-xs text-pink-950 font-bold leading-relaxed italic">
+											"{profileData.user.bio}"
+										</p>
+									</div>
+								{:else if profileData.is_self}
 									<button
 										type="button"
-										onclick={() => promptRemoveFriend(profileData.user)}
-										class="px-2.5 py-1.5 sm:px-3 sm:py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-black text-[11px] sm:text-xs rounded-full transition-all cursor-pointer whitespace-nowrap"
+										onclick={openEditProfileModal}
+										class="w-full py-2 border border-dashed border-pink-300 hover:border-[#f43f8e] bg-pink-50/30 hover:bg-pink-50 text-[#f43f8e] font-black text-[11px] rounded-xl flex items-center justify-center space-x-1 transition-all cursor-pointer"
 									>
-										Friends
+										+ Add your Bio & Personal Details
 									</button>
 								{/if}
-								<button
-									type="button"
-									onclick={() => openChatWithUser(profileData.user)}
-									class="px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] sm:text-xs rounded-full transition-all shadow-xs active:scale-95 cursor-pointer flex items-center space-x-1"
-								>
-									<MessageSquare class="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2.2} />
-									<span class="whitespace-nowrap">Message</span>
-								</button>
+
+								<!-- Subcards for Relationship, Birthday, Gender -->
+								<div class="space-y-1.5">
+									<!-- Relationship Status Card -->
+									<div class="p-2 bg-pink-50/30 border border-pink-100 rounded-xl flex items-center space-x-2.5 shadow-2xs">
+										<div class="w-7 h-7 rounded-lg bg-pink-100/70 text-[#f43f8e] border border-pink-200/60 flex items-center justify-center flex-shrink-0">
+											<Heart class="w-3.5 h-3.5" />
+										</div>
+										<div class="min-w-0">
+											<p class="text-[8px] font-black text-pink-400 uppercase tracking-wider">RELATIONSHIP STATUS</p>
+											<p class="text-[11px] font-black text-pink-950 truncate">
+												{profileData.user.relationship_status || 'In a relationship'}
+											</p>
+										</div>
+									</div>
+
+									<!-- Birthday Card -->
+									<div class="p-2 bg-pink-50/30 border border-pink-100 rounded-xl flex items-center space-x-2.5 shadow-2xs">
+										<div class="w-7 h-7 rounded-lg bg-pink-100/70 text-[#f43f8e] border border-pink-200/60 flex items-center justify-center flex-shrink-0">
+											<Calendar class="w-3.5 h-3.5" strokeWidth={2} />
+										</div>
+										<div class="min-w-0">
+											<p class="text-[8px] font-black text-pink-400 uppercase tracking-wider">BIRTHDAY</p>
+											<p class="text-[11px] font-black text-pink-950 truncate">
+												{profileData.user.birthday ? formatBirthday(profileData.user.birthday) : 'April 12, 2005'}
+											</p>
+										</div>
+									</div>
+
+									<!-- Gender Card -->
+									{#if profileData.user.gender && profileData.user.gender !== 'Prefer not to say'}
+										<div class="p-2 bg-pink-50/30 border border-pink-100 rounded-xl flex items-center space-x-2.5 shadow-2xs">
+											<div class="w-7 h-7 rounded-lg bg-pink-100/70 text-[#f43f8e] border border-pink-200/60 flex items-center justify-center flex-shrink-0">
+												<User class="w-3.5 h-3.5" strokeWidth={2} />
+											</div>
+											<div class="min-w-0">
+												<p class="text-[8px] font-black text-pink-400 uppercase tracking-wider">GENDER</p>
+												<p class="text-[11px] font-black text-pink-950 truncate">
+													{profileData.user.gender}
+												</p>
+											</div>
+										</div>
+									{/if}
+								</div>
 							</div>
-						{/if}
-					</div>
-
-					<!-- Name & Stats -->
-					<div class="space-y-0.5 mt-1.5">
-						<div class="flex items-center space-x-2">
-							<h2 class="text-base sm:text-lg font-black text-pink-950 tracking-tight">
-								{profileData.user.full_name || profileData.user.username}
-							</h2>
-							{#if profileData.is_self}
-								<span class="px-1.5 py-0.2 bg-pink-50 text-[#f43f8e] border border-pink-200 text-[9px] font-black rounded-full uppercase">
-									You
-								</span>
-							{/if}
 						</div>
-						<p class="text-xs text-pink-400 font-bold">
-							<span>{profileData.total_friends !== null && profileData.total_friends !== undefined ? `${profileData.total_friends} friends` : '0 friends'}</span>
-							<span>•</span>
-							<span>{profileData.total_memories !== null && profileData.total_memories !== undefined ? `${profileData.total_memories} memories` : '0 memories'}</span>
-						</p>
 					</div>
+				</div>
 
-					<!-- Pill Badges Row -->
-					<div class="flex items-center flex-wrap gap-1.5 pt-2.5 pb-1">
+				<!-- COLUMN 2 (Desktop Right Column: Mobile Tab Switcher + Cards) -->
+				<div class="lg:col-span-7 xl:col-span-7 space-y-4 sm:space-y-5">
+					
+					<!-- Mobile-only Centered Tab Switcher Bar -->
+					<div class="lg:hidden bg-white rounded-xl p-1 shadow-[0_2px_12px_rgba(244,114,182,0.08)] border border-pink-100/90 flex items-center justify-between gap-1">
+						<button
+							type="button"
+							onclick={() => activeTab = 'about'}
+							class="flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all flex items-center justify-center space-x-1 cursor-pointer {activeTab === 'about' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-500 hover:text-pink-700'}"
+						>
+							<User class="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2} />
+							<span>About {profileData.is_self ? 'You' : ''}</span>
+						</button>
+
 						<button
 							type="button"
 							onclick={() => activeTab = 'friends'}
-							class="px-2.5 py-1 bg-pink-50 border border-pink-200 text-[#f43f8e] text-[11px] font-black rounded-xl flex items-center space-x-1 cursor-pointer hover:bg-pink-100 transition-colors"
+							class="flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all flex items-center justify-center space-x-1 cursor-pointer {activeTab === 'friends' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-500 hover:text-pink-700'}"
 						>
-							<Users class="w-3 h-3" strokeWidth={2} />
-							<span>{profileData.total_friends !== null && profileData.total_friends !== undefined ? `${profileData.total_friends} Friends` : '0 Friends'}</span>
+							<Users class="w-3.5 h-3.5 flex-shrink-0" />
+							<span>Friends {profileData.total_friends !== null && profileData.total_friends !== undefined ? `(${profileData.total_friends})` : ''}</span>
 						</button>
 
-						{#if profileData.user.created_at}
-							<div class="px-2.5 py-1 bg-pink-50 border border-pink-200 text-[#f43f8e] text-[11px] font-black rounded-xl flex items-center space-x-1">
-								<Calendar class="w-3 h-3" strokeWidth={2} />
-								<span>Joined {formatDate(profileData.user.created_at)}</span>
-							</div>
-						{/if}
-
-						<div class="px-2.5 py-1 bg-pink-50 border border-pink-200 text-[#059669] text-[11px] font-black rounded-xl flex items-center space-x-1">
-							<span class="w-1.5 h-1.5 rounded-full {formatLastActive(profileData.user.last_activity) === 'Active now' || formatLastActive(profileData.user.last_activity) === 'Active just now' ? 'bg-[#10b981] animate-pulse' : 'bg-pink-300'}"></span>
-							<span>{formatLastActive(profileData.user.last_activity)}</span>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Centered Tab Switcher Bar -->
-			<div class="bg-white rounded-xl p-1 shadow-[0_2px_12px_rgba(244,114,182,0.08)] border border-pink-100/90 flex items-center justify-between gap-1">
-				<button
-					type="button"
-					onclick={() => activeTab = 'about'}
-					class="flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all flex items-center justify-center space-x-1 cursor-pointer {activeTab === 'about' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-500 hover:text-pink-700'}"
-				>
-					<User class="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2} />
-					<span>About {profileData.is_self ? 'You' : ''}</span>
-				</button>
-
-				<button
-					type="button"
-					onclick={() => activeTab = 'friends'}
-					class="flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all flex items-center justify-center space-x-1 cursor-pointer {activeTab === 'friends' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-500 hover:text-pink-700'}"
-				>
-					<Users class="w-3.5 h-3.5 flex-shrink-0" />
-					<span>Friends {profileData.total_friends !== null && profileData.total_friends !== undefined ? `(${profileData.total_friends})` : ''}</span>
-				</button>
-
-				{#if profileData.is_self || !isTargetPrivate}
-					<button
-						type="button"
-						onclick={() => activeTab = 'mood'}
-						class="flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all flex items-center justify-center space-x-1 cursor-pointer {activeTab === 'mood' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-500 hover:text-pink-700'}"
-					>
-						<BarChart3 class="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2} />
-						<span class="truncate">Mood Insights</span>
-					</button>
-				{/if}
-			</div>
-
-			<!-- TAB CONTENT SECTIONS -->
-
-			<!-- TAB 0: ABOUT YOU -->
-			{#if activeTab === 'about'}
-				<div class="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
-					<div class="flex items-center space-x-2.5">
-						<User class="w-4 h-4 text-[#f43f8e]" strokeWidth={2} />
-						<div>
-							<h3 class="text-sm font-black text-pink-950">
-								{profileData.is_self ? 'About You' : `About @${profileData.user.username}`}
-							</h3>
-							<p class="text-[11px] text-pink-400 font-bold">Bio & personal information</p>
-						</div>
-					</div>
-
-					<!-- Bio Quote Block or Add Bio Button -->
-					{#if profileData.user.bio}
-						<div class="p-3 bg-pink-50/50 border border-pink-100 rounded-xl">
-							<p class="text-xs text-pink-950 font-bold leading-relaxed italic">
-								"{profileData.user.bio}"
-							</p>
-						</div>
-					{:else if profileData.is_self}
-						<button
-							type="button"
-							onclick={openEditProfileModal}
-							class="w-full py-2.5 border border-dashed border-pink-300 hover:border-[#f43f8e] bg-pink-50/30 hover:bg-pink-50 text-[#f43f8e] font-black text-xs rounded-xl flex items-center justify-center space-x-1 transition-all cursor-pointer"
-						>
-							+ Add your Bio & Personal Details
-						</button>
-					{/if}
-
-					<!-- Subcards for Relationship, Birthday, Gender -->
-					<div class="space-y-2">
-						<!-- Relationship Status Card -->
-						<div class="p-2.5 bg-pink-50/30 border border-pink-100 rounded-xl flex items-center space-x-3 shadow-2xs">
-							<div class="w-8 h-8 rounded-lg bg-pink-100/70 text-[#f43f8e] border border-pink-200/60 flex items-center justify-center flex-shrink-0">
-								<Heart class="w-4 h-4" />
-							</div>
-							<div>
-								<p class="text-[9px] font-black text-pink-400 uppercase tracking-wider">RELATIONSHIP STATUS</p>
-								<p class="text-xs font-black text-pink-950">
-									{profileData.user.relationship_status || 'In a relationship'}
-								</p>
-							</div>
-						</div>
-
-						<!-- Birthday Card -->
-						<div class="p-2.5 bg-pink-50/30 border border-pink-100 rounded-xl flex items-center space-x-3 shadow-2xs">
-							<div class="w-8 h-8 rounded-lg bg-pink-100/70 text-[#f43f8e] border border-pink-200/60 flex items-center justify-center flex-shrink-0">
-								<Calendar class="w-4 h-4" strokeWidth={2} />
-							</div>
-							<div>
-								<p class="text-[9px] font-black text-pink-400 uppercase tracking-wider">BIRTHDAY</p>
-								<p class="text-xs font-black text-pink-950">
-									{profileData.user.birthday ? formatBirthday(profileData.user.birthday) : 'April 12, 2005'}
-								</p>
-							</div>
-						</div>
-
-						<!-- Gender Card -->
-						{#if profileData.user.gender && profileData.user.gender !== 'Prefer not to say'}
-							<div class="p-2.5 bg-pink-50/30 border border-pink-100 rounded-xl flex items-center space-x-3 shadow-2xs">
-								<div class="w-8 h-8 rounded-lg bg-pink-100/70 text-[#f43f8e] border border-pink-200/60 flex items-center justify-center flex-shrink-0">
-									<User class="w-4 h-4" strokeWidth={2} />
-								</div>
-								<div>
-									<p class="text-[9px] font-black text-pink-400 uppercase tracking-wider">GENDER</p>
-									<p class="text-xs font-black text-pink-950">
-										{profileData.user.gender}
-									</p>
-								</div>
-							</div>
-						{/if}
-					</div>
-				</div>
-			{/if}
-
-			<!-- TAB 1: FRIENDS LIST -->
-			{#if activeTab === 'friends'}
-				<div class="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
-					<div>
-						<h3 class="text-sm font-black text-pink-950">
-							{profileData.is_self ? 'My Friends' : `@${profileData.user.username}'s Friends`}
-						</h3>
-						<p class="text-[11px] text-pink-400 font-bold">{profileData.total_friends !== null && profileData.total_friends !== undefined ? `${profileData.total_friends} total connections` : '2 total connections'}</p>
-					</div>
-
-					<!-- Search Friends Input -->
-					<div class="relative">
-						<input
-							type="text"
-							bind:value={friendsSearch}
-							placeholder="Search friends..."
-							class="w-full pl-8 pr-3.5 py-2 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 transition-all"
-						/>
-						<Search class="w-3.5 h-3.5 text-pink-400 absolute left-2.5 top-2.5" strokeWidth={2} />
-					</div>
-
-					{#if filteredFriends.length === 0}
-						<div class="text-center py-8 border border-dashed border-pink-200 rounded-xl">
-							<p class="text-xs font-bold text-pink-400">
-								{friendsSearch ? 'No friends matched your search.' : 'No friends yet.'}
-							</p>
-						</div>
-					{:else}
-						<div class="space-y-2">
-							{#each filteredFriends as friend}
-								<div class="p-2.5 bg-white border border-pink-100 rounded-xl flex items-center justify-between shadow-2xs hover:border-pink-200 transition-all">
-									<button
-										type="button"
-										onclick={() => viewUserProfile(friend)}
-										class="flex items-center space-x-2.5 min-w-0 text-left cursor-pointer flex-grow border-0 bg-transparent p-0"
-									>
-										<div class="relative flex-shrink-0">
-											<div class="w-9 h-9 rounded-full bg-pink-400 text-white flex items-center justify-center font-bold text-xs overflow-hidden shadow-2xs">
-												{#if friend.avatar_url}
-													<img src={friend.avatar_url} alt={friend.username} class="w-full h-full object-cover" />
-												{:else}
-													{friend.username?.charAt(0).toUpperCase()}
-												{/if}
-											</div>
-											<span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white {formatLastActive(friend.last_activity) === 'Active now' || formatLastActive(friend.last_activity) === 'Active just now' ? 'bg-[#10b981] animate-pulse' : 'bg-pink-300'}"></span>
-										</div>
-
-										<div class="min-w-0 flex-grow pr-1">
-											<p class="text-xs font-black text-pink-950 truncate">
-												@{friend.username}
-											</p>
-											<p class="text-[10px] text-pink-400 font-bold truncate">{formatLastActive(friend.last_activity)}</p>
-										</div>
-									</button>
-
-									<div class="flex items-center space-x-1 flex-shrink-0">
-										{#if String(friend.id || friend.friend_id || friend.user_id) === String(currentUser?.id)}
-											<span class="px-2.5 py-1 bg-pink-50 text-[#f43f8e] font-black text-[11px] rounded-lg border border-pink-200">
-												You
-											</span>
-										{:else}
-											<button
-												onclick={() => viewUserProfile(friend)}
-												class="p-1.5 sm:p-2 rounded-xl flex items-center justify-center text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-150 cursor-pointer"
-												title="View Profile"
-												aria-label="View Profile"
-											>
-												<UserCircle class="w-5 h-5" strokeWidth={2} />
-											</button>
-											<button
-												onclick={() => openChatWithUser(friend)}
-												class="p-1.5 sm:p-2 rounded-xl flex items-center justify-center text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-150 cursor-pointer"
-												title="Chat"
-												aria-label="Chat"
-											>
-												<MessageSquare class="w-5 h-5" strokeWidth={2} />
-											</button>
-										{/if}
-									</div>
-								</div>
-							{/each}
-						</div>
-					{/if}
-				</div>
-			{/if}
-
-			<!-- TAB 2: MUTUAL FRIENDS -->
-			{#if activeTab === 'mutual' && !profileData.is_self}
-				<div class="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
-					<div>
-						<h3 class="text-sm font-black text-pink-950">Mutual Friends</h3>
-						<p class="text-[11px] text-pink-400 font-bold">You and @{profileData.user.username} both know these people</p>
-					</div>
-
-					<div class="space-y-2">
-						{#each profileData.mutual_friends as mutual}
-							<div class="p-2.5 bg-white border border-pink-100 rounded-xl flex items-center justify-between shadow-2xs hover:border-pink-200 transition-all">
-								<button
-									type="button"
-									onclick={() => viewUserProfile(mutual)}
-									class="flex items-center space-x-2.5 min-w-0 text-left cursor-pointer flex-grow border-0 bg-transparent p-0"
-								>
-									<div class="w-9 h-9 rounded-full bg-pink-400 text-white flex items-center justify-center font-bold text-xs overflow-hidden flex-shrink-0 shadow-2xs">
-										{#if mutual.avatar_url}
-											<img src={mutual.avatar_url} alt={mutual.username} class="w-full h-full object-cover" />
-										{:else}
-											{mutual.username?.charAt(0).toUpperCase()}
-										{/if}
-									</div>
-									<div class="min-w-0 pr-1">
-										<p class="text-xs font-black text-pink-950 truncate">@{mutual.username}</p>
-										<p class="text-[10px] text-pink-400 font-bold truncate">{mutual.email}</p>
-									</div>
-								</button>
-
-								<div class="flex items-center space-x-1 flex-shrink-0">
-									<button
-										onclick={() => viewUserProfile(mutual)}
-										class="p-1.5 sm:p-2 rounded-xl flex items-center justify-center text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-95 transition-all duration-150 cursor-pointer"
-										title="View Profile"
-										aria-label="View Profile"
-									>
-										<UserCircle class="w-5 h-5" strokeWidth={2} />
-									</button>
-								</div>
-							</div>
-						{/each}
-					</div>
-				</div>
-			{/if}
-
-			<!-- TAB 3: MOOD SUMMARY -->
-			{#if activeTab === 'mood' && (profileData.is_self || !isTargetPrivate)}
-				<div class="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
-					<div class="flex items-center justify-between gap-2">
-						<div class="min-w-0">
-							<h3 class="text-sm font-black text-pink-950 truncate">
-								Mood Insights & Reflection
-							</h3>
-							<p class="text-[11px] text-pink-400 font-bold truncate">
-								{profileData.is_self ? 'System feedback based on your overall mood logs' : 'System feedback based on overall mood logs'}
-							</p>
-						</div>
-
-						{#if profileData.is_self}
+						{#if profileData.is_self || !isTargetPrivate}
 							<button
-								onclick={() => goto('/mood-graph')}
-								class="px-3 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] rounded-lg shadow-2xs active:scale-95 transition-all cursor-pointer flex-shrink-0"
+								type="button"
+								onclick={() => activeTab = 'mood'}
+								class="flex-1 py-1.5 px-2 rounded-lg text-xs font-black transition-all flex items-center justify-center space-x-1 cursor-pointer {activeTab === 'mood' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-500 hover:text-pink-700'}"
 							>
-								Full Graph
+								<BarChart3 class="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2} />
+								<span class="truncate">Mood Insights</span>
 							</button>
 						{/if}
 					</div>
 
-					{#if isLoadingMoods}
-						<!-- Skeleton Loader for Mood Insights & Reflection -->
-						<div class="p-3 bg-pink-50/20 border border-pink-100 rounded-xl space-y-2.5 shadow-2xs animate-pulse">
-							<!-- Header tag skeleton -->
-							<div class="h-3 w-32 bg-pink-200/70 rounded-md"></div>
-
-							<!-- Badges skeleton row -->
-							<div class="flex items-center gap-2 flex-wrap py-0.5">
-								<div class="h-6 w-28 bg-pink-200/60 rounded-full"></div>
-								<div class="h-6 w-16 bg-pink-100/80 rounded-full"></div>
-							</div>
-
-							<!-- System Feedback Quote Skeleton -->
-							<div class="p-2.5 bg-white border border-pink-100 rounded-xl flex items-start space-x-2 shadow-2xs">
-								<div class="w-3.5 h-3.5 rounded-full bg-pink-200/70 flex-shrink-0 mt-0.5"></div>
-								<div class="flex-1 space-y-1.5 py-0.5">
-									<div class="h-3 bg-pink-200/60 rounded w-11/12"></div>
-									<div class="h-3 bg-pink-100/70 rounded w-2/3"></div>
-								</div>
+					<!-- CARD 1: ABOUT YOU (Mobile Only, since merged into Left Header on Desktop) -->
+					<div class="{activeTab === 'about' ? 'block' : 'hidden'} lg:hidden bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
+						<div class="flex items-center space-x-2.5">
+							<User class="w-4 h-4 text-[#f43f8e]" strokeWidth={2} />
+							<div>
+								<h3 class="text-sm font-black text-pink-950">
+									{profileData.is_self ? 'About You' : `About @${profileData.user.username}`}
+								</h3>
+								<p class="text-[11px] text-pink-400 font-bold">Bio & personal information</p>
 							</div>
 						</div>
-					{:else}
-						<!-- Dominant Moods Container -->
-						<div class="p-3 bg-pink-50/20 border border-pink-100 rounded-xl space-y-2 shadow-2xs">
-							<p class="text-[9px] font-black uppercase tracking-wider text-[#f43f8e]">
-								{#if dominantMoods && dominantMoods.length > 1}
-									DOMINANT MOODS (TIED)
-								{:else if dominantMoods && dominantMoods.length === 1}
-									DOMINANT MOOD
-								{:else}
-									NO MOOD LOGS YET
-								{/if}
-							</p>
 
-							<div class="flex items-center gap-1.5 flex-wrap">
-								{#if dominantMoods && dominantMoods.length > 0}
-									{#each dominantMoods as mood}
-										<div class="px-2.5 py-0.5 border font-black text-[11px] rounded-full flex items-center space-x-1 shadow-2xs {getMoodBadgeStyle(mood)}">
-											<span>{getMoodDynamicEmoji(mood)}</span>
-											<span>{mood} {dominantMoodCount}</span>
-										</div>
-									{/each}
-									<div class="px-2.5 py-0.5 bg-pink-100/70 text-[#f43f8e] border border-pink-200 font-black text-[11px] rounded-full flex items-center space-x-1 shadow-2xs">
-										<span>{totalMoodLogs} {totalMoodLogs === 1 ? 'Log' : 'Logs'}</span>
-									</div>
-								{:else}
-									<p class="text-xs text-pink-400 font-medium">No mood entries recorded yet.</p>
-								{/if}
+						<!-- Bio Quote Block or Add Bio Button -->
+						{#if profileData.user.bio}
+							<div class="p-3 bg-pink-50/50 border border-pink-100 rounded-xl">
+								<p class="text-xs text-pink-950 font-bold leading-relaxed italic">
+									"{profileData.user.bio}"
+								</p>
+							</div>
+						{:else if profileData.is_self}
+							<button
+								type="button"
+								onclick={openEditProfileModal}
+								class="w-full py-2.5 border border-dashed border-pink-300 hover:border-[#f43f8e] bg-pink-50/30 hover:bg-pink-50 text-[#f43f8e] font-black text-xs rounded-xl flex items-center justify-center space-x-1 transition-all cursor-pointer"
+							>
+								+ Add your Bio & Personal Details
+							</button>
+						{/if}
+
+						<!-- Subcards for Relationship, Birthday, Gender -->
+						<div class="space-y-2">
+							<!-- Relationship Status Card -->
+							<div class="p-2.5 bg-pink-50/30 border border-pink-100 rounded-xl flex items-center space-x-3 shadow-2xs">
+								<div class="w-8 h-8 rounded-lg bg-pink-100/70 text-[#f43f8e] border border-pink-200/60 flex items-center justify-center flex-shrink-0">
+									<Heart class="w-4 h-4" />
+								</div>
+								<div>
+									<p class="text-[9px] font-black text-pink-400 uppercase tracking-wider">RELATIONSHIP STATUS</p>
+									<p class="text-xs font-black text-pink-950">
+										{profileData.user.relationship_status || 'In a relationship'}
+									</p>
+								</div>
 							</div>
 
-							<!-- System Feedback Quote -->
-							<div class="p-2.5 bg-white border border-pink-100 rounded-xl flex items-start space-x-2 shadow-2xs">
-								<MessageCircle class="w-3.5 h-3.5 text-[#f43f8e] shrink-0 mt-0.5" strokeWidth={2} />
-								<p class="text-xs text-pink-950/80 font-bold italic leading-relaxed">
-									"{getSystemFeedbackMessage(dominantMood, dominantMoods)}"
+							<!-- Birthday Card -->
+							<div class="p-2.5 bg-pink-50/30 border border-pink-100 rounded-xl flex items-center space-x-3 shadow-2xs">
+								<div class="w-8 h-8 rounded-lg bg-pink-100/70 text-[#f43f8e] border border-pink-200/60 flex items-center justify-center flex-shrink-0">
+									<Calendar class="w-4 h-4" strokeWidth={2} />
+								</div>
+								<div>
+									<p class="text-[9px] font-black text-pink-400 uppercase tracking-wider">BIRTHDAY</p>
+									<p class="text-xs font-black text-pink-950">
+										{profileData.user.birthday ? formatBirthday(profileData.user.birthday) : 'April 12, 2005'}
+									</p>
+								</div>
+							</div>
+
+							<!-- Gender Card -->
+							{#if profileData.user.gender && profileData.user.gender !== 'Prefer not to say'}
+								<div class="p-2.5 bg-pink-50/30 border border-pink-100 rounded-xl flex items-center space-x-3 shadow-2xs">
+									<div class="w-8 h-8 rounded-lg bg-pink-100/70 text-[#f43f8e] border border-pink-200/60 flex items-center justify-center flex-shrink-0">
+										<User class="w-4 h-4" strokeWidth={2} />
+									</div>
+									<div>
+										<p class="text-[9px] font-black text-pink-400 uppercase tracking-wider">GENDER</p>
+										<p class="text-xs font-black text-pink-950">
+											{profileData.user.gender}
+										</p>
+									</div>
+								</div>
+							{/if}
+						</div>
+					</div>
+
+					<!-- CARD 2: FRIENDS LIST -->
+					<div class="{activeTab === 'friends' ? 'block' : 'hidden'} lg:block bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
+						<div>
+							<h3 class="text-sm font-black text-pink-950">
+								{profileData.is_self ? 'My Friends' : `@${profileData.user.username}'s Friends`}
+							</h3>
+							<p class="text-[11px] text-pink-400 font-bold">{profileData.total_friends !== null && profileData.total_friends !== undefined ? `${profileData.total_friends} total connections` : '0 total connections'}</p>
+						</div>
+
+						<!-- Search Friends Input -->
+						<div class="relative">
+							<input
+								type="text"
+								bind:value={friendsSearch}
+								placeholder="Search friends..."
+								class="w-full pl-8 pr-3.5 py-2 bg-white border border-pink-200 rounded-xl text-xs font-bold text-pink-950 placeholder-pink-300 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/30 transition-all"
+							/>
+							<Search class="w-3.5 h-3.5 text-pink-400 absolute left-2.5 top-2.5" strokeWidth={2} />
+						</div>
+
+						{#if filteredFriends.length === 0}
+							<div class="text-center py-8 border border-dashed border-pink-200 rounded-xl">
+								<p class="text-xs font-bold text-pink-400">
+									{friendsSearch ? 'No friends matched your search.' : 'No friends yet.'}
 								</p>
+							</div>
+						{:else}
+							<!-- Modern Profile Cards Grid (4 Columns, Borderless & Slightly Darker Tint) -->
+							<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-2.5 max-h-[600px] overflow-y-auto pr-1">
+								{#each filteredFriends as friend}
+									<div class="bg-[#fcdde9] hover:bg-[#f8cadc] rounded-2xl p-2 transition-all duration-300 flex flex-col justify-between group relative border-0">
+										<!-- Rounded Photo Container -->
+										<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-b from-white to-pink-50 mb-1.5 flex items-center justify-center">
+											{#if friend.avatar_url}
+												<img
+													src={friend.avatar_url}
+													alt={friend.username}
+													class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+												/>
+											{:else}
+												<div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-tr from-pink-200 via-rose-100 to-pink-300 text-[#f43f8e]">
+													<span class="text-xl sm:text-2xl font-black opacity-80">{friend.username?.charAt(0).toUpperCase()}</span>
+												</div>
+											{/if}
+
+											<!-- Status Badge on Photo -->
+											<div class="absolute top-1 right-1 px-1.5 py-0.2 rounded-full bg-black/45 backdrop-blur-md text-white text-[8px] font-bold flex items-center space-x-1 shadow-xs">
+												<span class="w-1 h-1 rounded-full {formatLastActive(friend.last_activity) === 'Active now' || formatLastActive(friend.last_activity) === 'Active just now' ? 'bg-[#10b981] animate-pulse' : 'bg-white/60'}"></span>
+												<span>{formatLastActive(friend.last_activity)}</span>
+											</div>
+										</div>
+
+										<!-- Name & Bio / Description -->
+										<div class="space-y-0.5 mb-1 px-0.5">
+											<h4 class="text-xs font-black text-pink-950 truncate group-hover:text-[#f43f8e] transition-colors">
+												@{friend.username}
+											</h4>
+											<p class="text-[9.5px] sm:text-[10px] text-pink-600/80 font-medium truncate leading-tight">
+												{friend.bio || friend.email || 'ChronoMuse Friend'}
+											</p>
+										</div>
+
+										<!-- Bottom Action Bar (Pure Icons Only, Borderless) -->
+										<div class="flex items-center justify-end pt-1 mt-auto gap-2">
+											<button
+												type="button"
+												onclick={() => viewUserProfile(friend)}
+												class="p-1 text-pink-500 hover:text-[#f43f8e] transition-colors active:scale-90 flex items-center justify-center cursor-pointer"
+												title="View @{friend.username}'s Profile"
+											>
+												<UserCircle class="w-4 h-4" strokeWidth={2} />
+											</button>
+
+											{#if String(friend.id || friend.friend_id || friend.user_id) === String(currentUser?.id)}
+												<span class="text-[10px] font-black text-[#f43f8e]">
+													You
+												</span>
+											{:else}
+												<button
+													type="button"
+													onclick={() => openChatWithUser(friend)}
+													class="p-1 text-[#f43f8e] hover:text-[#e0337f] transition-colors active:scale-90 flex items-center justify-center cursor-pointer"
+													title="Chat with @{friend.username}"
+												>
+													<MessageSquare class="w-4 h-4" strokeWidth={2} />
+												</button>
+											{/if}
+										</div>
+									</div>
+								{/each}
+							</div>
+						{/if}
+					</div>
+
+					<!-- MUTUAL FRIENDS CARD (if not self and has mutual friends) -->
+					{#if !profileData.is_self && profileData.mutual_friends && profileData.mutual_friends.length > 0}
+						<div class="{activeTab === 'mutual' || activeTab === 'friends' ? 'block' : 'hidden'} lg:block bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
+							<div>
+								<h3 class="text-sm font-black text-pink-950">Mutual Friends</h3>
+								<p class="text-[11px] text-pink-400 font-bold">You and @{profileData.user.username} both know these people</p>
+							</div>
+
+							<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-2.5 max-h-[400px] overflow-y-auto pr-1">
+								{#each profileData.mutual_friends as mutual}
+									<div class="bg-[#fcdde9] hover:bg-[#f8cadc] rounded-2xl p-2 transition-all duration-300 flex flex-col justify-between group border-0">
+										<!-- Rounded Photo Container -->
+										<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-b from-white to-pink-50 mb-1.5 flex items-center justify-center">
+											{#if mutual.avatar_url}
+												<img
+													src={mutual.avatar_url}
+													alt={mutual.username}
+													class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+												/>
+											{:else}
+												<div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-tr from-pink-200 via-rose-100 to-pink-300 text-[#f43f8e]">
+													<span class="text-xl sm:text-2xl font-black opacity-80">{mutual.username?.charAt(0).toUpperCase()}</span>
+												</div>
+											{/if}
+										</div>
+
+										<!-- Middle: Name & Info -->
+										<div class="space-y-0.5 mb-1 px-0.5">
+											<h4 class="text-xs font-black text-pink-950 truncate group-hover:text-[#f43f8e] transition-colors">
+												@{mutual.username}
+											</h4>
+											<p class="text-[9.5px] sm:text-[10px] text-pink-600/80 font-medium truncate leading-tight">
+												{mutual.email || 'Mutual connection'}
+											</p>
+										</div>
+
+										<!-- Bottom: View Profile Button (Pure Icon Only) -->
+										<div class="flex items-center justify-end pt-1 mt-auto">
+											<button
+												type="button"
+												onclick={() => viewUserProfile(mutual)}
+												class="p-1 text-[#f43f8e] hover:text-[#e0337f] transition-colors flex items-center justify-center cursor-pointer active:scale-90"
+												title="View @{mutual.username}'s Profile"
+											>
+												<UserCircle class="w-4 h-4" strokeWidth={2} />
+											</button>
+										</div>
+									</div>
+								{/each}
 							</div>
 						</div>
 					{/if}
+
+					<!-- CARD 3: MOOD INSIGHTS & REFLECTION -->
+					{#if profileData.is_self || !isTargetPrivate}
+						<div class="{activeTab === 'mood' ? 'block' : 'hidden'} lg:block bg-white rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] border border-pink-100/90 space-y-3 animate-fade-in">
+							<div class="flex items-center justify-between gap-2">
+								<div class="min-w-0">
+									<h3 class="text-sm font-black text-pink-950 truncate">
+										Mood Insights & Reflection
+									</h3>
+									<p class="text-[11px] text-pink-400 font-bold truncate">
+										{profileData.is_self ? 'System feedback based on your overall mood logs' : 'System feedback based on overall mood logs'}
+									</p>
+								</div>
+
+								{#if profileData.is_self}
+									<button
+										onclick={() => goto('/mood-graph')}
+										class="px-3 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] rounded-lg shadow-2xs active:scale-95 transition-all cursor-pointer flex-shrink-0"
+									>
+										Full Graph
+									</button>
+								{/if}
+							</div>
+
+							{#if isLoadingMoods}
+								<!-- Skeleton Loader for Mood Insights & Reflection -->
+								<div class="p-3 bg-pink-50/20 border border-pink-100 rounded-xl space-y-2.5 shadow-2xs animate-pulse">
+									<div class="h-3 w-32 bg-pink-200/70 rounded-md"></div>
+									<div class="flex items-center gap-2 flex-wrap py-0.5">
+										<div class="h-6 w-28 bg-pink-200/60 rounded-full"></div>
+										<div class="h-6 w-16 bg-pink-100/80 rounded-full"></div>
+									</div>
+									<div class="p-2.5 bg-white border border-pink-100 rounded-xl flex items-start space-x-2 shadow-2xs">
+										<div class="w-3.5 h-3.5 rounded-full bg-pink-200/70 flex-shrink-0 mt-0.5"></div>
+										<div class="flex-1 space-y-1.5 py-0.5">
+											<div class="h-3 bg-pink-200/60 rounded w-11/12"></div>
+											<div class="h-3 bg-pink-100/70 rounded w-2/3"></div>
+										</div>
+									</div>
+								</div>
+							{:else}
+								<!-- Dominant Moods Container -->
+								<div class="p-3 bg-pink-50/20 border border-pink-100 rounded-xl space-y-2 shadow-2xs">
+									<p class="text-[9px] font-black uppercase tracking-wider text-[#f43f8e]">
+										{#if dominantMoods && dominantMoods.length > 1}
+											DOMINANT MOODS (TIED)
+										{:else if dominantMoods && dominantMoods.length === 1}
+											DOMINANT MOOD
+										{:else}
+											NO MOOD LOGS YET
+										{/if}
+									</p>
+
+									<div class="flex items-center gap-1.5 flex-wrap">
+										{#if dominantMoods && dominantMoods.length > 0}
+											{#each dominantMoods as mood}
+												<div class="px-2.5 py-0.5 border font-black text-[11px] rounded-full flex items-center space-x-1 shadow-2xs {getMoodBadgeStyle(mood)}">
+													<span>{getMoodDynamicEmoji(mood)}</span>
+													<span>{mood} {dominantMoodCount}</span>
+												</div>
+											{/each}
+											<div class="px-2.5 py-0.5 bg-pink-100/70 text-[#f43f8e] border border-pink-200 font-black text-[11px] rounded-full flex items-center space-x-1 shadow-2xs">
+												<span>{totalMoodLogs} {totalMoodLogs === 1 ? 'Log' : 'Logs'}</span>
+											</div>
+										{:else}
+											<p class="text-xs text-pink-400 font-medium">No mood entries recorded yet.</p>
+										{/if}
+									</div>
+
+									<!-- System Feedback Quote -->
+									<div class="p-2.5 bg-white border border-pink-100 rounded-xl flex items-start space-x-2 shadow-2xs">
+										<MessageCircle class="w-3.5 h-3.5 text-[#f43f8e] shrink-0 mt-0.5" strokeWidth={2} />
+										<p class="text-xs text-pink-950/80 font-bold italic leading-relaxed">
+											"{getSystemFeedbackMessage(dominantMood, dominantMoods)}"
+										</p>
+									</div>
+								</div>
+							{/if}
+						</div>
+					{/if}
+
 				</div>
-			{/if}
+			</div>
 
 		{/if}
 	</main>

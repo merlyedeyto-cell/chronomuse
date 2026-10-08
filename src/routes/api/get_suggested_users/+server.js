@@ -18,7 +18,7 @@ export async function POST({ request }) {
 		// 2. Fetch paginated users
 		let query = supabase
 			.from('chronomuse_users')
-			.select('id, username, email, avatar_url, created_at, last_activity')
+			.select('id, username, email, avatar_url, bio, created_at, last_activity')
 			.order('id', { ascending: false })
 			.range(offset, offset + pageSize - 1);
 
@@ -103,6 +103,7 @@ export async function POST({ request }) {
 				id: u.id,
 				username: u.username,
 				email: u.email,
+				bio: u.bio || null,
 				avatar_url: u.avatar_url || null,
 				created_at: u.created_at,
 				last_activity: u.last_activity,

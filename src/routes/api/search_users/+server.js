@@ -13,7 +13,7 @@ export async function POST({ request }) {
 		// 1. Search users by username (case-insensitive substring match)
 		const { data: matchedUsers, error: searchError } = await supabase
 			.from('chronomuse_users')
-			.select('id, username, email, avatar_url, created_at, last_activity')
+			.select('id, username, email, avatar_url, bio, created_at, last_activity')
 			.ilike('username', `%${searchQuery}%`)
 			.limit(10);
 
@@ -103,6 +103,7 @@ export async function POST({ request }) {
 				id: u.id,
 				username: u.username,
 				email: u.email,
+				bio: u.bio || null,
 				avatar_url: u.avatar_url || null,
 				created_at: u.created_at || null,
 				last_activity: u.last_activity || null,
