@@ -1,6 +1,6 @@
 <script>
 	import { onMount, tick } from 'svelte';
-	import { goto } from '$app/navigation';
+	import { goto, pushState, replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
@@ -241,7 +241,7 @@
 			const fid = friendIdParam ? Number(friendIdParam) : null;
 			if (pendingMemoryReply) {
 				if (typeof window !== 'undefined') {
-					history.replaceState({ chatOpen: false }, '', '/chat');
+					replaceState('/chat', { chatOpen: false });
 				}
 				triggerMemoryReply({
 					friend_id: pendingMemoryReply.sender_id || pendingMemoryReply.friend_id || fid,
@@ -253,7 +253,7 @@
 			} else if (pendingNoteReply) {
 				// Open the chat immediately (no waiting for the chat list) with the reply bar
 				if (typeof window !== 'undefined') {
-					history.replaceState({ chatOpen: false }, '', '/chat');
+					replaceState('/chat', { chatOpen: false });
 				}
 				triggerNoteReply({
 					user_id: pendingNoteReply.user_id,
@@ -264,7 +264,7 @@
 			} else if (fid && user?.id && Number(fid) === Number(user.id)) {
 				activeFriend = null;
 				if (typeof window !== 'undefined') {
-					history.replaceState({ chatOpen: false }, '', '/chat');
+					replaceState('/chat', { chatOpen: false });
 				}
 			} else {
 				activeFriend = {
@@ -281,13 +281,13 @@
 				// Ensure base history state is /chat so pressing back on mobile returns to chat list (Friends Chat)
 				if (typeof window !== 'undefined') {
 					const currentSearch = window.location.search;
-					history.replaceState({ chatOpen: false }, '', '/chat');
-					history.pushState({ chatOpen: true, friend_id: Number(friendIdParam) }, '', `/chat${currentSearch}`);
+					replaceState('/chat', { chatOpen: false });
+					pushState(`/chat${currentSearch}`, { chatOpen: true, friend_id: Number(friendIdParam) });
 				}
 			}
 		} else {
 			if (typeof window !== 'undefined') {
-				history.replaceState({ chatOpen: false }, '', '/chat');
+				replaceState('/chat', { chatOpen: false });
 			}
 		}
 
@@ -383,7 +383,7 @@
 				replyingTo = null;
 				isOtherUserTyping = false;
 				if (typeof window !== 'undefined') {
-					history.replaceState({ chatOpen: false }, '', '/chat');
+					replaceState('/chat', { chatOpen: false });
 				}
 			}
 		};
@@ -996,7 +996,7 @@
 		// Push history state so hardware back button on phone returns to chat list (the screen with all chats)
 		if (typeof window !== 'undefined') {
 			const chatUrl = `/chat?friend_id=${friend.friend_id}&username=${encodeURIComponent(friend.username)}`;
-			history.pushState({ chatOpen: true, friend_id: friend.friend_id }, '', chatUrl);
+			pushState(chatUrl, { chatOpen: true, friend_id: friend.friend_id });
 		}
 
 		initTypingChannel(friend.friend_id);
@@ -1012,7 +1012,7 @@
 		replyingTo = null;
 		isOtherUserTyping = false;
 		if (typeof window !== 'undefined') {
-			history.replaceState({ chatOpen: false }, '', '/chat');
+			replaceState('/chat', { chatOpen: false });
 		}
 	}
 

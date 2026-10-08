@@ -5,12 +5,16 @@
 	import { supabase } from '$lib/supabaseClient.js';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { playClickSound } from '$lib/soundEffects.js';
-	import { Bell, Settings, LogOut } from 'lucide-svelte';
+	import { Bell, Settings, LogOut, Menu } from 'lucide-svelte';
+	import MobileSidebar from '$lib/MobileSidebar.svelte';
 
 	let notificationsCount = $state(0);
 	let unreadChatsCount = $state(0);
+	let pendingFriendRequestsCount = $state(0);
 	let currentUserId = $state(null);
+	let currentUser = $state(null);
 	let showLogoutModal = $state(false);
+	let isMobileSidebarOpen = $state(false);
 
 	const navItems = [
 		{ id: 'dashboard', label: 'Calendar', path: '/dashboard' },
@@ -30,18 +34,35 @@
 		return 0;
 	});
 
+	let totalMobileBadgeCount = $derived(notificationsCount + unreadChatsCount + pendingFriendRequestsCount);
+
+	let displayMobileUsername = $derived.by(() => {
+		const rawName = currentUser?.username || 'User';
+		return rawName.length > 6 ? rawName.slice(0, 6) + '...' : rawName;
+	});
+
+	function loadUserData() {
+		if (typeof window === 'undefined') return;
+		try {
+			const stored = localStorage.getItem('chronomuse_user');
+			currentUser = stored ? JSON.parse(stored) : null;
+			currentUserId = currentUser?.id || null;
+		} catch (e) {
+			currentUser = null;
+			currentUserId = null;
+		}
+	}
+
 	function fetchNotifications() {
 		if (typeof window === 'undefined') return;
 		try {
-			const currentUser = localStorage.getItem('chronomuse_user');
-			const user = currentUser ? JSON.parse(currentUser) : null;
-			if (!user || !user.id) return;
-			currentUserId = user.id;
+			loadUserData();
+			if (!currentUserId) return;
 
 			fetch(API_ENDPOINTS.getNotifications, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ user_id: user.id })
+				body: JSON.stringify({ user_id: currentUserId })
 			})
 			.then(r => r.json())
 			.then(data => {
@@ -56,14 +77,13 @@
 	function fetchUnreadChats() {
 		if (typeof window === 'undefined') return;
 		try {
-			const currentUser = localStorage.getItem('chronomuse_user');
-			const user = currentUser ? JSON.parse(currentUser) : null;
-			if (!user || !user.id) return;
+			loadUserData();
+			if (!currentUserId) return;
 
 			fetch(API_ENDPOINTS.getChatList, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ user_id: user.id })
+				body: JSON.stringify({ user_id: currentUserId })
 			})
 			.then(r => r.json())
 			.then(data => {
@@ -73,6 +93,33 @@
 			})
 			.catch(() => {});
 		} catch (e) {}
+	}
+
+	function fetchFriendRequests() {
+		if (typeof window === 'undefined') return;
+		try {
+			loadUserData();
+			if (!currentUserId) return;
+
+			fetch(API_ENDPOINTS.getFriendRequestsCount, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ user_id: currentUserId })
+			})
+			.then(r => r.json())
+			.then(data => {
+				if (data?.data) {
+					pendingFriendRequestsCount = data.data.pending_count || 0;
+				}
+			})
+			.catch(() => {});
+		} catch (e) {}
+	}
+
+	function refreshAllCounts() {
+		fetchNotifications();
+		fetchUnreadChats();
+		fetchFriendRequests();
 	}
 
 	function handleNavigate(path) {
@@ -93,6 +140,11 @@
 	function handleSettingsClick() {
 		playClickSound();
 		goto('/settings');
+	}
+
+	function toggleMobileSidebar() {
+		playClickSound();
+		isMobileSidebarOpen = !isMobileSidebarOpen;
 	}
 
 	function handleLogout() {
@@ -119,23 +171,17 @@
 	}
 
 	onMount(() => {
-		fetchNotifications();
-		fetchUnreadChats();
+		refreshAllCounts();
 
-		// Sane fallback polling interval (60 seconds) to avoid network clogging
-		const interval = setInterval(() => {
-			fetchNotifications();
-			fetchUnreadChats();
-		}, 60000);
+		// Sane fallback polling interval (45 seconds)
+		const interval = setInterval(refreshAllCounts, 45000);
 
 		const handleRealtime = () => {
-			fetchNotifications();
-			fetchUnreadChats();
+			refreshAllCounts();
 		};
 
 		const handleWindowFocus = () => {
-			fetchNotifications();
-			fetchUnreadChats();
+			refreshAllCounts();
 		};
 
 		window.addEventListener('focus', handleWindowFocus);
@@ -143,6 +189,7 @@
 		window.addEventListener('chronomuse_friend_change', handleRealtime);
 		window.addEventListener('chronomuse_memory_change', handleRealtime);
 		window.addEventListener('chronomuse_new_message', handleRealtime);
+		window.addEventListener('chronomuse_profile_updated', loadUserData);
 
 		return () => {
 			clearInterval(interval);
@@ -151,6 +198,7 @@
 			window.removeEventListener('chronomuse_friend_change', handleRealtime);
 			window.removeEventListener('chronomuse_memory_change', handleRealtime);
 			window.removeEventListener('chronomuse_new_message', handleRealtime);
+			window.removeEventListener('chronomuse_profile_updated', loadUserData);
 		};
 	});
 </script>
@@ -166,9 +214,9 @@
 		</a>
 
 		<!-- Right Container: Desktop Navigation + Action Buttons -->
-		<div class="flex items-center space-x-4 sm:space-x-6 lg:space-x-7">
+		<div class="hidden md:flex items-center space-x-4 sm:space-x-6 lg:space-x-7">
 			<!-- Desktop Navigation Bar (Text only with active pink underline) -->
-			<nav class="hidden md:flex items-center space-x-5 lg:space-x-7 font-sans">
+			<nav class="flex items-center space-x-5 lg:space-x-7 font-sans">
 				{#each navItems as item, idx}
 					<button
 						type="button"
@@ -181,6 +229,10 @@
 								<span class="absolute -top-1.5 -right-3.5 min-w-3.5 h-3.5 px-0.5 bg-[#f43f5e] text-white text-[8px] font-black rounded-full flex items-center justify-center shadow-xs animate-pulse">
 									{unreadChatsCount > 9 ? '9+' : unreadChatsCount}
 								</span>
+							{:else if item.id === 'friends' && pendingFriendRequestsCount > 0}
+								<span class="absolute -top-1.5 -right-3.5 min-w-3.5 h-3.5 px-0.5 bg-[#f43f8e] text-white text-[8px] font-black rounded-full flex items-center justify-center shadow-xs animate-pulse">
+									{pendingFriendRequestsCount > 9 ? '9+' : pendingFriendRequestsCount}
+								</span>
 							{/if}
 						</span>
 						{#if activeIndex === idx}
@@ -190,7 +242,7 @@
 				{/each}
 			</nav>
 
-			<!-- Notification, Settings, and Logout Action Buttons -->
+			<!-- Desktop Notification, Settings, and Logout Action Buttons -->
 			<div class="flex items-center space-x-1 sm:space-x-1.5">
 				<!-- Notifications Button -->
 				<button
@@ -234,8 +286,46 @@
 				</button>
 			</div>
 		</div>
+
+		<!-- Mobile Header Right: Username Text + Sidebar Hamburger Toggle Button -->
+		<div class="flex md:hidden items-center space-x-2.5">
+			<!-- User Name Text (Non-clickable, max 6 chars + ...) -->
+			<span
+				class="text-xs sm:text-sm font-extrabold text-pink-600/90 select-none tracking-tight cursor-default"
+			>
+				{displayMobileUsername}
+			</span>
+
+			<!-- Mobile Hamburger Menu Button -->
+			<button
+				type="button"
+				onclick={toggleMobileSidebar}
+				class="p-2 rounded-2xl relative bg-pink-50/80 hover:bg-pink-100 text-[#f43f8e] active:scale-95 transition-all duration-150 cursor-pointer border border-pink-200/80 shadow-2xs"
+				aria-label="Open mobile navigation menu"
+				aria-expanded={isMobileSidebarOpen}
+			>
+				<Menu class="w-6 h-6" />
+
+				<!-- Activity indicator dot if unread items exist -->
+				{#if totalMobileBadgeCount > 0}
+					<span class="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-[#f43f8e] text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-xs animate-pulse border-2 border-white">
+						{totalMobileBadgeCount > 99 ? '99+' : totalMobileBadgeCount}
+					</span>
+				{/if}
+			</button>
+		</div>
 	</div>
 </header>
+
+<!-- Mobile Sidebar Drawer Component -->
+<MobileSidebar
+	bind:isOpen={isMobileSidebarOpen}
+	{notificationsCount}
+	{unreadChatsCount}
+	{pendingFriendRequestsCount}
+	{currentUser}
+	onLogout={() => { showLogoutModal = true; }}
+/>
 
 <!-- Logout Confirmation Modal -->
 {#if showLogoutModal}

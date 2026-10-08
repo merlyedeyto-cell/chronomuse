@@ -5,6 +5,7 @@ export { default as LoginCard } from './LoginCard.svelte';
 export { default as RegisterCard } from './RegisterCard.svelte';
 export { default as Calendar } from './Calendar.svelte';
 export { default as Sidebar } from './Sidebar.svelte';
+export { default as MobileSidebar } from './MobileSidebar.svelte';
 export { default as TopBar } from './TopBar.svelte';
 export { default as AppHeader } from './AppHeader.svelte';
 export { default as AppFooter } from './AppFooter.svelte';
