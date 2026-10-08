@@ -36,11 +36,6 @@
 
 	let totalMobileBadgeCount = $derived(notificationsCount + unreadChatsCount + pendingFriendRequestsCount);
 
-	let displayMobileUsername = $derived.by(() => {
-		const rawName = currentUser?.username || 'User';
-		return rawName.length > 6 ? rawName.slice(0, 6) + '...' : rawName;
-	});
-
 	function loadUserData() {
 		if (typeof window === 'undefined') return;
 		try {
@@ -287,20 +282,13 @@
 			</div>
 		</div>
 
-		<!-- Mobile Header Right: Username Text + Sidebar Hamburger Toggle Button -->
-		<div class="flex md:hidden items-center space-x-2.5">
-			<!-- User Name Text (Non-clickable, max 6 chars + ...) -->
-			<span
-				class="text-xs sm:text-sm font-extrabold text-pink-600/90 select-none tracking-tight cursor-default"
-			>
-				{displayMobileUsername}
-			</span>
-
-			<!-- Mobile Hamburger Menu Button -->
+		<!-- Mobile Header Right: Sidebar Hamburger Toggle Button (Icon only) -->
+		<div class="flex md:hidden items-center">
+			<!-- Mobile Hamburger Menu Button (Icon only, no button container styling) -->
 			<button
 				type="button"
 				onclick={toggleMobileSidebar}
-				class="p-2 rounded-2xl relative bg-pink-50/80 hover:bg-pink-100 text-[#f43f8e] active:scale-95 transition-all duration-150 cursor-pointer border border-pink-200/80 shadow-2xs"
+				class="p-1 relative text-[#f43f8e] hover:text-[#e0337f] active:scale-90 transition-all cursor-pointer flex items-center justify-center"
 				aria-label="Open mobile navigation menu"
 				aria-expanded={isMobileSidebarOpen}
 			>

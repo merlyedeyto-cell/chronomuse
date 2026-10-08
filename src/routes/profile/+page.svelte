@@ -1568,34 +1568,43 @@
 										{#if userNote}
 											<button 
 												type="button"
-												class="absolute -top-8 left-0 z-20 bg-white px-2.5 py-0.5 rounded-xl border-2 border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-md flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+												class="absolute -top-8 left-0 z-20 bg-white px-2.5 py-0.5 rounded-2xl border-2 border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-md flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
 												onclick={openNoteModal}
 												title="Click to edit status note"
 											>
 												<span class="max-w-[120px] truncate">{userNote}</span>
-												<div class="absolute -bottom-1.5 left-4 w-2 h-2 bg-white border-r-2 border-b-2 border-pink-200 rotate-45"></div>
+												<svg class="absolute -bottom-2 left-3.5 w-3.5 h-2.5 overflow-visible pointer-events-none" viewBox="0 0 14 10" fill="none">
+													<path d="M1 0 L13 0 L4 9.5 Z" fill="white" stroke="#fbcfe8" stroke-width="2" stroke-linejoin="round" />
+													<line x1="2" y1="0" x2="12" y2="0" stroke="white" stroke-width="3" />
+												</svg>
 											</button>
 										{:else}
 											<button 
 												type="button"
-												class="absolute -top-7 left-0 z-20 bg-white/95 backdrop-blur-xs px-2.5 py-0.5 rounded-full border-2 border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-md flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap hover:bg-pink-50"
+												class="absolute -top-7 left-0 z-20 bg-white/95 backdrop-blur-xs px-2.5 py-0.5 rounded-2xl border-2 border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-md flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap hover:bg-pink-50"
 												onclick={openNoteModal}
 												title="Add a note"
 											>
 												<span>+ Note</span>
-												<div class="absolute -bottom-1 left-4 w-1.5 h-1.5 bg-white border-r-2 border-b-2 border-pink-200 rotate-45"></div>
+												<svg class="absolute -bottom-2 left-3.5 w-3.5 h-2.5 overflow-visible pointer-events-none" viewBox="0 0 14 10" fill="none">
+													<path d="M1 0 L13 0 L4 9.5 Z" fill="white" stroke="#fbcfe8" stroke-width="2" stroke-linejoin="round" />
+													<line x1="2" y1="0" x2="12" y2="0" stroke="white" stroke-width="3" />
+												</svg>
 											</button>
 										{/if}
 									{:else}
 										{#if userNote}
 											<button
 												type="button"
-												class="absolute -top-8 left-0 z-20 bg-white px-2.5 py-0.5 rounded-xl border-2 border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-md flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+												class="absolute -top-8 left-0 z-20 bg-white px-2.5 py-0.5 rounded-2xl border-2 border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-md flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
 												onclick={() => viewingUserNote = true}
 												title="View note"
 											>
 												<span class="max-w-[120px] truncate">{userNote}</span>
-												<div class="absolute -bottom-1.5 left-4 w-2 h-2 bg-white border-r-2 border-b-2 border-pink-200 rotate-45"></div>
+												<svg class="absolute -bottom-2 left-3.5 w-3.5 h-2.5 overflow-visible pointer-events-none" viewBox="0 0 14 10" fill="none">
+													<path d="M1 0 L13 0 L4 9.5 Z" fill="white" stroke="#fbcfe8" stroke-width="2" stroke-linejoin="round" />
+													<line x1="2" y1="0" x2="12" y2="0" stroke="white" stroke-width="3" />
+												</svg>
 											</button>
 										{/if}
 									{/if}

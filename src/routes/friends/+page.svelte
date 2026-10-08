@@ -747,34 +747,33 @@
 							<span class="px-2 py-0.5 rounded-full bg-pink-50 text-[#f43f8e] border border-pink-100 text-[10px] font-black uppercase tracking-wider">
 								Community
 							</span>
+							<button
+								type="button"
+								onclick={copyMyProfileLink}
+								class="p-1 rounded-lg text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-90 transition-all cursor-pointer flex items-center justify-center"
+								title={copiedLink ? "Link Copied to Clipboard!" : "Copy Profile Link"}
+								aria-label="Copy Profile Link"
+							>
+								{#if copiedLink}
+									<Check class="w-4 h-4 text-emerald-600 animate-scale-up" strokeWidth={2.5} />
+								{:else}
+									<Share2 class="w-4 h-4" />
+								{/if}
+							</button>
 						</div>
 						<p class="text-xs text-pink-400 font-semibold mt-0.5">Manage connections, discover friends, and sync moments</p>
 					</div>
 				</div>
 
 				<!-- Header Quick Stats & Action -->
-				<div class="flex items-center flex-wrap gap-2">
-					{#if pendingRequests.length > 0}
+				{#if pendingRequests.length > 0}
+					<div class="flex items-center flex-wrap gap-2">
 						<div class="flex items-center space-x-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl text-xs font-bold text-rose-600 animate-pulse shadow-2xs">
 							<Clock class="w-3.5 h-3.5" />
 							<span>{pendingRequests.length} New {pendingRequests.length === 1 ? 'Request' : 'Requests'}</span>
 						</div>
-					{/if}
-
-					<button
-						onclick={copyMyProfileLink}
-						class="flex lg:hidden items-center space-x-1.5 px-3 py-1.5 bg-pink-50 hover:bg-pink-100 border border-pink-200 text-[#f43f8e] rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-2xs"
-						title="Copy Profile Link"
-					>
-						{#if copiedLink}
-							<Check class="w-3.5 h-3.5 text-emerald-600" strokeWidth={2.5} />
-							<span class="text-emerald-700 font-black">Copied Link!</span>
-						{:else}
-							<Share2 class="w-3.5 h-3.5" />
-							<span>Share Profile</span>
-						{/if}
-					</button>
-				</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 
