@@ -750,7 +750,7 @@
 							<button
 								type="button"
 								onclick={copyMyProfileLink}
-								class="p-1 rounded-lg text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-90 transition-all cursor-pointer flex items-center justify-center"
+								class="p-1 rounded-lg text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-90 transition-all cursor-pointer flex lg:hidden items-center justify-center"
 								title={copiedLink ? "Link Copied to Clipboard!" : "Copy Profile Link"}
 								aria-label="Copy Profile Link"
 							>
@@ -821,7 +821,7 @@
 		<div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 			
 			<!-- LEFT COLUMN (Span 8): Friends List + Discover People -->
-			<div class="lg:col-span-8 flex flex-col gap-5 {mobileTab === 'requests' ? 'hidden lg:block' : 'block'}">
+			<div class="lg:col-span-8 flex flex-col gap-5 {mobileTab === 'requests' ? 'hidden lg:flex' : 'flex'}">
 				
 				<!-- Section 1: My Friends Card -->
 				<div class="{mobileTab === 'friends' ? 'block' : 'hidden'} lg:block bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
@@ -1313,7 +1313,7 @@
 		</div>
 
 		<!-- RIGHT COLUMN (Span 4): Requests & Community Actions Sidebar -->
-		<div class="lg:col-span-4 flex flex-col gap-5 lg:sticky lg:top-20 {mobileTab === 'requests' ? 'block' : 'hidden lg:block'}">
+		<div class="lg:col-span-4 flex flex-col gap-5 lg:sticky lg:top-20 {mobileTab === 'requests' ? 'flex' : 'hidden lg:flex'}">
 				
 				<!-- Card 1: Friend Requests Widget (Incoming & Sent) -->
 				<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
