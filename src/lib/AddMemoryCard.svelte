@@ -7,7 +7,7 @@
 
 	const dispatch = createEventDispatcher();
 
-	let { selectedDate = '', resetForm = $bindable(false) } = $props();
+	let { selectedDate = '', resetForm = $bindable(false), isSaving = $bindable(false) } = $props();
 
 	let memoryDescription = $state('');
 	let memoryTag = $state('');
@@ -18,7 +18,6 @@
 	let music = $state(null);
 	let photoVideoPreview = $state(null);
 	let isVideo = $state(false);
-	let isSaving = $state(false);
 	let isClosing = $state(false);
 	let isOpening = $state(true);
 	let showEmojiPicker = $state(false);
@@ -222,6 +221,9 @@
 			frames.push(canvas.toDataURL('image/jpeg', 0.6));
 		}
 
+		hiddenVid.removeAttribute('src');
+		hiddenVid.load();
+
 		videoThumbnails = frames;
 		isGeneratingThumbnails = false;
 	}
@@ -375,6 +377,11 @@
 			if (photoVideoPreview) URL.revokeObjectURL(photoVideoPreview);
 			photoVideoPreview = URL.createObjectURL(rawVideoFile);
 		} finally {
+			if (rawVideoUrl) {
+				URL.revokeObjectURL(rawVideoUrl);
+				rawVideoUrl = null;
+			}
+			rawVideoFile = null;
 			isTrimmingVideo = false;
 			showVideoTrimmerModal = false;
 		}
@@ -383,9 +390,17 @@
 	function handleMusicChange(event) {
 		const file = event.target.files[0];
 		if (file) {
-			if (file.size > 15 * 1024 * 1024) {
+			if (file.size > 25 * 1024 * 1024) {
 				dispatch('showToast', {
-					message: 'Audio is large (>15MB). We suggest MP3 under 10MB for fast loading.',
+					message: 'Audio file is too large! Maximum size allowed is 25MB.',
+					type: 'error'
+				});
+				if (musicInput) musicInput.value = '';
+				music = null;
+				return;
+			} else if (file.size > 12 * 1024 * 1024) {
+				dispatch('showToast', {
+					message: 'Audio is large (>12MB). We suggest MP3 under 10MB for fast loading.',
 					type: 'warning'
 				});
 			}
@@ -394,19 +409,21 @@
 	}
 
 	function handleSaveMemory() {
+		if (isSaving) return;
+
 		if (!memoryDescription.trim()) {
-			const event = new CustomEvent('showToast', {
-				detail: { message: 'Failed! Please add a description.', type: 'error' }
+			dispatch('showToast', {
+				message: 'Failed! Please add a description.',
+				type: 'error'
 			});
-			dispatch('showToast', event);
 			return;
 		}
 
 		if (selectedDate && isFutureDate()) {
-			const event = new CustomEvent('showToast', {
-				detail: { message: 'Cannot create memories for future dates! Please select today or a past date.', type: 'error' }
+			dispatch('showToast', {
+				message: 'Cannot create memories for future dates! Please select today or a past date.',
+				type: 'error'
 			});
-			dispatch('showToast', event);
 			isSaving = false;
 			return;
 		}

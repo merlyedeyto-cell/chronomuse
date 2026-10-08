@@ -29,6 +29,7 @@
 	let memoriesForDate = $state([]);
 	let memoriesData = $state({});
 	let resetAddMemoryForm = $state(false);
+	let isSavingMemory = $state(false);
 	let pinnedMemoryCardRef;
 	let pinnedDates = $state([]);
 	let sidebarOpen = $state(false);
@@ -60,8 +61,8 @@
 	});
 
 	function showMemoryToast(event) {
-		toastMessage = event.detail.message;
-		toastType = event.detail.type;
+		toastMessage = event.detail?.message || event.detail?.detail?.message || 'Notification';
+		toastType = event.detail?.type || event.detail?.detail?.type || 'success';
 		showToast = true;
 
 		setTimeout(() => {
@@ -362,8 +363,12 @@
 	}
 
 	async function saveMemoryToDatabase(memoryData) {
-		if (!selectedDate || !user?.id) return;
+		if (!selectedDate || !user?.id) {
+			isSavingMemory = false;
+			return;
+		}
 
+		isSavingMemory = true;
 		let photoVideoUrl = null;
 		let photoVideoType = null;
 		let musicUrl = null;
@@ -375,7 +380,7 @@
 			} else {
 				try {
 					let file = memoryData.photoVideo;
-					if (file.type?.startsWith('image/')) {
+					if (file.type?.startsWith('image/') && file.type !== 'image/webp') {
 						file = await compressImage(file, { maxWidth: 1400, maxHeight: 1400, quality: 0.80, outputType: 'image/webp' });
 					}
 					const originalName = file.name || (file.type?.startsWith('video/') ? 'video.mp4' : 'image.webp');
@@ -414,10 +419,11 @@
 					const safeBaseName = baseName.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_');
 					const fileName = `${Date.now()}_${safeBaseName || 'music'}.${fileExt}`;
 					const filePath = `${user.id}/${fileName}`;
+					const mimeType = file.type || (fileExt === 'mp3' ? 'audio/mpeg' : fileExt === 'm4a' ? 'audio/mp4' : fileExt === 'wav' ? 'audio/wav' : 'audio/mpeg');
 
 					const { error: uploadError } = await supabase.storage
 						.from('memories')
-						.upload(filePath, file, { upsert: true });
+						.upload(filePath, file, { upsert: true, contentType: mimeType });
 
 					if (!uploadError) {
 						const { data: urlData } = supabase.storage.from('memories').getPublicUrl(filePath);
@@ -498,6 +504,7 @@
 
 				showNotificationModal('Memory saved successfully!');
 				resetAddMemoryForm = true; // Trigger form reset
+				isSavingMemory = false;
 				showAddMemory = false;
 				// Refresh memories data for this date and month
 				await loadMemoriesForDate(selectedDate);
@@ -506,9 +513,11 @@
 					window.dispatchEvent(new CustomEvent('chronomuse_memory_change'));
 				}
 			} else {
+				isSavingMemory = false;
 				showNotificationModal('Error saving memory: ' + (data.error || 'Unknown error'), 'error');
 			}
 		} catch (error) {
+			isSavingMemory = false;
 			console.error('Error saving memory:', error);
 			showNotificationModal('Error saving memory. Please try again.', 'error');
 		}
@@ -907,6 +916,7 @@
 								<AddMemoryCard
 									{selectedDate}
 									bind:resetForm={resetAddMemoryForm}
+									bind:isSaving={isSavingMemory}
 									on:saveMemory={handleSaveMemory}
 									on:close={handleCloseAddMemory}
 									on:showToast={showMemoryToast}

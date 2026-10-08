@@ -75,10 +75,11 @@ export async function POST({ request }) {
 
 				const arrayBuffer = await musicFile.arrayBuffer();
 				const fileBuffer = Buffer.from(arrayBuffer);
+				const mimeType = musicFile.type || (fileExt === 'mp3' ? 'audio/mpeg' : fileExt === 'm4a' ? 'audio/mp4' : fileExt === 'wav' ? 'audio/wav' : 'audio/mpeg');
 
 				const { error: uploadError } = await supabase.storage
 					.from('memories')
-					.upload(filePath, fileBuffer, { upsert: true });
+					.upload(filePath, fileBuffer, { upsert: true, contentType: mimeType });
 
 				if (uploadError) {
 					console.error('Save memory music upload error:', uploadError);
@@ -92,6 +93,19 @@ export async function POST({ request }) {
 
 		if (!userId || !date) {
 			return json({ error: 'User ID and Date are required' }, { status: 400 });
+		}
+
+		// Validate that memory date is not in the future
+		if (date) {
+			const [y, m, d] = String(date).split('-').map(Number);
+			if (y && m && d) {
+				const memoryDate = new Date(y, m - 1, d);
+				const today = new Date();
+				today.setHours(23, 59, 59, 999);
+				if (memoryDate > today) {
+					return json({ error: 'Cannot create memories for future dates' }, { status: 400 });
+				}
+			}
 		}
 
 		// Insert memory record with column fallback
@@ -114,22 +128,28 @@ export async function POST({ request }) {
 			.single();
 
 		if (insertError) {
-			console.warn('Initial memory insert failed, retrying without photo_video_type column:', insertError.message);
-			delete insertPayload.photo_video_type;
-			const fallbackInsert = await supabase
-				.from('chronomuse_memories')
-				.insert([insertPayload])
-				.select()
-				.single();
+			// If column photo_video_type does not exist on legacy database schema, fallback gracefully
+			if (insertError.code === '42703' || insertError.message?.includes('photo_video_type')) {
+				console.warn('Retrying memory insert without photo_video_type column:', insertError.message);
+				delete insertPayload.photo_video_type;
+				const fallbackInsert = await supabase
+					.from('chronomuse_memories')
+					.insert([insertPayload])
+					.select()
+					.single();
 
-			if (fallbackInsert.error) {
-				console.error('Save memory DB insert error:', fallbackInsert.error);
-				return json({ error: 'Database insert error: ' + fallbackInsert.error.message }, { status: 500 });
+				if (fallbackInsert.error) {
+					console.error('Save memory DB insert fallback error:', fallbackInsert.error);
+					return json({ error: 'Database insert error: ' + fallbackInsert.error.message }, { status: 500 });
+				}
+				newMemory = {
+					...fallbackInsert.data,
+					photo_video_type: photoVideoType
+				};
+			} else {
+				console.error('Save memory DB insert error:', insertError);
+				return json({ error: 'Database insert error: ' + insertError.message }, { status: 500 });
 			}
-			newMemory = {
-				...fallbackInsert.data,
-				photo_video_type: photoVideoType
-			};
 		}
 
 		return json({
