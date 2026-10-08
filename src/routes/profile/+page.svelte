@@ -1575,6 +1575,16 @@
 												<span class="max-w-[120px] truncate">{userNote}</span>
 												<div class="absolute -bottom-1.5 left-4 w-2 h-2 bg-white border-r-2 border-b-2 border-pink-200 rotate-45"></div>
 											</button>
+										{:else}
+											<button 
+												type="button"
+												class="absolute -top-7 left-0 z-20 bg-white/95 backdrop-blur-xs px-2.5 py-0.5 rounded-full border-2 border-pink-200 text-[11px] font-black text-[#f43f8e] shadow-md flex items-center space-x-1 cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap hover:bg-pink-50"
+												onclick={openNoteModal}
+												title="Add a note"
+											>
+												<span>+ Note</span>
+												<div class="absolute -bottom-1 left-4 w-1.5 h-1.5 bg-white border-r-2 border-b-2 border-pink-200 rotate-45"></div>
+											</button>
 										{/if}
 									{:else}
 										{#if userNote}
