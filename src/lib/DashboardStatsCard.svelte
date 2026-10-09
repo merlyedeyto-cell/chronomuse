@@ -2,25 +2,24 @@
 	import { onMount, untrack } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { playClickSound } from '$lib/soundEffects.js';
-	import { Flame, Heart, RefreshCw } from 'lucide-svelte';
+	import { Heart, RefreshCw } from 'lucide-svelte';
 
 	let { userId = null, memoriesData = {} } = $props();
 
 	let totalMemories = $state(0);
 	let photoCount = $state(0);
-	let streakDays = $state(1);
 	let topMood = $state('Happy');
 	let isLoading = $state(true);
 
 	// Daily affirmations / inspiration quotes (clean, elegant text without emojis)
 	const quotes = [
-		{ text: "Every day holds a special little moment worth remembering.", author: "ChronoMuse" },
-		{ text: "Collect beautiful moments, not just things.", author: "Daily Note" },
-		{ text: "Your story is unique, precious, and worth saving.", author: "Reflection" },
-		{ text: "Small reflections today become cherished treasures tomorrow.", author: "Mindful Living" },
-		{ text: "Smile, breathe, and capture the joy in today.", author: "Daily Vibe" },
-		{ text: "Gratitude turns what we have into enough.", author: "Heartfelt" },
-		{ text: "Make each day a masterpiece in your timeline.", author: "Chronicle" }
+		"Every day holds a special little moment worth remembering.",
+		"Collect beautiful moments, not just things.",
+		"Your story is unique, precious, and worth saving.",
+		"Small reflections today become cherished treasures tomorrow.",
+		"Smile, breathe, and capture the joy in today.",
+		"Gratitude turns what we have into enough.",
+		"Make each day a masterpiece in your timeline."
 	];
 
 	let currentQuoteIndex = $state(0);
@@ -80,7 +79,6 @@
 				totalMemories = memories.length;
 				photoCount = memories.filter(m => m.photo_video || m.photo_video_url).length;
 
-				calculateStreak(memories);
 				calculateTopMood(memories);
 			}
 		} catch (err) {
@@ -88,47 +86,6 @@
 		} finally {
 			isLoading = false;
 		}
-	}
-
-	function calculateStreak(memories) {
-		if (!memories || memories.length === 0) {
-			streakDays = 0;
-			return;
-		}
-
-		const uniqueDates = [...new Set(memories.map(m => m.date).filter(Boolean))].sort().reverse();
-		if (uniqueDates.length === 0) {
-			streakDays = 0;
-			return;
-		}
-
-		const today = new Date();
-		const todayStr = today.toISOString().split('T')[0];
-		const yesterday = new Date(today);
-		yesterday.setDate(yesterday.getDate() - 1);
-		const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-		const latestDate = uniqueDates[0];
-		if (latestDate !== todayStr && latestDate !== yesterdayStr) {
-			streakDays = 1;
-			return;
-		}
-
-		let streak = 0;
-		let checkDate = new Date(latestDate);
-
-		for (const dStr of uniqueDates) {
-			const curr = new Date(dStr);
-			const diffDays = Math.round((checkDate - curr) / (1000 * 60 * 60 * 24));
-			if (diffDays <= 1) {
-				streak++;
-				checkDate = curr;
-			} else {
-				break;
-			}
-		}
-
-		streakDays = Math.max(streak, 1);
 	}
 
 	function calculateTopMood(memories) {
@@ -165,14 +122,6 @@
 					<p class="text-[10px] text-pink-400 font-bold">Daily journal momentum</p>
 				</div>
 			</div>
-			{#if isLoading}
-				<div class="h-6 w-16 bg-pink-100/80 rounded-full animate-pulse"></div>
-			{:else}
-				<span class="text-[11px] font-black bg-pink-50 text-[#f43f8e] border border-pink-200/80 px-2.5 py-1 rounded-full flex items-center space-x-1.5 shadow-2xs">
-					<Flame class="w-3.5 h-3.5 text-[#f43f8e]" />
-					<span>{streakDays} {streakDays === 1 ? 'Day' : 'Days'}</span>
-				</span>
-			{/if}
 		</div>
 
 		<!-- Quick Metric Pills -->
@@ -227,9 +176,8 @@
 				<RefreshCw class="w-3 h-3" />
 			</button>
 		</div>
-		<p class="text-xs sm:text-[13px] text-pink-950 font-medium italic leading-relaxed mb-1.5 pr-2">
-			"{quotes[currentQuoteIndex].text}"
+		<p class="text-xs sm:text-[13px] text-pink-950 font-medium italic leading-relaxed pr-2">
+			"{quotes[currentQuoteIndex]}"
 		</p>
-		<p class="text-[10px] text-pink-400 font-bold text-right">— {quotes[currentQuoteIndex].author}</p>
 	</div>
 </div>

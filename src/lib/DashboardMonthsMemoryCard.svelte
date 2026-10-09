@@ -132,10 +132,6 @@
 		monthlyStats.filter(m => m.hasMemories)
 	);
 
-	let monthsWithMemoriesCount = $derived(
-		displayedMonths.length
-	);
-
 	function changeYear(delta) {
 		playClickSound();
 		selectedYear += delta;
@@ -274,9 +270,6 @@
 				</div>
 				<h3 class="text-xs sm:text-sm font-black text-pink-950">Months with Memories</h3>
 			</div>
-			<span class="text-[10px] bg-pink-100 text-[#f43f8e] px-2 py-0.5 rounded-full font-bold border border-pink-200/80 select-none">
-				{monthsWithMemoriesCount} months
-			</span>
 		</div>
 
 		<!-- Body with exact h-[180px] height to match PinnedMemoryCard -->
