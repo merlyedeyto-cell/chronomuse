@@ -52,34 +52,40 @@
 
 	<!-- Feature Highlights Grid -->
 	<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-		<div class="p-3.5 bg-white rounded-xl border border-pink-100/90 shadow-2xs space-y-1">
-			<div class="w-7 h-7 rounded-lg bg-pink-50 text-[#f43f8e] flex items-center justify-center mb-1.5">
+		<div class="p-3.5 bg-white rounded-xl border border-pink-100/90 shadow-2xs flex items-start space-x-3">
+			<div class="w-7 h-7 rounded-lg bg-pink-50 text-[#f43f8e] flex items-center justify-center flex-shrink-0 mt-0.5">
 				<Zap class="w-3.5 h-3.5" />
 			</div>
-			<h4 class="text-xs font-black text-pink-950">Fast & Native Feel</h4>
-			<p class="text-[11px] text-pink-400 font-medium leading-normal">
-				Lightning-fast loading directly from your desktop dock or home screen.
-			</p>
+			<div class="min-w-0 space-y-1">
+				<h4 class="text-xs font-black text-pink-950">Fast & Native Feel</h4>
+				<p class="text-[11px] text-pink-400 font-medium leading-normal">
+					Lightning-fast loading directly from your desktop dock or home screen.
+				</p>
+			</div>
 		</div>
 
-		<div class="p-3.5 bg-white rounded-xl border border-pink-100/90 shadow-2xs space-y-1">
-			<div class="w-7 h-7 rounded-lg bg-pink-50 text-[#f43f8e] flex items-center justify-center mb-1.5">
+		<div class="p-3.5 bg-white rounded-xl border border-pink-100/90 shadow-2xs flex items-start space-x-3">
+			<div class="w-7 h-7 rounded-lg bg-pink-50 text-[#f43f8e] flex items-center justify-center flex-shrink-0 mt-0.5">
 				<Maximize2 class="w-3.5 h-3.5" />
 			</div>
-			<h4 class="text-xs font-black text-pink-950">Full-Screen Focus</h4>
-			<p class="text-[11px] text-pink-400 font-medium leading-normal">
-				Distraction-free environment without browser toolbars or URL bars.
-			</p>
+			<div class="min-w-0 space-y-1">
+				<h4 class="text-xs font-black text-pink-950">Full-Screen Focus</h4>
+				<p class="text-[11px] text-pink-400 font-medium leading-normal">
+					Distraction-free environment without browser toolbars or URL bars.
+				</p>
+			</div>
 		</div>
 
-		<div class="p-3.5 bg-white rounded-xl border border-pink-100/90 shadow-2xs space-y-1">
-			<div class="w-7 h-7 rounded-lg bg-pink-50 text-[#f43f8e] flex items-center justify-center mb-1.5">
+		<div class="p-3.5 bg-white rounded-xl border border-pink-100/90 shadow-2xs flex items-start space-x-3">
+			<div class="w-7 h-7 rounded-lg bg-pink-50 text-[#f43f8e] flex items-center justify-center flex-shrink-0 mt-0.5">
 				<ShieldCheck class="w-3.5 h-3.5" />
 			</div>
-			<h4 class="text-xs font-black text-pink-950">Secure & Offline</h4>
-			<p class="text-[11px] text-pink-400 font-medium leading-normal">
-				Cached memory entries and safe encrypted local sync capabilities.
-			</p>
+			<div class="min-w-0 space-y-1">
+				<h4 class="text-xs font-black text-pink-950">Secure & Offline</h4>
+				<p class="text-[11px] text-pink-400 font-medium leading-normal">
+					Cached memory entries and safe encrypted local sync capabilities.
+				</p>
+			</div>
 		</div>
 	</div>
 

@@ -1,6 +1,4 @@
 <script>
-	import { Sparkles } from 'lucide-svelte';
-
 	let { currentUser, activeStatusEnabled } = $props();
 </script>
 
@@ -28,7 +26,6 @@
 					{currentUser?.username ? `@${currentUser.username}` : 'User'}
 				</h3>
 				<span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-pink-50 text-[10px] font-bold text-[#f43f8e] border border-pink-200">
-					<Sparkles class="w-2.5 h-2.5 mr-0.5" />
 					Member
 				</span>
 			</div>
