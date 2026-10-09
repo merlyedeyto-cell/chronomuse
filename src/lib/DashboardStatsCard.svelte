@@ -2,7 +2,7 @@
 	import { onMount, untrack } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { playClickSound } from '$lib/soundEffects.js';
-	import { Heart, RefreshCw } from 'lucide-svelte';
+	import { Heart, RefreshCw, Flame } from 'lucide-svelte';
 
 	let { userId = null, memoriesData = {} } = $props();
 

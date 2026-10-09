@@ -12,7 +12,9 @@
 		currentYear = new Date().getFullYear(),
 		currentMonth = new Date().getMonth(),
 		memoriesData = {},
-		isEmbedded = false
+		isEmbedded = false,
+		onmonthSelected,
+		onyearChanged
 	} = $props();
 
 	let selectedYear = $state(new Date().getFullYear());
@@ -33,8 +35,8 @@
 
 	// Keep selectedYear synchronized when main calendar changes year
 	$effect(() => {
-		if (currentYear && currentYear !== selectedYear) {
-			selectedYear = currentYear;
+		if (currentYear && Number(currentYear) !== Number(selectedYear)) {
+			selectedYear = Number(currentYear);
 		}
 	});
 
@@ -71,7 +73,11 @@
 	});
 
 	async function loadAllMemories() {
-		if (!userId) return;
+		if (!userId) {
+			isLoading = false;
+			return;
+		}
+		isLoading = true;
 		try {
 			// Direct Supabase query for immediate results
 			const { data, error } = await supabase
@@ -102,15 +108,16 @@
 	// Calculate stats and filter ONLY months with memories for selectedYear
 	let monthlyStats = $derived.by(() => {
 		const counts = Array(12).fill(0);
-		const yearStr = String(selectedYear);
+		const targetYear = Number(selectedYear);
 
 		(allMemories || []).forEach(m => {
 			const dateStr = m.date || (m.created_at ? m.created_at.split('T')[0] : '');
-			if (dateStr && dateStr.startsWith(`${yearStr}-`)) {
+			if (dateStr) {
 				const parts = dateStr.split('-');
 				if (parts.length >= 2) {
+					const y = parseInt(parts[0], 10);
 					const mIndex = parseInt(parts[1], 10) - 1;
-					if (mIndex >= 0 && mIndex < 12) {
+					if (y === targetYear && mIndex >= 0 && mIndex < 12) {
 						counts[mIndex]++;
 					}
 				}
@@ -123,7 +130,7 @@
 			shortName: monthShortNames[index],
 			count,
 			hasMemories: count > 0,
-			isCurrentSelected: selectedYear === currentYear && currentMonth === index
+			isCurrentSelected: Number(selectedYear) === Number(currentYear) && Number(currentMonth) === index
 		}));
 	});
 
@@ -132,15 +139,20 @@
 		monthlyStats.filter(m => m.hasMemories)
 	);
 
+	// Count of active months with memories
+	let monthsWithMemoriesCount = $derived(displayedMonths.length);
+
 	function changeYear(delta) {
 		playClickSound();
 		selectedYear += delta;
 		dispatch('yearChanged', { year: selectedYear });
+		if (onyearChanged) onyearChanged({ year: selectedYear });
 	}
 
 	function handleMonthClick(monthIndex) {
 		playClickSound();
 		dispatch('monthSelected', { month: monthIndex, year: selectedYear });
+		if (onmonthSelected) onmonthSelected({ month: monthIndex, year: selectedYear });
 	}
 </script>
 
@@ -209,7 +221,7 @@
 		</div>
 	{:else}
 		<div class="flex-1 flex flex-col justify-between py-1 min-h-0">
-			<div class="grid grid-cols-6 gap-1 sm:gap-1.5 content-start overflow-y-auto max-h-[105px] pr-0.5 custom-month-scroll">
+			<div class="grid {displayedMonths.length <= 3 ? 'grid-cols-3' : displayedMonths.length <= 4 ? 'grid-cols-4' : 'grid-cols-4 sm:grid-cols-6'} gap-1 sm:gap-1.5 content-start overflow-y-auto max-h-[105px] pr-0.5 custom-month-scroll">
 				{#each displayedMonths as month}
 					<button
 						type="button"
