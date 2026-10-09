@@ -26,9 +26,9 @@
 					<Eye class="w-5 h-5" />
 				</div>
 				<div class="space-y-0.5 min-w-0 flex-1">
-					<div class="flex items-center space-x-2">
+					<div class="flex flex-wrap items-center gap-1.5">
 						<h4 class="text-xs sm:text-sm font-extrabold text-pink-950">Show Active / Online Status</h4>
-						<span class="text-[10px] font-bold px-2 py-0.2 rounded-full {activeStatusEnabled ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-50 text-slate-500 border border-slate-200'}">
+						<span class="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap inline-flex items-center flex-shrink-0 leading-tight {activeStatusEnabled ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-50 text-slate-500 border border-slate-200'}">
 							{activeStatusEnabled ? 'Currently Visible' : 'Hidden'}
 						</span>
 					</div>
@@ -58,9 +58,9 @@
 					<Lock class="w-5 h-5" />
 				</div>
 				<div class="space-y-0.5 min-w-0 flex-1">
-					<div class="flex items-center space-x-2">
+					<div class="flex flex-wrap items-center gap-1.5">
 						<h4 class="text-xs sm:text-sm font-extrabold text-pink-950">Private Account Protection</h4>
-						<span class="text-[10px] font-bold px-2 py-0.2 rounded-full {privateAccountEnabled ? 'bg-pink-100 text-[#f43f8e] border border-pink-200' : 'bg-slate-50 text-slate-500 border border-slate-200'}">
+						<span class="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap inline-flex items-center flex-shrink-0 leading-tight {privateAccountEnabled ? 'bg-pink-100 text-[#f43f8e] border border-pink-200' : 'bg-slate-50 text-slate-500 border border-slate-200'}">
 							{privateAccountEnabled ? 'Private Enabled' : 'Public Profile'}
 						</span>
 					</div>

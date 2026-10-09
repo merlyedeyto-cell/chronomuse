@@ -114,9 +114,9 @@
 								{/if}
 							</div>
 							<div class="min-w-0 pr-1">
-								<div class="flex items-center space-x-1.5">
+								<div class="flex flex-wrap items-center gap-1.5">
 									<p class="text-xs font-extrabold text-pink-950 truncate">@{bUser.username}</p>
-									<span class="px-1.5 py-0.2 rounded text-[9px] font-black bg-rose-50 text-rose-600 border border-rose-200">
+									<span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-50 text-rose-600 border border-rose-200 whitespace-nowrap">
 										Blocked
 									</span>
 								</div>
