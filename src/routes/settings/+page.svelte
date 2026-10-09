@@ -526,7 +526,6 @@
 							bind:editConfirmPassword
 							{isSavingProfile}
 							onSaveCredentials={handleSaveProfileCredentials}
-							onOpenLogoutModal={() => showLogoutModal = true}
 						/>
 					{:else if activeTab === 'install'}
 						<InstallTab
@@ -701,7 +700,6 @@
 								bind:editConfirmPassword
 								{isSavingProfile}
 								onSaveCredentials={handleSaveProfileCredentials}
-								onOpenLogoutModal={() => showLogoutModal = true}
 							/>
 						</div>
 					{/if}

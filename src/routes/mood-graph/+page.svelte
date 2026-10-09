@@ -5,6 +5,7 @@
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
 	import ViewMemoryModal from '$lib/ViewMemoryModal.svelte';
+	import MoodTrendLineGraph from '$lib/MoodTrendLineGraph.svelte';
 	import { playClickSound } from '$lib/soundEffects.js';
 	import { broadcastMemoryEvent } from '$lib/realtimeBroadcast.js';
 	import {
@@ -852,8 +853,9 @@
 				{/if}
 			</div>
 
-			<!-- RIGHT COLUMN: Recent Memories Stream Feed (5 Columns on Desktop) -->
-			<div class="lg:col-span-5 xl:col-span-5 animate-fade-in-up" style="animation-delay: 0.25s">
+			<!-- RIGHT COLUMN: Recent Memories + Mood Timeline Trend (5 Columns on Desktop) -->
+			<div class="lg:col-span-5 xl:col-span-5 space-y-4 animate-fade-in-up" style="animation-delay: 0.25s">
+				<!-- Recent Memories Card (Displays 3 items, scrollable for more) -->
 				<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col">
 					<!-- Stream Header -->
 					<div class="flex items-center justify-between mb-3 pb-2.5 border-b border-pink-50">
@@ -871,9 +873,9 @@
 						</span>
 					</div>
 
-					<!-- Stream List -->
+					<!-- Stream List: Max height sized for exactly 3 items, scrollable for more -->
 					{#if recentTenMemories.length > 0}
-						<div class="space-y-2 max-h-[500px] lg:max-h-[560px] overflow-y-auto pr-1">
+						<div class="space-y-2 max-h-[175px] overflow-y-auto pr-1">
 							{#each recentTenMemories as memory}
 								{@const moodName = (memory.mood_tag || '').charAt(0).toUpperCase() + (memory.mood_tag || '').slice(1)}
 								<button
@@ -907,12 +909,24 @@
 							{/each}
 						</div>
 					{:else}
-						<div class="text-center py-10 bg-pink-50/40 rounded-2xl border border-dashed border-pink-200">
+						<div class="text-center py-8 bg-pink-50/40 rounded-2xl border border-dashed border-pink-200">
 							<p class="text-xs font-bold text-pink-400">No memories recorded yet</p>
 							<p class="text-[10px] text-pink-300 mt-0.5">Start journaling to see your timeline here</p>
 						</div>
 					{/if}
 				</div>
+
+				<!-- Mood Timeline Trend Line Graph in Right Column -->
+				<MoodTrendLineGraph
+					{moodData}
+					{selectedPeriod}
+					onSelectMemory={viewMemory}
+					onSelectDate={(date, memories) => {
+						selectedMemoryDate = date;
+						memoriesForDate = memories;
+						showViewMemoryModal = true;
+					}}
+				/>
 			</div>
 		</div>
 	</main>

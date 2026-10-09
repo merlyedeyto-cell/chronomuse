@@ -1,5 +1,5 @@
 <script>
-	import { KeyRound, Mail, User, ShieldAlert, LogOut, Check, Save } from 'lucide-svelte';
+	import { KeyRound, Mail, User, ShieldAlert, Check, Save } from 'lucide-svelte';
 
 	let {
 		editUsername = $bindable(''),
@@ -7,8 +7,7 @@
 		editNewPassword = $bindable(''),
 		editConfirmPassword = $bindable(''),
 		isSavingProfile,
-		onSaveCredentials,
-		onOpenLogoutModal
+		onSaveCredentials
 	} = $props();
 </script>
 
@@ -101,16 +100,7 @@
 		</div>
 
 		<!-- Form Actions Bar -->
-		<div class="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
-			<button
-				type="button"
-				onclick={onOpenLogoutModal}
-				class="w-full sm:w-auto px-4 py-2.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50/80 text-xs font-black rounded-xl transition-all cursor-pointer border border-rose-200 flex items-center justify-center space-x-1.5"
-			>
-				<LogOut class="w-3.5 h-3.5" />
-				<span>Log Out Account</span>
-			</button>
-
+		<div class="pt-2 flex items-center justify-end">
 			<button
 				type="submit"
 				disabled={isSavingProfile}
