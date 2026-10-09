@@ -1,5 +1,17 @@
 <script>
-	import { TrendingUp, Activity, ChevronRight } from 'lucide-svelte';
+	import {
+		TrendingUp,
+		Activity,
+		ChevronRight,
+		Sparkles,
+		Calendar,
+		Eye,
+		Layers,
+		Flame,
+		Smile,
+		Compass,
+		Filter
+	} from 'lucide-svelte';
 	import { playClickSound } from '$lib/soundEffects.js';
 
 	let {
@@ -11,11 +23,13 @@
 
 	// View mode: 'valence' (emotional positivity curve) or 'volume' (entry count per date)
 	let viewMode = $state('valence'); // 'valence' | 'volume'
-	let hoveredPoint = $state(null);
-	let tooltipPos = $state({ x: 0, y: 0 });
-	let isHoveringChart = $state(false);
+	let selectedMoodFilter = $state('all'); // 'all' or specific mood name
+	let activePointIndex = $state(null);
+	let isHovering = $state(false);
+	let selectedDateData = $state(null);
+	let containerWidth = $state(600);
 
-	// Mood score mapping (0 to 100)
+	// Mood score mapping (0 to 100 for Valence/Positivity)
 	const MOOD_VALENCE_SCORES = {
 		'love': 95,
 		'excited': 90,
@@ -42,23 +56,48 @@
 		'Neutral': '#94A3B8'
 	};
 
+	const MOOD_EMOJIS = {
+		'Happy': '😊',
+		'Sad': '😢',
+		'Excited': '🤩',
+		'Angry': '🔥',
+		'Calm': '🌿',
+		'Anxious': '🌊',
+		'Grateful': '🙏',
+		'Lonely': '🌧️',
+		'Love': '💖',
+		'Neutral': '✨'
+	};
+
 	function getMoodScore(moodTag) {
 		const tag = (moodTag || '').toLowerCase().trim();
 		return MOOD_VALENCE_SCORES[tag] ?? 50;
 	}
 
 	function getMoodFillColor(mood) {
-		return MOOD_COLORS[mood] || '#F43F8E';
+		const formatted = (mood || '').charAt(0).toUpperCase() + (mood || '').slice(1).toLowerCase();
+		return MOOD_COLORS[formatted] || '#F43F8E';
 	}
 
-	// Process and aggregate moodData chronologically
-	let aggregatedTimeline = $derived.by(() => {
-		if (!moodData || moodData.length === 0) return [];
+	function getMoodEmoji(mood) {
+		const formatted = (mood || '').charAt(0).toUpperCase() + (mood || '').slice(1).toLowerCase();
+		return MOOD_EMOJIS[formatted] || '🌟';
+	}
 
-		// Group memories by date
+	// Filter raw memories if mood filter is applied
+	let filteredMemories = $derived.by(() => {
+		if (!moodData || moodData.length === 0) return [];
+		if (selectedMoodFilter === 'all') return moodData;
+		return moodData.filter(m => (m.mood_tag || '').toLowerCase().trim() === selectedMoodFilter.toLowerCase().trim());
+	});
+
+	// Process and aggregate moodData chronologically by day
+	let aggregatedTimeline = $derived.by(() => {
+		if (filteredMemories.length === 0) return [];
+
 		const dateMap = new Map();
 
-		for (const memory of moodData) {
+		for (const memory of filteredMemories) {
 			const rawDate = memory.date || memory.created_at?.split('T')[0] || '';
 			if (!rawDate) continue;
 
@@ -79,7 +118,6 @@
 			group.totalScore += getMoodScore(mood);
 		}
 
-		// Convert to array and sort chronologically
 		const points = Array.from(dateMap.values()).map(group => {
 			const count = group.memories.length;
 			const avgScore = count > 0 ? Math.round(group.totalScore / count) : 50;
@@ -96,35 +134,39 @@
 
 			// Format label for display
 			let displayDate = group.date;
+			let fullDateLabel = group.date;
 			try {
 				const parts = group.date.split('-');
 				if (parts.length === 3) {
 					const dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
 					displayDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+					fullDateLabel = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
 				}
 			} catch (e) {}
 
 			return {
 				date: group.date,
 				displayDate,
+				fullDateLabel,
 				count,
 				avgScore,
 				dominantMood,
 				color: getMoodFillColor(dominantMood),
-				memories: group.memories
+				emoji: getMoodEmoji(dominantMood),
+				memories: group.memories,
+				moodCounts: group.moodCounts
 			};
 		});
 
-		// Sort ascending by date
+		// Sort ascending by chronological date
 		points.sort((a, b) => a.date.localeCompare(b.date));
 		return points;
 	});
 
-	// SVG Dimensions
-	let containerWidth = $state(500);
-	let chartWidth = $derived(containerWidth > 0 ? containerWidth : 500);
-	const svgHeight = 215;
-	const padding = { top: 32, right: 35, bottom: 42, left: 60 };
+	// SVG Dimensions & Margins
+	let chartWidth = $derived(containerWidth > 0 ? containerWidth : 600);
+	const svgHeight = 240;
+	const padding = { top: 38, right: 28, bottom: 44, left: 44 };
 
 	let chartInnerWidth = $derived(Math.max(100, chartWidth - padding.left - padding.right));
 	const chartInnerHeight = svgHeight - padding.top - padding.bottom;
@@ -133,10 +175,10 @@
 	let maxVolume = $derived.by(() => {
 		if (aggregatedTimeline.length === 0) return 5;
 		const max = Math.max(...aggregatedTimeline.map(p => p.count));
-		return Math.max(max, 3);
+		return Math.max(max, 4);
 	});
 
-	// Generate Coordinates for points
+	// Compute Coordinates for Points on the Chart
 	let chartPoints = $derived.by(() => {
 		if (aggregatedTimeline.length === 0) return [];
 		const total = aggregatedTimeline.length;
@@ -162,20 +204,44 @@
 
 			return {
 				...item,
+				index,
 				x,
 				y
 			};
 		});
 	});
 
+	// Find Peak and Lowest Points for Milestones
+	let { peakPoint, lowestPoint } = $derived.by(() => {
+		if (chartPoints.length === 0) return { peakPoint: null, lowestPoint: null };
+		let peak = chartPoints[0];
+		let lowest = chartPoints[0];
+
+		for (const p of chartPoints) {
+			if (viewMode === 'valence') {
+				if (p.avgScore > peak.avgScore) peak = p;
+				if (p.avgScore < lowest.avgScore) lowest = p;
+			} else {
+				if (p.count > peak.count) peak = p;
+				if (p.count < lowest.count) lowest = p;
+			}
+		}
+
+		return {
+			peakPoint: peak,
+			lowestPoint: chartPoints.length > 2 && peak !== lowest ? lowest : null
+		};
+	});
+
 	// Smooth Cubic Bezier Spline Path Generator
 	let { pathD, areaD } = $derived.by(() => {
 		if (chartPoints.length === 0) return { pathD: '', areaD: '' };
+		const baselineY = padding.top + chartInnerHeight;
+
 		if (chartPoints.length === 1) {
 			const p = chartPoints[0];
-			const baselineY = padding.top + chartInnerHeight;
-			const pD = `M ${p.x - 20} ${p.y} L ${p.x + 20} ${p.y}`;
-			const aD = `M ${p.x - 20} ${baselineY} L ${p.x - 20} ${p.y} L ${p.x + 20} ${p.y} L ${p.x + 20} ${baselineY} Z`;
+			const pD = `M ${Math.max(padding.left, p.x - 30)} ${p.y} L ${Math.min(chartWidth - padding.right, p.x + 30)} ${p.y}`;
+			const aD = `M ${Math.max(padding.left, p.x - 30)} ${baselineY} L ${Math.max(padding.left, p.x - 30)} ${p.y} L ${Math.min(chartWidth - padding.right, p.x + 30)} ${p.y} L ${Math.min(chartWidth - padding.right, p.x + 30)} ${baselineY} Z`;
 			return { pathD: pD, areaD: aD };
 		}
 
@@ -187,7 +253,7 @@
 			const p2 = chartPoints[i + 1];
 			const p3 = chartPoints[i + 2 >= chartPoints.length ? chartPoints.length - 1 : i + 2];
 
-			// Smooth tension control points
+			// Smooth tension control points with bounded clamping
 			const cp1x = p1.x + (p2.x - p0.x) / 6;
 			const cp1y = p1.y + (p2.y - p0.y) / 6;
 
@@ -197,19 +263,56 @@
 			d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
 		}
 
-		const baselineY = padding.top + chartInnerHeight;
 		const firstPoint = chartPoints[0];
 		const lastPoint = chartPoints[chartPoints.length - 1];
-
 		const areaPath = `${d} L ${lastPoint.x},${baselineY} L ${firstPoint.x},${baselineY} Z`;
 
 		return { pathD: d, areaD: areaPath };
 	});
 
-	// Overall trend summary metrics
+	// Smart X-Axis Ticks (at most 5 to 7 evenly spaced labels to prevent any overlapping)
+	let visibleAxisTicks = $derived.by(() => {
+		if (chartPoints.length === 0) return [];
+		const total = chartPoints.length;
+		if (total <= 6) return chartPoints;
+
+		const desiredCount = chartWidth < 450 ? 4 : 6;
+		const step = (total - 1) / (desiredCount - 1);
+		const indices = new Set();
+
+		for (let i = 0; i < desiredCount; i++) {
+			indices.add(Math.round(i * step));
+		}
+
+		return chartPoints.filter((_, idx) => indices.has(idx));
+	});
+
+	// Active Point (Hovered or explicitly selected)
+	let activePoint = $derived.by(() => {
+		if (activePointIndex !== null && chartPoints[activePointIndex]) {
+			return chartPoints[activePointIndex];
+		}
+		if (selectedDateData) {
+			const matched = chartPoints.find(p => p.date === selectedDateData.date);
+			if (matched) return matched;
+		}
+		return null;
+	});
+
+	// Inspected point for memory preview (active point or latest date by default)
+	let inspectedPoint = $derived.by(() => {
+		if (activePoint) return activePoint;
+		if (selectedDateData) {
+			const matched = chartPoints.find(p => p.date === selectedDateData.date);
+			if (matched) return matched;
+		}
+		return chartPoints[chartPoints.length - 1] || null;
+	});
+
+	// Trend Insights & Metrics
 	let trendInsights = $derived.by(() => {
 		if (aggregatedTimeline.length === 0) {
-			return { label: 'Awaiting Data', sentiment: 'neutral', avg: 0, peak: null };
+			return { label: 'Awaiting Entries', sentiment: 'neutral', avg: 0, peak: null, count: 0 };
 		}
 
 		const avg = Math.round(
@@ -221,7 +324,6 @@
 			if (p.avgScore > peak.avgScore) peak = p;
 		}
 
-		// Calculate slope of last few points vs earlier
 		let label = 'Steady & Balanced';
 		let sentiment = 'positive';
 		if (aggregatedTimeline.length >= 2) {
@@ -243,11 +345,45 @@
 			}
 		}
 
-		return { label, sentiment, avg, peak };
+		return {
+			label,
+			sentiment,
+			avg,
+			peak,
+			count: aggregatedTimeline.reduce((sum, p) => sum + p.count, 0)
+		};
 	});
 
-	function handlePointClick(point) {
+	// Interactive Mouse Scrubbing / Moving over SVG
+	function handleSvgMouseMove(e) {
+		if (chartPoints.length === 0) return;
+		const rect = e.currentTarget.getBoundingClientRect();
+		const mouseX = e.clientX - rect.left;
+
+		// Find closest point by X coordinate
+		let closestIdx = 0;
+		let minDiff = Infinity;
+
+		for (let i = 0; i < chartPoints.length; i++) {
+			const diff = Math.abs(chartPoints[i].x - mouseX);
+			if (diff < minDiff) {
+				minDiff = diff;
+				closestIdx = i;
+			}
+		}
+
+		activePointIndex = closestIdx;
+		isHovering = true;
+	}
+
+	function handleSvgMouseLeave() {
+		isHovering = false;
+		activePointIndex = null;
+	}
+
+	function selectPoint(point) {
 		playClickSound();
+		selectedDateData = point;
 		if (point.memories && point.memories.length > 0) {
 			onSelectDate(point.date, point.memories);
 			if (point.memories.length === 1) {
@@ -256,57 +392,59 @@
 		}
 	}
 
-	function handleMouseMove(e, point) {
-		const targetRect = e.currentTarget.getBoundingClientRect();
-		tooltipPos = {
-			x: targetRect.left + targetRect.width / 2,
-			y: targetRect.top
-		};
-		hoveredPoint = point;
-	}
-
-	function handleMouseLeave() {
-		hoveredPoint = null;
+	function handleMemoryCardClick(memory) {
+		playClickSound();
+		onSelectMemory(memory);
 	}
 </script>
 
 <div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up font-sans transition-all">
-	<!-- Chart Header Bar -->
-	<div class="flex flex-col xl:flex-row xl:items-center justify-between gap-3 mb-3.5 pb-3 border-b border-pink-50">
+	<!-- Chart Header Bar with Controls -->
+	<div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3 pb-3 border-b border-pink-50">
 		<div class="flex items-center space-x-2.5 min-w-0">
-			<div class="w-7 h-7 rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs flex-shrink-0">
+			<div class="w-8 h-8 rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs flex-shrink-0">
 				<TrendingUp class="w-4 h-4 text-[#f43f8e]" strokeWidth={2.4} />
 			</div>
 			<div class="min-w-0">
 				<div class="flex items-center flex-wrap gap-2">
-					<h2 class="text-xs sm:text-sm font-black text-pink-950 whitespace-nowrap">Emotional Flow & Trend</h2>
-					{#if aggregatedTimeline.length > 0}
-						<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black tracking-wide uppercase border whitespace-nowrap flex-shrink-0 shadow-2xs {trendInsights.sentiment === 'positive' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-pink-50 text-[#f43f8e] border-pink-200'}">
-							{trendInsights.label}
-						</span>
-					{/if}
+					<h2 class="text-xs sm:text-sm font-black text-pink-950 whitespace-nowrap">Interactive Mood Timeline</h2>
 				</div>
-				<p class="text-[10px] sm:text-[11px] text-pink-400 font-bold truncate">Continuous emotional trajectory across your memories</p>
+				<p class="text-[10px] sm:text-[11px] text-pink-400 font-bold truncate">Hover & click points to explore memories on that day</p>
 			</div>
 		</div>
 
-		<!-- Mode Switchers & Stats -->
-		<div class="flex items-center gap-2 self-start xl:self-auto flex-shrink-0">
-			<!-- View Mode Toggle -->
+		<!-- Mode Switchers & Emotion Filter -->
+		<div class="flex items-center gap-2 self-start md:self-auto flex-wrap">
+			<!-- Emotion Tag Filter -->
+			<div class="relative">
+				<select
+					bind:value={selectedMoodFilter}
+					onchange={() => playClickSound()}
+					class="text-[10px] sm:text-[11px] font-bold bg-[#fdf2f6] text-pink-900 border border-pink-100/90 rounded-xl px-2.5 py-1 pr-6 cursor-pointer hover:border-pink-300 transition-colors focus:outline-none focus:ring-1 focus:ring-[#f43f8e] appearance-none"
+				>
+					<option value="all">✨ All Moods ({moodData.length})</option>
+					{#each Object.keys(MOOD_COLORS) as mood}
+						<option value={mood.toLowerCase()}>{MOOD_EMOJIS[mood]} {mood}</option>
+					{/each}
+				</select>
+				<Filter class="w-2.5 h-2.5 text-pink-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+			</div>
+
+			<!-- Valence vs Volume Toggle -->
 			<div class="flex items-center p-0.5 bg-[#fdf2f6] border border-pink-100/90 rounded-xl shadow-2xs">
 				<button
 					type="button"
 					onclick={() => { playClickSound(); viewMode = 'valence'; }}
 					class="px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200 cursor-pointer whitespace-nowrap {viewMode === 'valence' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-pink-700 hover:text-[#f43f8e]'}"
 				>
-					Mood Valence
+					Emotional Valence
 				</button>
 				<button
 					type="button"
 					onclick={() => { playClickSound(); viewMode = 'volume'; }}
 					class="px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200 cursor-pointer whitespace-nowrap {viewMode === 'volume' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-pink-700 hover:text-[#f43f8e]'}"
 				>
-					Memory Volume
+					Entry Volume
 				</button>
 			</div>
 		</div>
@@ -315,16 +453,20 @@
 	<!-- Chart Area / Visualization -->
 	{#if aggregatedTimeline.length > 0}
 		<div class="relative w-full select-none" bind:clientWidth={containerWidth}>
-			<div class="w-full">
+			<div class="w-full relative">
 				<svg
 					viewBox="0 0 {chartWidth} {svgHeight}"
-					class="w-full h-44 sm:h-48 overflow-visible drop-shadow-xs"
+					class="w-full h-48 sm:h-56 overflow-visible drop-shadow-xs cursor-crosshair"
+					onmousemove={handleSvgMouseMove}
+					onmouseleave={handleSvgMouseLeave}
+					role="region"
+					aria-label="Interactive timeline line graph"
 				>
 					<defs>
-						<!-- Soft pink/magenta gradient fill for line area -->
+						<!-- Soft pink gradient fill for area under line -->
 						<linearGradient id="moodAreaGradient" x1="0" y1="0" x2="0" y2="1">
-							<stop offset="0%" stop-color="#f43f8e" stop-opacity="0.28" />
-							<stop offset="50%" stop-color="#fb7185" stop-opacity="0.10" />
+							<stop offset="0%" stop-color="#f43f8e" stop-opacity="0.30" />
+							<stop offset="60%" stop-color="#fb7185" stop-opacity="0.08" />
 							<stop offset="100%" stop-color="#fce7f3" stop-opacity="0.0" />
 						</linearGradient>
 
@@ -336,70 +478,79 @@
 							<stop offset="100%" stop-color="#f43f8e" />
 						</linearGradient>
 
-						<!-- Glow filter for nodes -->
-						<filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-							<feGaussianBlur stdDeviation="2.5" result="blur" />
+						<!-- Subtle grid pattern -->
+						<filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+							<feGaussianBlur stdDeviation="3" result="blur" />
 							<feComposite in="SourceGraphic" in2="blur" operator="over" />
 						</filter>
 					</defs>
 
-					<!-- Horizontal Reference Guidelines & Y-Axis Labels -->
+					<!-- Horizontal Reference Guideline Bands & Emotional Tiers -->
 					{#if viewMode === 'valence'}
-						<!-- High Valence line (85) -->
+						<!-- High Positivity Zone (75 - 100) -->
+						<rect
+							x={padding.left}
+							y={padding.top}
+							width={chartInnerWidth}
+							height={chartInnerHeight * 0.25}
+							fill="#ecfdf5"
+							opacity="0.4"
+							rx="4"
+						/>
 						<line
 							x1={padding.left}
-							y1={padding.top + chartInnerHeight * 0.15}
+							y1={padding.top + chartInnerHeight * 0.25}
 							x2={chartWidth - padding.right}
-							y2={padding.top + chartInnerHeight * 0.15}
-							stroke="#fbcfe8"
+							y2={padding.top + chartInnerHeight * 0.25}
+							stroke="#a7f3d0"
 							stroke-dasharray="3 3"
 							stroke-width="1"
 						/>
 						<text
-							x={padding.left - 10}
-							y={padding.top + chartInnerHeight * 0.15 + 3.5}
+							x={padding.left - 8}
+							y={padding.top + chartInnerHeight * 0.12 + 3}
 							text-anchor="end"
-							class="text-[10px] font-extrabold fill-emerald-600/90 tracking-normal select-none"
+							class="text-[9px] font-black fill-emerald-600 select-none tracking-tight"
 						>
-							High
+							Joyful
 						</text>
 
-						<!-- Neutral Valence line (50) -->
+						<!-- Balanced Mid Zone (45 - 75) -->
 						<line
 							x1={padding.left}
-							y1={padding.top + chartInnerHeight * 0.5}
+							y1={padding.top + chartInnerHeight * 0.55}
 							x2={chartWidth - padding.right}
-							y2={padding.top + chartInnerHeight * 0.5}
+							y2={padding.top + chartInnerHeight * 0.55}
 							stroke="#fce7f3"
 							stroke-dasharray="4 4"
 							stroke-width="1"
 						/>
 						<text
-							x={padding.left - 10}
-							y={padding.top + chartInnerHeight * 0.5 + 3.5}
+							x={padding.left - 8}
+							y={padding.top + chartInnerHeight * 0.55 + 3}
 							text-anchor="end"
-							class="text-[10px] font-extrabold fill-slate-500 tracking-normal select-none"
+							class="text-[9px] font-black fill-pink-400 select-none tracking-tight"
 						>
-							Balanced
+							Steady
 						</text>
 
-						<!-- Low Valence line (20) -->
+						<!-- Reflective Low Zone (0 - 45) -->
 						<line
 							x1={padding.left}
-							y1={padding.top + chartInnerHeight * 0.8}
+							y1={padding.top + chartInnerHeight * 0.85}
 							x2={chartWidth - padding.right}
-							y2={padding.top + chartInnerHeight * 0.8}
+							y2={padding.top + chartInnerHeight * 0.85}
 							stroke="#fee2e2"
 							stroke-dasharray="3 3"
 							stroke-width="1"
 						/>
 						<text
-							x={padding.left - 10}
-							y={padding.top + chartInnerHeight * 0.8 + 3.5}
+							x={padding.left - 8}
+							y={padding.top + chartInnerHeight * 0.85 + 3}
 							text-anchor="end"
-							class="text-[10px] font-extrabold fill-rose-500/90 tracking-normal select-none"
+							class="text-[9px] font-black fill-rose-400 select-none tracking-tight"
 						>
-							Low
+							Tender
 						</text>
 					{:else}
 						<!-- Volume Guide Lines -->
@@ -413,12 +564,12 @@
 							stroke-width="1"
 						/>
 						<text
-							x={padding.left - 10}
-							y={padding.top + 3.5}
+							x={padding.left - 8}
+							y={padding.top + 3}
 							text-anchor="end"
-							class="text-[10px] font-extrabold fill-pink-500 tracking-normal select-none"
+							class="text-[9px] font-extrabold fill-pink-500 select-none"
 						>
-							{maxVolume} entries
+							{maxVolume}
 						</text>
 
 						<line
@@ -431,10 +582,10 @@
 							stroke-width="1"
 						/>
 						<text
-							x={padding.left - 10}
-							y={padding.top + chartInnerHeight * 0.5 + 3.5}
+							x={padding.left - 8}
+							y={padding.top + chartInnerHeight * 0.5 + 3}
 							text-anchor="end"
-							class="text-[10px] font-extrabold fill-pink-400 tracking-normal select-none"
+							class="text-[9px] font-extrabold fill-pink-400 select-none"
 						>
 							{Math.round(maxVolume / 2)}
 						</text>
@@ -454,10 +605,10 @@
 					<path
 						d={areaD}
 						fill="url(#moodAreaGradient)"
-						class="transition-all duration-300 ease-out"
+						class="transition-all duration-300 ease-out pointer-events-none"
 					/>
 
-					<!-- Glowing / Shadow Line Path -->
+					<!-- Glowing Background Stroke -->
 					<path
 						d={pathD}
 						fill="none"
@@ -465,7 +616,8 @@
 						stroke-width="6"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						opacity="0.15"
+						opacity="0.16"
+						class="pointer-events-none"
 					/>
 
 					<!-- Main Gradient Stroke Line Path -->
@@ -476,142 +628,247 @@
 						stroke-width="3"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						class="transition-all duration-300 ease-out"
+						class="transition-all duration-300 ease-out pointer-events-none"
 					/>
 
-					<!-- Interactive Points & Axis Ticks -->
-					{#each chartPoints as point, idx}
-						<!-- Vertical Date Tick Line -->
+					<!-- X-Axis Visible Ticks (Evenly spaced so they never collide) -->
+					{#each visibleAxisTicks as tick}
 						<line
-							x1={point.x}
+							x1={tick.x}
 							y1={padding.top + chartInnerHeight}
-							x2={point.x}
+							x2={tick.x}
 							y2={padding.top + chartInnerHeight + 4}
 							stroke="#f472b6"
 							stroke-width="1"
 						/>
-
-						<!-- X-Axis Label -->
 						<text
-							x={point.x}
-							y={padding.top + chartInnerHeight + 18}
+							x={tick.x}
+							y={padding.top + chartInnerHeight + 16}
 							text-anchor="middle"
-							class="text-[10px] font-extrabold fill-pink-900/80 transition-all hover:fill-[#f43f8e] cursor-pointer select-none"
+							class="text-[10px] font-bold fill-pink-800/80 select-none"
 						>
-							{point.displayDate}
+							{tick.displayDate}
 						</text>
+					{/each}
 
-						<!-- Data Point Circle (Interactive) -->
+					<!-- Milestone Peak Badge Flag -->
+					{#if peakPoint && chartPoints.length > 2}
+						<g class="pointer-events-none">
+							<line
+								x1={peakPoint.x}
+								y1={peakPoint.y}
+								x2={peakPoint.x}
+								y2={Math.max(padding.top - 8, peakPoint.y - 18)}
+								stroke={peakPoint.color}
+								stroke-width="1.2"
+								stroke-dasharray="2 2"
+							/>
+							<rect
+								x={peakPoint.x - 30}
+								y={Math.max(padding.top - 20, peakPoint.y - 30)}
+								width="60"
+								height="15"
+								rx="7.5"
+								fill="#ffffff"
+								stroke={peakPoint.color}
+								stroke-width="1"
+								class="drop-shadow-2xs"
+							/>
+							<text
+								x={peakPoint.x}
+								y={Math.max(padding.top - 20, peakPoint.y - 30) + 10.5}
+								text-anchor="middle"
+								class="text-[8.5px] font-black"
+								fill={peakPoint.color}
+							>
+								{peakPoint.emoji} {peakPoint.dominantMood}
+							</text>
+						</g>
+					{/if}
+
+					<!-- Active Scrubbing Crosshair Vertical Line -->
+					{#if activePoint}
+						<line
+							x1={activePoint.x}
+							y1={padding.top}
+							x2={activePoint.x}
+							y2={padding.top + chartInnerHeight}
+							stroke="#f43f8e"
+							stroke-width="1.5"
+							stroke-dasharray="3 3"
+							class="pointer-events-none transition-all duration-75"
+							opacity="0.8"
+						/>
+					{/if}
+
+					<!-- Data Point Nodes (Clean & Interactive) -->
+					{#each chartPoints as point}
+						{@const isCurrentActive = activePoint?.date === point.date}
 						<g
-							class="cursor-pointer group"
-							onclick={() => handlePointClick(point)}
-							onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') handlePointClick(point); }}
-							onmouseenter={(e) => handleMouseMove(e, point)}
-							onmouseleave={handleMouseLeave}
+							class="cursor-pointer"
+							onclick={() => selectPoint(point)}
+							onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') selectPoint(point); }}
 							tabindex="0"
 							role="button"
 							aria-label={`View memories for ${point.displayDate}: ${point.dominantMood}`}
 						>
-							<!-- Pulsing halo for hovered point -->
-							{#if hoveredPoint?.date === point.date}
+							<!-- Highlight Halo when active/hovered (Static & crisp, no stray ping) -->
+							{#if isCurrentActive}
 								<circle
 									cx={point.x}
 									cy={point.y}
-									r="14"
+									r="11"
 									fill={point.color}
-									opacity="0.3"
-									class="animate-ping"
+									opacity="0.25"
 								/>
 							{/if}
 
-							<!-- Outer Ring Glow -->
+							<!-- Outer Ring -->
 							<circle
 								cx={point.x}
 								cy={point.y}
-								r={hoveredPoint?.date === point.date ? '8.5' : '6.5'}
+								r={isCurrentActive ? '7' : '5'}
 								fill={point.color}
 								stroke="#ffffff"
-								stroke-width="2.5"
-								class="transition-all duration-200 drop-shadow-sm"
-								filter="url(#glow)"
+								stroke-width="2"
+								class="transition-all duration-150 drop-shadow-xs"
+								filter="url(#softGlow)"
 							/>
 
-							<!-- Center White Core Dot -->
+							<!-- Center Core Dot -->
 							<circle
 								cx={point.x}
 								cy={point.y}
-								r={hoveredPoint?.date === point.date ? '3.5' : '2.5'}
+								r={isCurrentActive ? '3' : '2'}
 								fill="#ffffff"
-								class="transition-all duration-200"
+								class="transition-all duration-150"
 							/>
 
-							<!-- Written Mood Label on Graph -->
-							<text
-								x={point.x}
-								y={point.y < padding.top + 22 ? point.y + 20 : point.y - 11}
-								text-anchor="middle"
-								class="text-[10px] font-black drop-shadow-xs select-none transition-all group-hover:scale-105"
-								fill={point.color}
-								style="paint-order: stroke fill; stroke: #ffffff; stroke-width: 3.5px; stroke-linecap: round; stroke-linejoin: round;"
-							>
-								{viewMode === 'valence' ? point.dominantMood : `${point.count} ${point.count === 1 ? 'entry' : 'entries'}`}
-							</text>
-
-							<!-- Invisible Larger Hit Area for easy touch / hover on mobile & desktop -->
+							<!-- Invisible touch/click hit area -->
 							<circle
 								cx={point.x}
 								cy={point.y}
-								r="22"
+								r="20"
 								fill="transparent"
 							/>
 						</g>
 					{/each}
 				</svg>
+
+				<!-- Floating Modern Tooltip positioned over Active Point -->
+				{#if activePoint && isHovering}
+					<div
+						class="absolute pointer-events-none z-20 transform -translate-x-1/2 -translate-y-full transition-all duration-100 ease-out"
+						style="left: {activePoint.x}px; top: {activePoint.y - 12}px;"
+					>
+						<div class="bg-white/95 backdrop-blur-md border border-pink-200/90 rounded-2xl p-2.5 shadow-[0_8px_24px_rgba(244,63,142,0.18)] min-w-[150px] max-w-[220px] text-center animate-scale-up">
+							<div class="flex items-center justify-center space-x-1 mb-1">
+								<span class="text-base">{activePoint.emoji}</span>
+								<span class="text-xs font-black" style="color: {activePoint.color}">
+									{activePoint.dominantMood}
+								</span>
+							</div>
+							<p class="text-[10px] font-extrabold text-pink-950 truncate">{activePoint.fullDateLabel}</p>
+							<div class="flex items-center justify-center gap-1.5 mt-1 text-[9.5px] font-bold text-pink-500">
+								<span>{activePoint.count} {activePoint.count === 1 ? 'memory' : 'memories'}</span>
+								<span>·</span>
+								<span>Score: {activePoint.avgScore}%</span>
+							</div>
+							<p class="text-[8.5px] text-[#f43f8e] font-black mt-1 uppercase tracking-wider">Tap to view entries ↓</p>
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 
-		<!-- Interactive Hover Information Pill / Tooltip Details & Quick Summary Badges -->
-		<div class="mt-2.5 pt-2.5 border-t border-pink-50 flex items-center justify-between gap-2 min-h-[32px] flex-wrap">
-			{#if hoveredPoint}
-				<div class="flex items-center space-x-2 bg-pink-50/80 border border-pink-200/80 px-2.5 py-1 rounded-xl animate-fade-in shadow-2xs">
-					<span class="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-2xs" style="background-color: {hoveredPoint.color}"></span>
-					<div class="flex items-center space-x-1.5 text-xs">
-						<span class="font-extrabold text-pink-950">{hoveredPoint.date}</span>
-						<span class="text-pink-300">·</span>
-						<span class="font-black px-1.5 py-0.5 rounded-full text-[10px]" style="background-color: {hoveredPoint.color}20; color: {hoveredPoint.color};">
-							{hoveredPoint.dominantMood}
+		<!-- Interactive Day Memory Inspection Card (Below Graph) -->
+		{#if inspectedPoint}
+			<div class="mt-3 pt-3 border-t border-pink-100/80 animate-fade-in">
+				<div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
+					<div class="flex items-center space-x-2">
+						<span class="w-3 h-3 rounded-full flex-shrink-0 shadow-2xs" style="background-color: {inspectedPoint.color}"></span>
+						<span class="text-xs font-black text-pink-950">{inspectedPoint.fullDateLabel}</span>
+						<span class="text-[10px] font-black px-2 py-0.5 rounded-full border shadow-2xs" style="background-color: {inspectedPoint.color}18; color: {inspectedPoint.color}; border-color: {inspectedPoint.color}35;">
+							{inspectedPoint.emoji} {inspectedPoint.dominantMood} ({inspectedPoint.avgScore}%)
 						</span>
-						<span class="text-pink-300">·</span>
-						<span class="text-pink-600 font-bold">{hoveredPoint.count} {hoveredPoint.count === 1 ? 'entry' : 'entries'}</span>
 					</div>
-					<span class="text-[10px] text-[#f43f8e] font-black ml-1 flex items-center">
-						View <ChevronRight class="w-3 h-3" />
-					</span>
-				</div>
-			{/if}
 
-			<!-- Quick Summary Badges -->
-			<div class="flex items-center gap-2 ml-auto flex-wrap">
-				<div class="flex items-center space-x-1 text-[10px] font-bold bg-[#fdf2f6] px-2.5 py-1 rounded-lg border border-pink-100 text-pink-800">
-					<span class="text-pink-400">Tracked Days:</span>
+					<button
+						onclick={() => selectPoint(inspectedPoint)}
+						class="text-[10px] sm:text-[11px] font-black text-[#f43f8e] hover:text-[#db2777] flex items-center gap-1 bg-pink-50 hover:bg-pink-100/80 px-2.5 py-1 rounded-xl transition-all cursor-pointer shadow-2xs"
+					>
+						<span>Open All ({inspectedPoint.count})</span>
+						<ChevronRight class="w-3 h-3" />
+					</button>
+				</div>
+
+				<!-- Memory cards for the selected date -->
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
+					{#each inspectedPoint.memories as memory}
+						{@const mName = (memory.mood_tag || 'Neutral').charAt(0).toUpperCase() + (memory.mood_tag || 'Neutral').slice(1).toLowerCase()}
+						<button
+							onclick={() => handleMemoryCardClick(memory)}
+							class="flex items-center space-x-2 p-2 rounded-xl bg-[#fdf2f6]/80 hover:bg-[#fff0f5] border border-pink-100/90 hover:border-pink-300 transition-all text-left group cursor-pointer active:scale-99 shadow-2xs"
+						>
+							<div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: {getMoodFillColor(mName)}"></div>
+							<div class="min-w-0 flex-1">
+								<p class="text-[11px] font-bold text-pink-950 truncate group-hover:text-[#f43f8e] transition-colors leading-tight">
+									{memory.description || memory.memory_tag || 'Untitled Memory'}
+								</p>
+								<div class="flex items-center gap-1.5 mt-0.5 text-[9px] text-pink-400">
+									<span>{getMoodEmoji(mName)} {mName}</span>
+									{#if memory.photo_video}
+										<span>· 📷 Media</span>
+									{/if}
+								</div>
+							</div>
+							<Eye class="w-3 h-3 text-pink-300 group-hover:text-[#f43f8e] flex-shrink-0 transition-colors" />
+						</button>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
+		<!-- Quick Metric Stats Footer -->
+		<div class="mt-3 pt-2.5 border-t border-pink-50 flex items-center justify-between gap-2 flex-wrap">
+			<div class="flex items-center gap-2 flex-wrap text-[10px] font-bold text-pink-700">
+				<div class="flex items-center space-x-1 bg-[#fdf2f6] px-2.5 py-1 rounded-lg border border-pink-100">
+					<span class="text-pink-400">Days Logged:</span>
 					<span class="font-black text-[#f43f8e]">{aggregatedTimeline.length}</span>
 				</div>
+				<div class="flex items-center space-x-1 bg-[#fdf2f6] px-2.5 py-1 rounded-lg border border-pink-100">
+					<span class="text-pink-400">Average Valence:</span>
+					<span class="font-black text-pink-900">{trendInsights.avg}%</span>
+				</div>
 				{#if trendInsights.peak}
-					<div class="flex items-center space-x-1.5 text-[10px] font-bold bg-[#fdf2f6] px-2.5 py-1 rounded-lg border border-pink-100 text-pink-800">
+					<div class="flex items-center space-x-1.5 bg-[#fdf2f6] px-2.5 py-1 rounded-lg border border-pink-100">
 						<span class="text-pink-400">Peak Vibe:</span>
-						<span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {trendInsights.peak.color}"></span>
-						<span class="font-black text-pink-950">{trendInsights.peak.dominantMood}</span>
+						<span class="font-black text-pink-950">{trendInsights.peak.emoji} {trendInsights.peak.dominantMood}</span>
 						<span class="text-pink-400">({trendInsights.peak.displayDate})</span>
 					</div>
 				{/if}
 			</div>
+
+			<span class="text-[9.5px] text-pink-400 font-bold ml-auto">
+				Click any node to view full memory details
+			</span>
 		</div>
 	{:else}
 		<!-- Empty Timeline State -->
 		<div class="text-center py-10 bg-pink-50/40 rounded-2xl border border-dashed border-pink-200">
 			<Activity class="w-8 h-8 text-pink-300 mx-auto mb-2 opacity-60" strokeWidth={1.8} />
 			<p class="text-xs font-bold text-pink-900 mb-0.5">No Timeline Points Recorded</p>
-			<p class="text-[11px] text-pink-400 font-medium">Capture memories across different dates to visualize your continuous emotional line graph.</p>
+			<p class="text-[11px] text-pink-400 font-medium">
+				{selectedMoodFilter !== 'all' ? `No memories found with mood "${selectedMoodFilter}". Try selecting "All Moods".` : 'Capture memories across different dates to visualize your continuous emotional line graph.'}
+			</p>
+			{#if selectedMoodFilter !== 'all'}
+				<button
+					onclick={() => { playClickSound(); selectedMoodFilter = 'all'; }}
+					class="mt-2.5 px-3 py-1 bg-[#f43f8e] text-white rounded-xl text-[10px] font-bold cursor-pointer hover:bg-[#db2777] transition-all"
+				>
+					Reset Filter to All
+				</button>
+			{/if}
 		</div>
 	{/if}
 </div>
