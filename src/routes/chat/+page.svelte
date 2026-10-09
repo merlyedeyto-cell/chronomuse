@@ -2351,9 +2351,7 @@
 								{/if}
 							</div>
 							<!-- Bubble tail -->
-							<div class="absolute left-1/2 -translate-x-1/2 bottom-[-6px] w-2.5 h-2.5 overflow-hidden">
-								<div class="w-2.5 h-2.5 bg-white border-b border-r border-pink-200 rotate-45 translate-y-[-50%]"></div>
-							</div>
+							<span class="absolute -bottom-[4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-white border-b border-r border-pink-200 rotate-45 pointer-events-none rounded-br-2xs"></span>
 						</div>
 						<!-- Avatar & Expiration Indicator -->
 						<div class="relative">
@@ -2393,9 +2391,7 @@
 									<span class="line-clamp-2">{fn.note_text}</span>
 								</div>
 								<!-- Bubble tail -->
-								<div class="absolute left-1/2 -translate-x-1/2 bottom-[-6px] w-2.5 h-2.5 overflow-hidden">
-									<div class="w-2.5 h-2.5 bg-white border-b border-r border-pink-200 rotate-45 translate-y-[-50%]"></div>
-								</div>
+								<span class="absolute -bottom-[4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-white border-b border-r border-pink-200 rotate-45 pointer-events-none rounded-br-2xs"></span>
 							</div>
 							<!-- Avatar -->
 							<div class="w-10 h-10 rounded-2xl bg-pink-50 border-2 border-pink-200 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform shadow-2xs">
@@ -3513,9 +3509,7 @@
 						{/if}
 					</div>
 					<!-- Bubble tail -->
-					<div class="absolute left-6 bottom-[-8px] w-4 h-4 overflow-hidden">
-						<div class="w-4 h-4 bg-[#fdf2f6] border-b border-r border-pink-200/80 rotate-45 translate-y-[-50%]"></div>
-					</div>
+					<span class="absolute -bottom-[6px] left-6 w-3 h-3 bg-[#fdf2f6] border-b border-r border-pink-200/80 rotate-45 pointer-events-none rounded-br-2xs"></span>
 				</div>
 
 				<!-- Textarea -->
@@ -3616,9 +3610,7 @@
 					<div class="bg-[#fdf2f6] border border-pink-200/80 rounded-2xl px-4 py-3.5 text-sm font-semibold text-pink-900 leading-relaxed">
 						"{viewingNote.note_text}"
 					</div>
-					<div class="absolute left-4 bottom-[-8px] w-4 h-4 overflow-hidden">
-						<div class="w-4 h-4 bg-[#fdf2f6] border-b border-r border-pink-200/80 rotate-45 translate-y-[-50%]"></div>
-					</div>
+					<span class="absolute -bottom-[6px] left-5 w-3 h-3 bg-[#fdf2f6] border-b border-r border-pink-200/80 rotate-45 pointer-events-none rounded-br-2xs"></span>
 				</div>
 
 				<!-- Live 24h Expiration Countdown Timer -->

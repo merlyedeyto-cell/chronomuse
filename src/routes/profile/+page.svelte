@@ -1573,10 +1573,7 @@
 												title="Click to edit status note"
 											>
 												<span class="max-w-[120px] truncate">{userNote}</span>
-												<svg class="absolute -bottom-2 left-3.5 w-3.5 h-2.5 overflow-visible pointer-events-none" viewBox="0 0 14 10" fill="none">
-													<path d="M1 0 L13 0 L4 9.5 Z" fill="white" stroke="#fbcfe8" stroke-width="2" stroke-linejoin="round" />
-													<line x1="2" y1="0" x2="12" y2="0" stroke="white" stroke-width="3" />
-												</svg>
+												<span class="absolute -bottom-[5px] left-3.5 w-2.5 h-2.5 bg-white border-b-2 border-r-2 border-pink-200 rotate-45 pointer-events-none rounded-br-[2px]"></span>
 											</button>
 										{:else}
 											<button 
@@ -1586,10 +1583,7 @@
 												title="Add a note"
 											>
 												<span>+ Note</span>
-												<svg class="absolute -bottom-2 left-3.5 w-3.5 h-2.5 overflow-visible pointer-events-none" viewBox="0 0 14 10" fill="none">
-													<path d="M1 0 L13 0 L4 9.5 Z" fill="white" stroke="#fbcfe8" stroke-width="2" stroke-linejoin="round" />
-													<line x1="2" y1="0" x2="12" y2="0" stroke="white" stroke-width="3" />
-												</svg>
+												<span class="absolute -bottom-[5px] left-3.5 w-2.5 h-2.5 bg-white border-b-2 border-r-2 border-pink-200 rotate-45 pointer-events-none rounded-br-[2px]"></span>
 											</button>
 										{/if}
 									{:else}
@@ -1601,10 +1595,7 @@
 												title="View note"
 											>
 												<span class="max-w-[120px] truncate">{userNote}</span>
-												<svg class="absolute -bottom-2 left-3.5 w-3.5 h-2.5 overflow-visible pointer-events-none" viewBox="0 0 14 10" fill="none">
-													<path d="M1 0 L13 0 L4 9.5 Z" fill="white" stroke="#fbcfe8" stroke-width="2" stroke-linejoin="round" />
-													<line x1="2" y1="0" x2="12" y2="0" stroke="white" stroke-width="3" />
-												</svg>
+												<span class="absolute -bottom-[5px] left-3.5 w-2.5 h-2.5 bg-white border-b-2 border-r-2 border-pink-200 rotate-45 pointer-events-none rounded-br-[2px]"></span>
 											</button>
 										{/if}
 									{/if}
