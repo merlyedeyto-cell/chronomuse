@@ -11,22 +11,47 @@
 	let topMood = $state('Happy');
 	let isLoading = $state(true);
 
-	// Daily affirmations / inspiration quotes (clean, elegant text without emojis)
-	const quotes = [
-		"Every day holds a special little moment worth remembering.",
-		"Collect beautiful moments, not just things.",
-		"Your story is unique, precious, and worth saving.",
-		"Small reflections today become cherished treasures tomorrow.",
-		"Smile, breathe, and capture the joy in today.",
-		"Gratitude turns what we have into enough.",
-		"Make each day a masterpiece in your timeline."
-	];
+	// Daily affirmations / inspiration quotes from ZenQuotes API
+	let quotes = $state([
+		{ q: "Every day holds a special little moment worth remembering.", a: "Chronomuse" },
+		{ q: "Collect beautiful moments, not just things.", a: "Unknown" },
+		{ q: "Your story is unique, precious, and worth saving.", a: "Chronomuse" },
+		{ q: "Small reflections today become cherished treasures tomorrow.", a: "Chronomuse" },
+		{ q: "Smile, breathe, and capture the joy in today.", a: "Unknown" },
+		{ q: "Gratitude turns what we have into enough.", a: "Aesop" },
+		{ q: "Make each day a masterpiece in your timeline.", a: "John Wooden" }
+	]);
 
 	let currentQuoteIndex = $state(0);
+	let isShuffling = $state(false);
+
+	async function loadAffirmations() {
+		try {
+			const res = await fetch(API_ENDPOINTS.getAffirmation);
+			const data = await res.json();
+			if (data.success && Array.isArray(data.quotes) && data.quotes.length > 0) {
+				quotes = data.quotes;
+				const today = new Date();
+				currentQuoteIndex = (today.getDate() + today.getMonth() * 31) % quotes.length;
+			}
+		} catch (err) {
+			console.warn('Could not fetch affirmations from API, using fallback:', err);
+		}
+	}
 
 	function shuffleQuote() {
 		playClickSound();
-		currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+		isShuffling = true;
+		if (quotes.length > 1) {
+			let nextIndex;
+			do {
+				nextIndex = Math.floor(Math.random() * quotes.length);
+			} while (nextIndex === currentQuoteIndex && quotes.length > 1);
+			currentQuoteIndex = nextIndex;
+		}
+		setTimeout(() => {
+			isShuffling = false;
+		}, 300);
 	}
 
 	let lastLoadedUserId = null;
@@ -49,6 +74,7 @@
 	onMount(() => {
 		const today = new Date();
 		currentQuoteIndex = today.getDate() % quotes.length;
+		loadAffirmations();
 
 		if (userId && lastLoadedUserId !== userId) {
 			lastLoadedUserId = userId;
@@ -171,13 +197,20 @@
 			<button
 				onclick={shuffleQuote}
 				title="Get new quote"
-				class="w-6 h-6 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-500 hover:text-[#f43f8e] border border-pink-200/60 flex items-center justify-center transition-all active:rotate-180 duration-300 cursor-pointer shadow-2xs"
+				class="w-6 h-6 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-500 hover:text-[#f43f8e] border border-pink-200/60 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-2xs {isShuffling ? 'rotate-180 scale-95' : 'hover:rotate-45'}"
 			>
-				<RefreshCw class="w-3 h-3" />
+				<RefreshCw class="w-3 h-3 {isShuffling ? 'animate-spin' : ''}" />
 			</button>
 		</div>
-		<p class="text-xs sm:text-[13px] text-pink-950 font-medium italic leading-relaxed pr-2">
-			"{quotes[currentQuoteIndex]}"
-		</p>
+		<div class="transition-opacity duration-200 {isShuffling ? 'opacity-40' : 'opacity-100'}">
+			<p class="text-xs sm:text-[13px] text-pink-950 font-medium italic leading-relaxed pr-2">
+				"{quotes[currentQuoteIndex]?.q || quotes[currentQuoteIndex]}"
+			</p>
+			{#if quotes[currentQuoteIndex]?.a && quotes[currentQuoteIndex]?.a !== 'Unknown'}
+				<p class="text-[10px] sm:text-[11px] text-pink-500 font-bold text-right mt-1.5 tracking-wide">
+					— {quotes[currentQuoteIndex].a}
+				</p>
+			{/if}
+		</div>
 	</div>
 </div>
