@@ -21,12 +21,7 @@
 				{/if}
 			</div>
 			<div class="space-y-0.5 min-w-0 flex-1">
-				<div class="flex flex-wrap items-center gap-1.5">
-					<h4 class="text-xs sm:text-sm font-extrabold text-pink-950">Touch Sound Effects & Haptics</h4>
-					<span class="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap inline-flex items-center flex-shrink-0 leading-tight {soundEffectsEnabled ? 'bg-pink-100 text-[#f43f8e] border border-pink-200' : 'bg-slate-50 text-slate-500 border border-slate-200'}">
-						{soundEffectsEnabled ? 'Audio Active' : 'Muted'}
-					</span>
-				</div>
+				<h4 class="text-xs sm:text-sm font-extrabold text-pink-950">Touch Sound Effects & Haptics</h4>
 				<p class="text-xs text-pink-400 font-medium leading-relaxed">
 					Play subtle sound feedback effects whenever you tap buttons, switch tabs, like memories, and interact with the UI.
 				</p>
