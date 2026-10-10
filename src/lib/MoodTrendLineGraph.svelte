@@ -285,50 +285,6 @@
 		return chartPoints[chartPoints.length - 1] || null;
 	});
 
-	// Trend Insights & Metrics
-	let trendInsights = $derived.by(() => {
-		if (aggregatedTimeline.length === 0) {
-			return { label: 'Awaiting Entries', sentiment: 'neutral', avg: 0, peak: null, count: 0 };
-		}
-
-		const avg = Math.round(
-			aggregatedTimeline.reduce((sum, p) => sum + p.avgScore, 0) / aggregatedTimeline.length
-		);
-
-		let peak = aggregatedTimeline[0];
-		for (const p of aggregatedTimeline) {
-			if (p.avgScore > peak.avgScore) peak = p;
-		}
-
-		let label = 'Steady & Balanced';
-		let sentiment = 'positive';
-		if (aggregatedTimeline.length >= 2) {
-			const firstHalf = aggregatedTimeline.slice(0, Math.ceil(aggregatedTimeline.length / 2));
-			const secondHalf = aggregatedTimeline.slice(Math.ceil(aggregatedTimeline.length / 2));
-			const avg1 = firstHalf.reduce((s, p) => s + p.avgScore, 0) / firstHalf.length;
-			const avg2 = secondHalf.reduce((s, p) => s + p.avgScore, 0) / secondHalf.length;
-
-			const diff = avg2 - avg1;
-			if (diff > 5) {
-				label = 'Positive Trajectory ↗';
-				sentiment = 'positive';
-			} else if (diff < -5) {
-				label = 'Reflective Period ↘';
-				sentiment = 'reflective';
-			} else {
-				label = 'Balanced Momentum ⟷';
-				sentiment = 'positive';
-			}
-		}
-
-		return {
-			label,
-			sentiment,
-			avg,
-			peak,
-			count: aggregatedTimeline.reduce((sum, p) => sum + p.count, 0)
-		};
-	});
 
 	// Smart dynamic tooltip placement calculations (clamps to never overflow card or screen)
 	let isTooltipBelow = $derived.by(() => {
@@ -960,31 +916,7 @@
 			</div>
 		{/if}
 
-		<!-- Quick Metric Stats Footer -->
-		<div class="mt-3 pt-2.5 border-t border-pink-50 flex items-center justify-between gap-2 flex-wrap">
-			<div class="flex items-center gap-2 flex-wrap text-[10px] font-bold text-pink-700">
-				<div class="flex items-center space-x-1 bg-[#fdf2f6] px-2.5 py-1 rounded-lg border border-pink-100">
-					<span class="text-pink-400">Days Logged:</span>
-					<span class="font-black text-[#f43f8e]">{aggregatedTimeline.length}</span>
-				</div>
-				<div class="flex items-center space-x-1 bg-[#fdf2f6] px-2.5 py-1 rounded-lg border border-pink-100">
-					<span class="text-pink-400">Average Valence:</span>
-					<span class="font-black text-pink-900">{trendInsights.avg}%</span>
-				</div>
-				{#if trendInsights.peak}
-					<div class="flex items-center space-x-1.5 bg-[#fdf2f6] px-2.5 py-1 rounded-lg border border-pink-100">
-						<span class="text-pink-400">Peak Vibe:</span>
-						<span class="w-2 h-2 rounded-full inline-block" style="background-color: {trendInsights.peak.color}"></span>
-						<span class="font-black text-pink-950">{trendInsights.peak.dominantMood}</span>
-						<span class="text-pink-400">({trendInsights.peak.displayDate})</span>
-					</div>
-				{/if}
-			</div>
 
-			<span class="text-[9.5px] text-pink-400 font-bold ml-auto">
-				Click any node to view full memory details
-			</span>
-		</div>
 	{:else}
 		<!-- Empty Timeline State -->
 		<div class="text-center py-10 bg-pink-50/40 rounded-2xl border border-dashed border-pink-200">
