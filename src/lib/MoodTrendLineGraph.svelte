@@ -3,14 +3,9 @@
 		TrendingUp,
 		Activity,
 		ChevronRight,
-		Sparkles,
-		Calendar,
 		Eye,
-		Layers,
-		Flame,
-		Smile,
-		Compass,
-		Filter
+		Filter,
+		Camera
 	} from 'lucide-svelte';
 	import { playClickSound } from '$lib/soundEffects.js';
 
@@ -56,19 +51,6 @@
 		'Neutral': '#94A3B8'
 	};
 
-	const MOOD_EMOJIS = {
-		'Happy': '😊',
-		'Sad': '😢',
-		'Excited': '🤩',
-		'Angry': '🔥',
-		'Calm': '🌿',
-		'Anxious': '🌊',
-		'Grateful': '🙏',
-		'Lonely': '🌧️',
-		'Love': '💖',
-		'Neutral': '✨'
-	};
-
 	function getMoodScore(moodTag) {
 		const tag = (moodTag || '').toLowerCase().trim();
 		return MOOD_VALENCE_SCORES[tag] ?? 50;
@@ -77,11 +59,6 @@
 	function getMoodFillColor(mood) {
 		const formatted = (mood || '').charAt(0).toUpperCase() + (mood || '').slice(1).toLowerCase();
 		return MOOD_COLORS[formatted] || '#F43F8E';
-	}
-
-	function getMoodEmoji(mood) {
-		const formatted = (mood || '').charAt(0).toUpperCase() + (mood || '').slice(1).toLowerCase();
-		return MOOD_EMOJIS[formatted] || '🌟';
 	}
 
 	// Filter raw memories if mood filter is applied
@@ -152,7 +129,6 @@
 				avgScore,
 				dominantMood,
 				color: getMoodFillColor(dominantMood),
-				emoji: getMoodEmoji(dominantMood),
 				memories: group.memories,
 				moodCounts: group.moodCounts
 			};
@@ -422,9 +398,9 @@
 					onchange={() => playClickSound()}
 					class="text-[10px] sm:text-[11px] font-bold bg-[#fdf2f6] text-pink-900 border border-pink-100/90 rounded-xl px-2.5 py-1 pr-6 cursor-pointer hover:border-pink-300 transition-colors focus:outline-none focus:ring-1 focus:ring-[#f43f8e] appearance-none"
 				>
-					<option value="all">✨ All Moods ({moodData.length})</option>
+					<option value="all">All Moods ({moodData.length})</option>
 					{#each Object.keys(MOOD_COLORS) as mood}
-						<option value={mood.toLowerCase()}>{MOOD_EMOJIS[mood]} {mood}</option>
+						<option value={mood.toLowerCase()}>{mood}</option>
 					{/each}
 				</select>
 				<Filter class="w-2.5 h-2.5 text-pink-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -664,9 +640,9 @@
 								stroke-dasharray="2 2"
 							/>
 							<rect
-								x={peakPoint.x - 30}
+								x={peakPoint.x - 26}
 								y={Math.max(padding.top - 20, peakPoint.y - 30)}
-								width="60"
+								width="52"
 								height="15"
 								rx="7.5"
 								fill="#ffffff"
@@ -681,7 +657,7 @@
 								class="text-[8.5px] font-black"
 								fill={peakPoint.color}
 							>
-								{peakPoint.emoji} {peakPoint.dominantMood}
+								{peakPoint.dominantMood}
 							</text>
 						</g>
 					{/if}
@@ -762,8 +738,8 @@
 						style="left: {activePoint.x}px; top: {activePoint.y - 12}px;"
 					>
 						<div class="bg-white/95 backdrop-blur-md border border-pink-200/90 rounded-2xl p-2.5 shadow-[0_8px_24px_rgba(244,63,142,0.18)] min-w-[150px] max-w-[220px] text-center animate-scale-up">
-							<div class="flex items-center justify-center space-x-1 mb-1">
-								<span class="text-base">{activePoint.emoji}</span>
+							<div class="flex items-center justify-center space-x-1.5 mb-1">
+								<span class="w-2 h-2 rounded-full" style="background-color: {activePoint.color}"></span>
 								<span class="text-xs font-black" style="color: {activePoint.color}">
 									{activePoint.dominantMood}
 								</span>
@@ -789,7 +765,7 @@
 						<span class="w-3 h-3 rounded-full flex-shrink-0 shadow-2xs" style="background-color: {inspectedPoint.color}"></span>
 						<span class="text-xs font-black text-pink-950">{inspectedPoint.fullDateLabel}</span>
 						<span class="text-[10px] font-black px-2 py-0.5 rounded-full border shadow-2xs" style="background-color: {inspectedPoint.color}18; color: {inspectedPoint.color}; border-color: {inspectedPoint.color}35;">
-							{inspectedPoint.emoji} {inspectedPoint.dominantMood} ({inspectedPoint.avgScore}%)
+							{inspectedPoint.dominantMood} ({inspectedPoint.avgScore}%)
 						</span>
 					</div>
 
@@ -816,9 +792,9 @@
 									{memory.description || memory.memory_tag || 'Untitled Memory'}
 								</p>
 								<div class="flex items-center gap-1.5 mt-0.5 text-[9px] text-pink-400">
-									<span>{getMoodEmoji(mName)} {mName}</span>
+									<span>{mName}</span>
 									{#if memory.photo_video}
-										<span>· 📷 Media</span>
+										<span class="inline-flex items-center gap-0.5">· <Camera class="w-2.5 h-2.5 inline" /> Media</span>
 									{/if}
 								</div>
 							</div>
@@ -843,7 +819,8 @@
 				{#if trendInsights.peak}
 					<div class="flex items-center space-x-1.5 bg-[#fdf2f6] px-2.5 py-1 rounded-lg border border-pink-100">
 						<span class="text-pink-400">Peak Vibe:</span>
-						<span class="font-black text-pink-950">{trendInsights.peak.emoji} {trendInsights.peak.dominantMood}</span>
+						<span class="w-2 h-2 rounded-full inline-block" style="background-color: {trendInsights.peak.color}"></span>
+						<span class="font-black text-pink-950">{trendInsights.peak.dominantMood}</span>
 						<span class="text-pink-400">({trendInsights.peak.displayDate})</span>
 					</div>
 				{/if}

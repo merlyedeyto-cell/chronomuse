@@ -557,22 +557,6 @@
 		return Math.round((moodStats[mood.toLowerCase()] / totalLoggedMoods) * 100);
 	}
 
-	function getMoodEmoji(moodTag) {
-		switch ((moodTag || '').toLowerCase()) {
-			case 'happy': return '😊';
-			case 'sad': return '😢';
-			case 'excited': return '🤩';
-			case 'calm': return '🌿';
-			case 'love': return '💖';
-			case 'angry': return '🔥';
-			case 'grateful': return '🙏';
-			case 'anxious': return '🌊';
-			case 'lonely': return '🌧️';
-			case 'neutral': return '✨';
-			default: return '🌟';
-		}
-	}
-
 	let positiveMoodsLogged = $derived(
 		['happy', 'excited', 'grateful', 'calm', 'love']
 			.filter(m => (moodStats[m] || 0) > 0)
@@ -580,7 +564,7 @@
 				key: m,
 				name: m.charAt(0).toUpperCase() + m.slice(1),
 				count: moodStats[m],
-				emoji: getMoodEmoji(m)
+				color: getMoodFillColor(m.charAt(0).toUpperCase() + m.slice(1))
 			}))
 	);
 
@@ -591,13 +575,13 @@
 				key: m,
 				name: m.charAt(0).toUpperCase() + m.slice(1),
 				count: moodStats[m],
-				emoji: getMoodEmoji(m)
+				color: getMoodFillColor(m.charAt(0).toUpperCase() + m.slice(1))
 			}))
 	);
 
 	let neutralMoodsLogged = $derived(
 		(moodStats.neutral || 0) > 0
-			? [{ key: 'neutral', name: 'Neutral', count: moodStats.neutral, emoji: '✨' }]
+			? [{ key: 'neutral', name: 'Neutral', count: moodStats.neutral, color: getMoodFillColor('Neutral') }]
 			: []
 	);
 
@@ -1132,8 +1116,8 @@
 							{#if positiveMoodsLogged.length > 0}
 								<div class="flex flex-wrap gap-1 pt-0.5">
 									{#each positiveMoodsLogged as item}
-										<div class="inline-flex items-center space-x-1 px-2 py-0.5 bg-white border border-emerald-200 rounded-full text-[10px] font-bold text-emerald-900 shadow-2xs">
-											<span>{item.emoji}</span>
+										<div class="inline-flex items-center space-x-1.5 px-2 py-0.5 bg-white border border-emerald-200 rounded-full text-[10px] font-bold text-emerald-900 shadow-2xs">
+											<span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background-color: {item.color}"></span>
 											<span>{item.name}</span>
 											<span class="text-emerald-700 font-black">({item.count})</span>
 										</div>
@@ -1159,8 +1143,8 @@
 							{#if neutralMoodsLogged.length > 0}
 								<div class="flex flex-wrap gap-1 pt-0.5">
 									{#each neutralMoodsLogged as item}
-										<div class="inline-flex items-center space-x-1 px-2 py-0.5 bg-white border border-slate-200 rounded-full text-[10px] font-bold text-slate-800 shadow-2xs">
-											<span>{item.emoji}</span>
+										<div class="inline-flex items-center space-x-1.5 px-2 py-0.5 bg-white border border-slate-200 rounded-full text-[10px] font-bold text-slate-800 shadow-2xs">
+											<span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background-color: {item.color}"></span>
 											<span>{item.name}</span>
 											<span class="text-slate-600 font-black">({item.count})</span>
 										</div>
@@ -1186,8 +1170,8 @@
 							{#if negativeMoodsLogged.length > 0}
 								<div class="flex flex-wrap gap-1 pt-0.5">
 									{#each negativeMoodsLogged as item}
-										<div class="inline-flex items-center space-x-1 px-2 py-0.5 bg-white border border-rose-200 rounded-full text-[10px] font-bold text-rose-900 shadow-2xs">
-											<span>{item.emoji}</span>
+										<div class="inline-flex items-center space-x-1.5 px-2 py-0.5 bg-white border border-rose-200 rounded-full text-[10px] font-bold text-rose-900 shadow-2xs">
+											<span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background-color: {item.color}"></span>
 											<span>{item.name}</span>
 											<span class="text-rose-700 font-black">({item.count})</span>
 										</div>
