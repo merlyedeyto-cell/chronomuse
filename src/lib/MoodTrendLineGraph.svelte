@@ -22,10 +22,13 @@
 	let selectedMoodFilter = $state('all'); // 'all' or specific mood name
 	let isMoodDropdownOpen = $state(false);
 	let dropdownRef = $state();
+	let chartContainerRef = $state();
 	let activePointIndex = $state(null);
 	let isHovering = $state(false);
 	let selectedDateData = $state(null);
 	let containerWidth = $state(600);
+	let tooltipWidth = $state(180);
+	let tooltipHeight = $state(90);
 
 	// Mood score mapping (0 to 100 for Valence/Positivity)
 	const MOOD_VALENCE_SCORES = {
@@ -190,26 +193,20 @@
 		});
 	});
 
-	// Find Peak and Lowest Points for Milestones
-	let { peakPoint, lowestPoint } = $derived.by(() => {
-		if (chartPoints.length === 0) return { peakPoint: null, lowestPoint: null };
+	// Find Peak Point for Milestone
+	let peakPoint = $derived.by(() => {
+		if (chartPoints.length === 0) return null;
 		let peak = chartPoints[0];
-		let lowest = chartPoints[0];
 
 		for (const p of chartPoints) {
 			if (viewMode === 'valence') {
 				if (p.avgScore > peak.avgScore) peak = p;
-				if (p.avgScore < lowest.avgScore) lowest = p;
 			} else {
 				if (p.count > peak.count) peak = p;
-				if (p.count < lowest.count) lowest = p;
 			}
 		}
 
-		return {
-			peakPoint: peak,
-			lowestPoint: chartPoints.length > 2 && peak !== lowest ? lowest : null
-		};
+		return peak;
 	});
 
 	// Smooth Cubic Bezier Spline Path Generator
@@ -333,6 +330,42 @@
 		};
 	});
 
+	// Smart dynamic tooltip placement calculations (clamps to never overflow card or screen)
+	let isTooltipBelow = $derived.by(() => {
+		if (!activePoint) return false;
+		const tHeight = tooltipHeight > 0 ? tooltipHeight : 90;
+		// Flip below if placing above would collide with top controls or exceed container top
+		return (activePoint.y - 12 - tHeight) < 10;
+	});
+
+	let tooltipX = $derived.by(() => {
+		if (!activePoint) return 0;
+		const tWidth = tooltipWidth > 0 ? tooltipWidth : 180;
+		const halfWidth = tWidth / 2;
+		const pad = 12; // safe padding from container boundaries
+		if (containerWidth <= tWidth + pad * 2) {
+			return containerWidth / 2;
+		}
+		return Math.max(halfWidth + pad, Math.min(containerWidth - halfWidth - pad, activePoint.x));
+	});
+
+	let tooltipY = $derived.by(() => {
+		if (!activePoint) return 0;
+		if (isTooltipBelow) {
+			return activePoint.y + 14;
+		}
+		return activePoint.y - 12;
+	});
+
+	let arrowX = $derived.by(() => {
+		if (!activePoint) return 0;
+		const tWidth = tooltipWidth > 0 ? tooltipWidth : 180;
+		const minArrowX = 18;
+		const maxArrowX = Math.max(minArrowX, tWidth - 18);
+		const targetArrowX = (tWidth / 2) + (activePoint.x - tooltipX);
+		return Math.max(minArrowX, Math.min(maxArrowX, targetArrowX));
+	});
+
 	// Interactive Mouse Scrubbing / Moving over SVG
 	function handleSvgMouseMove(e) {
 		if (chartPoints.length === 0) return;
@@ -355,6 +388,26 @@
 		isHovering = true;
 	}
 
+	function handleSvgTouch(e) {
+		if (chartPoints.length === 0 || !e.touches || e.touches.length === 0) return;
+		const rect = e.currentTarget.getBoundingClientRect();
+		const touchX = e.touches[0].clientX - rect.left;
+
+		let closestIdx = 0;
+		let minDiff = Infinity;
+
+		for (let i = 0; i < chartPoints.length; i++) {
+			const diff = Math.abs(chartPoints[i].x - touchX);
+			if (diff < minDiff) {
+				minDiff = diff;
+				closestIdx = i;
+			}
+		}
+
+		activePointIndex = closestIdx;
+		isHovering = true;
+	}
+
 	function handleSvgMouseLeave() {
 		isHovering = false;
 		activePointIndex = null;
@@ -363,6 +416,8 @@
 	function selectPoint(point) {
 		playClickSound();
 		selectedDateData = point;
+		activePointIndex = point.index;
+		isHovering = true;
 		if (point.memories && point.memories.length > 0) {
 			onSelectDate(point.date, point.memories);
 			if (point.memories.length === 1) {
@@ -379,6 +434,10 @@
 	function handleClickOutside(event) {
 		if (isMoodDropdownOpen && dropdownRef && !dropdownRef.contains(event.target)) {
 			isMoodDropdownOpen = false;
+		}
+		if (isHovering && chartContainerRef && !chartContainerRef.contains(event.target)) {
+			isHovering = false;
+			activePointIndex = null;
 		}
 	}
 </script>
@@ -505,13 +564,15 @@
 
 	<!-- Chart Area / Visualization -->
 	{#if aggregatedTimeline.length > 0}
-		<div class="relative w-full select-none" bind:clientWidth={containerWidth}>
+		<div class="relative w-full select-none" bind:clientWidth={containerWidth} bind:this={chartContainerRef}>
 			<div class="w-full relative">
 				<svg
 					viewBox="0 0 {chartWidth} {svgHeight}"
 					class="w-full h-48 sm:h-56 overflow-visible drop-shadow-xs cursor-crosshair"
 					onmousemove={handleSvgMouseMove}
 					onmouseleave={handleSvgMouseLeave}
+					ontouchstart={handleSvgTouch}
+					ontouchmove={handleSvgTouch}
 					role="region"
 					aria-label="Interactive timeline line graph"
 				>
@@ -717,7 +778,7 @@
 								stroke-dasharray="2 2"
 							/>
 							<rect
-								x={peakPoint.x - 26}
+								x={Math.max(4, Math.min(chartWidth - 56, peakPoint.x - 26))}
 								y={Math.max(padding.top - 20, peakPoint.y - 30)}
 								width="52"
 								height="15"
@@ -728,7 +789,7 @@
 								class="drop-shadow-2xs"
 							/>
 							<text
-								x={peakPoint.x}
+								x={Math.max(30, Math.min(chartWidth - 30, peakPoint.x))}
 								y={Math.max(padding.top - 20, peakPoint.y - 30) + 10.5}
 								text-anchor="middle"
 								class="text-[8.5px] font-black"
@@ -811,23 +872,40 @@
 				<!-- Floating Modern Tooltip positioned over Active Point -->
 				{#if activePoint && isHovering}
 					<div
-						class="absolute pointer-events-none z-20 transform -translate-x-1/2 -translate-y-full transition-all duration-100 ease-out"
-						style="left: {activePoint.x}px; top: {activePoint.y - 12}px;"
+						bind:clientWidth={tooltipWidth}
+						bind:clientHeight={tooltipHeight}
+						class="absolute pointer-events-none z-30 transition-all duration-100 ease-out"
+						style="left: {tooltipX}px; top: {tooltipY}px; transform: translate(-50%, {isTooltipBelow ? '0%' : '-100%'});"
 					>
-						<div class="bg-white/95 backdrop-blur-md border border-pink-200/90 rounded-2xl p-2.5 shadow-[0_8px_24px_rgba(244,63,142,0.18)] min-w-[150px] max-w-[220px] text-center animate-scale-up">
-							<div class="flex items-center justify-center space-x-1.5 mb-1">
-								<span class="w-2 h-2 rounded-full" style="background-color: {activePoint.color}"></span>
-								<span class="text-xs font-black" style="color: {activePoint.color}">
-									{activePoint.dominantMood}
-								</span>
+						<div class="relative bg-white/95 backdrop-blur-md border border-pink-200/90 rounded-2xl p-2.5 shadow-[0_8px_24px_rgba(244,63,142,0.18)] min-w-[150px] max-w-[220px] text-center animate-scale-up">
+							<!-- Dynamic Caret Arrow Pointer -->
+							{#if isTooltipBelow}
+								<div
+									class="absolute -top-1.5 w-3 h-3 bg-white border-t border-l border-pink-200/90 transform rotate-45 -translate-x-1/2 pointer-events-none z-0"
+									style="left: {arrowX}px;"
+								></div>
+							{:else}
+								<div
+									class="absolute -bottom-1.5 w-3 h-3 bg-white border-b border-r border-pink-200/90 transform rotate-45 -translate-x-1/2 pointer-events-none z-0"
+									style="left: {arrowX}px;"
+								></div>
+							{/if}
+
+							<div class="relative z-10">
+								<div class="flex items-center justify-center space-x-1.5 mb-1">
+									<span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {activePoint.color}"></span>
+									<span class="text-xs font-black truncate" style="color: {activePoint.color}">
+										{activePoint.dominantMood}
+									</span>
+								</div>
+								<p class="text-[10px] font-extrabold text-pink-950 truncate">{activePoint.fullDateLabel}</p>
+								<div class="flex items-center justify-center gap-1.5 mt-1 text-[9.5px] font-bold text-pink-500">
+									<span>{activePoint.count} {activePoint.count === 1 ? 'memory' : 'memories'}</span>
+									<span>·</span>
+									<span>Score: {activePoint.avgScore}%</span>
+								</div>
+								<p class="text-[8.5px] text-[#f43f8e] font-black mt-1 uppercase tracking-wider">Tap to view entries ↓</p>
 							</div>
-							<p class="text-[10px] font-extrabold text-pink-950 truncate">{activePoint.fullDateLabel}</p>
-							<div class="flex items-center justify-center gap-1.5 mt-1 text-[9.5px] font-bold text-pink-500">
-								<span>{activePoint.count} {activePoint.count === 1 ? 'memory' : 'memories'}</span>
-								<span>·</span>
-								<span>Score: {activePoint.avgScore}%</span>
-							</div>
-							<p class="text-[8.5px] text-[#f43f8e] font-black mt-1 uppercase tracking-wider">Tap to view entries ↓</p>
 						</div>
 					</div>
 				{/if}
