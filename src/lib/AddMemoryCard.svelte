@@ -531,7 +531,7 @@
 </script>
 
 <div
-	class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4.5 relative transition-all duration-200 ease-out animate-modal-content w-full shadow-[0_4px_24px_rgba(244,114,182,0.12)] font-sans"
+	class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl pt-10 sm:pt-11 px-3.5 sm:px-4.5 pb-3.5 sm:pb-4.5 relative transition-all duration-200 ease-out animate-modal-content w-full shadow-[0_4px_24px_rgba(244,114,182,0.12)] font-sans"
 	class:opacity-0={isOpening || isClosing}
 	class:scale-95={isOpening || isClosing}
 	class:transform={isOpening || isClosing}
@@ -539,7 +539,7 @@
 	<!-- Close Button -->
 	<button
 		onclick={handleClose}
-		class="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+		class="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-400 hover:text-[#f43f8e] flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
 		title="Close"
 	>
 		<X class="w-4 h-4" />

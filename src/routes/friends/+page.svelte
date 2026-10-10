@@ -903,15 +903,6 @@
 												<span>{formatLastActive(friend.last_activity)}</span>
 											</div>
 
-											<!-- Subtle Remove Friend Button (top-left) -->
-											<button
-												type="button"
-												onclick={() => handleRemoveFriend(friend)}
-												class="absolute top-1 left-1 p-1 bg-black/40 hover:bg-rose-600 text-white backdrop-blur-md rounded-lg transition-all duration-200 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100"
-												title={`Remove @${friend.username}`}
-											>
-												<Trash2 class="w-2.5 h-2.5" strokeWidth={2.2} />
-											</button>
 										</div>
 
 										<!-- Name & Bio / Description -->
@@ -942,6 +933,15 @@
 												title="Chat with @{friend.username}"
 											>
 												<MessageSquare class="w-4 h-4" strokeWidth={2} />
+											</button>
+
+											<button
+												type="button"
+												onclick={() => handleRemoveFriend(friend)}
+												class="p-1 text-pink-500 hover:text-rose-600 transition-colors active:scale-90 flex items-center justify-center cursor-pointer"
+												title={`Remove @${friend.username}`}
+											>
+												<Trash2 class="w-4 h-4" strokeWidth={2} />
 											</button>
 										</div>
 									</div>
