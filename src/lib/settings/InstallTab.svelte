@@ -4,19 +4,19 @@
 	let { pwaStatus, installGuideMessage, onInstallApp } = $props();
 </script>
 
-<div class="space-y-4 animate-fade-in">
+<div class="space-y-3.5 animate-fade-in">
 	<!-- Hero App Banner Card -->
-	<div class="p-4 sm:p-5 bg-gradient-to-br from-pink-50/80 via-white to-pink-50/40 rounded-2xl border border-pink-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+	<div class="p-3.5 sm:p-4 bg-gradient-to-br from-pink-50/80 via-white to-pink-50/40 rounded-xl border border-pink-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
 		<div class="flex items-start space-x-3.5">
-			<img src="/logo.png" alt="ChronoMuse" class="w-12 h-12 rounded-2xl bg-black p-1.5 object-contain flex-shrink-0 shadow-xs ring-2 ring-pink-100" />
+			<img src="/logo.png" alt="ChronoMuse" class="w-11 h-11 rounded-xl bg-black p-1.5 object-contain flex-shrink-0 shadow-xs ring-2 ring-pink-100" />
 			<div class="space-y-1">
 				<div class="flex items-center space-x-2">
-					<h3 class="text-sm sm:text-base font-extrabold text-pink-950">ChronoMuse Desktop & Mobile App</h3>
+					<h3 class="text-xs sm:text-sm font-extrabold text-pink-950">ChronoMuse Desktop & Mobile App</h3>
 					<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-pink-100 text-[#f43f8e] border border-pink-200">
 						PWA Ready
 					</span>
 				</div>
-				<p class="text-xs text-pink-500 font-medium leading-relaxed max-w-xl">
+				<p class="text-[11px] text-pink-500 font-medium leading-relaxed max-w-xl">
 					Install ChronoMuse on your device for instant offline access, ultra-smooth full-screen mood tracking, and zero latency.
 				</p>
 			</div>

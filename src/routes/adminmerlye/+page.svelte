@@ -5,8 +5,9 @@
 	import {
 		AlertCircle, Lock, ArrowLeft, LogOut, CheckCircle2, Users,
 		BookOpen, Pin, FileText, MessageSquare, Search, KeyRound,
-		Trash2, X, Download, Smartphone
+		Trash2, X, Download, Smartphone, HelpCircle, Lightbulb
 	} from 'lucide-svelte';
+	import AdminFeedbacksSection from '$lib/admin/AdminFeedbacksSection.svelte';
 
 	const ADMIN_PASSCODE = '041205';
 
@@ -22,6 +23,8 @@
 		total_pinned_dates: 0,
 		total_notes: 0,
 		total_messages: 0,
+		total_feedbacks: 0,
+		new_feedbacks: 0,
 		active_today: 0,
 		db_latency_ms: 0,
 		database_status: 'Operational',
@@ -30,6 +33,8 @@
 
 	let usersList = $state([]);
 	let userSearchQuery = $state('');
+	let activeAdminTab = $state('accounts'); // 'accounts' | 'feedbacks'
+	let feedbacksList = $state([]);
 	let isLoadingData = $state(false);
 	let actionMessage = $state('');
 	let errorMessage = $state('');
@@ -178,6 +183,20 @@
 				// Debounce (1500ms) so user activity heartbeats don't thrash the admin list
 				debouncedLoadAdminData(1500);
 			})
+			.on('postgres_changes', {
+				event: 'INSERT',
+				schema: 'public',
+				table: 'chronomuse_messages'
+			}, () => {
+				debouncedLoadAdminData(1500);
+			})
+			.on('postgres_changes', {
+				event: '*',
+				schema: 'public',
+				table: 'chronomuse_feedbacks'
+			}, () => {
+				debouncedLoadAdminData(1000);
+			})
 			.subscribe();
 
 		return () => {
@@ -240,7 +259,7 @@
 		const currentSeq = ++loadSeq;
 
 		try {
-			const [metricsRes, usersRes] = await Promise.all([
+			const [metricsRes, usersRes, feedbacksRes] = await Promise.all([
 				fetch('/api/admin', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
@@ -250,7 +269,12 @@
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ passcode: ADMIN_PASSCODE, action: 'get_users', limit: 300 })
-				}).then(r => r.json())
+				}).then(r => r.json()),
+				fetch('/api/admin', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ passcode: ADMIN_PASSCODE, action: 'get_feedbacks' })
+				}).then(r => r.json()).catch(() => ({ success: false }))
 			]);
 
 			// If a newer load request was made, ignore stale results
@@ -262,6 +286,9 @@
 			if (usersRes?.success && Array.isArray(usersRes.data?.users)) {
 				usersList = usersRes.data.users;
 			}
+			if (feedbacksRes?.success && Array.isArray(feedbacksRes.data?.feedbacks)) {
+				feedbacksList = feedbacksRes.data.feedbacks;
+			}
 		} catch (err) {
 			console.error('Error loading admin data:', err);
 			if (!isBackground && currentSeq === loadSeq) {
@@ -271,6 +298,53 @@
 			if (!isBackground && currentSeq === loadSeq) {
 				isLoadingData = false;
 			}
+		}
+	}
+
+	async function handleUpdateFeedbackStatus(feedbackId, newStatus) {
+		try {
+			const res = await fetch('/api/admin', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					passcode: ADMIN_PASSCODE,
+					action: 'update_feedback_status',
+					feedback_id: feedbackId,
+					status: newStatus
+				})
+			});
+			const data = await res.json();
+			if (data.success) {
+				feedbacksList = feedbacksList.map(f => f.id === feedbackId ? { ...f, status: newStatus } : f);
+				showNotice(`Concern marked as ${newStatus}`);
+			} else {
+				showNotice(data.error || 'Failed to update feedback status', true);
+			}
+		} catch (err) {
+			showNotice('Network error updating feedback', true);
+		}
+	}
+
+	async function handleDeleteFeedback(feedbackId) {
+		try {
+			const res = await fetch('/api/admin', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					passcode: ADMIN_PASSCODE,
+					action: 'delete_feedback',
+					feedback_id: feedbackId
+				})
+			});
+			const data = await res.json();
+			if (data.success) {
+				feedbacksList = feedbacksList.filter(f => f.id !== feedbackId);
+				showNotice('Concern record removed');
+			} else {
+				showNotice(data.error || 'Failed to delete feedback', true);
+			}
+		} catch (err) {
+			showNotice('Network error deleting feedback', true);
 		}
 	}
 
@@ -541,7 +615,7 @@
 			{/if}
 
 			<!-- Metric Cards Grid -->
-			<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+			<div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3">
 				<!-- Registered Users -->
 				<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-[0_4px_20px_rgba(244,114,182,0.06)] hover:border-pink-200 transition-all">
 					<div class="flex items-center justify-between mb-1.5 sm:mb-2">
@@ -625,8 +699,61 @@
 						<p class="text-[9px] sm:text-[10px] text-pink-400 font-bold">Chat Transcripts</p>
 					</div>
 				</div>
+
+				<!-- Concerns & Suggestions -->
+				<button
+					type="button"
+					onclick={() => activeAdminTab = 'feedbacks'}
+					class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-[0_4px_20px_rgba(244,114,182,0.06)] hover:border-[#f43f8e]/60 hover:scale-[1.02] active:scale-95 text-left transition-all cursor-pointer {activeAdminTab === 'feedbacks' ? 'ring-2 ring-[#f43f8e]/50 bg-pink-50/40' : ''}"
+				>
+					<div class="flex items-center justify-between mb-1.5 sm:mb-2 w-full">
+						<span class="text-[10px] sm:text-[11px] font-black text-[#f43f8e] uppercase tracking-wider">Concerns</span>
+						<div class="p-1 sm:p-1.5 bg-pink-50 text-[#f43f8e] border border-pink-100/80 rounded-xl shadow-2xs relative">
+							<HelpCircle class="w-3.5 h-3.5 sm:w-4 sm:h-4" strokeWidth={2} />
+							{#if (metrics.new_feedbacks || feedbacksList.filter(f => f.status === 'new').length) > 0}
+								<span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
+								<span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+							{/if}
+						</div>
+					</div>
+					<div>
+						<p class="text-xl sm:text-2xl font-black text-pink-950">{feedbacksList.length || metrics.total_feedbacks || 0}</p>
+						<p class="text-[9px] sm:text-[10px] text-pink-400 font-bold truncate">
+							{(metrics.new_feedbacks || feedbacksList.filter(f => f.status === 'new').length) > 0 
+								? `${metrics.new_feedbacks || feedbacksList.filter(f => f.status === 'new').length} New Unresolved` 
+								: 'User Inquiries'}
+						</p>
+					</div>
+				</button>
 			</div>
 
+			<!-- Tab Switcher for Admin Directories -->
+			<div class="flex items-center gap-2 p-1 bg-white/80 backdrop-blur-md rounded-2xl border border-pink-100/90 shadow-2xs w-full sm:w-auto">
+				<button
+					type="button"
+					onclick={() => activeAdminTab = 'accounts'}
+					class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer {activeAdminTab === 'accounts' ? 'bg-[#f43f8e] text-white shadow-sm' : 'text-pink-700 hover:bg-pink-50'}"
+				>
+					<Users class="w-4 h-4" />
+					<span>Accounts Directory ({usersList.length})</span>
+				</button>
+
+				<button
+					type="button"
+					onclick={() => activeAdminTab = 'feedbacks'}
+					class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer relative {activeAdminTab === 'feedbacks' ? 'bg-[#f43f8e] text-white shadow-sm' : 'text-pink-700 hover:bg-pink-50'}"
+				>
+					<MessageSquare class="w-4 h-4" />
+					<span>User Concerns & Feedback ({feedbacksList.length})</span>
+					{#if feedbacksList.filter(f => f.status === 'new').length > 0}
+						<span class="px-1.5 py-0.2 bg-rose-500 text-white rounded-full text-[10px] font-black animate-pulse shadow-xs">
+							{feedbacksList.filter(f => f.status === 'new').length}
+						</span>
+					{/if}
+				</button>
+			</div>
+
+			{#if activeAdminTab === 'accounts'}
 			<!-- Users Management Directory -->
 			<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 shadow-[0_4px_20px_rgba(244,114,182,0.08)] rounded-2xl sm:rounded-3xl p-4 sm:p-5 space-y-4">
 				<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -782,6 +909,15 @@
 					</table>
 				</div>
 			</div>
+			{:else}
+				<!-- User Concerns & Suggestions Section -->
+				<AdminFeedbacksSection
+					feedbacks={feedbacksList}
+					isLoading={isLoadingData}
+					onUpdateStatus={handleUpdateFeedbackStatus}
+					onDeleteFeedback={handleDeleteFeedback}
+				/>
+			{/if}
 		</div>
 	{/if}
 </div>

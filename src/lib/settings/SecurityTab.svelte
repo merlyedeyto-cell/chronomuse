@@ -11,12 +11,12 @@
 	} = $props();
 </script>
 
-<div class="space-y-5 animate-fade-in">
-	<form onsubmit={(e) => { e.preventDefault(); onSaveCredentials(); }} class="space-y-4">
+<div class="space-y-4 animate-fade-in">
+	<form onsubmit={(e) => { e.preventDefault(); onSaveCredentials(); }} class="space-y-3.5">
 		<!-- Profile Info Section -->
-		<div class="p-4 sm:p-5 bg-white border border-pink-100 rounded-2xl shadow-xs space-y-3.5">
+		<div class="p-3.5 sm:p-4 bg-white border border-pink-100 rounded-xl shadow-2xs space-y-3">
 			<div class="flex items-center space-x-2.5 pb-1 border-b border-pink-50">
-				<div class="w-8 h-8 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center text-[#f43f8e]">
+				<div class="w-8 h-8 rounded-lg bg-pink-50 border border-pink-100 flex items-center justify-center text-[#f43f8e]">
 					<User class="w-4 h-4" />
 				</div>
 				<div>
@@ -35,11 +35,11 @@
 							id="settings-username"
 							type="text"
 							bind:value={editUsername}
-							class="w-full pl-9 pr-3 py-2.5 bg-pink-50/40 border border-pink-200 rounded-xl text-xs font-bold text-pink-950 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/40 focus:bg-white transition-all"
+							class="w-full pl-9 pr-3 py-2 bg-pink-50/40 border border-pink-200 rounded-xl text-xs font-bold text-pink-950 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/40 focus:bg-white transition-all"
 							placeholder="Your username"
 							required
 						/>
-						<span class="absolute left-3 top-2.5 text-pink-400 font-black text-xs">@</span>
+						<span class="absolute left-3 top-2 text-pink-400 font-black text-xs">@</span>
 					</div>
 				</div>
 
@@ -52,20 +52,20 @@
 							id="settings-email"
 							type="email"
 							bind:value={editEmail}
-							class="w-full pl-9 pr-3 py-2.5 bg-pink-50/40 border border-pink-200 rounded-xl text-xs font-bold text-pink-950 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/40 focus:bg-white transition-all"
+							class="w-full pl-9 pr-3 py-2 bg-pink-50/40 border border-pink-200 rounded-xl text-xs font-bold text-pink-950 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/40 focus:bg-white transition-all"
 							placeholder="Your email address"
 							required
 						/>
-						<Mail class="w-4 h-4 text-pink-400 absolute left-3 top-3" />
+						<Mail class="w-4 h-4 text-pink-400 absolute left-3 top-2.5" />
 					</div>
 				</div>
 			</div>
 		</div>
 
 		<!-- Password Management Section -->
-		<div class="p-4 sm:p-5 bg-white border border-pink-100 rounded-2xl shadow-xs space-y-3.5">
+		<div class="p-3.5 sm:p-4 bg-white border border-pink-100 rounded-xl shadow-2xs space-y-3">
 			<div class="flex items-center space-x-2.5 pb-1 border-b border-pink-50">
-				<div class="w-8 h-8 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center text-[#f43f8e]">
+				<div class="w-8 h-8 rounded-lg bg-pink-50 border border-pink-100 flex items-center justify-center text-[#f43f8e]">
 					<KeyRound class="w-4 h-4" />
 				</div>
 				<div>
@@ -82,7 +82,7 @@
 						type="password"
 						bind:value={editNewPassword}
 						placeholder="At least 6 characters"
-						class="w-full px-3.5 py-2.5 bg-pink-50/40 border border-pink-200 rounded-xl text-xs font-bold text-pink-950 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/40 focus:bg-white transition-all"
+						class="w-full px-3.5 py-2 bg-pink-50/40 border border-pink-200 rounded-xl text-xs font-bold text-pink-950 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/40 focus:bg-white transition-all"
 					/>
 				</div>
 
@@ -93,7 +93,7 @@
 						type="password"
 						bind:value={editConfirmPassword}
 						placeholder="Re-type new password"
-						class="w-full px-3.5 py-2.5 bg-pink-50/40 border border-pink-200 rounded-xl text-xs font-bold text-pink-950 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/40 focus:bg-white transition-all"
+						class="w-full px-3.5 py-2 bg-pink-50/40 border border-pink-200 rounded-xl text-xs font-bold text-pink-950 focus:outline-none focus:ring-2 focus:ring-[#f43f8e]/40 focus:bg-white transition-all"
 					/>
 				</div>
 			</div>

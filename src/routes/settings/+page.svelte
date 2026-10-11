@@ -11,17 +11,22 @@
 	// Modular Settings Components
 	import SettingsUserProfileCard from '$lib/settings/SettingsUserProfileCard.svelte';
 	import SettingsNavMenu from '$lib/settings/SettingsNavMenu.svelte';
+	import SettingsSystemStatusCard from '$lib/settings/SettingsSystemStatusCard.svelte';
 	import PrivacyTab from '$lib/settings/PrivacyTab.svelte';
 	import AudioTab from '$lib/settings/AudioTab.svelte';
 	import BlockedUsersTab from '$lib/settings/BlockedUsersTab.svelte';
 	import SecurityTab from '$lib/settings/SecurityTab.svelte';
 	import InstallTab from '$lib/settings/InstallTab.svelte';
+	import FeedbackModal from '$lib/settings/FeedbackModal.svelte';
 
 	import {
 		Smartphone, ChevronDown, Lock, Volume2, Ban, KeyRound, LogOut
 	} from 'lucide-svelte';
 
 	let currentUser = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
+
+	// Confirmation Modals & Popups
+	let showFeedbackModal = $state(false);
 
 	// Active tab state: 'privacy' by default on desktop, expandable on mobile
 	let activeTab = $state('privacy');
@@ -34,6 +39,9 @@
 	let activeStatusEnabled = $state(true);
 	let soundEffectsEnabled = $state(typeof window !== 'undefined' ? isSoundEnabled() : true);
 	let privateAccountEnabled = $state(false);
+	let typingIndicatorEnabled = $state(true);
+	let discoverabilityEnabled = $state(true);
+	let showStreakEnabled = $state(true);
 
 	// Account Edit Fields
 	let editUsername = $state('');
@@ -138,6 +146,47 @@
 		}
 		playClickSound();
 		showNotification(enabled ? 'Private Account ON (Mood summary is hidden from others)' : 'Private Account OFF (Mood summary is visible)', 'success');
+	}
+
+	function handleTypingIndicatorToggle(/** @type {any} */ e) {
+		const enabled = e.target.checked;
+		typingIndicatorEnabled = enabled;
+		if (currentUser?.id) {
+			try {
+				localStorage.setItem(`chronomuse_typing_indicator_${currentUser.id}`, enabled ? 'true' : 'false');
+			} catch (err) {}
+		}
+		playClickSound();
+		showNotification(enabled ? 'Typing indicator is now visible to friends' : 'Typing indicator is now hidden (Incognito)', 'success');
+	}
+
+	function handleDiscoverabilityToggle(/** @type {any} */ e) {
+		const enabled = e.target.checked;
+		discoverabilityEnabled = enabled;
+		if (currentUser?.id) {
+			try {
+				localStorage.setItem(`chronomuse_discoverable_${currentUser.id}`, enabled ? 'true' : 'false');
+			} catch (err) {}
+		}
+		playClickSound();
+		showNotification(enabled ? 'Your profile appears in suggested friends & search' : 'Profile hidden from suggestions & search', 'success');
+	}
+
+	function handleShowStreakToggle(/** @type {any} */ e) {
+		const enabled = e.target.checked;
+		showStreakEnabled = enabled;
+		if (currentUser?.id) {
+			try {
+				localStorage.setItem(`chronomuse_show_streak_${currentUser.id}`, enabled ? 'true' : 'false');
+			} catch (err) {}
+		}
+		playClickSound();
+		showNotification(enabled ? 'Mood streak is visible on your profile' : 'Mood streak is now private', 'success');
+	}
+
+	function handleReportFeedback() {
+		playClickSound();
+		showFeedbackModal = true;
 	}
 
 	async function loadBlockedUsers() {
@@ -426,6 +475,9 @@
 			activeStatusEnabled = activeSaved !== 'false';
 			const privateSaved = localStorage.getItem(`chronomuse_private_${currentUser.id}`);
 			privateAccountEnabled = privateSaved === 'true';
+			typingIndicatorEnabled = localStorage.getItem(`chronomuse_typing_indicator_${currentUser.id}`) !== 'false';
+			discoverabilityEnabled = localStorage.getItem(`chronomuse_discoverable_${currentUser.id}`) !== 'false';
+			showStreakEnabled = localStorage.getItem(`chronomuse_show_streak_${currentUser.id}`) !== 'false';
 		}
 		loadBlockedUsers();
 
@@ -446,13 +498,13 @@
 	<AppHeader />
 
 	<!-- Main Settings Container -->
-	<main class="flex-grow container mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-24 max-w-6xl">
+	<main class="flex-grow container mx-auto px-3.5 sm:px-5 lg:px-6 py-4 sm:py-6 pb-24 max-w-4xl lg:max-w-5xl">
 		
 		<!-- DESKTOP VIEW: 2-Column Sidebar + Detail Canvas (Hidden on mobile) -->
-		<div class="hidden md:grid md:grid-cols-12 md:gap-6 lg:gap-8 items-start">
+		<div class="hidden md:grid md:grid-cols-12 md:gap-5 lg:gap-6 items-start">
 			
 			<!-- LEFT SIDEBAR COLUMN (Navigation & Profile) -->
-			<div class="md:col-span-4 lg:col-span-4 xl:col-span-4 space-y-4 sticky top-20">
+			<div class="md:col-span-4 lg:col-span-4 space-y-3.5 sticky top-20">
 				<!-- User Mini Profile Card -->
 				<SettingsUserProfileCard
 					{currentUser}
@@ -469,71 +521,85 @@
 					{pwaStatus}
 					onOpenLogoutModal={() => showLogoutModal = true}
 				/>
+
+				<!-- System Connection & App Info Card -->
+				<SettingsSystemStatusCard
+					onReportFeedback={handleReportFeedback}
+				/>
 			</div>
 
 			<!-- RIGHT DETAIL CANVAS (Active Setting Card) -->
-			<div class="md:col-span-8 lg:col-span-8 xl:col-span-8 space-y-4">
-				<!-- Canvas Title Card -->
-				<div class="bg-white rounded-2xl p-5 shadow-xs border border-pink-100/90 flex items-center justify-between gap-4">
-					<div class="flex items-center space-x-3.5 min-w-0">
-						<div class="w-10 h-10 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center text-[#f43f8e] flex-shrink-0 shadow-2xs">
-							<activeTabHeader.icon class="w-5 h-5" />
+			<div class="md:col-span-8 lg:col-span-8">
+				<div class="bg-white rounded-2xl shadow-xs border border-pink-100/90 overflow-hidden transition-all">
+					<!-- Unified Canvas Header Card -->
+					<div class="p-4 sm:p-4.5 border-b border-pink-100/80 bg-gradient-to-r from-pink-50/50 via-white to-pink-50/20 flex items-center justify-between gap-4">
+						<div class="flex items-center space-x-3 min-w-0">
+							<div class="w-9 h-9 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center text-[#f43f8e] flex-shrink-0 shadow-2xs">
+								<activeTabHeader.icon class="w-4 h-4" />
+							</div>
+							<div class="min-w-0">
+								<h2 class="text-sm sm:text-base font-black text-pink-950 tracking-tight truncate">
+									{activeTabHeader.title}
+								</h2>
+								<p class="text-[11px] text-pink-400 font-medium truncate mt-0.5">
+									{activeTabHeader.subtitle}
+								</p>
+							</div>
 						</div>
-						<div class="min-w-0">
-							<h2 class="text-base sm:text-lg font-black text-pink-950 tracking-tight truncate">
-								{activeTabHeader.title}
-							</h2>
-							<p class="text-xs text-pink-400 font-medium truncate mt-0.5">
-								{activeTabHeader.subtitle}
-							</p>
-						</div>
+
+						<span class="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-pink-50 text-[#f43f8e] border border-pink-200 uppercase tracking-wider flex-shrink-0">
+							Settings
+						</span>
 					</div>
 
-					<span class="text-[10px] font-black px-3 py-1 rounded-full bg-pink-50 text-[#f43f8e] border border-pink-200 uppercase tracking-wider flex-shrink-0">
-						Settings
-					</span>
-				</div>
-
-				<!-- Active Content Panel Component -->
-				<div class="bg-white/80 backdrop-blur-xs rounded-2xl p-5 sm:p-6 shadow-xs border border-pink-100/90 min-h-[420px]">
-					{#if activeTab === 'privacy'}
-						<PrivacyTab
-							{activeStatusEnabled}
-							{privateAccountEnabled}
-							onToggleActiveStatus={handleActiveStatusToggle}
-							onTogglePrivateAccount={handlePrivateAccountToggle}
-						/>
-					{:else if activeTab === 'audio'}
-						<AudioTab
-							{soundEffectsEnabled}
-							onToggleSound={handleSoundToggle}
-						/>
-					{:else if activeTab === 'blocked'}
-						<BlockedUsersTab
-							{blockSearchInput}
-							onBlockSearchInput={handleBlockSearchInput}
-							{searchResults}
-							{isSearchingUsers}
-							onSelectUserToBlock={selectUserForBlocking}
-							{blockedUsers}
-							onUserBlockToggle={handleUserBlockToggle}
-						/>
-					{:else if activeTab === 'security'}
-						<SecurityTab
-							bind:editUsername
-							bind:editEmail
-							bind:editNewPassword
-							bind:editConfirmPassword
-							{isSavingProfile}
-							onSaveCredentials={handleSaveProfileCredentials}
-						/>
-					{:else if activeTab === 'install'}
-						<InstallTab
-							{pwaStatus}
-							{installGuideMessage}
-							onInstallApp={handleInstallAppFromSettings}
-						/>
-					{/if}
+					<!-- Active Content Panel Component -->
+					<div class="p-4 sm:p-5">
+						{#if activeTab === 'privacy'}
+							<PrivacyTab
+								{currentUser}
+								{activeStatusEnabled}
+								{privateAccountEnabled}
+								{typingIndicatorEnabled}
+								{discoverabilityEnabled}
+								{showStreakEnabled}
+								onToggleActiveStatus={handleActiveStatusToggle}
+								onTogglePrivateAccount={handlePrivateAccountToggle}
+								onToggleTypingIndicator={handleTypingIndicatorToggle}
+								onToggleDiscoverability={handleDiscoverabilityToggle}
+								onToggleShowStreak={handleShowStreakToggle}
+							/>
+						{:else if activeTab === 'audio'}
+							<AudioTab
+								{soundEffectsEnabled}
+								onToggleSound={handleSoundToggle}
+							/>
+						{:else if activeTab === 'blocked'}
+							<BlockedUsersTab
+								{blockSearchInput}
+								onBlockSearchInput={handleBlockSearchInput}
+								{searchResults}
+								{isSearchingUsers}
+								onSelectUserToBlock={selectUserForBlocking}
+								{blockedUsers}
+								onUserBlockToggle={handleUserBlockToggle}
+							/>
+						{:else if activeTab === 'security'}
+							<SecurityTab
+								bind:editUsername
+								bind:editEmail
+								bind:editNewPassword
+								bind:editConfirmPassword
+								{isSavingProfile}
+								onSaveCredentials={handleSaveProfileCredentials}
+							/>
+						{:else if activeTab === 'install'}
+							<InstallTab
+								{pwaStatus}
+								{installGuideMessage}
+								onInstallApp={handleInstallAppFromSettings}
+							/>
+						{/if}
+					</div>
 				</div>
 			</div>
 
@@ -579,10 +645,17 @@
 					{#if activeTab === 'privacy'}
 						<div class="border-t border-pink-100/80 p-3.5 bg-pink-50/20 animate-fade-in">
 							<PrivacyTab
+								{currentUser}
 								{activeStatusEnabled}
 								{privateAccountEnabled}
+								{typingIndicatorEnabled}
+								{discoverabilityEnabled}
+								{showStreakEnabled}
 								onToggleActiveStatus={handleActiveStatusToggle}
 								onTogglePrivateAccount={handlePrivateAccountToggle}
+								onToggleTypingIndicator={handleTypingIndicatorToggle}
+								onToggleDiscoverability={handleDiscoverabilityToggle}
+								onToggleShowStreak={handleShowStreakToggle}
 							/>
 						</div>
 					{/if}
@@ -835,6 +908,14 @@
 			</div>
 		</div>
 	{/if}
+
+	<!-- Feedback & Help Modal -->
+	<FeedbackModal
+		isOpen={showFeedbackModal}
+		{currentUser}
+		onClose={() => showFeedbackModal = false}
+		onSubmitSuccess={(msg) => showNotification(msg, 'success')}
+	/>
 
 	<!-- Toast Notification Banner -->
 	{#if showToast}

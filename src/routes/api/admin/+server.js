@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { supabase } from '$lib/supabaseClient';
 import bcrypt from 'bcryptjs';
+import { getLocalFeedbacks, updateLocalFeedbackStatus, deleteLocalFeedback } from '$lib/server/feedbackStore';
 
 const ADMIN_PASSCODE = '041205';
 
@@ -56,6 +57,22 @@ export async function POST({ request }) {
 				activeToday = list.filter(u => u.last_activity && u.last_activity >= oneDayAgo).length;
 			} catch (e) {}
 
+			let totalFeedbacks = 0;
+			let newFeedbacks = 0;
+			try {
+				const localList = getLocalFeedbacks();
+				totalFeedbacks = localList.length;
+				newFeedbacks = localList.filter(f => f.status === 'new').length;
+			} catch (e) {}
+
+			try {
+				const { data: dbFeedbacks } = await supabase.from('chronomuse_feedbacks').select('id, status');
+				if (Array.isArray(dbFeedbacks) && dbFeedbacks.length > 0) {
+					totalFeedbacks = Math.max(totalFeedbacks, dbFeedbacks.length);
+					newFeedbacks = Math.max(newFeedbacks, dbFeedbacks.filter(f => f.status === 'new').length);
+				}
+			} catch (e) {}
+
 			const latencyMs = Math.max(1, Date.now() - startPing);
 
 			return json({
@@ -68,6 +85,8 @@ export async function POST({ request }) {
 						total_notes: totalNotes,
 						total_messages: totalMessages,
 						active_today: activeToday,
+						total_feedbacks: totalFeedbacks,
+						new_feedbacks: newFeedbacks,
 						db_latency_ms: latencyMs,
 						database_status: 'Operational',
 						server_time: new Date().toISOString()
@@ -214,6 +233,140 @@ export async function POST({ request }) {
 			return json({
 				success: true,
 				message: 'User account and associated data successfully removed'
+			});
+		}
+
+		// 5. GET FEEDBACKS & CONCERNS
+		if (action === 'get_feedbacks') {
+			let feedbacks = [];
+			const seenKeys = new Set();
+
+			// A. Fetch from DB if table exists
+			try {
+				const { data: dbRows } = await supabase
+					.from('chronomuse_feedbacks')
+					.select('*')
+					.order('created_at', { ascending: false });
+
+				if (Array.isArray(dbRows)) {
+					dbRows.forEach(item => {
+						const key = `${item.user_id}_${item.title}_${item.created_at?.slice(0, 16)}`;
+						seenKeys.add(key);
+						feedbacks.push({
+							id: item.id,
+							user_id: item.user_id,
+							username: item.username || 'anonymous',
+							email: item.email || null,
+							avatar_url: null,
+							category: item.category || 'suggestion',
+							title: item.title,
+							message: item.message,
+							status: item.status || 'new',
+							created_at: item.created_at
+						});
+					});
+				}
+			} catch (dbErr) {}
+
+			// B. Merge with persistent local storage
+			try {
+				const localRows = getLocalFeedbacks();
+				localRows.forEach(item => {
+					const key = `${item.user_id}_${item.title}_${item.created_at?.slice(0, 16)}`;
+					if (!seenKeys.has(key)) {
+						seenKeys.add(key);
+						feedbacks.push({
+							id: item.id,
+							user_id: item.user_id,
+							username: item.username || 'anonymous',
+							email: item.email || null,
+							avatar_url: null,
+							category: item.category || 'suggestion',
+							title: item.title,
+							message: item.message,
+							status: item.status || 'new',
+							created_at: item.created_at
+						});
+					}
+				});
+			} catch (locErr) {}
+
+			// C. Enrich with user avatars and emails from chronomuse_users
+			try {
+				const userIds = Array.from(new Set(feedbacks.map(f => f.user_id).filter(Boolean)));
+				if (userIds.length > 0) {
+					const { data: usersData } = await supabase
+						.from('chronomuse_users')
+						.select('id, username, email, avatar_url')
+						.in('id', userIds);
+
+					if (Array.isArray(usersData)) {
+						const userMap = new Map(usersData.map(u => [u.id, u]));
+						feedbacks = feedbacks.map(f => {
+							const user = f.user_id ? userMap.get(f.user_id) : null;
+							return {
+								...f,
+								username: user?.username || f.username,
+								email: user?.email || f.email,
+								avatar_url: user?.avatar_url || null
+							};
+						});
+					}
+				}
+			} catch (enrichErr) {}
+
+			// Sort newest first
+			feedbacks.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+
+			return json({
+				success: true,
+				data: {
+					feedbacks
+				}
+			});
+		}
+
+		// 6. UPDATE FEEDBACK STATUS
+		if (action === 'update_feedback_status') {
+			const { feedback_id, status } = body;
+			if (!feedback_id || !status) {
+				return json({ error: 'Feedback ID and status are required' }, { status: 400 });
+			}
+
+			updateLocalFeedbackStatus(feedback_id, status);
+
+			try {
+				await supabase
+					.from('chronomuse_feedbacks')
+					.update({ status })
+					.eq('id', feedback_id);
+			} catch (e) {}
+
+			return json({
+				success: true,
+				message: `Status updated to ${status}`
+			});
+		}
+
+		// 7. DELETE FEEDBACK
+		if (action === 'delete_feedback') {
+			const { feedback_id } = body;
+			if (!feedback_id) {
+				return json({ error: 'Feedback ID is required' }, { status: 400 });
+			}
+
+			deleteLocalFeedback(feedback_id);
+
+			try {
+				await supabase
+					.from('chronomuse_feedbacks')
+					.delete()
+					.eq('id', feedback_id);
+			} catch (e) {}
+
+			return json({
+				success: true,
+				message: 'Feedback record deleted'
 			});
 		}
 

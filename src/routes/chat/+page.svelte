@@ -732,6 +732,13 @@
 
 	function broadcastTyping(isTyping) {
 		if (!typingChannel || !user || !activeFriend) return;
+		if (isTyping && typeof window !== 'undefined') {
+			try {
+				if (localStorage.getItem(`chronomuse_typing_indicator_${user.id}`) === 'false') {
+					return;
+				}
+			} catch (e) {}
+		}
 		try {
 			typingChannel.send({
 				type: 'broadcast',

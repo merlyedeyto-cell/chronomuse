@@ -12,11 +12,11 @@
 	} = $props();
 </script>
 
-<div class="space-y-4 animate-fade-in">
+<div class="space-y-3.5 animate-fade-in">
 	<!-- Search & Block User Box -->
-	<div class="p-4 sm:p-5 bg-white border border-pink-100 rounded-2xl shadow-xs space-y-3">
+	<div class="p-3.5 sm:p-4 bg-white border border-pink-100 rounded-xl shadow-2xs space-y-3">
 		<div class="flex items-center space-x-2.5">
-			<div class="w-8 h-8 rounded-xl bg-pink-50 border border-pink-100 flex items-center justify-center text-[#f43f8e]">
+			<div class="w-8 h-8 rounded-lg bg-pink-50 border border-pink-100 flex items-center justify-center text-[#f43f8e]">
 				<UserX class="w-4 h-4" />
 			</div>
 			<div>

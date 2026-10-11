@@ -64,7 +64,8 @@ export const API_ENDPOINTS = {
 	blockUser: `${API_BASE_URL}/block_user`,
 	pinMemory: `${API_BASE_URL}/pin_memory`,
 	unpinMemory: `${API_BASE_URL}/unpin_memory`,
-	getAffirmation: `${API_BASE_URL}/get_affirmation`
+	getAffirmation: `${API_BASE_URL}/get_affirmation`,
+	feedback: `${API_BASE_URL}/feedback`
 };
 
 /**

@@ -25,4 +25,5 @@ vite.config.ts.timestamp-*
 
 # Local State
 .chronomuse_admin_state.json
+.data/
 
