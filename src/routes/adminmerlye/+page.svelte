@@ -8,6 +8,7 @@
 		Trash2, X, Download, Smartphone, HelpCircle, Lightbulb
 	} from 'lucide-svelte';
 	import AdminFeedbacksSection from '$lib/admin/AdminFeedbacksSection.svelte';
+	import AdminChatModal from '$lib/admin/AdminChatModal.svelte';
 
 	const ADMIN_PASSCODE = '041205';
 
@@ -38,6 +39,8 @@
 	let isLoadingData = $state(false);
 	let actionMessage = $state('');
 	let errorMessage = $state('');
+	let activeChatFeedback = $state(null);
+	let isChatModalOpen = $state(false);
 
 	let loadSeq = 0;
 	let refreshDebounceTimer = null;
@@ -921,6 +924,10 @@
 					adminPasscode={ADMIN_PASSCODE}
 					onUpdateStatus={handleUpdateFeedbackStatus}
 					onDeleteFeedback={handleDeleteFeedback}
+					onOpenChat={(item) => {
+						activeChatFeedback = item;
+						isChatModalOpen = true;
+					}}
 				/>
 			{/if}
 		</div>
@@ -1132,3 +1139,20 @@
 		</div>
 	</div>
 {/if}
+
+<!-- Admin Direct Chat Modal -->
+<AdminChatModal
+	isOpen={isChatModalOpen}
+	feedback={activeChatFeedback}
+	adminPasscode={ADMIN_PASSCODE}
+	onClose={() => {
+		isChatModalOpen = false;
+		activeChatFeedback = null;
+	}}
+	onFeedbackUpdated={(feedbackId, newStatus) => {
+		handleUpdateFeedbackStatus(feedbackId, newStatus);
+		if (activeChatFeedback && activeChatFeedback.id === feedbackId) {
+			activeChatFeedback.status = newStatus;
+		}
+	}}
+/>

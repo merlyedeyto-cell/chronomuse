@@ -1,8 +1,7 @@
 <script>
-	import AdminChatModal from '$lib/admin/AdminChatModal.svelte';
 	import {
 		Lightbulb, Bug, MessageSquare, Search, CheckCircle2,
-		Clock, Trash2, MessageCircle, Filter, Sparkles, ShieldCheck
+		Clock, Trash2, MessageCircle, Filter, Sparkles, RotateCcw
 	} from 'lucide-svelte';
 	import { playClickSound } from '$lib/soundEffects.js';
 
@@ -11,14 +10,13 @@
 		isLoading = false,
 		adminPasscode = '041205',
 		onUpdateStatus = () => {},
-		onDeleteFeedback = () => {}
+		onDeleteFeedback = () => {},
+		onOpenChat = () => {}
 	} = $props();
 
 	let searchQuery = $state('');
 	let activeTab = $state('all'); // 'all' | 'unread' | 'concerns' | 'suggestions' | 'bugs' | 'resolved'
 	let categoryStatusFilter = $state('all'); // 'all' | 'new' | 'resolved'
-	let activeChatFeedback = $state(null);
-	let isChatModalOpen = $state(false);
 
 	let tabs = $derived([
 		{ id: 'all', label: 'All', count: feedbacks.length },
@@ -91,8 +89,7 @@
 	}
 
 	function handleOpenChat(item) {
-		activeChatFeedback = item;
-		isChatModalOpen = true;
+		onOpenChat(item);
 	}
 </script>
 
@@ -216,33 +213,29 @@
 								{/if}
 							</div>
 
-							<!-- Category Tag -->
+							<!-- Category Type (Colored text only, no badges) -->
+							<span class="text-pink-200 select-none hidden sm:inline">•</span>
 							{#if item.category === 'bug'}
-								<span class="px-2 py-0.5 bg-rose-50 border border-rose-200 text-rose-700 text-[10px] font-black rounded-md flex items-center gap-1 shadow-3xs">
-									<Bug class="w-3 h-3 text-rose-500" />
+								<span class="text-xs font-bold text-rose-500 inline-flex items-center gap-1">
+									<Bug class="w-3.5 h-3.5 text-rose-500" />
 									<span>Bug Report</span>
 								</span>
 							{:else if item.category === 'help'}
-								<span class="px-2 py-0.5 bg-purple-50 border border-purple-200 text-purple-700 text-[10px] font-black rounded-md flex items-center gap-1 shadow-3xs">
-									<MessageSquare class="w-3 h-3 text-purple-500" />
+								<span class="text-xs font-bold text-purple-600 inline-flex items-center gap-1">
+									<MessageSquare class="w-3.5 h-3.5 text-purple-500" />
 									<span>Concern / Help</span>
 								</span>
 							{:else}
-								<span class="px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-black rounded-md flex items-center gap-1 shadow-3xs">
-									<Lightbulb class="w-3 h-3 text-amber-500" />
+								<span class="text-xs font-bold text-amber-600 inline-flex items-center gap-1">
+									<Lightbulb class="w-3.5 h-3.5 text-amber-500" />
 									<span>Suggestion</span>
 								</span>
 							{/if}
 
-							<!-- Status Tag -->
-							{#if item.status === 'new'}
-								<span class="px-2 py-0.5 bg-amber-100/80 border border-amber-200 text-amber-800 text-[10px] font-extrabold rounded-full flex items-center gap-1 shadow-3xs">
-									<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-									<span>New</span>
-								</span>
-							{:else}
-								<span class="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-extrabold rounded-full flex items-center gap-1 shadow-3xs">
-									<CheckCircle2 class="w-3 h-3 text-emerald-500" />
+							{#if item.status === 'resolved'}
+								<span class="text-pink-200 select-none hidden sm:inline">•</span>
+								<span class="text-xs font-bold text-emerald-600 inline-flex items-center gap-1">
+									<CheckCircle2 class="w-3.5 h-3.5 text-emerald-500" />
 									<span>Resolved</span>
 								</span>
 							{/if}
@@ -269,13 +262,23 @@
 								<span>Live Chat</span>
 							</button>
 
-							<!-- Toggle Status Button -->
+							<!-- Toggle Status Button (Theme-aligned button) -->
 							<button
 								type="button"
-								onclick={() => onUpdateStatus(item.id, item.status === 'new' ? 'resolved' : 'new')}
-								class="px-2.5 py-1 text-[11px] font-bold rounded-lg border transition-all cursor-pointer active:scale-95 {item.status === 'new' ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-pink-50 hover:bg-pink-100 text-pink-700 border-pink-200'}"
+								onclick={() => {
+									playClickSound();
+									onUpdateStatus(item.id, item.status === 'new' ? 'resolved' : 'new');
+								}}
+								title={item.status === 'new' ? 'Mark this concern as resolved' : 'Reopen this concern'}
+								class="px-2.5 py-1 text-[11px] font-black rounded-lg border transition-all cursor-pointer active:scale-95 shadow-2xs inline-flex items-center gap-1.5 {item.status === 'new' ? 'bg-pink-50 hover:bg-pink-100 text-[#f43f8e] border-pink-200 hover:border-[#f43f8e]/40' : 'bg-white hover:bg-pink-50 text-pink-700 border-pink-200 hover:border-pink-300'}"
 							>
-								{item.status === 'new' ? 'Mark Resolved' : 'Reopen'}
+								{#if item.status === 'new'}
+									<CheckCircle2 class="w-3.5 h-3.5 text-[#f43f8e]" />
+									<span>Mark Resolved</span>
+								{:else}
+									<RotateCcw class="w-3.5 h-3.5 text-pink-500" />
+									<span>Reopen</span>
+								{/if}
 							</button>
 
 							<!-- Delete button -->
@@ -304,20 +307,3 @@
 		</div>
 	{/if}
 </div>
-
-<!-- Admin Direct Chat Modal -->
-<AdminChatModal
-	isOpen={isChatModalOpen}
-	feedback={activeChatFeedback}
-	{adminPasscode}
-	onClose={() => {
-		isChatModalOpen = false;
-		activeChatFeedback = null;
-	}}
-	onFeedbackUpdated={(feedbackId, newStatus) => {
-		onUpdateStatus(feedbackId, newStatus);
-		if (activeChatFeedback && activeChatFeedback.id === feedbackId) {
-			activeChatFeedback.status = newStatus;
-		}
-	}}
-/>

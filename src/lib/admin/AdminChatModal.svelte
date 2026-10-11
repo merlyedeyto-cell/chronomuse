@@ -3,7 +3,7 @@
 	import { supabase } from '$lib/supabaseClient';
 	import {
 		X, Send, MessageSquare, Bug, Lightbulb, CheckCircle2,
-		AlertCircle, Sparkles, RefreshCw, ShieldCheck,
+		AlertCircle, Sparkles, ShieldCheck, Wrench, HelpCircle,
 		ExternalLink, Check, ChevronDown, ChevronUp
 	} from 'lucide-svelte';
 	import { playClickSound } from '$lib/soundEffects.js';
@@ -37,22 +37,25 @@
 	let fallbackPollInterval = null;
 	let activeTicketId = $state(null);
 
-	// Strip ticket wrapper tags for clean, professional bubble rendering
+	// Strip ticket wrapper tags and emojis for clean, professional bubble rendering
 	function cleanTicketMessage(text) {
 		if (!text) return '';
 		let clean = text;
 		clean = clean.replace(/\[TICKET id="[^"]*"\]\n?/g, '');
 		clean = clean.replace(/\n?\[\/TICKET\]/g, '');
+		// Strip any emojis from ticket text
+		clean = clean.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+		clean = clean.replace(/\[Need Help or Suggestion:\s+/g, '[Need Help or Suggestion: ');
 		return clean.trim();
 	}
 
-	// Professional Support Canned Quick Responses
+	// Professional Support Canned Quick Responses (Lucide Icons, No Emojis)
 	const quickResponses = [
-		{ label: "🛠️ Investigating", text: "Thank you for reporting! We are currently looking into this issue right now. 🛠️" },
-		{ label: "✨ Resolved", text: "This has been successfully resolved! Please refresh your app to verify. ✨" },
-		{ label: "💬 Need Details", text: "Hi! Could you provide a bit more detail or steps to help us assist you better? 💬" },
-		{ label: "💡 Feature Noted", text: "Awesome idea! We have logged this request on our ChronoMuse feature roadmap. 💡" },
-		{ label: "🔒 Account Safe", text: "All good! Your account data and privacy settings have been safely verified. 🔒" }
+		{ label: "Investigating", icon: Wrench, text: "Thank you for reporting! We are currently looking into this issue right now." },
+		{ label: "Resolved", icon: CheckCircle2, text: "This has been successfully resolved! Please refresh your app to verify." },
+		{ label: "Need Details", icon: HelpCircle, text: "Hi! Could you provide a bit more detail or steps to help us assist you better?" },
+		{ label: "Feature Noted", icon: Lightbulb, text: "Awesome idea! We have logged this request on our ChronoMuse feature roadmap." },
+		{ label: "Account Safe", icon: ShieldCheck, text: "All good! Your account data and privacy settings have been safely verified." }
 	];
 
 	// Synthesize subtle UI sounds for Support Desk
@@ -381,7 +384,7 @@
 
 {#if isOpen && feedback}
 	<div
-		class="fixed inset-0 z-50 bg-pink-950/45 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 animate-fade-in font-sans"
+		class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 animate-fade-in font-sans"
 		role="dialog"
 		aria-modal="true"
 	>
@@ -439,21 +442,12 @@
 					</div>
 				</div>
 
-				<!-- Actions: Support Badge, Sync, Close -->
+				<!-- Actions: Support Badge, Close -->
 				<div class="flex items-center gap-1 flex-shrink-0">
 					<div class="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/80 border border-pink-200 text-[#f43f8e] text-[10px] font-black mr-1 shadow-3xs">
 						<ShieldCheck class="w-3 h-3" />
 						<span>Official Support</span>
 					</div>
-
-					<button
-						type="button"
-						onclick={() => syncMessages(false)}
-						title="Sync messages"
-						class="w-8 h-8 flex items-center justify-center text-pink-400 hover:text-[#f43f8e] hover:bg-pink-100/70 rounded-full transition-colors cursor-pointer"
-					>
-						<RefreshCw class="w-4 h-4 {isLoading ? 'animate-spin' : ''}" />
-					</button>
 
 					<button
 						type="button"
@@ -473,23 +467,24 @@
 					onclick={() => showTicketDetails = !showTicketDetails}
 					class="w-full px-3.5 py-2 flex items-center justify-between text-left hover:bg-pink-50/70 transition-colors cursor-pointer"
 				>
-					<div class="flex items-center gap-1.5 font-black text-[11px]">
+					<div class="flex items-center gap-2 font-black text-[11px]">
 						{#if feedback.category === 'bug'}
-							<span class="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1 text-[10px]">
-								<Bug class="w-3 h-3 text-rose-500" />
+							<span class="text-xs font-bold text-rose-500 inline-flex items-center gap-1">
+								<Bug class="w-3.5 h-3.5 text-rose-500" />
 								<span>Bug Report</span>
 							</span>
 						{:else if feedback.category === 'help'}
-							<span class="px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 flex items-center gap-1 text-[10px]">
-								<MessageSquare class="w-3 h-3 text-purple-500" />
-								<span>Help Concern</span>
+							<span class="text-xs font-bold text-purple-600 inline-flex items-center gap-1">
+								<MessageSquare class="w-3.5 h-3.5 text-purple-500" />
+								<span>Concern / Help</span>
 							</span>
 						{:else}
-							<span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1 text-[10px]">
-								<Lightbulb class="w-3 h-3 text-amber-500" />
+							<span class="text-xs font-bold text-amber-600 inline-flex items-center gap-1">
+								<Lightbulb class="w-3.5 h-3.5 text-amber-500" />
 								<span>Suggestion</span>
 							</span>
 						{/if}
+						<span class="text-pink-300 font-bold select-none">•</span>
 						<span class="text-pink-900 font-bold truncate max-w-[200px] sm:max-w-xs">{feedback.title}</span>
 					</div>
 
@@ -598,20 +593,22 @@
 
 			<!-- Quick Canned Response Pills -->
 			{#if feedback.user_id}
-				<div class="p-2 border-t border-pink-100 bg-pink-50/40 overflow-x-auto scrollbar-none flex items-center gap-1.5 flex-shrink-0">
+				<div class="p-2 border-t border-pink-100 bg-pink-50/40 overflow-x-auto flex items-center gap-1.5 flex-shrink-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
 					<span class="text-[10px] font-black text-pink-400 uppercase tracking-wider pl-1 whitespace-nowrap">
 						Canned:
 					</span>
 					{#each quickResponses as quick}
+						{@const IconComponent = quick.icon}
 						<button
 							type="button"
 							onclick={() => {
 								playClickSound();
 								messageText = quick.text;
 							}}
-							class="px-2.5 py-1 bg-white hover:bg-pink-50 text-[#f43f8e] border border-pink-200/90 rounded-full text-[10px] font-bold whitespace-nowrap transition-colors cursor-pointer shadow-3xs active:scale-95"
+							class="px-2.5 py-1 bg-white hover:bg-pink-50 text-[#f43f8e] border border-pink-200/90 rounded-full text-[10px] font-bold whitespace-nowrap transition-colors cursor-pointer shadow-3xs active:scale-95 inline-flex items-center gap-1"
 						>
-							{quick.label}
+							<IconComponent class="w-3 h-3 text-[#f43f8e] flex-shrink-0" />
+							<span>{quick.label}</span>
 						</button>
 					{/each}
 				</div>

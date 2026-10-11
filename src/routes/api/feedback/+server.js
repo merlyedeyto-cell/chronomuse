@@ -86,8 +86,8 @@ export async function POST({ request }) {
 		let messageSent = false;
 		if (user_id && String(user_id) !== String(adminId)) {
 			try {
-				const categoryLabel = cleanCategory === 'bug' ? '🐛 Bug Report' : cleanCategory === 'help' ? '💬 Concern / Help' : '💡 Suggestion';
-				const formattedChatMessage = `[TICKET id="${ticketId}"]\n[Need Help or Suggestion: ${categoryLabel}]\n📌 ${cleanTitle}\n\n${cleanMessage}[/TICKET]`;
+				const categoryLabel = cleanCategory === 'bug' ? 'Bug Report' : cleanCategory === 'help' ? 'Concern / Help' : 'Suggestion';
+				const formattedChatMessage = `[TICKET id="${ticketId}"]\n[Need Help or Suggestion: ${categoryLabel}]\n${cleanTitle}\n\n${cleanMessage}[/TICKET]`;
 
 				// Try with feedback_id first, fallback without if column not migrated
 				let { error: msgErr } = await supabase
