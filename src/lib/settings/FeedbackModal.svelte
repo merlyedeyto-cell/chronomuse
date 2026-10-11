@@ -1,5 +1,6 @@
 <script>
-	import { X, Lightbulb, Bug, HelpCircle, MessageSquare, Send, CheckCircle2, ChevronDown } from 'lucide-svelte';
+	import { goto } from '$app/navigation';
+	import { X, Lightbulb, Bug, HelpCircle, MessageSquare, Send, CheckCircle2, ChevronDown, MessageCircle, ShieldCheck } from 'lucide-svelte';
 	import { playClickSound } from '$lib/soundEffects.js';
 
 	let {
@@ -15,6 +16,8 @@
 	let isSubmitting = $state(false);
 	let submitted = $state(false);
 	let submitFeedbackText = $state('');
+	let targetAdminId = $state(12);
+	let lastCreatedTicketId = $state(null);
 
 	// FAQ Accordion state
 	let expandedFaq = $state(null);
@@ -87,30 +90,27 @@
 				localStorage.setItem('chronomuse_user_feedbacks', JSON.stringify(existing.slice(0, 30)));
 			} catch (err) {}
 
+			if (data?.data?.admin_id) {
+				targetAdminId = data.data.admin_id;
+			}
+			if (data?.data?.ticket_id || data?.data?.feedback?.id) {
+				lastCreatedTicketId = data.data.ticket_id || data.data.feedback.id;
+			}
+
 			isSubmitting = false;
 			submitted = true;
 			submitFeedbackText = activeCategory === 'bug' 
-				? 'Bug report sent to Admin! Thank you for helping improve ChronoMuse.'
+				? 'Bug report sent to ChronoMuse Support! A support conversation has been opened in your Chat.'
 				: activeCategory === 'help'
-				? 'Your concern has been forwarded to Admin Merlye.'
-				: 'Suggestion sent to Admin! Thank you for sharing your ideas with us.';
+				? 'Your concern has been forwarded directly to ChronoMuse Support.'
+				: 'Suggestion sent to ChronoMuse Support! Thank you for sharing your ideas with us.';
 
-			setTimeout(() => {
-				submitted = false;
-				feedbackTitle = '';
-				feedbackMessage = '';
-				onSubmitSuccess(submitFeedbackText);
-				onClose();
-			}, 1500);
+			onSubmitSuccess(submitFeedbackText);
 		} catch (err) {
 			console.error('Failed submitting feedback:', err);
 			isSubmitting = false;
 			submitted = true;
 			submitFeedbackText = 'Feedback recorded. Thank you!';
-			setTimeout(() => {
-				submitted = false;
-				onClose();
-			}, 1400);
 		}
 	}
 </script>
@@ -188,14 +188,54 @@
 
 			<!-- Content Area -->
 			{#if submitted}
-				<div class="py-8 text-center space-y-2 animate-fade-in">
+				<div class="py-6 text-center space-y-3.5 animate-fade-in">
 					<div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 border border-emerald-200 flex items-center justify-center mx-auto shadow-2xs">
 						<CheckCircle2 class="w-6 h-6" strokeWidth={2.5} />
 					</div>
-					<h4 class="text-sm font-black text-pink-950">Message Sent to Admin!</h4>
-					<p class="text-xs text-pink-600 font-medium max-w-xs mx-auto leading-relaxed">
-						{submitFeedbackText}
-					</p>
+					<div class="space-y-1">
+						<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-pink-100/70 text-[#f43f8e] text-[10px] font-black uppercase tracking-wider">
+							<ShieldCheck class="w-3 h-3" />
+							<span>Support Request Logged</span>
+						</div>
+						<h4 class="text-sm font-black text-pink-950">Message Sent to ChronoMuse Support!</h4>
+						<p class="text-xs text-pink-600 font-medium max-w-xs mx-auto leading-relaxed">
+							{submitFeedbackText}
+						</p>
+					</div>
+
+					<div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
+						{#if currentUser?.id}
+							<button
+								type="button"
+								onclick={() => {
+									playClickSound();
+									submitted = false;
+									feedbackTitle = '';
+									feedbackMessage = '';
+									onClose();
+									const ticketParam = lastCreatedTicketId ? `&ticket_id=${lastCreatedTicketId}` : '';
+									goto(`/chat?friend_id=${targetAdminId}&username=chronomuse_support${ticketParam}`);
+								}}
+								class="w-full sm:w-auto px-4 py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-black rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+							>
+								<MessageCircle class="w-4 h-4" />
+								<span>Open Chat with Support</span>
+							</button>
+						{/if}
+						<button
+							type="button"
+							onclick={() => {
+								playClickSound();
+								submitted = false;
+								feedbackTitle = '';
+								feedbackMessage = '';
+								onClose();
+							}}
+							class="w-full sm:w-auto px-4 py-2.5 bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-black rounded-xl transition-all cursor-pointer"
+						>
+							Done
+						</button>
+					</div>
 				</div>
 			{:else if activeCategory === 'faq'}
 				<div class="space-y-2 max-h-72 overflow-y-auto pr-1 animate-fade-in">

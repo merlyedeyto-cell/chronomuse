@@ -728,27 +728,31 @@
 			</div>
 
 			<!-- Tab Switcher for Admin Directories -->
-			<div class="flex items-center gap-2 p-1 bg-white/80 backdrop-blur-md rounded-2xl border border-pink-100/90 shadow-2xs w-full sm:w-auto">
+			<div class="inline-flex items-center gap-1.5 p-1 bg-[#fff0f5] border border-pink-200/60 rounded-full shadow-2xs w-full sm:w-auto overflow-x-auto">
 				<button
 					type="button"
 					onclick={() => activeAdminTab = 'accounts'}
-					class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer {activeAdminTab === 'accounts' ? 'bg-[#f43f8e] text-white shadow-sm' : 'text-pink-700 hover:bg-pink-50'}"
+					class="flex-1 sm:flex-initial px-5 py-2 rounded-full text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer {activeAdminTab === 'accounts' ? 'bg-[#f43f8e] text-white shadow-sm' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
 				>
 					<Users class="w-4 h-4" />
-					<span>Accounts Directory ({usersList.length})</span>
+					<span>Accounts Directory</span>
+					<span class="px-2 py-0.5 rounded-full text-[11px] font-black transition-colors {activeAdminTab === 'accounts' ? 'bg-white/25 text-white' : 'bg-pink-100/80 text-[#f43f8e]'}">
+						{usersList.length}
+					</span>
 				</button>
 
 				<button
 					type="button"
 					onclick={() => activeAdminTab = 'feedbacks'}
-					class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer relative {activeAdminTab === 'feedbacks' ? 'bg-[#f43f8e] text-white shadow-sm' : 'text-pink-700 hover:bg-pink-50'}"
+					class="flex-1 sm:flex-initial px-5 py-2 rounded-full text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer relative {activeAdminTab === 'feedbacks' ? 'bg-[#f43f8e] text-white shadow-sm' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
 				>
 					<MessageSquare class="w-4 h-4" />
-					<span>User Concerns & Feedback ({feedbacksList.length})</span>
+					<span>User Concerns & Feedback</span>
+					<span class="px-2 py-0.5 rounded-full text-[11px] font-black transition-colors {activeAdminTab === 'feedbacks' ? 'bg-white/25 text-white' : 'bg-pink-100/80 text-[#f43f8e]'}">
+						{feedbacksList.length}
+					</span>
 					{#if feedbacksList.filter(f => f.status === 'new').length > 0}
-						<span class="px-1.5 py-0.2 bg-rose-500 text-white rounded-full text-[10px] font-black animate-pulse shadow-xs">
-							{feedbacksList.filter(f => f.status === 'new').length}
-						</span>
+						<span class="w-2 h-2 bg-rose-500 rounded-full animate-pulse shadow-xs"></span>
 					{/if}
 				</button>
 			</div>
@@ -914,6 +918,7 @@
 				<AdminFeedbacksSection
 					feedbacks={feedbacksList}
 					isLoading={isLoadingData}
+					adminPasscode={ADMIN_PASSCODE}
 					onUpdateStatus={handleUpdateFeedbackStatus}
 					onDeleteFeedback={handleDeleteFeedback}
 				/>

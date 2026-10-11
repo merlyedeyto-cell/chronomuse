@@ -25,18 +25,43 @@ export async function POST({ request }) {
 			}
 		} catch (bErr) {}
 
-		const { data: newMessage, error } = await supabase
+		// Extract ticket ID if message belongs to a support ticket thread
+		let ticketId = null;
+		const ticketMatch = message.match(/\[TICKET id="([^"]+)"\]/);
+		if (ticketMatch) {
+			ticketId = ticketMatch[1];
+		}
+
+		let { data: newMessage, error } = await supabase
 			.from('chronomuse_messages')
 			.insert([
 				{
 					sender_id: user_id,
 					receiver_id: friend_id,
 					message: message.trim(),
-					is_read: false
+					is_read: false,
+					...(ticketId ? { feedback_id: ticketId } : {})
 				}
 			])
 			.select()
 			.single();
+
+		if (error && error.message?.includes('feedback_id')) {
+			const fallback = await supabase
+				.from('chronomuse_messages')
+				.insert([
+					{
+						sender_id: user_id,
+						receiver_id: friend_id,
+						message: message.trim(),
+						is_read: false
+					}
+				])
+				.select()
+				.single();
+			newMessage = fallback.data;
+			error = fallback.error;
+		}
 
 		if (error) {
 			return json({ error: error.message }, { status: 500 });

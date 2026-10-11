@@ -240,6 +240,7 @@ export async function POST({ request }) {
 		if (action === 'get_feedbacks') {
 			let feedbacks = [];
 			const seenKeys = new Set();
+			const seenIds = new Set();
 
 			// A. Fetch from DB if table exists
 			try {
@@ -252,6 +253,7 @@ export async function POST({ request }) {
 					dbRows.forEach(item => {
 						const key = `${item.user_id}_${item.title}_${item.created_at?.slice(0, 16)}`;
 						seenKeys.add(key);
+						if (item.id) seenIds.add(String(item.id));
 						feedbacks.push({
 							id: item.id,
 							user_id: item.user_id,
@@ -273,8 +275,9 @@ export async function POST({ request }) {
 				const localRows = getLocalFeedbacks();
 				localRows.forEach(item => {
 					const key = `${item.user_id}_${item.title}_${item.created_at?.slice(0, 16)}`;
-					if (!seenKeys.has(key)) {
+					if (!seenKeys.has(key) && (!item.id || !seenIds.has(String(item.id)))) {
 						seenKeys.add(key);
+						if (item.id) seenIds.add(String(item.id));
 						feedbacks.push({
 							id: item.id,
 							user_id: item.user_id,
@@ -367,6 +370,206 @@ export async function POST({ request }) {
 			return json({
 				success: true,
 				message: 'Feedback record deleted'
+			});
+		}
+
+		// 8. GET CHAT HISTORY WITH USER (ADMIN CHAT - SCOPED TO TICKET)
+		if (action === 'get_chat_history') {
+			const { user_id, feedback_id, feedback_created_at } = body;
+			if (!user_id) {
+				return json({ error: 'User ID is required' }, { status: 400 });
+			}
+
+			let adminId = 14;
+			try {
+				const { data: supportRow } = await supabase
+					.from('chronomuse_users')
+					.select('id, username')
+					.eq('username', 'chronomuse_support')
+					.maybeSingle();
+
+				if (supportRow?.id) {
+					adminId = supportRow.id;
+				}
+			} catch (uErr) {}
+
+			// Fetch target user info
+			let targetUser = null;
+			try {
+				const { data: uData } = await supabase
+					.from('chronomuse_users')
+					.select('id, username, email, avatar_url, last_activity')
+					.eq('id', user_id)
+					.maybeSingle();
+				targetUser = uData;
+			} catch (e) {}
+
+			// Fetch messages between admin and user
+			let chatMessages = [];
+			try {
+				const { data: msgs, error: mErr } = await supabase
+					.from('chronomuse_messages')
+					.select('*')
+					.or(`and(sender_id.eq.${adminId},receiver_id.eq.${user_id}),and(sender_id.eq.${user_id},receiver_id.eq.${adminId})`)
+					.order('created_at', { ascending: true })
+					.limit(500);
+
+				if (!mErr && Array.isArray(msgs)) {
+					if (feedback_id) {
+						// Find next ticket creation time if any, to establish an upper bound for untagged messages
+						let nextTicketTime = null;
+						try {
+							const { data: userTickets } = await supabase
+								.from('chronomuse_feedbacks')
+								.select('id, created_at')
+								.eq('user_id', user_id)
+								.order('created_at', { ascending: true });
+
+							if (Array.isArray(userTickets)) {
+								const currIndex = userTickets.findIndex(t => String(t.id) === String(feedback_id));
+								if (currIndex !== -1 && currIndex + 1 < userTickets.length) {
+									nextTicketTime = new Date(userTickets[currIndex + 1].created_at).getTime();
+								}
+							}
+						} catch (tErr) {}
+
+						if (!nextTicketTime) {
+							try {
+								const localTickets = getLocalFeedbacks()
+									.filter(t => String(t.user_id) === String(user_id))
+									.sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
+								const currIndex = localTickets.findIndex(t => String(t.id) === String(feedback_id));
+								if (currIndex !== -1 && currIndex + 1 < localTickets.length) {
+									nextTicketTime = new Date(localTickets[currIndex + 1].created_at).getTime();
+								}
+							} catch (lErr) {}
+						}
+
+						// Filter strictly to this ticket's conversation so other tickets NEVER leak!
+						chatMessages = msgs.filter(m => {
+							// 1. Explicit feedback_id match if column exists
+							if (m.feedback_id && String(m.feedback_id) === String(feedback_id)) return true;
+							// 2. Exact ticket marker match: [TICKET id="${feedback_id}"]
+							if (m.message && m.message.includes(`[TICKET id="${feedback_id}"]`)) return true;
+							// 3. If tagged with ANOTHER ticket ID, strictly EXCLUDE it!
+							const otherTicketMatch = m.message?.match(/\[TICKET id="([^"]+)"\]/);
+							if (otherTicketMatch && String(otherTicketMatch[1]) !== String(feedback_id)) {
+								return false;
+							}
+							// 4. If it's a different ticket submission header, exclude it!
+							if (m.message && m.message.includes('[Need Help or Suggestion:') && !m.message.includes(`[TICKET id="${feedback_id}"]`)) {
+								return false;
+							}
+							// 5. If feedback_created_at is provided, exclude any messages sent BEFORE this ticket was opened
+							if (feedback_created_at) {
+								const msgTime = new Date(m.created_at).getTime();
+								const ticketTime = new Date(feedback_created_at).getTime();
+								// Allow 10s buffer for clock skew
+								if (msgTime < ticketTime - 10000) {
+									return false;
+								}
+							}
+							// 6. If a subsequent ticket was opened, exclude untagged messages sent after next ticket was opened
+							if (nextTicketTime) {
+								const msgTime = new Date(m.created_at).getTime();
+								if (msgTime >= nextTicketTime - 5000) {
+									return false;
+								}
+							}
+							return true;
+						});
+					} else {
+						chatMessages = msgs;
+					}
+				}
+			} catch (e) {}
+
+			return json({
+				success: true,
+				data: {
+					admin_id: adminId,
+					user: targetUser,
+					messages: chatMessages
+				}
+			});
+		}
+
+		// 9. SEND CHAT MESSAGE TO USER AS ADMIN
+		if (action === 'send_chat_message') {
+			const { user_id, message, feedback_id, resolve_feedback = false } = body;
+			if (!user_id || !message || !message.trim()) {
+				return json({ error: 'User ID and non-empty message are required' }, { status: 400 });
+			}
+
+			let adminId = 14;
+			try {
+				const { data: supportRow } = await supabase
+					.from('chronomuse_users')
+					.select('id, username')
+					.eq('username', 'chronomuse_support')
+					.maybeSingle();
+
+				if (supportRow?.id) {
+					adminId = supportRow.id;
+				}
+			} catch (uErr) {}
+
+			const formattedMessage = feedback_id
+				? `[TICKET id="${feedback_id}"]${message.trim()}[/TICKET]`
+				: message.trim();
+
+			let { data: newMsg, error: sendErr } = await supabase
+				.from('chronomuse_messages')
+				.insert([
+					{
+						sender_id: adminId,
+						receiver_id: user_id,
+						message: formattedMessage,
+						is_read: false,
+						feedback_id: feedback_id || null
+					}
+				])
+				.select()
+				.single();
+
+			if (sendErr && sendErr.message?.includes('feedback_id')) {
+				const fallback = await supabase
+					.from('chronomuse_messages')
+					.insert([
+						{
+							sender_id: adminId,
+							receiver_id: user_id,
+							message: formattedMessage,
+							is_read: false
+						}
+					])
+					.select()
+					.single();
+				newMsg = fallback.data;
+				sendErr = fallback.error;
+			}
+
+			if (sendErr) {
+				return json({ error: sendErr.message }, { status: 500 });
+			}
+
+			// If requested, mark feedback as resolved
+			if (resolve_feedback && feedback_id) {
+				updateLocalFeedbackStatus(feedback_id, 'resolved');
+				try {
+					await supabase
+						.from('chronomuse_feedbacks')
+						.update({ status: 'resolved' })
+						.eq('id', feedback_id);
+				} catch (e) {}
+			}
+
+			return json({
+				success: true,
+				data: {
+					message: newMsg,
+					feedback_resolved: Boolean(resolve_feedback && feedback_id)
+				}
 			});
 		}
 

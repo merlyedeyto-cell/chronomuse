@@ -1,32 +1,51 @@
 <script>
-	import { goto } from '$app/navigation';
+	import AdminChatModal from '$lib/admin/AdminChatModal.svelte';
 	import {
 		Lightbulb, Bug, MessageSquare, Search, CheckCircle2,
-		Clock, Trash2, ArrowUpRight, MessageCircle, Filter, Sparkles
+		Clock, Trash2, MessageCircle, Filter, Sparkles, ShieldCheck
 	} from 'lucide-svelte';
+	import { playClickSound } from '$lib/soundEffects.js';
 
 	let {
 		feedbacks = [],
 		isLoading = false,
+		adminPasscode = '041205',
 		onUpdateStatus = () => {},
 		onDeleteFeedback = () => {}
 	} = $props();
 
 	let searchQuery = $state('');
-	let selectedCategory = $state('all'); // 'all' | 'suggestion' | 'help' | 'bug'
-	let selectedStatus = $state('all'); // 'all' | 'new' | 'resolved'
-	let selectedFeedbackForDetails = $state(null);
+	let activeTab = $state('all'); // 'all' | 'unread' | 'concerns' | 'suggestions' | 'bugs' | 'resolved'
+	let categoryStatusFilter = $state('all'); // 'all' | 'new' | 'resolved'
+	let activeChatFeedback = $state(null);
+	let isChatModalOpen = $state(false);
+
+	let tabs = $derived([
+		{ id: 'all', label: 'All', count: feedbacks.length },
+		{ id: 'unread', label: 'Unread', count: feedbacks.filter(f => f.status === 'new').length },
+		{ id: 'concerns', label: 'Concerns', count: feedbacks.filter(f => f.category === 'help').length },
+		{ id: 'suggestions', label: 'Suggestions', count: feedbacks.filter(f => f.category === 'suggestion').length },
+		{ id: 'bugs', label: 'Bugs', count: feedbacks.filter(f => f.category === 'bug').length },
+		{ id: 'resolved', label: 'Resolved', count: feedbacks.filter(f => f.status === 'resolved').length }
+	]);
 
 	let filteredFeedbacks = $derived.by(() => {
 		return feedbacks.filter(item => {
-			// Category filter
-			if (selectedCategory !== 'all' && item.category !== selectedCategory) {
-				return false;
+			if (activeTab === 'unread' && item.status !== 'new') return false;
+			if (activeTab === 'resolved' && item.status !== 'resolved') return false;
+			if (activeTab === 'concerns') {
+				if (item.category !== 'help') return false;
+				if (categoryStatusFilter !== 'all' && item.status !== categoryStatusFilter) return false;
 			}
-			// Status filter
-			if (selectedStatus !== 'all' && item.status !== selectedStatus) {
-				return false;
+			if (activeTab === 'suggestions') {
+				if (item.category !== 'suggestion') return false;
+				if (categoryStatusFilter !== 'all' && item.status !== categoryStatusFilter) return false;
 			}
+			if (activeTab === 'bugs') {
+				if (item.category !== 'bug') return false;
+				if (categoryStatusFilter !== 'all' && item.status !== categoryStatusFilter) return false;
+			}
+
 			// Search query
 			const q = searchQuery.trim().toLowerCase();
 			if (!q) return true;
@@ -72,11 +91,8 @@
 	}
 
 	function handleOpenChat(item) {
-		if (item.user_id) {
-			goto(`/chat?friend_id=${item.user_id}&username=${encodeURIComponent(item.username || 'User')}`);
-		} else {
-			goto('/chat');
-		}
+		activeChatFeedback = item;
+		isChatModalOpen = true;
 	}
 </script>
 
@@ -109,74 +125,57 @@
 		</div>
 	</div>
 
-	<!-- Filter Chips Bar -->
-	<div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-pink-100/60">
-		<!-- Category Filter Tabs -->
-		<div class="flex items-center gap-1.5 flex-wrap">
-			<button
-				type="button"
-				onclick={() => selectedCategory = 'all'}
-				class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer {selectedCategory === 'all' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'bg-pink-50 text-pink-700 hover:bg-pink-100'}"
-			>
-				All Categories ({feedbacks.length})
-			</button>
-
-			<button
-				type="button"
-				onclick={() => selectedCategory = 'suggestion'}
-				class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 {selectedCategory === 'suggestion' ? 'bg-amber-500 text-white shadow-2xs' : 'bg-amber-50 text-amber-700 border border-amber-200/60 hover:bg-amber-100/70'}"
-			>
-				<Lightbulb class="w-3 h-3" />
-				<span>Suggestions ({feedbacks.filter(f => f.category === 'suggestion').length})</span>
-			</button>
-
-			<button
-				type="button"
-				onclick={() => selectedCategory = 'help'}
-				class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 {selectedCategory === 'help' ? 'bg-purple-600 text-white shadow-2xs' : 'bg-purple-50 text-purple-700 border border-purple-200/60 hover:bg-purple-100/70'}"
-			>
-				<MessageSquare class="w-3 h-3" />
-				<span>Concerns ({feedbacks.filter(f => f.category === 'help').length})</span>
-			</button>
-
-			<button
-				type="button"
-				onclick={() => selectedCategory = 'bug'}
-				class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 {selectedCategory === 'bug' ? 'bg-rose-500 text-white shadow-2xs' : 'bg-rose-50 text-rose-700 border border-rose-200/60 hover:bg-rose-100/70'}"
-			>
-				<Bug class="w-3 h-3" />
-				<span>Bugs ({feedbacks.filter(f => f.category === 'bug').length})</span>
-			</button>
+	<!-- Filter Tabs Bar (Instagram / Modern Pill Style) -->
+	<div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 pt-1 border-t border-pink-100/60">
+		<!-- Pill Tabs Bar -->
+		<div class="inline-flex items-center gap-1 p-1 bg-[#fff0f5] border border-pink-200/60 rounded-full shadow-2xs overflow-x-auto max-w-full">
+			{#each tabs as tab (tab.id)}
+				<button
+					type="button"
+					onclick={() => {
+						activeTab = tab.id;
+						categoryStatusFilter = 'all';
+					}}
+					class="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap {activeTab === tab.id ? 'bg-[#f43f8e] text-white shadow-sm' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
+				>
+					<span>{tab.label}</span>
+					<span class="px-2 py-0.5 rounded-full text-[11px] font-black transition-colors {activeTab === tab.id ? 'bg-white/25 text-white' : 'bg-pink-100/80 text-[#f43f8e]'}">
+						{tab.count}
+					</span>
+				</button>
+			{/each}
 		</div>
 
-		<!-- Status Filter Switcher -->
-		<div class="flex items-center gap-1 text-[11px] font-bold">
-			<span class="text-pink-400 mr-1 flex items-center gap-1">
-				<Filter class="w-3 h-3" />
-				<span>Status:</span>
-			</span>
-			<button
-				type="button"
-				onclick={() => selectedStatus = 'all'}
-				class="px-2 py-0.5 rounded-md cursor-pointer {selectedStatus === 'all' ? 'bg-pink-200 text-pink-950' : 'text-pink-600 hover:bg-pink-100'}"
-			>
-				All
-			</button>
-			<button
-				type="button"
-				onclick={() => selectedStatus = 'new'}
-				class="px-2 py-0.5 rounded-md cursor-pointer {selectedStatus === 'new' ? 'bg-amber-100 text-amber-800 font-black' : 'text-pink-600 hover:bg-pink-100'}"
-			>
-				New
-			</button>
-			<button
-				type="button"
-				onclick={() => selectedStatus = 'resolved'}
-				class="px-2 py-0.5 rounded-md cursor-pointer {selectedStatus === 'resolved' ? 'bg-emerald-100 text-emerald-800 font-black' : 'text-pink-600 hover:bg-pink-100'}"
-			>
-				Resolved
-			</button>
-		</div>
+		<!-- Optional Sub-status filter when inside a category tab -->
+		{#if ['concerns', 'suggestions', 'bugs'].includes(activeTab)}
+			<div class="inline-flex items-center gap-1 p-1 bg-[#fff0f5] border border-pink-200/60 rounded-full text-xs font-bold self-start lg:self-auto">
+				<span class="text-pink-400 pl-2.5 pr-1 text-[11px] font-black flex items-center gap-1">
+					<Filter class="w-3 h-3" />
+					<span>Status:</span>
+				</span>
+				<button
+					type="button"
+					onclick={() => categoryStatusFilter = 'all'}
+					class="px-3 py-1 rounded-full text-[11px] font-black transition-all cursor-pointer {categoryStatusFilter === 'all' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
+				>
+					All
+				</button>
+				<button
+					type="button"
+					onclick={() => categoryStatusFilter = 'new'}
+					class="px-3 py-1 rounded-full text-[11px] font-black transition-all cursor-pointer {categoryStatusFilter === 'new' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
+				>
+					New
+				</button>
+				<button
+					type="button"
+					onclick={() => categoryStatusFilter = 'resolved'}
+					class="px-3 py-1 rounded-full text-[11px] font-black transition-all cursor-pointer {categoryStatusFilter === 'resolved' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
+				>
+					Resolved
+				</button>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Feedbacks List / Table -->
@@ -259,13 +258,15 @@
 							<!-- Chat with User button -->
 							<button
 								type="button"
-								onclick={() => handleOpenChat(item)}
-								title="Chat directly with user in ChronoMuse chat"
-								class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-[11px] font-bold rounded-lg shadow-2xs transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+								onclick={() => {
+									playClickSound();
+									handleOpenChat(item);
+								}}
+								title="Open real-time support chat with user"
+								class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-[11px] font-black rounded-lg shadow-2xs transition-all flex items-center gap-1 cursor-pointer active:scale-95"
 							>
 								<MessageCircle class="w-3 h-3" />
-								<span>Chat User</span>
-								<ArrowUpRight class="w-3 h-3 opacity-70" />
+								<span>Live Chat</span>
 							</button>
 
 							<!-- Toggle Status Button -->
@@ -303,3 +304,20 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Admin Direct Chat Modal -->
+<AdminChatModal
+	isOpen={isChatModalOpen}
+	feedback={activeChatFeedback}
+	{adminPasscode}
+	onClose={() => {
+		isChatModalOpen = false;
+		activeChatFeedback = null;
+	}}
+	onFeedbackUpdated={(feedbackId, newStatus) => {
+		onUpdateStatus(feedbackId, newStatus);
+		if (activeChatFeedback && activeChatFeedback.id === feedbackId) {
+			activeChatFeedback.status = newStatus;
+		}
+	}}
+/>

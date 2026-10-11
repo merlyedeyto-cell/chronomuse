@@ -22,52 +22,29 @@ export async function POST({ request }) {
 		const cleanTitle = (title && title.trim()) ? title.trim() : (cleanCategory === 'bug' ? 'Bug Report' : cleanCategory === 'help' ? 'Help Request' : 'Feature Suggestion');
 		const cleanMessage = message.trim();
 
-		// 1. Resolve Admin User (Merlye)
-		let adminId = 12; // Default known ID for @merlye
+		// 1. Resolve Official Support Account (chronomuse_support)
+		let adminId = 14; // Default known ID for @chronomuse_support
+		let adminUsername = 'chronomuse_support';
 		try {
-			const { data: adminRow } = await supabase
+			const { data: supportRow } = await supabase
 				.from('chronomuse_users')
 				.select('id, username')
-				.eq('username', 'merlye')
+				.eq('username', 'chronomuse_support')
 				.maybeSingle();
 
-			if (adminRow?.id) {
-				adminId = adminRow.id;
+			if (supportRow?.id) {
+				adminId = supportRow.id;
+				adminUsername = supportRow.username;
 			}
 		} catch (uErr) {
-			console.error('Error finding admin user:', uErr);
+			console.error('Error finding support user:', uErr);
 		}
 
-		// 2. Send as direct message to Admin Merlye in chronomuse_messages if user is logged in
-		let messageSent = false;
-		if (user_id && String(user_id) !== String(adminId)) {
-			try {
-				const categoryLabel = cleanCategory === 'bug' ? '🐛 Bug Report' : cleanCategory === 'help' ? '💬 Concern / Help' : '💡 Suggestion';
-				const formattedChatMessage = `[Need Help or Suggestion: ${categoryLabel}]\n📌 ${cleanTitle}\n\n${cleanMessage}`;
-
-				const { error: msgErr } = await supabase
-					.from('chronomuse_messages')
-					.insert([
-						{
-							sender_id: user_id,
-							receiver_id: adminId,
-							message: formattedChatMessage,
-							is_read: false
-						}
-					]);
-
-				if (!msgErr) {
-					messageSent = true;
-				}
-			} catch (mErr) {
-				console.error('Failed to insert message to admin:', mErr);
-			}
-		}
-
-		// 3. Attempt insertion into chronomuse_feedbacks table if exists
+		// 2. Save to chronomuse_feedbacks table
 		let dbSaved = false;
+		let dbFeedbackId = null;
 		try {
-			const { error: fbErr } = await supabase
+			const { data: fbRow, error: fbErr } = await supabase
 				.from('chronomuse_feedbacks')
 				.insert([
 					{
@@ -78,17 +55,21 @@ export async function POST({ request }) {
 						message: cleanMessage,
 						status: 'new'
 					}
-				]);
+				])
+				.select()
+				.maybeSingle();
 
-			if (!fbErr) {
+			if (!fbErr && fbRow?.id) {
 				dbSaved = true;
+				dbFeedbackId = fbRow.id;
 			}
 		} catch (fbErr) {
 			// Expected if table hasn't been created yet in Supabase
 		}
 
-		// 4. Save to persistent server store (guarantees admin portal always has it)
+		// 3. Save to persistent server store (guarantees admin portal always has it)
 		const savedItem = saveLocalFeedback({
+			id: dbFeedbackId || Date.now(),
 			user_id: user_id ? Number(user_id) : null,
 			username,
 			email,
@@ -99,15 +80,62 @@ export async function POST({ request }) {
 			created_at: new Date().toISOString()
 		});
 
+		const ticketId = dbFeedbackId || savedItem?.id || Date.now();
+
+		// 4. Send as scoped ticket message in chronomuse_messages if user is logged in
+		let messageSent = false;
+		if (user_id && String(user_id) !== String(adminId)) {
+			try {
+				const categoryLabel = cleanCategory === 'bug' ? '🐛 Bug Report' : cleanCategory === 'help' ? '💬 Concern / Help' : '💡 Suggestion';
+				const formattedChatMessage = `[TICKET id="${ticketId}"]\n[Need Help or Suggestion: ${categoryLabel}]\n📌 ${cleanTitle}\n\n${cleanMessage}[/TICKET]`;
+
+				// Try with feedback_id first, fallback without if column not migrated
+				let { error: msgErr } = await supabase
+					.from('chronomuse_messages')
+					.insert([
+						{
+							sender_id: user_id,
+							receiver_id: adminId,
+							message: formattedChatMessage,
+							is_read: false,
+							feedback_id: ticketId
+						}
+					]);
+
+				if (msgErr && msgErr.message?.includes('feedback_id')) {
+					const fallbackInsert = await supabase
+						.from('chronomuse_messages')
+						.insert([
+							{
+								sender_id: user_id,
+								receiver_id: adminId,
+								message: formattedChatMessage,
+								is_read: false
+							}
+						]);
+					msgErr = fallbackInsert.error;
+				}
+
+				if (!msgErr) {
+					messageSent = true;
+				}
+			} catch (mErr) {
+				console.error('Failed to insert message to support:', mErr);
+			}
+		}
+
 		return json({
 			success: true,
 			data: {
 				saved: true,
 				chat_forwarded: messageSent,
 				db_saved: dbSaved,
-				feedback: savedItem
+				feedback: savedItem,
+				admin_id: adminId,
+				admin_username: adminUsername,
+				ticket_id: ticketId
 			},
-			message: 'Your concern has been submitted directly to Admin Merlye.'
+			message: 'Your concern has been forwarded to ChronoMuse Support.'
 		});
 	} catch (err) {
 		console.error('Feedback API error:', err);

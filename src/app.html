@@ -16,6 +16,14 @@
 					});
 				});
 			}
+		<script>
+			(function() {
+				const _origWarn = console.warn;
+				console.warn = function(...args) {
+					if (typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+					_origWarn.apply(console, args);
+				};
+			})();
 		</script>
 		<script src="https://cdn.tailwindcss.com"></script>
 		<link rel="preconnect" href="https://fonts.googleapis.com">

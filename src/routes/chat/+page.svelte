@@ -12,7 +12,7 @@
 	import {
 		MessageSquare, Search, Clock, Check, X, ChevronLeft, ChevronRight,
 		User, Ban, Trash2, UserPlus, Reply, Image as ImageIcon, ZoomIn,
-		ZoomOut, Download, Smile, Send, AlertCircle, CheckCircle2, MessageCircle
+		ZoomOut, Download, Smile, Send, AlertCircle, CheckCircle2, MessageCircle, ShieldCheck
 	} from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
@@ -40,6 +40,29 @@
 		notificationModalType = type;
 		showNotificationModalPopup = true;
 	}
+
+	function safeReplaceState(url, state = {}) {
+		if (typeof window === 'undefined') return;
+		try {
+			replaceState(url, state);
+		} catch (e) {
+			try {
+				window.history.replaceState({ ...window.history.state, ...state }, '', url);
+			} catch (_) {}
+		}
+	}
+
+	function safePushState(url, state = {}) {
+		if (typeof window === 'undefined') return;
+		try {
+			pushState(url, state);
+		} catch (e) {
+			try {
+				window.history.pushState({ ...window.history.state, ...state }, '', url);
+			} catch (_) {}
+		}
+	}
+
 	let isSendingFriendRequest = $state(false);
 	let activeFriend = $state(null);
 	let messages = $state([]);
@@ -240,9 +263,7 @@
 		if (friendIdParam || usernameParam) {
 			const fid = friendIdParam ? Number(friendIdParam) : null;
 			if (pendingMemoryReply) {
-				if (typeof window !== 'undefined') {
-					replaceState('/chat', { chatOpen: false });
-				}
+				safeReplaceState('/chat', { chatOpen: false });
 				triggerMemoryReply({
 					friend_id: pendingMemoryReply.sender_id || pendingMemoryReply.friend_id || fid,
 					username: pendingMemoryReply.sender_username || pendingMemoryReply.username || usernameParam || 'User',
@@ -252,9 +273,7 @@
 				});
 			} else if (pendingNoteReply) {
 				// Open the chat immediately (no waiting for the chat list) with the reply bar
-				if (typeof window !== 'undefined') {
-					replaceState('/chat', { chatOpen: false });
-				}
+				safeReplaceState('/chat', { chatOpen: false });
 				triggerNoteReply({
 					user_id: pendingNoteReply.user_id,
 					username: pendingNoteReply.username || usernameParam || 'User',
@@ -263,15 +282,19 @@
 				});
 			} else if (fid && user?.id && Number(fid) === Number(user.id)) {
 				activeFriend = null;
-				if (typeof window !== 'undefined') {
-					replaceState('/chat', { chatOpen: false });
-				}
+				safeReplaceState('/chat', { chatOpen: false });
 			} else {
+				const uParam = (usernameParam || '').toLowerCase();
+				const isSupport = uParam === 'chronomuse_support' || uParam === 'support';
+				const ticketIdParam = $page.url.searchParams.get('ticket_id');
 				activeFriend = {
 					friend_id: fid,
-					id: fid,
+					id: ticketIdParam ? `ticket_${ticketIdParam}` : fid,
 					username: usernameParam || 'User',
-					is_friend: friends.some(f => Number(f.friend_id) === fid)
+					ticket_id: ticketIdParam ? Number(ticketIdParam) : null,
+					is_support: isSupport,
+					is_ticket: Boolean(isSupport && ticketIdParam),
+					is_friend: isSupport || friends.some(f => Number(f.friend_id) === fid)
 				};
 				if (friendIdParam) {
 					fetchMessages(Number(friendIdParam), true);
@@ -279,16 +302,12 @@
 				}
 
 				// Ensure base history state is /chat so pressing back on mobile returns to chat list (Friends Chat)
-				if (typeof window !== 'undefined') {
-					const currentSearch = window.location.search;
-					replaceState('/chat', { chatOpen: false });
-					pushState(`/chat${currentSearch}`, { chatOpen: true, friend_id: Number(friendIdParam) });
-				}
+				const currentSearch = typeof window !== 'undefined' ? window.location.search : '';
+				safeReplaceState('/chat', { chatOpen: false });
+				safePushState(`/chat${currentSearch}`, { chatOpen: true, friend_id: Number(friendIdParam) });
 			}
 		} else {
-			if (typeof window !== 'undefined') {
-				replaceState('/chat', { chatOpen: false });
-			}
+			safeReplaceState('/chat', { chatOpen: false });
 		}
 
 		isLoading = false;
@@ -303,8 +322,11 @@
 				if (fullFriend) {
 					activeFriend = fullFriend;
 				} else {
-					activeFriend.is_friend = friends.some(f => String(f.friend_id) === String(activeFriend.friend_id));
-					activeFriend.is_request = !activeFriend.is_friend;
+					const uName = (activeFriend.username || '').toLowerCase();
+					const isSupport = uName === 'chronomuse_support' || uName === 'support' || Boolean(activeFriend.is_support);
+					activeFriend.is_support = isSupport;
+					activeFriend.is_friend = isSupport || friends.some(f => String(f.friend_id) === String(activeFriend.friend_id));
+					activeFriend.is_request = !activeFriend.is_friend && !isSupport;
 				}
 			}
 		});
@@ -382,9 +404,7 @@
 				selectedMessageIds = new Set();
 				replyingTo = null;
 				isOtherUserTyping = false;
-				if (typeof window !== 'undefined') {
-					replaceState('/chat', { chatOpen: false });
-				}
+				safeReplaceState('/chat', { chatOpen: false });
 			}
 		};
 		window.addEventListener('popstate', handlePopState);
@@ -660,6 +680,20 @@
 				if (payload.payload && Number(payload.payload.sender_id) === Number(friendId)) {
 					const incoming = payload.payload;
 					if (recentlyDeletedMessageIds.has(incoming.id) || recentlyDeletedMessageIds.has(String(incoming.id))) return;
+
+					// If currently viewing a ticket, ignore messages that belong to another ticket
+					if (activeFriend?.ticket_id) {
+						if (incoming.feedback_id && String(incoming.feedback_id) !== String(activeFriend.ticket_id)) {
+							fetchChatList();
+							return;
+						}
+						const tMatch = incoming.message?.match(/\[TICKET id="([^"]+)"\]/);
+						if (tMatch && String(tMatch[1]) !== String(activeFriend.ticket_id)) {
+							fetchChatList();
+							return;
+						}
+					}
+
 					if (!messages.some(m => String(m.id) === String(incoming.id) || (m.message === incoming.message && Number(m.sender_id) === Number(incoming.sender_id)))) {
 						messages = [...messages, incoming];
 						playIncomingMessageSound(user?.id);
@@ -974,7 +1008,12 @@
 		}
 
 		if (searchQuery.trim()) {
-			list = list.filter(f => f.username.toLowerCase().includes(searchQuery.toLowerCase()));
+			const q = searchQuery.toLowerCase();
+			list = list.filter(f => 
+				f.username.toLowerCase().includes(q) ||
+				(f.ticket_title && f.ticket_title.toLowerCase().includes(q)) ||
+				(f.ticket_id && String(f.ticket_id).includes(q))
+			);
 		}
 		// Sort by most recent message descending (latest conversation at the very top)
 		return [...list].sort((a, b) => {
@@ -1001,10 +1040,9 @@
 		hasMoreMessages = true;
 
 		// Push history state so hardware back button on phone returns to chat list (the screen with all chats)
-		if (typeof window !== 'undefined') {
-			const chatUrl = `/chat?friend_id=${friend.friend_id}&username=${encodeURIComponent(friend.username)}`;
-			pushState(chatUrl, { chatOpen: true, friend_id: friend.friend_id });
-		}
+		const ticketParam = friend.ticket_id ? `&ticket_id=${friend.ticket_id}` : '';
+		const chatUrl = `/chat?friend_id=${friend.friend_id}&username=${encodeURIComponent(friend.username)}${ticketParam}`;
+		safePushState(chatUrl, { chatOpen: true, friend_id: friend.friend_id, ticket_id: friend.ticket_id });
 
 		initTypingChannel(friend.friend_id);
 		await fetchMessages(friend.friend_id, true);
@@ -1018,9 +1056,7 @@
 		selectedMessageIds = new Set();
 		replyingTo = null;
 		isOtherUserTyping = false;
-		if (typeof window !== 'undefined') {
-			replaceState('/chat', { chatOpen: false });
-		}
+		safeReplaceState('/chat', { chatOpen: false });
 	}
 
 	async function fetchMessages(friendId, isInitialLoad = false) {
@@ -1029,10 +1065,16 @@
 			isFetchingMessages = true;
 		}
 		try {
+			const ticketId = activeFriend?.ticket_id || null;
 			const res = await fetch(API_ENDPOINTS.getMessages, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ user_id: user.id, friend_id: friendId, limit: 20 })
+				body: JSON.stringify({ 
+					user_id: user.id, 
+					friend_id: friendId, 
+					ticket_id: ticketId,
+					limit: ticketId ? 200 : 20 
+				})
 			});
 			const data = await res.json();
 			if (data.data && data.data.messages) {
@@ -1131,12 +1173,14 @@
 		const oldScrollTop = chatContainer ? chatContainer.scrollTop : 0;
 
 		try {
+			const ticketId = activeFriend?.ticket_id || null;
 			const res = await fetch(API_ENDPOINTS.getMessages, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					user_id: user.id,
 					friend_id: activeFriend.friend_id,
+					ticket_id: ticketId,
 					limit: 20,
 					before_id: oldestMsg.id
 				})
@@ -1239,6 +1283,25 @@
 			replyingTo = null;
 		}
 
+		// If messaging a specific support ticket, bind reply to that ticket
+		if (activeFriend?.ticket_id) {
+			if (!formattedMessage.includes('[TICKET id="')) {
+				formattedMessage = `[TICKET id="${activeFriend.ticket_id}"]${formattedMessage}[/TICKET]`;
+			}
+		} else if (activeFriend?.is_support || ['chronomuse_support', 'support'].includes(activeFriend?.username?.toLowerCase())) {
+			let latestTicketId = null;
+			for (let i = messages.length - 1; i >= 0; i--) {
+				const tMatch = messages[i]?.message?.match(/\[TICKET id="([^"]+)"\]/);
+				if (tMatch) {
+					latestTicketId = tMatch[1];
+					break;
+				}
+			}
+			if (latestTicketId && !formattedMessage.includes('[TICKET id="')) {
+				formattedMessage = `[TICKET id="${latestTicketId}"]${formattedMessage}[/TICKET]`;
+			}
+		}
+
 		if (!textCustom) newMessageText = '';
 		showEmojiPicker = false;
 		isSending = true;
@@ -1256,7 +1319,8 @@
 						payload: {
 							sender_id: user.id,
 							receiver_id: activeFriend.friend_id,
-							message: formattedMessage
+							message: formattedMessage,
+							feedback_id: activeFriend.ticket_id || null
 						}
 					}).then(() => {
 						setTimeout(() => {
@@ -1274,6 +1338,7 @@
 			sender_id: user.id,
 			receiver_id: activeFriend.friend_id,
 			message: formattedMessage,
+			feedback_id: activeFriend.ticket_id || null,
 			created_at: new Date().toISOString(),
 			is_new: true
 		};
@@ -1301,7 +1366,7 @@
 				last_sender_id: user.id,
 				last_is_read: false
 			},
-			...friends.filter(f => f.friend_id !== activeFriend.friend_id)
+			...friends.filter(f => (activeFriend.ticket_id ? (f.id !== activeFriend.id) : (f.friend_id !== activeFriend.friend_id)))
 		];
 
 		await tick();
@@ -1314,7 +1379,8 @@
 				body: JSON.stringify({
 					user_id: user.id,
 					friend_id: activeFriend.friend_id,
-					message: formattedMessage
+					message: formattedMessage,
+					feedback_id: activeFriend.ticket_id || null
 				})
 			});
 			const data = await res.json();
@@ -2026,6 +2092,10 @@
 			cleanText = match[5];
 		}
 
+		// Strip ticket metadata wrapper tags for a clean customer support experience
+		cleanText = cleanText.replace(/\[TICKET id="[^"]*"\]\n?/g, '');
+		cleanText = cleanText.replace(/\n?\[\/TICKET\]/g, '');
+
 		const isImage = isImageUrl(cleanText);
 		const imageUrl = isImage ? extractImageUrl(cleanText) : '';
 
@@ -2495,9 +2565,9 @@
 						{/if}
 					</div>
 				{:else}
-					{#each filteredFriends() as friend (friend.friend_id)}
+					{#each filteredFriends() as friend (friend.id || friend.friend_id)}
 						{@const isActive = isRecentActive(friend)}
-						{@const isSelected = activeFriend?.friend_id === friend.friend_id}
+						{@const isSelected = activeFriend?.ticket_id ? (Number(activeFriend.ticket_id) === Number(friend.ticket_id)) : (Number(activeFriend?.friend_id) === Number(friend.friend_id) && !friend.ticket_id)}
 						{@const isSentByMe = friend.last_sender_id === user?.id}
 						{@const isUnread = friend.unread_count > 0}
 						<button
@@ -2522,13 +2592,36 @@
 							<div class="flex-grow min-w-0">
 								<div class="flex items-center justify-between">
 									<div class="flex items-center space-x-1.5 min-w-0 flex-grow pr-1">
-										<p class="text-xs sm:text-sm font-semibold truncate transition-colors {isUnread ? 'font-bold text-pink-950' : isSelected ? 'font-bold text-[#f43f8e]' : 'text-pink-900 group-hover:text-[#f43f8e]'}">
-											@{friend.username}
-										</p>
-										{#if friend.is_request || !friend.is_friend}
-											<span class="inline-flex items-center text-[8px] font-bold text-amber-700 bg-amber-100 border border-amber-300/80 px-1 py-0.1 rounded-full flex-shrink-0">
-												Request
+										{#if friend.is_ticket}
+											<p class="text-xs sm:text-sm font-black truncate transition-colors {isUnread ? 'text-pink-950' : isSelected ? 'text-[#f43f8e]' : 'text-pink-900 group-hover:text-[#f43f8e]'}">
+												{friend.ticket_title}
+											</p>
+											<span class="inline-flex items-center text-[8px] font-mono font-black text-[#f43f8e] bg-pink-100/90 border border-pink-200 px-1 py-0.2 rounded-md flex-shrink-0">
+												#{friend.ticket_id}
 											</span>
+											{#if friend.ticket_status === 'resolved'}
+												<span class="inline-flex items-center text-[8px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-1.5 py-0.2 rounded-full flex-shrink-0">
+													Resolved
+												</span>
+											{:else}
+												<span class="inline-flex items-center text-[8px] font-bold text-amber-700 bg-amber-100 border border-amber-200 px-1.5 py-0.2 rounded-full flex-shrink-0">
+													Open
+												</span>
+											{/if}
+										{:else}
+											<p class="text-xs sm:text-sm font-semibold truncate transition-colors {isUnread ? 'font-bold text-pink-950' : isSelected ? 'font-bold text-[#f43f8e]' : 'text-pink-900 group-hover:text-[#f43f8e]'}">
+												@{friend.username}
+											</p>
+											{#if friend.is_support || ['chronomuse_support', 'support'].includes(friend.username?.toLowerCase())}
+												<span class="inline-flex items-center gap-0.5 text-[8px] font-black text-[#f43f8e] bg-pink-50 border border-pink-200 px-1.5 py-0.2 rounded-full flex-shrink-0 shadow-3xs">
+													<ShieldCheck class="w-2.5 h-2.5 text-[#f43f8e]" />
+													<span>Support</span>
+												</span>
+											{:else if friend.is_request || !friend.is_friend}
+												<span class="inline-flex items-center text-[8px] font-bold text-amber-700 bg-amber-100 border border-amber-300/80 px-1 py-0.1 rounded-full flex-shrink-0">
+													Request
+												</span>
+											{/if}
 										{/if}
 									</div>
 									{#if friend.last_message_time}
@@ -2643,11 +2736,32 @@
 									{/if}
 								</div>
 								<div class="min-w-0">
-									<h3 class="font-black text-xs sm:text-sm leading-tight text-pink-950 truncate group-hover:underline flex items-center gap-1">
-										<span>@{activeFriend.username}</span>
+									<h3 class="font-black text-xs sm:text-sm leading-tight text-pink-950 truncate group-hover:underline flex items-center gap-1.5 flex-wrap">
+										{#if activeFriend.is_ticket}
+											<span>ChronoMuse Support</span>
+											<span class="px-1.5 py-0.5 rounded-md bg-pink-100 text-[#f43f8e] font-mono text-[9px] font-black border border-pink-200">
+												#TKT-{activeFriend.ticket_id}
+											</span>
+											{#if activeFriend.ticket_status === 'resolved'}
+												<span class="px-2 py-0.2 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-black border border-emerald-200">
+													Resolved
+												</span>
+											{:else}
+												<span class="px-2 py-0.2 bg-amber-100 text-amber-700 rounded-full text-[9px] font-black border border-amber-200">
+													Open
+												</span>
+											{/if}
+										{:else}
+											<span>@{activeFriend.username}</span>
+											{#if activeFriend.is_support || ['chronomuse_support', 'support'].includes(activeFriend.username?.toLowerCase())}
+												<span class="inline-flex items-center text-[#f43f8e]" title="Verified Official Support">
+													<ShieldCheck class="w-3.5 h-3.5" />
+												</span>
+											{/if}
+										{/if}
 										<ChevronRight class="w-3.5 h-3.5 text-[#f43f8e] opacity-70 group-hover:opacity-100" strokeWidth={2.5} />
 									</h3>
-									<div class="text-[10px] text-pink-600 flex items-center gap-1 mt-0.5">
+									<div class="text-[10px] text-pink-600 flex items-center gap-1 mt-0.5 min-w-0">
 										{#if isOtherUserTyping}
 											<span class="font-bold italic text-[#f43f8e] flex items-center gap-1">
 												<span>typing</span>
@@ -2656,6 +2770,11 @@
 													<span class="w-1 h-1 rounded-full bg-[#f43f8e] animate-bounce" style="animation-delay: 150ms"></span>
 													<span class="w-1 h-1 rounded-full bg-[#f43f8e] animate-bounce" style="animation-delay: 300ms"></span>
 												</span>
+											</span>
+										{:else if activeFriend.is_ticket}
+											<span class="font-bold text-pink-700 truncate">
+												{activeFriend.ticket_category === 'bug' ? '🐛 Bug: ' : activeFriend.ticket_category === 'help' ? '💬 Concern: ' : '💡 Idea: '}
+												{activeFriend.ticket_title}
 											</span>
 										{:else if isRecentActive(activeFriend)}
 											<span class="flex items-center gap-1 text-emerald-600 font-bold">
@@ -2703,8 +2822,29 @@
 					</div>
 				{/if}
 
-				<!-- Message Request Top Banner (Shown if not friends yet) -->
-				{#if activeFriend && (activeFriend.is_request || !activeFriend.is_friend)}
+				<!-- Support Channel Banner or Friend Request Top Banner -->
+				{#if activeFriend && (activeFriend.is_support || ['chronomuse_support', 'support'].includes(activeFriend.username?.toLowerCase()))}
+					<div class="px-3 py-2 bg-gradient-to-r from-pink-50/90 to-rose-50/70 border-b border-pink-100 flex items-center justify-between text-xs gap-2 animate-fade-in flex-shrink-0">
+						<div class="flex items-center gap-2 min-w-0">
+							<div class="w-6 h-6 rounded-full bg-[#f43f8e] text-white flex items-center justify-center flex-shrink-0 shadow-3xs">
+								<ShieldCheck class="w-3.5 h-3.5" />
+							</div>
+							<div class="min-w-0">
+								{#if activeFriend.is_ticket}
+									<p class="text-[11px] font-black text-pink-950 truncate">Ticket #{activeFriend.ticket_id}: {activeFriend.ticket_title}</p>
+									<p class="text-[10px] text-pink-500 font-medium truncate">Dedicated conversation thread for this concern.</p>
+								{:else}
+									<p class="text-[11px] font-black text-pink-950 truncate">Official ChronoMuse Support</p>
+									<p class="text-[10px] text-pink-500 font-medium truncate">Official Help Desk & Customer Support channel.</p>
+								{/if}
+							</div>
+						</div>
+						<span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black rounded-full flex items-center gap-1 flex-shrink-0">
+							<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+							<span>Verified Support</span>
+						</span>
+					</div>
+				{:else if activeFriend && (activeFriend.is_request || !activeFriend.is_friend)}
 					{@const isPendingRequest = activeFriend.has_pending_request || sentFriendRequestUsernames.includes((activeFriend.username || '').toLowerCase()) || (activeFriend.pending_request_sender_id && String(activeFriend.pending_request_sender_id) === String(user?.id))}
 					<div class="px-3 py-2 bg-amber-50 border-b border-pink-100 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs gap-2 animate-fade-in flex-shrink-0">
 						<div class="text-pink-950 font-medium leading-relaxed">

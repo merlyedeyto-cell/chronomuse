@@ -134,6 +134,7 @@ CREATE TABLE IF NOT EXISTS public.chronomuse_messages (
   receiver_id bigint NOT NULL REFERENCES public.chronomuse_users(id) ON DELETE CASCADE,
   message text NOT NULL,
   is_read boolean NOT NULL DEFAULT false,
+  feedback_id bigint DEFAULT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
@@ -269,3 +270,34 @@ BEGIN
     CREATE POLICY "Public Access" ON storage.objects FOR ALL USING (true) WITH CHECK (true);
   END IF;
 END $$;
+
+-- =========================================================================
+-- SEED OFFICIAL SUPPORT SYSTEM ACCOUNT
+-- =========================================================================
+INSERT INTO public.chronomuse_users (
+  username,
+  email,
+  password,
+  avatar_url,
+  bio,
+  status
+)
+VALUES (
+  'chronomuse_support',
+  'support@chronomuse.app',
+  '$2b$10$cfAZD4Li9hznwXHfOf1trOECTVzKkF7AKyOLXyyuavcXHAm9uJCj2',
+  '/logo.png',
+  'Official ChronoMuse System Support & Help Desk',
+  'active'
+)
+ON CONFLICT (username) DO UPDATE SET
+  avatar_url = '/logo.png',
+  bio = 'Official ChronoMuse System Support & Help Desk';
+
+-- --------------------------------------------------------
+-- Migration: Add feedback_id to chronomuse_messages if not exists
+-- --------------------------------------------------------
+ALTER TABLE public.chronomuse_messages ADD COLUMN IF NOT EXISTS feedback_id bigint DEFAULT NULL;
+CREATE INDEX IF NOT EXISTS idx_chronomuse_messages_feedback_id ON public.chronomuse_messages (feedback_id);
+
+

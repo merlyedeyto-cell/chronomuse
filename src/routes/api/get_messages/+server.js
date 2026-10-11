@@ -3,13 +3,13 @@ import { supabase } from '$lib/supabaseClient';
 
 export async function POST({ request }) {
 	try {
-		const { user_id, friend_id, limit = 20, before_id = null } = await request.json();
+		const { user_id, friend_id, limit = 20, before_id = null, ticket_id = null } = await request.json();
 
 		if (!user_id || !friend_id) {
 			return json({ error: 'User ID and Friend ID are required' }, { status: 400 });
 		}
 
-		const queryLimit = Math.min(Math.max(Number(limit) || 20, 1), 100);
+		const queryLimit = ticket_id ? 200 : Math.min(Math.max(Number(limit) || 20, 1), 100);
 
 		let query = supabase
 			.from('chronomuse_messages')
@@ -28,16 +28,40 @@ export async function POST({ request }) {
 			return json({ error: error.message }, { status: 500 });
 		}
 
-		const sortedMessages = (messages || []).reverse();
-		const has_more = (messages || []).length === queryLimit;
+		let sortedMessages = (messages || []).reverse();
+		let has_more = (messages || []).length === queryLimit;
+
+		// Filter strictly to this ticket when requested from user POV
+		if (ticket_id) {
+			sortedMessages = sortedMessages.filter(m => {
+				if (m.feedback_id && String(m.feedback_id) === String(ticket_id)) return true;
+				if (m.message && m.message.includes(`[TICKET id="${ticket_id}"]`)) return true;
+				return false;
+			});
+			has_more = false;
+		}
 
 		// Mark incoming messages as read
-		await supabase
-			.from('chronomuse_messages')
-			.update({ is_read: true })
-			.eq('sender_id', friend_id)
-			.eq('receiver_id', user_id)
-			.eq('is_read', false);
+		if (ticket_id) {
+			try {
+				await supabase
+					.from('chronomuse_messages')
+					.update({ is_read: true })
+					.eq('sender_id', friend_id)
+					.eq('receiver_id', user_id)
+					.ilike('message', `%[TICKET id="${ticket_id}"]%`)
+					.eq('is_read', false);
+			} catch (rErr) {}
+		} else {
+			try {
+				await supabase
+					.from('chronomuse_messages')
+					.update({ is_read: true })
+					.eq('sender_id', friend_id)
+					.eq('receiver_id', user_id)
+					.eq('is_read', false);
+			} catch (rErr) {}
+		}
 
 		let isBlockedByMe = false;
 		let isBlockingMe = false;
