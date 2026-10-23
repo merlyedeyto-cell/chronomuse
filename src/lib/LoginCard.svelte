@@ -100,7 +100,7 @@
 		<!-- Mascot Logo Header -->
 		<div class="text-center mb-6">
 			<div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-black flex items-center justify-center p-1.5 mx-auto mb-3.5 shadow-sm hover:scale-105 transition-transform duration-200">
-				<img src="/logo.png" alt="ChronoMuse" class="w-10 h-10 sm:w-11 sm:h-11 object-contain pointer-events-none" />
+				<img src="/logo.png" alt="ChronoMuse" class="w-full h-full object-contain pointer-events-none" />
 			</div>
 			<h1 class="text-xl sm:text-2xl font-black text-pink-500 mb-1 tracking-wide uppercase">CHRONOMUSE</h1>
 			<p class="text-pink-400 text-xs sm:text-sm font-bold">Sign in to your account</p>
@@ -195,7 +195,7 @@
 			<div class="p-4 pt-3.5 space-y-2.5">
 				<div class="flex items-center space-x-3">
 					<div class="w-10 h-10 rounded-xl bg-black flex items-center justify-center p-1 flex-shrink-0">
-						<img src="/logo.png" alt="ChronoMuse" class="w-7 h-7 object-contain" />
+						<img src="/logo.png" alt="ChronoMuse" class="w-full h-full object-contain" />
 					</div>
 					<div class="min-w-0 flex-1 pr-4">
 						<h4 class="text-xs sm:text-sm font-black text-pink-950 leading-tight">ChronoMuse</h4>

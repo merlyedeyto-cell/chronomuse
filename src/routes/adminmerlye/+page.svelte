@@ -520,7 +520,7 @@
 					<img
 						src="/logo.png"
 						alt="ChronoMuse"
-						class="w-14 h-14 mx-auto mb-2.5 rounded-2xl object-contain border border-pink-100 bg-white p-1 shadow-2xs hover:scale-105 transition-transform duration-300"
+						class="w-14 h-14 mx-auto mb-2.5 rounded-2xl object-contain border border-pink-100 bg-black p-1 shadow-2xs hover:scale-105 transition-transform duration-300"
 					/>
 					<h1 class="text-xl sm:text-2xl font-black text-[#f43f8e] mb-1 tracking-wider uppercase">CHRONOMUSE</h1>
 					<div class="inline-flex items-center gap-1.5 px-3 py-0.5 bg-pink-50 border border-pink-100 text-[#f43f8e] rounded-full text-xs font-bold mb-1 shadow-2xs">
@@ -575,7 +575,7 @@
 			<!-- Header -->
 			<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 shadow-[0_4px_20px_rgba(244,114,182,0.08)] rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
 				<div class="flex items-center space-x-3 min-w-0">
-					<img src="/logo.png" alt="ChronoMuse" class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl object-contain border border-pink-100 flex-shrink-0 bg-white shadow-2xs p-0.5" />
+					<img src="/logo.png" alt="ChronoMuse" class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl object-contain border border-pink-100 flex-shrink-0 bg-black shadow-2xs p-1" />
 					<div class="min-w-0 flex items-center gap-2 flex-wrap">
 						<h1 class="text-base sm:text-lg font-black text-pink-950 truncate">ChronoMuse Admin</h1>
 						<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-black border border-emerald-200 shadow-2xs whitespace-nowrap">
@@ -1047,7 +1047,7 @@
 		<img 
 			src="/logo.png" 
 			alt="ChronoMuse" 
-			class="w-10 h-10 object-contain rounded-xl border border-pink-100 p-0.5 bg-pink-50 flex-shrink-0 shadow-2xs"
+			class="w-10 h-10 object-contain rounded-xl border border-pink-100 p-1 bg-black flex-shrink-0 shadow-2xs"
 		/>
 		<div class="min-w-0 flex-1">
 			<div class="flex items-center gap-1.5">

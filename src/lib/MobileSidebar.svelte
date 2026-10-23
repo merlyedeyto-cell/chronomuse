@@ -119,7 +119,7 @@
 			{:else}
 				<div class="flex items-center space-x-2.5">
 					<div class="w-9 h-9 rounded-2xl bg-black flex items-center justify-center p-1 shadow-xs">
-						<img src="/logo.png" alt="ChronoMuse Mascot" class="w-7 h-7 object-contain pointer-events-none" />
+						<img src="/logo.png" alt="ChronoMuse Mascot" class="w-full h-full object-contain pointer-events-none" />
 					</div>
 					<span class="text-lg font-black text-[#ff3e88] tracking-tight">ChronoMuse</span>
 				</div>

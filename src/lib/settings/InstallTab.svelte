@@ -8,7 +8,7 @@
 	<!-- Hero App Banner Card -->
 	<div class="p-3.5 sm:p-4 bg-gradient-to-br from-pink-50/80 via-white to-pink-50/40 rounded-xl border border-pink-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
 		<div class="flex items-start space-x-3.5">
-			<img src="/logo.png" alt="ChronoMuse" class="w-11 h-11 rounded-xl bg-black p-1.5 object-contain flex-shrink-0 shadow-xs ring-2 ring-pink-100" />
+			<img src="/logo.png" alt="ChronoMuse" class="w-11 h-11 rounded-xl bg-black p-1 object-contain flex-shrink-0 shadow-xs ring-2 ring-pink-100" />
 			<div class="space-y-1">
 				<div class="flex items-center space-x-2">
 					<h3 class="text-xs sm:text-sm font-extrabold text-pink-950">ChronoMuse Desktop & Mobile App</h3>

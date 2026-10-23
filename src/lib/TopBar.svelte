@@ -34,7 +34,7 @@
 			<!-- Left: Logo & App Brand -->
 			<button type="button" onclick={handleLogoClick} class="flex items-center space-x-2.5 sm:space-x-3 group cursor-pointer select-none text-left min-w-0">
 				<div class="w-9 h-9 sm:w-10 sm:h-10 md:w-10.5 md:h-10.5 rounded-xl sm:rounded-2xl bg-black flex items-center justify-center p-1 shadow-xs group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
-					<img src="/logo.png" alt="ChronoMuse Mascot" class="w-7 h-7 sm:w-8 sm:h-8 md:w-8.5 md:h-8.5 object-contain pointer-events-none" />
+					<img src="/logo.png" alt="ChronoMuse Mascot" class="w-full h-full object-contain pointer-events-none" />
 				</div>
 				<span class="text-lg sm:text-2xl font-black font-sans text-[#ff3e88] tracking-tight group-hover:text-pink-600 transition-colors select-none truncate">ChronoMuse</span>
 			</button>
