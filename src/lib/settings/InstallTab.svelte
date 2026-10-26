@@ -10,12 +10,7 @@
 		<div class="flex items-start space-x-3.5">
 			<img src="/logo.png" alt="ChronoMuse" class="w-11 h-11 rounded-xl bg-black p-1 object-contain flex-shrink-0 shadow-xs ring-2 ring-pink-100" />
 			<div class="space-y-1">
-				<div class="flex items-center space-x-2">
-					<h3 class="text-xs sm:text-sm font-extrabold text-pink-950">ChronoMuse Desktop & Mobile App</h3>
-					<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-pink-100 text-[#f43f8e] border border-pink-200">
-						PWA Ready
-					</span>
-				</div>
+				<h3 class="text-xs sm:text-sm font-extrabold text-pink-950">ChronoMuse Desktop & Mobile App</h3>
 				<p class="text-[11px] text-pink-500 font-medium leading-relaxed max-w-xl">
 					Install ChronoMuse on your device for instant offline access, ultra-smooth full-screen mood tracking, and zero latency.
 				</p>
