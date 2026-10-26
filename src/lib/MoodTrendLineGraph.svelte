@@ -126,6 +126,18 @@
 				}
 			} catch (e) {}
 
+			const moodList = Object.entries(group.moodCounts)
+				.map(([mName, mCnt]) => ({
+					mood: mName,
+					count: mCnt,
+					color: getMoodFillColor(mName)
+				}))
+				.sort((a, b) => b.count - a.count);
+
+			const memoryTagsList = Array.from(
+				new Set(group.memories.map(m => m.memory_tag).filter(Boolean))
+			);
+
 			return {
 				date: group.date,
 				displayDate,
@@ -135,7 +147,9 @@
 				dominantMood,
 				color: getMoodFillColor(dominantMood),
 				memories: group.memories,
-				moodCounts: group.moodCounts
+				moodCounts: group.moodCounts,
+				moodList,
+				memoryTagsList
 			};
 		});
 
@@ -783,6 +797,20 @@
 								/>
 							{/if}
 
+							<!-- Extra multi-entry dash indicator if date has multiple entries -->
+							{#if point.count > 1}
+								<circle
+									cx={point.x}
+									cy={point.y}
+									r={isCurrentActive ? '10' : '8'}
+									fill="none"
+									stroke={point.color}
+									stroke-width="1.4"
+									stroke-dasharray="2 2"
+									opacity="0.85"
+								/>
+							{/if}
+
 							<!-- Outer Ring -->
 							<circle
 								cx={point.x}
@@ -838,13 +866,44 @@
 							{/if}
 
 							<div class="relative z-10">
-								<div class="flex items-center justify-center space-x-1.5 mb-1">
-									<span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {activePoint.color}"></span>
-									<span class="text-xs font-black truncate" style="color: {activePoint.color}">
-										{activePoint.dominantMood}
-									</span>
-								</div>
+								<!-- If single mood -->
+								{#if !activePoint.moodList || activePoint.moodList.length <= 1}
+									<div class="flex items-center justify-center space-x-1.5 mb-1">
+										<span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {activePoint.color}"></span>
+										<span class="text-xs font-black truncate" style="color: {activePoint.color}">
+											{activePoint.dominantMood}
+										</span>
+									</div>
+								{:else}
+									<!-- If multiple moods on same date, show all tags as distinct colored pills -->
+									<div class="flex items-center justify-center gap-1 mb-1.5 flex-wrap max-w-[210px]">
+										{#each activePoint.moodList as mItem}
+											<span
+												class="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full text-[9px] font-black border shadow-2xs"
+												style="background-color: {mItem.color}15; color: {mItem.color}; border-color: {mItem.color}40;"
+											>
+												<span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background-color: {mItem.color}"></span>
+												<span>{mItem.mood}</span>
+												{#if mItem.count > 1}
+													<span class="text-[8px] opacity-80">({mItem.count})</span>
+												{/if}
+											</span>
+										{/each}
+									</div>
+								{/if}
+
 								<p class="text-[10px] font-extrabold text-pink-950 truncate">{activePoint.fullDateLabel}</p>
+
+								{#if activePoint.memoryTagsList && activePoint.memoryTagsList.length > 0}
+									<div class="flex items-center justify-center gap-1 mt-1 flex-wrap">
+										{#each activePoint.memoryTagsList.slice(0, 3) as mTag}
+											<span class="text-[8.5px] font-bold text-pink-700 bg-pink-50 px-1.5 py-0.2 rounded-md border border-pink-200/60">
+												#{mTag}
+											</span>
+										{/each}
+									</div>
+								{/if}
+
 								<div class="flex items-center justify-center gap-1.5 mt-1 text-[9.5px] font-bold text-pink-500">
 									<span>{activePoint.count} {activePoint.count === 1 ? 'memory' : 'memories'}</span>
 									<span>·</span>
@@ -862,12 +921,25 @@
 		{#if inspectedPoint}
 			<div class="mt-3 pt-3 border-t border-pink-100/80 animate-fade-in">
 				<div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
-					<div class="flex items-center space-x-2">
+					<div class="flex items-center space-x-2 flex-wrap gap-y-1">
 						<span class="w-3 h-3 rounded-full flex-shrink-0 shadow-2xs" style="background-color: {inspectedPoint.color}"></span>
 						<span class="text-xs font-black text-pink-950">{inspectedPoint.fullDateLabel}</span>
-						<span class="text-[10px] font-black px-2 py-0.5 rounded-full border shadow-2xs" style="background-color: {inspectedPoint.color}18; color: {inspectedPoint.color}; border-color: {inspectedPoint.color}35;">
-							{inspectedPoint.dominantMood} ({inspectedPoint.avgScore}%)
-						</span>
+						{#if inspectedPoint.moodList && inspectedPoint.moodList.length > 1}
+							<div class="flex items-center gap-1 flex-wrap">
+								{#each inspectedPoint.moodList as mItem}
+									<span class="text-[10px] font-black px-2 py-0.5 rounded-full border shadow-2xs" style="background-color: {mItem.color}18; color: {mItem.color}; border-color: {mItem.color}35;">
+										{mItem.mood} {mItem.count > 1 ? `(${mItem.count})` : ''}
+									</span>
+								{/each}
+								<span class="text-[9.5px] font-bold text-pink-500">
+									(Avg: {inspectedPoint.avgScore}%)
+								</span>
+							</div>
+						{:else}
+							<span class="text-[10px] font-black px-2 py-0.5 rounded-full border shadow-2xs" style="background-color: {inspectedPoint.color}18; color: {inspectedPoint.color}; border-color: {inspectedPoint.color}35;">
+								{inspectedPoint.dominantMood} ({inspectedPoint.avgScore}%)
+							</span>
+						{/if}
 					</div>
 
 					<button

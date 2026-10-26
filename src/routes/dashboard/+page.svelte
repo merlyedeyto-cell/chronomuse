@@ -101,6 +101,8 @@
 					const year = parseInt(parts[0], 10);
 					const month = parseInt(parts[1], 10) - 1;
 					selectedDate = targetDate;
+					currentCalendarMonth = month;
+					currentCalendarYear = year;
 					loadMemoriesForMonth(month, year).then(() => {
 						memoriesForDate = memoriesData[targetDate] || [];
 						if (memoriesForDate && memoriesForDate.length > 0) {
@@ -234,11 +236,28 @@
 		}
 	}
 
-	function handleMonthChanged(event) {
-		const { month, year } = event.detail;
+	async function handleMonthChanged(event) {
+		const { month, year, selectDay } = event.detail;
 		currentCalendarMonth = month;
 		if (year) currentCalendarYear = year;
-		loadMemoriesForMonth(month, year);
+		await loadMemoriesForMonth(month, year || currentCalendarYear);
+		if (selectDay) {
+			const dateObj = new Date(year || currentCalendarYear, month, selectDay);
+			const y = dateObj.getFullYear();
+			const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+			const d = String(dateObj.getDate()).padStart(2, '0');
+			const dateStr = `${y}-${m}-${d}`;
+			selectedDate = dateStr;
+			const mems = memoriesData[dateStr] || [];
+			memoriesForDate = mems;
+			if (mems.length > 0) {
+				showViewMemory = true;
+				showAddMemory = false;
+			} else {
+				showAddMemory = true;
+				showViewMemory = false;
+			}
+		}
 	}
 
 	function handleNavigateToMonthFromCard(event) {
@@ -529,6 +548,14 @@
 
 	function toggleAddMemory() {
 		document.body.style.overflow = '';
+		if (!selectedDate) {
+			const now = new Date();
+			const y = now.getFullYear();
+			const m = String(now.getMonth() + 1).padStart(2, '0');
+			const d = String(now.getDate()).padStart(2, '0');
+			selectedDate = `${y}-${m}-${d}`;
+			memoriesForDate = memoriesData[selectedDate] || [];
+		}
 		showAddMemory = !showAddMemory;
 		showViewMemory = false;
 		if (showAddMemory) {

@@ -309,11 +309,21 @@
 
 	function jumpToToday() {
 		const today = new Date();
-		currentMonth = today.getMonth();
-		currentYear = today.getFullYear();
-		selectDate(today.getDate());
-		dispatch('monthChanged', { month: currentMonth, year: currentYear });
+		const targetMonth = today.getMonth();
+		const targetYear = today.getFullYear();
+		const targetDay = today.getDate();
+
+		const isDifferent = currentMonth !== targetMonth || currentYear !== targetYear;
+		currentMonth = targetMonth;
+		currentYear = targetYear;
+
+		if (isDifferent) {
+			dispatch('monthChanged', { month: currentMonth, year: currentYear, selectDay: targetDay });
+		} else {
+			selectDate(targetDay);
+		}
 	}
+
 
 	function selectDate(day) {
 		if (isSelectionMode) {
@@ -388,6 +398,11 @@
 		if (longPressTimer) {
 			clearTimeout(longPressTimer);
 		}
+		if (longPressCompleted) {
+			setTimeout(() => {
+				longPressCompleted = false;
+			}, 300);
+		}
 	}
 	
 	function closeTooltip() {
@@ -395,6 +410,17 @@
 		longPressCompleted = false;
 		isDesktopHover = false;
 	}
+
+	function handleDayClick(day) {
+		if (longPressCompleted) {
+			longPressCompleted = false;
+			return;
+		}
+		closeTooltip();
+		highlightedDateStr = '';
+		selectDate(day);
+	}
+
 	
 	function handleMouseEnter(day) {
 		if (isSelectionMode) return;
@@ -519,7 +545,7 @@
 				<div class="relative">
 					<button
 						type="button"
-						onclick={() => { closeTooltip(); highlightedDateStr = ''; selectDate(day); }}
+						onclick={() => handleDayClick(day)}
 						onmouseenter={() => handleMouseEnter(day)}
 						onmouseleave={handleMouseLeave}
 						ontouchstart={() => startLongPress(day)}

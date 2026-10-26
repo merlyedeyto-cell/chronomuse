@@ -15,10 +15,13 @@ export async function POST({ request }) {
 
 		// 1. Fetch memories to delete to get their file paths and dates
 		let query = supabase.from('chronomuse_memories').select('id, user_id, date, photo_video, music');
+		if (userId) {
+			query = query.eq('user_id', userId);
+		}
 		if (memoryIds.length > 0) {
 			query = query.in('id', memoryIds);
-		} else if (dates.length > 0 && userId) {
-			query = query.eq('user_id', userId).in('date', dates);
+		} else if (dates.length > 0) {
+			query = query.in('date', dates);
 		}
 
 		const { data: memories, error: fetchError } = await query;

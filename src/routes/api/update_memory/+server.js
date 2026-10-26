@@ -22,12 +22,14 @@ export async function POST({ request }) {
 
 			// If new files are uploaded, delete the old ones first if needed, then upload new
 			if ((photoVideoFile && photoVideoFile.size > 0) || (musicFile && musicFile.size > 0)) {
-				// Fetch existing memory to check old file URLs
+				// Fetch existing memory to check old file URLs and user_id fallback
 				const { data: existingMemory } = await supabase
 					.from('chronomuse_memories')
-					.select('photo_video, music')
+					.select('user_id, photo_video, music')
 					.eq('id', memoryId)
 					.maybeSingle();
+
+				const targetUserId = userId || existingMemory?.user_id || 'unknown';
 
 				const deleteFileFromStorage = async (publicUrl) => {
 					if (!publicUrl) return;
@@ -39,18 +41,21 @@ export async function POST({ request }) {
 					}
 				};
 
-				// Handle New Photo Upload
+				// Handle New Photo / Video Upload
 				if (photoVideoFile && photoVideoFile.size > 0) {
 					if (existingMemory) await deleteFileFromStorage(existingMemory.photo_video);
 
 					const fileExt = ((photoVideoFile.name || 'photo.webp').split('.').pop() || 'webp').toLowerCase().replace(/[^a-z0-9]/g, '');
 					const fileName = `photo_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt || 'webp'}`;
-					const filePath = `${userId || 'unknown'}/${fileName}`;
+					const filePath = `${targetUserId}/${fileName}`;
 					const mimeType = photoVideoFile.type || (fileExt === 'mp4' ? 'video/mp4' : fileExt === 'webm' ? 'video/webm' : fileExt === 'webp' ? 'image/webp' : 'image/jpeg');
+
+					const arrayBuffer = await photoVideoFile.arrayBuffer();
+					const fileBuffer = Buffer.from(arrayBuffer);
 
 					const { error: uploadError } = await supabase.storage
 						.from('memories')
-						.upload(filePath, photoVideoFile, { contentType: mimeType });
+						.upload(filePath, fileBuffer, { upsert: true, contentType: mimeType });
 
 					if (uploadError) {
 						return json({ error: 'Photo upload failed: ' + uploadError.message }, { status: 500 });
@@ -65,7 +70,7 @@ export async function POST({ request }) {
 				if (musicFile && musicFile.size > 0) {
 					if (existingMemory) await deleteFileFromStorage(existingMemory.music);
 
-					const rawName = musicFile.name;
+					const rawName = musicFile.name || 'music.mp3';
 					const lastDotIndex = rawName.lastIndexOf('.');
 					const baseName = lastDotIndex !== -1 ? rawName.substring(0, lastDotIndex) : rawName;
 					const fileExt = lastDotIndex !== -1 ? rawName.substring(lastDotIndex + 1) : 'mp3';
@@ -73,11 +78,15 @@ export async function POST({ request }) {
 					// Clean base name for URL safety while preserving human readability
 					const safeBaseName = baseName.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_');
 					const fileName = `${Date.now()}_${safeBaseName || 'music'}.${fileExt}`;
-					const filePath = `${userId || 'unknown'}/${fileName}`;
+					const filePath = `${targetUserId}/${fileName}`;
+					const mimeType = musicFile.type || (fileExt === 'mp3' ? 'audio/mpeg' : fileExt === 'm4a' ? 'audio/mp4' : fileExt === 'wav' ? 'audio/wav' : 'audio/mpeg');
+
+					const arrayBuffer = await musicFile.arrayBuffer();
+					const fileBuffer = Buffer.from(arrayBuffer);
 
 					const { error: uploadError } = await supabase.storage
 						.from('memories')
-						.upload(filePath, musicFile);
+						.upload(filePath, fileBuffer, { upsert: true, contentType: mimeType });
 
 					if (uploadError) {
 						return json({ error: 'Music upload failed: ' + uploadError.message + '. Please ensure your "memories" bucket allows audio files (audio/*) and the file is under the size limit.' }, { status: 500 });

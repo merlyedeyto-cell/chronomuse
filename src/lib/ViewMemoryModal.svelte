@@ -750,6 +750,13 @@
 		// Create FormData for file upload
 		const formData = new FormData();
 		formData.append('memory_id', memory.id);
+		const currentUser = typeof window !== 'undefined' ? localStorage.getItem('chronomuse_user') : null;
+		const user = currentUser ? JSON.parse(currentUser) : null;
+		if (user && user.id) {
+			formData.append('user_id', user.id);
+		} else if (memory.user_id) {
+			formData.append('user_id', memory.user_id);
+		}
 		formData.append('description', editedDescription);
 		formData.append('mood_tag', editedMoodTag);
 		formData.append('memory_tag', editedMemoryTag);
