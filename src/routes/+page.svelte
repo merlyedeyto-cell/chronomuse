@@ -146,7 +146,7 @@
 							CHRONOMUSE is a personally developed system by Merlye Deyto.
 						</p>
 						<div class="space-y-2 text-xs sm:text-[13px] font-bold text-pink-600">
-							<p>Email: <a href="mailto:merlyedeyto@email.com" class="text-pink-600 hover:text-pink-800 underline">merlyedeyto@email.com</a></p>
+							<p>Gmail: <a href="mailto:merlyedeyto@gmail.com" class="text-pink-600 hover:text-pink-800 underline">merlyedeyto@gmail.com</a></p>
 							<p>Facebook: <a href="https://facebook.com/share/1CEdsrYWof" target="_blank" class="text-pink-600 hover:text-pink-800 underline">facebook.com/share/1CEdsrYWof</a></p>
 							<p>Instagram: <a href="https://instagram.com/anzu_lye" target="_blank" class="text-pink-600 hover:text-pink-800 underline">instagram.com/anzu_lye</a></p>
 						</div>
