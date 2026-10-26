@@ -18,7 +18,7 @@
 	import DashboardMonthsMemoryCard from '$lib/DashboardMonthsMemoryCard.svelte';
 	import { compressImage } from '$lib/mediaOptimizer.js';
 	import { toast } from '$lib/toastService.js';
-	import { Plus, Bookmark, CheckCircle2, AlertCircle, Check } from 'lucide-svelte';
+	import { Bookmark, AlertCircle, Check } from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
 	let isLoading = $state(false);
@@ -923,9 +923,8 @@
 									<p class="text-[11px] text-pink-400 mb-3 leading-relaxed font-bold">Click any date on the calendar to view or add new memories!</p>
 									<button
 										onclick={toggleAddMemory}
-										class="w-full py-2.5 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md cursor-pointer"
+										class="w-full py-2.5 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all duration-200 text-xs font-semibold flex items-center justify-center shadow-sm hover:shadow-md cursor-pointer"
 									>
-										<Plus class="w-3.5 h-3.5" strokeWidth={2.5} />
 										<span>Open Add Memory Form</span>
 									</button>
 								</div>

@@ -10,7 +10,7 @@
 	import AppFooter from '$lib/AppFooter.svelte';
 	import { compressImage } from '$lib/imageOptimizer.js';
 	import {
-		MessageSquare, Search, Clock, Check, X, ChevronLeft, ChevronRight,
+		Search, Clock, Check, X, ChevronLeft, ChevronRight,
 		User, Ban, Trash2, UserPlus, Reply, Image as ImageIcon, ZoomIn,
 		ZoomOut, Download, Smile, Send, AlertCircle, CheckCircle2, MessageCircle, ShieldCheck,
 		MoreVertical
@@ -2387,7 +2387,7 @@
 			<div class="p-3.5 sm:p-4 bg-[#fdf2f6] text-pink-950 border-b border-pink-100 font-black text-xs sm:text-sm flex items-center justify-between">
 				<div class="flex items-center space-x-2">
 					<div class="w-7 h-7 rounded-xl bg-[#f43f8e]/10 text-[#f43f8e] flex items-center justify-center">
-						<MessageSquare class="w-4 h-4" strokeWidth={2.2} />
+						<MessageCircle class="w-4 h-4" strokeWidth={2.2} />
 					</div>
 					<span class="font-black text-pink-950 text-sm">Messages</span>
 				</div>
@@ -2981,7 +2981,7 @@
 					{:else if messages.length === 0}
 						<div class="h-full flex flex-col items-center justify-center text-pink-400 text-xs py-10">
 							<div class="w-11 h-11 rounded-2xl bg-pink-100 border border-pink-200 text-pink-600 flex items-center justify-center mb-2">
-								<MessageSquare class="w-5 h-5" strokeWidth={1.8} />
+								<MessageCircle class="w-5 h-5" strokeWidth={1.8} />
 							</div>
 							<p class="font-bold text-pink-950 text-xs sm:text-sm">Start a conversation with @{activeFriend.username}</p>
 							<p class="text-[11px] text-pink-600 mt-0.5 max-w-xs text-center font-medium">Say hi, share photos, or swipe to reply!</p>
@@ -3375,7 +3375,7 @@
 			{:else}
 				<div class="h-full flex flex-col items-center justify-center p-6 text-center text-gray-400">
 					<div class="w-14 h-14 rounded-2xl bg-pink-100 text-[#f43f8e] flex items-center justify-center mb-3">
-						<MessageSquare class="w-7 h-7 text-[#f43f8e]" strokeWidth={1.5} />
+						<MessageCircle class="w-7 h-7 text-[#f43f8e]" strokeWidth={1.5} />
 					</div>
 					<h3 class="text-base sm:text-lg font-bold text-gray-700 mb-0.5">Select a friend to start chatting</h3>
 					<p class="text-xs text-gray-400 max-w-xs">Pick any friend from your list on the left to start sending messages, photos, and replies.</p>
@@ -3790,7 +3790,7 @@
 				<div class="flex-grow min-w-0">
 					<p id="viewing-note-user" class="font-bold text-pink-950 text-sm truncate">@{viewingNote.username}</p>
 					<p class="text-[10px] text-[#f43f8e] font-medium flex items-center gap-1">
-						<MessageSquare class="w-3 h-3 text-[#f43f8e] shrink-0" strokeWidth={2.2} />
+						<MessageCircle class="w-3 h-3 text-[#f43f8e] shrink-0" strokeWidth={2.2} />
 						Note
 					</p>
 				</div>
@@ -3829,7 +3829,7 @@
 					onclick={() => { triggerNoteReply(viewingNote); }}
 					class="flex-grow py-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-2xl font-bold text-sm shadow-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
 				>
-					<MessageSquare class="w-4 h-4" strokeWidth={2.2} />
+					<MessageCircle class="w-4 h-4" strokeWidth={2.2} />
 					Reply in Chat
 				</button>
 				<button

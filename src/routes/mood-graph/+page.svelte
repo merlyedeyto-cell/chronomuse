@@ -9,7 +9,7 @@
 	import { playClickSound } from '$lib/soundEffects.js';
 	import { broadcastMemoryEvent } from '$lib/realtimeBroadcast.js';
 	import {
-		ArrowLeft, Heart, PieChart, Clock, X, Calculator, BarChart3
+		ArrowLeft, X
 	} from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
@@ -723,14 +723,9 @@
 				<!-- Unified Visual Analytics Card: Donut Chart + Distribution Bars -->
 				<div class="order-2 w-full bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up" style="animation-delay: 0.15s">
 					<div class="flex items-center justify-between mb-4 pb-2.5 border-b border-pink-50">
-						<div class="flex items-center space-x-2">
-							<div class="w-6 h-6 rounded-lg sm:rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-								<PieChart class="w-3.5 h-3.5" strokeWidth={2.2} />
-							</div>
-							<div>
-								<h2 class="text-xs sm:text-sm font-black text-pink-950">Mood Breakdown & Distribution</h2>
-								<p class="text-[10px] sm:text-[11px] text-pink-400 font-bold">Interactive emotional spread</p>
-							</div>
+						<div>
+							<h2 class="text-xs sm:text-sm font-black text-pink-950">Mood Breakdown & Distribution</h2>
+							<p class="text-[10px] sm:text-[11px] text-pink-400 font-bold">Interactive emotional spread</p>
 						</div>
 						{#if totalLoggedMoods > 0}
 							<span class="text-[10px] text-pink-500 bg-pink-50 px-2.5 py-0.5 rounded-full font-bold border border-pink-100">
@@ -812,14 +807,9 @@
 				<div class="order-4 w-full bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col animate-fade-in-up" style="animation-delay: 0.2s">
 					<!-- Stream Header -->
 					<div class="flex items-center justify-between mb-3 pb-2.5 border-b border-pink-50">
-						<div class="flex items-center space-x-2">
-							<div class="w-6 h-6 rounded-lg sm:rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-								<Clock class="w-3.5 h-3.5" strokeWidth={2.2} />
-							</div>
-							<div>
-								<h2 class="text-xs sm:text-sm font-black text-pink-950">Recent Memories</h2>
-								<p class="text-[10px] text-pink-400 font-bold">Latest emotional entries</p>
-							</div>
+						<div>
+							<h2 class="text-xs sm:text-sm font-black text-pink-950">Recent Memories</h2>
+							<p class="text-[10px] text-pink-400 font-bold">Latest emotional entries</p>
 						</div>
 						<span class="text-[10px] text-pink-500 bg-pink-50 px-2.5 py-0.5 rounded-full font-bold border border-pink-100">
 							{recentTenMemories.length} entries
@@ -972,14 +962,9 @@
 			<div class="bg-white border border-pink-100 rounded-3xl shadow-2xl max-w-sm sm:max-w-md w-full p-4 sm:p-5 space-y-3.5 animate-modal-content max-h-[90vh] overflow-y-auto">
 				<!-- Header -->
 				<div class="flex items-center justify-between border-b border-pink-100/80 pb-2.5">
-					<div class="flex items-center space-x-2">
-						<div class="w-8 h-8 rounded-xl bg-pink-50 text-[#f43f8e] border border-pink-100 flex items-center justify-center shadow-2xs">
-							<Heart class="w-4 h-4 text-[#f43f8e]" fill="currentColor" />
-						</div>
-						<div>
-							<h3 class="text-sm font-black text-pink-950">Positive Ratio</h3>
-							<p class="text-[10px] text-pink-400 font-bold">Calculation & Breakdown</p>
-						</div>
+					<div>
+						<h3 class="text-sm font-black text-pink-950">Positive Ratio</h3>
+						<p class="text-[10px] text-pink-400 font-bold">Calculation & Breakdown</p>
 					</div>
 					<button
 						onclick={() => { playClickSound(); showPositiveRatioModal = false; }}
@@ -1041,10 +1026,7 @@
 				<!-- Formula Card -->
 				<div class="p-3 bg-pink-50/40 border border-pink-100 rounded-2xl space-y-2">
 					<div class="flex items-center justify-between text-[10px] font-extrabold text-pink-950">
-						<span class="flex items-center gap-1.5">
-							<Calculator class="w-3.5 h-3.5 text-[#f43f8e]" strokeWidth={2.2} />
-							<span>Formula Used</span>
-						</span>
+						<span>Formula Used</span>
 						<span class="text-[9px] text-[#f43f8e] font-black uppercase bg-white px-2 py-0.5 rounded-full border border-pink-100 shadow-2xs">Calculation</span>
 					</div>
 
@@ -1062,9 +1044,8 @@
 				<!-- Moods Breakdown -->
 				<div class="space-y-2">
 					<div class="flex items-center justify-between">
-						<span class="text-[11px] font-black text-pink-950 flex items-center gap-1.5">
-							<BarChart3 class="w-3.5 h-3.5 text-[#f43f8e]" strokeWidth={2.2} />
-							<span>Moods Breakdown</span>
+						<span class="text-[11px] font-black text-pink-950">
+							Moods Breakdown
 						</span>
 						<span class="text-[10px] text-pink-500 font-bold bg-pink-50 px-2 py-0.5 rounded-full border border-pink-100">
 							{totalLoggedMoods} {totalLoggedMoods === 1 ? 'total log' : 'total logs'}

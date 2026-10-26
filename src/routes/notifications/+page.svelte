@@ -8,8 +8,8 @@
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
 	import {
-		ArrowLeft, CheckCircle2, Eye, Calendar, Clock,
-		Send, X, Users, Music, Pause, Play, MessageSquare, Trash2
+		ArrowLeft, CheckCircle2, Clock,
+		Send, X, Music, Pause, Play, Trash2
 	} from 'lucide-svelte';
 
 	let user = $state(null);
@@ -564,8 +564,7 @@
 			{:else}
 				<div class="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-pink-100/90 animate-fade-in">
 					<!-- Section Title Header -->
-					<div class="flex items-center space-x-1.5 text-[11px] font-black text-[#f43f8e] uppercase tracking-wider mb-3">
-						<CheckCircle2 class="w-3.5 h-3.5 text-[#f43f8e]" />
+					<div class="text-[11px] font-black text-[#f43f8e] uppercase tracking-wider mb-3">
 						<span>SAVED ON CALENDAR ({acceptedSharedMemories.length})</span>
 					</div>
 
@@ -622,17 +621,15 @@
 
 								<!-- Bottom Action Row -->
 								<div class="flex items-center justify-between pt-1.5 border-t border-pink-50">
-									<div class="text-[10px] text-pink-400 font-bold flex items-center space-x-1 whitespace-nowrap">
-										<Eye class="w-3 h-3 text-pink-400 flex-shrink-0" />
+									<div class="text-[10px] text-pink-400 font-bold whitespace-nowrap">
 										<span>Tap to preview details</span>
 									</div>
 
 									<button
 										type="button"
 										onclick={(e) => { e.stopPropagation(); playClickSound(); goToCalendarDate(item.memory.date, e); }}
-										class="h-7.5 py-1 px-3 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] rounded-xl shadow-xs flex items-center space-x-1 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+										class="h-7.5 py-1 px-3 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
 									>
-										<Calendar class="w-3 h-3" />
 										<span>Open on Calendar</span>
 									</button>
 								</div>
@@ -655,8 +652,7 @@
 				</div>
 			{:else}
 				<div class="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-pink-100/90 animate-fade-in">
-					<div class="flex items-center space-x-1.5 text-[11px] font-black text-[#f43f8e] uppercase tracking-wider mb-3">
-						<Clock class="w-3.5 h-3.5 text-[#f43f8e]" />
+					<div class="text-[11px] font-black text-[#f43f8e] uppercase tracking-wider mb-3">
 						<span>ACTION REQUIRED: PENDING ({pendingSharedMemories.length})</span>
 					</div>
 
@@ -712,8 +708,7 @@
 
 								<!-- Bottom Row: Tap to Preview & Accept / Decline -->
 								<div class="flex items-center justify-between pt-1.5 border-t border-pink-50">
-									<div class="text-[10px] text-pink-400 font-bold flex items-center space-x-1 whitespace-nowrap">
-										<Eye class="w-3 h-3 text-pink-400 flex-shrink-0" />
+									<div class="text-[10px] text-pink-400 font-bold whitespace-nowrap">
 										<span>Tap to preview</span>
 									</div>
 
@@ -755,8 +750,7 @@
 			{:else}
 				<div class="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-pink-100/90 animate-fade-in">
 					<div class="mb-3">
-						<div class="flex items-center space-x-1.5 text-[11px] font-black text-[#f43f8e] uppercase tracking-wider">
-							<Send class="w-3.5 h-3.5 text-[#f43f8e]" />
+						<div class="text-[11px] font-black text-[#f43f8e] uppercase tracking-wider">
 							<span>YOUR SHARED MEMORIES ({sentSharedMemories.length})</span>
 						</div>
 						<p class="text-[11px] text-pink-400 font-medium mt-0.5">You can cancel or unshare anytime</p>
@@ -817,8 +811,7 @@
 
 								<!-- Bottom Row: Tap to Preview & Cancel Share -->
 								<div class="flex items-center justify-between pt-1.5 border-t border-pink-50">
-									<div class="text-[10px] text-pink-400 font-bold flex items-center space-x-1 whitespace-nowrap">
-										<Eye class="w-3 h-3 text-pink-400 flex-shrink-0" />
+									<div class="text-[10px] text-pink-400 font-bold whitespace-nowrap">
 										<span>Tap to preview</span>
 										{#if item.shared_at}
 											<span class="text-pink-300">• {formatTimeAgo(item.shared_at)}</span>
@@ -873,14 +866,9 @@
 
 				<!-- Selected Date Pill Banner -->
 				<div class="mb-3 p-2.5 bg-[#f43f8e] rounded-xl text-white shadow-xs flex-shrink-0">
-					<div class="flex items-center space-x-2.5">
-						<div class="p-1.5 bg-white/20 rounded-lg flex items-center justify-center">
-							<Calendar class="w-4 h-4 text-white" />
-						</div>
-						<div>
-							<p class="text-[9px] text-pink-100 uppercase tracking-wider font-extrabold">Selected Date</p>
-							<p class="text-xs font-black">{formatFullDate(selectedMemoryToView.memory.date)}</p>
-						</div>
+					<div>
+						<p class="text-[9px] text-pink-100 uppercase tracking-wider font-extrabold">Selected Date</p>
+						<p class="text-xs font-black">{formatFullDate(selectedMemoryToView.memory.date)}</p>
 					</div>
 				</div>
 
@@ -890,8 +878,7 @@
 						<!-- Shared by Pill Badge & Mood Tag -->
 						<div class="flex items-center justify-between gap-1.5">
 							<div class="flex items-center flex-wrap gap-1">
-								<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink-100/70 text-[#f43f8e] font-black inline-flex items-center space-x-1">
-									<Users class="w-3 h-3 text-[#f43f8e]" />
+								<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink-100/70 text-[#f43f8e] font-black inline-flex items-center">
 									<span>{selectedMemoryToView.sender_username ? `Shared by @${selectedMemoryToView.sender_username}` : `Shared with @${selectedMemoryToView.recipient_username}`}</span>
 								</span>
 
@@ -1017,17 +1004,15 @@
 					{#if selectedMemoryToView.status === 'accepted'}
 						<button
 							onclick={(e) => { playClickSound(); goToCalendarDate(selectedMemoryToView.memory.date, e); }}
-							class="h-8 py-1.5 px-2.5 bg-[#10b981] hover:bg-[#059669] text-white rounded-xl active:scale-95 transition-all duration-200 text-[11px] font-black flex items-center justify-center space-x-1 shadow-xs cursor-pointer whitespace-nowrap"
+							class="h-8 py-1.5 px-3 bg-[#10b981] hover:bg-[#059669] text-white rounded-xl active:scale-95 transition-all duration-200 text-[11px] font-black shadow-xs cursor-pointer whitespace-nowrap text-center"
 						>
-							<Calendar class="w-3 h-3 flex-shrink-0" />
 							<span>Open on Calendar</span>
 						</button>
 
 						<button
 							onclick={() => { playClickSound(); handleSayThanks(selectedMemoryToView); }}
-							class="h-8 py-1.5 px-2.5 bg-white border border-pink-200 hover:border-pink-300 hover:bg-pink-50 text-[#f43f8e] rounded-xl active:scale-95 transition-all duration-200 text-[11px] font-black flex items-center justify-center space-x-1 cursor-pointer whitespace-nowrap"
+							class="h-8 py-1.5 px-3 bg-white border border-pink-200 hover:border-pink-300 hover:bg-pink-50 text-[#f43f8e] rounded-xl active:scale-95 transition-all duration-200 text-[11px] font-black cursor-pointer whitespace-nowrap text-center"
 						>
-							<MessageSquare class="w-3 h-3 flex-shrink-0" />
 							<span>Say Thanks</span>
 						</button>
 					{:else}

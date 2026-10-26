@@ -10,7 +10,7 @@
 	import { toast } from '$lib/toastService.js';
 	import { playClickSound } from '$lib/soundEffects.js';
 	import {
-		ArrowLeft, Users, UserPlus, Clock, Search, X, User, UserCircle,
+		ArrowLeft, Users, Search, X, User, UserCircle,
 		MessageSquare, Trash2, Check, Plus, ChevronDown, AlertCircle,
 		Share2, Copy, UserCheck, Inbox, Send, ExternalLink
 	} from 'lucide-svelte';
@@ -810,18 +810,13 @@
 				<!-- Section 1: My Friends Card -->
 				<div class="{mobileTab === 'friends' ? 'block' : 'hidden'} lg:block bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
 					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-pink-100/80">
-						<div class="flex items-center space-x-2.5">
-							<div class="w-7 h-7 rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-								<Users class="w-4 h-4" />
-							</div>
-							<div>
-								<h2 class="text-sm font-black text-pink-950 flex items-center gap-1.5">
-									<span>All Friends</span>
-									<span class="text-xs px-2 py-0.2 bg-[#fdf2f6] text-[#f43f8e] rounded-full border border-pink-100 font-bold">
-										{filteredFriends().length}
-									</span>
-								</h2>
-							</div>
+						<div>
+							<h2 class="text-sm font-black text-pink-950 flex items-center gap-1.5">
+								<span>All Friends</span>
+								<span class="text-xs px-2 py-0.2 bg-[#fdf2f6] text-[#f43f8e] rounded-full border border-pink-100 font-bold">
+									{filteredFriends().length}
+								</span>
+							</h2>
 						</div>
 
 						<!-- Search Friends Bar -->
@@ -957,9 +952,8 @@
 								<button
 									type="button"
 									onclick={() => mobileTab = 'discover'}
-									class="px-3 py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-black rounded-xl active:scale-95 transition-all shadow-xs inline-flex items-center space-x-1 cursor-pointer"
+									class="px-3 py-1.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-black rounded-xl active:scale-95 transition-all shadow-xs inline-flex items-center justify-center cursor-pointer"
 								>
-									<UserPlus class="w-3.5 h-3.5" />
 									<span>Discover People</span>
 								</button>
 							</div>
@@ -970,19 +964,14 @@
 				<!-- Section 2: Discover & Search People Card -->
 				<div class="{mobileTab === 'discover' ? 'block' : 'hidden'} lg:block bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
 					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-pink-100/80">
-						<div class="flex items-center space-x-2.5">
-							<div class="w-7 h-7 rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-								<UserPlus class="w-4 h-4" />
-							</div>
-							<div>
-								<h2 class="text-sm font-black text-pink-950 flex items-center gap-1.5">
-									<span>Discover People</span>
-									<span class="text-[10px] px-2 py-0.2 bg-pink-50 text-[#f43f8e] rounded-full font-bold border border-pink-100">
-										Connect
-									</span>
-								</h2>
-								<p class="text-[11px] text-pink-400 font-semibold">Search by username or connect with suggested members</p>
-							</div>
+						<div>
+							<h2 class="text-sm font-black text-pink-950 flex items-center gap-1.5">
+								<span>Discover People</span>
+								<span class="text-[10px] px-2 py-0.2 bg-pink-50 text-[#f43f8e] rounded-full font-bold border border-pink-100">
+									Connect
+								</span>
+							</h2>
+							<p class="text-[11px] text-pink-400 font-semibold">Search by username or connect with suggested members</p>
 						</div>
 					</div>
 
@@ -1179,10 +1168,7 @@
 				<!-- Discover People / Suggested Users Section -->
 				<div class="mt-4 pt-4 border-t border-pink-100 space-y-2.5">
 					<div class="flex items-center justify-between">
-						<div class="flex items-center space-x-1.5">
-							<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-								<Users class="w-3.5 h-3.5" strokeWidth={2.2} />
-							</div>
+						<div>
 							<h3 class="text-xs font-black text-pink-950 uppercase tracking-wide">
 								Discover People
 							</h3>
@@ -1320,10 +1306,7 @@
 				<!-- Card 1: Friend Requests Widget (Incoming & Sent) -->
 				<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)]">
 					<div class="flex items-center justify-between mb-3.5 pb-3 border-b border-pink-100/80">
-						<div class="flex items-center space-x-2">
-							<div class="w-7 h-7 rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-								<Clock class="w-3.5 h-3.5" />
-							</div>
+						<div>
 							<h3 class="text-xs sm:text-sm font-black text-pink-950">
 								Requests
 							</h3>

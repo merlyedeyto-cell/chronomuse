@@ -14,7 +14,7 @@
 	import {
 		User, Ban, Camera, Check, Link, Pencil, Clock, X, UserPlus,
 		MessageSquare, Users, Calendar, Info, BarChart3, Heart, Search,
-		UserCircle, MessageCircle, Trash2
+		UserCircle, Trash2
 	} from 'lucide-svelte';
 
 	let currentUser = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
@@ -2090,9 +2090,8 @@
 										<div class="h-6 w-28 bg-pink-200/60 rounded-full"></div>
 										<div class="h-6 w-16 bg-pink-100/80 rounded-full"></div>
 									</div>
-									<div class="p-2.5 bg-white border border-pink-100 rounded-xl flex items-start space-x-2 shadow-2xs">
-										<div class="w-3.5 h-3.5 rounded-full bg-pink-200/70 flex-shrink-0 mt-0.5"></div>
-										<div class="flex-1 space-y-1.5 py-0.5">
+									<div class="p-2.5 bg-white border border-pink-100 rounded-xl shadow-2xs">
+										<div class="space-y-1.5 py-0.5">
 											<div class="h-3 bg-pink-200/60 rounded w-11/12"></div>
 											<div class="h-3 bg-pink-100/70 rounded w-2/3"></div>
 										</div>
@@ -2127,8 +2126,7 @@
 									</div>
 
 									<!-- System Feedback Quote -->
-									<div class="p-2.5 bg-white border border-pink-100 rounded-xl flex items-start space-x-2 shadow-2xs">
-										<MessageCircle class="w-3.5 h-3.5 text-[#f43f8e] shrink-0 mt-0.5" strokeWidth={2} />
+									<div class="p-2.5 bg-white border border-pink-100 rounded-xl shadow-2xs">
 										<p class="text-xs text-pink-950/80 font-bold italic leading-relaxed">
 											"{getSystemFeedbackMessage(dominantMood, dominantMoods)}"
 										</p>

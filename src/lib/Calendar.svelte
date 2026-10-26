@@ -9,7 +9,6 @@
 		X,
 		Check,
 		Bookmark,
-		Clock,
 		AlertCircle
 	} from 'lucide-svelte';
 
@@ -648,9 +647,8 @@
 			<button
 				type="button"
 				onclick={jumpToToday}
-				class="w-full py-2 px-3 bg-[#e0337f] hover:bg-[#c9256d] text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
+				class="w-full py-2 px-3 bg-[#e0337f] hover:bg-[#c9256d] text-white rounded-xl text-xs font-semibold flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all duration-200 cursor-pointer"
 			>
-				<Clock class="w-3.5 h-3.5" />
 				<span>Today</span>
 			</button>
 		</div>

@@ -1,6 +1,5 @@
 <script>
 	import {
-		TrendingUp,
 		Activity,
 		ChevronRight,
 		Eye,
@@ -404,117 +403,108 @@
 />
 
 <div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up font-sans transition-all">
-	<!-- Chart Header Bar with Controls -->
-	<div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3 pb-3 border-b border-pink-50">
-		<div class="flex items-center space-x-2.5 min-w-0">
-			<div class="w-8 h-8 rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs flex-shrink-0">
-				<TrendingUp class="w-4 h-4 text-[#f43f8e]" strokeWidth={2.4} />
-			</div>
-			<div class="min-w-0">
-				<div class="flex items-center flex-wrap gap-2">
-					<h2 class="text-xs sm:text-sm font-black text-pink-950 whitespace-nowrap">Interactive Mood Timeline</h2>
-				</div>
-				<p class="text-[10px] sm:text-[11px] text-pink-400 font-bold truncate">Hover & click points to explore memories on that day</p>
-			</div>
-		</div>
+	<!-- Chart Header Bar: Title and Subtitle -->
+	<div class="mb-3 pb-2.5 border-b border-pink-50">
+		<h2 class="text-xs sm:text-sm font-black text-pink-950">Interactive Mood Timeline</h2>
+		<p class="text-[10px] sm:text-[11px] text-pink-400 font-bold truncate">Hover & click points to explore memories on that day</p>
+	</div>
 
-		<!-- Mode Switchers & Emotion Filter -->
-		<div class="flex items-center gap-2 self-start md:self-auto flex-wrap">
-			<!-- Emotion Tag Filter Themed Custom Dropdown -->
-			<div class="relative" bind:this={dropdownRef}>
-				<button
-					type="button"
-					onclick={() => {
-						playClickSound();
-						isMoodDropdownOpen = !isMoodDropdownOpen;
-					}}
-					class="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold bg-[#fdf2f6] hover:bg-[#fce7f3] text-pink-900 border border-pink-100/90 hover:border-pink-300 rounded-xl px-2.5 py-1 cursor-pointer transition-all focus:outline-none focus:ring-1 focus:ring-[#f43f8e] shadow-2xs select-none active:scale-98"
-					aria-haspopup="listbox"
-					aria-expanded={isMoodDropdownOpen}
+	<!-- Chart Controls Toolbar: Mood Filter on Left, View Mode Switcher on Right -->
+	<div class="flex items-center justify-between gap-2 mb-3.5">
+		<!-- Emotion Tag Filter Themed Custom Dropdown -->
+		<div class="relative" bind:this={dropdownRef}>
+			<button
+				type="button"
+				onclick={() => {
+					playClickSound();
+					isMoodDropdownOpen = !isMoodDropdownOpen;
+				}}
+				class="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold bg-[#fdf2f6] hover:bg-[#fce7f3] text-pink-900 border border-pink-100/90 hover:border-pink-300 rounded-xl px-2.5 py-1.5 cursor-pointer transition-all focus:outline-none focus:ring-1 focus:ring-[#f43f8e] shadow-2xs select-none active:scale-98"
+				aria-haspopup="listbox"
+				aria-expanded={isMoodDropdownOpen}
+			>
+				{#if selectedMoodFilter === 'all'}
+					<span>All Moods ({moodData.length})</span>
+				{:else}
+					{@const formatted = selectedMoodFilter.charAt(0).toUpperCase() + selectedMoodFilter.slice(1).toLowerCase()}
+					<span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {getMoodFillColor(formatted)}"></span>
+					<span class="capitalize">{selectedMoodFilter}</span>
+				{/if}
+				<ChevronDown class="w-3 h-3 text-pink-400 transition-transform duration-200 {isMoodDropdownOpen ? 'rotate-180 text-[#f43f8e]' : ''}" />
+			</button>
+
+			{#if isMoodDropdownOpen}
+				<div
+					class="absolute left-0 mt-1.5 w-44 bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl p-1.5 shadow-[0_10px_28px_rgba(244,63,142,0.18)] z-30 animate-scale-up max-h-60 overflow-y-auto"
+					role="listbox"
 				>
-					{#if selectedMoodFilter === 'all'}
-						<span>All Moods ({moodData.length})</span>
-					{:else}
-						{@const formatted = selectedMoodFilter.charAt(0).toUpperCase() + selectedMoodFilter.slice(1).toLowerCase()}
-						<span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {getMoodFillColor(formatted)}"></span>
-						<span class="capitalize">{selectedMoodFilter}</span>
-					{/if}
-					<ChevronDown class="w-3 h-3 text-pink-400 transition-transform duration-200 {isMoodDropdownOpen ? 'rotate-180 text-[#f43f8e]' : ''}" />
-				</button>
-
-				{#if isMoodDropdownOpen}
-					<div
-						class="absolute left-0 mt-1.5 w-44 bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl p-1.5 shadow-[0_10px_28px_rgba(244,63,142,0.18)] z-30 animate-scale-up max-h-60 overflow-y-auto"
-						role="listbox"
+					<!-- All Moods Option -->
+					<button
+						type="button"
+						role="option"
+						aria-selected={selectedMoodFilter === 'all'}
+						onclick={() => {
+							playClickSound();
+							selectedMoodFilter = 'all';
+							isMoodDropdownOpen = false;
+						}}
+						class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all text-left cursor-pointer {selectedMoodFilter === 'all' ? 'bg-pink-50 text-[#f43f8e] font-black' : 'text-pink-900 hover:bg-[#fdf2f6] hover:text-[#f43f8e]'}"
 					>
-						<!-- All Moods Option -->
+						<div class="flex items-center space-x-2 min-w-0">
+							<span class="w-2 h-2 rounded-full bg-[#f43f8e] flex-shrink-0"></span>
+							<span class="truncate">All Moods</span>
+						</div>
+						<span class="text-[10px] px-1.5 py-0.2 rounded-md bg-white border border-pink-100/90 font-black text-pink-500 shadow-2xs">
+							{moodData.length}
+						</span>
+					</button>
+
+					<div class="h-px bg-pink-50 my-1"></div>
+
+					<!-- Each Mood Option -->
+					{#each Object.keys(MOOD_COLORS) as mood}
+						{@const moodKey = mood.toLowerCase()}
+						{@const isSelected = selectedMoodFilter === moodKey}
 						<button
 							type="button"
 							role="option"
-							aria-selected={selectedMoodFilter === 'all'}
+							aria-selected={isSelected}
 							onclick={() => {
 								playClickSound();
-								selectedMoodFilter = 'all';
+								selectedMoodFilter = moodKey;
 								isMoodDropdownOpen = false;
 							}}
-							class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all text-left cursor-pointer {selectedMoodFilter === 'all' ? 'bg-pink-50 text-[#f43f8e] font-black' : 'text-pink-900 hover:bg-[#fdf2f6] hover:text-[#f43f8e]'}"
+							class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all text-left cursor-pointer {isSelected ? 'bg-pink-50 text-[#f43f8e] font-black' : 'text-pink-900 hover:bg-[#fdf2f6] hover:text-[#f43f8e]'}"
 						>
 							<div class="flex items-center space-x-2 min-w-0">
-								<span class="w-2 h-2 rounded-full bg-[#f43f8e] flex-shrink-0"></span>
-								<span class="truncate">All Moods</span>
+								<span class="w-2 h-2 rounded-full flex-shrink-0 shadow-2xs" style="background-color: {MOOD_COLORS[mood]}"></span>
+								<span class="truncate">{mood}</span>
 							</div>
-							<span class="text-[10px] px-1.5 py-0.2 rounded-md bg-white border border-pink-100/90 font-black text-pink-500 shadow-2xs">
-								{moodData.length}
-							</span>
+							{#if isSelected}
+								<Check class="w-3 h-3 text-[#f43f8e] flex-shrink-0" strokeWidth={2.5} />
+							{/if}
 						</button>
+					{/each}
+				</div>
+			{/if}
+		</div>
 
-						<div class="h-px bg-pink-50 my-1"></div>
-
-						<!-- Each Mood Option -->
-						{#each Object.keys(MOOD_COLORS) as mood}
-							{@const moodKey = mood.toLowerCase()}
-							{@const isSelected = selectedMoodFilter === moodKey}
-							<button
-								type="button"
-								role="option"
-								aria-selected={isSelected}
-								onclick={() => {
-									playClickSound();
-									selectedMoodFilter = moodKey;
-									isMoodDropdownOpen = false;
-								}}
-								class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all text-left cursor-pointer {isSelected ? 'bg-pink-50 text-[#f43f8e] font-black' : 'text-pink-900 hover:bg-[#fdf2f6] hover:text-[#f43f8e]'}"
-							>
-								<div class="flex items-center space-x-2 min-w-0">
-									<span class="w-2 h-2 rounded-full flex-shrink-0 shadow-2xs" style="background-color: {MOOD_COLORS[mood]}"></span>
-									<span class="truncate">{mood}</span>
-								</div>
-								{#if isSelected}
-									<Check class="w-3 h-3 text-[#f43f8e] flex-shrink-0" strokeWidth={2.5} />
-								{/if}
-							</button>
-						{/each}
-					</div>
-				{/if}
-			</div>
-
-			<!-- Valence vs Volume Toggle -->
-			<div class="flex items-center p-0.5 bg-[#fdf2f6] border border-pink-100/90 rounded-xl shadow-2xs">
-				<button
-					type="button"
-					onclick={() => { playClickSound(); viewMode = 'valence'; }}
-					class="px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200 cursor-pointer whitespace-nowrap {viewMode === 'valence' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-pink-700 hover:text-[#f43f8e]'}"
-				>
-					Emotional Valence
-				</button>
-				<button
-					type="button"
-					onclick={() => { playClickSound(); viewMode = 'volume'; }}
-					class="px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200 cursor-pointer whitespace-nowrap {viewMode === 'volume' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-pink-700 hover:text-[#f43f8e]'}"
-				>
-					Entry Volume
-				</button>
-			</div>
+		<!-- Valence vs Volume Toggle -->
+		<div class="flex items-center p-0.5 bg-[#fdf2f6] border border-pink-100/90 rounded-xl shadow-2xs flex-shrink-0">
+			<button
+				type="button"
+				onclick={() => { playClickSound(); viewMode = 'valence'; }}
+				class="px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200 cursor-pointer whitespace-nowrap {viewMode === 'valence' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-pink-700 hover:text-[#f43f8e]'}"
+			>
+				Emotional Valence
+			</button>
+			<button
+				type="button"
+				onclick={() => { playClickSound(); viewMode = 'volume'; }}
+				class="px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all duration-200 cursor-pointer whitespace-nowrap {viewMode === 'volume' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-pink-700 hover:text-[#f43f8e]'}"
+			>
+				Entry Volume
+			</button>
 		</div>
 	</div>
 
