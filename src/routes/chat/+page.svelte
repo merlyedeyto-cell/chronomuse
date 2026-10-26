@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { supabase } from '$lib/supabaseClient';
-	import { playTypingSound, playMessageSentSound, playIncomingMessageSound } from '$lib/soundEffects.js';
+	import { playTypingSound, playMessageSentSound, playIncomingMessageSound, playClickSound } from '$lib/soundEffects.js';
 	import { broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
@@ -12,7 +12,8 @@
 	import {
 		MessageSquare, Search, Clock, Check, X, ChevronLeft, ChevronRight,
 		User, Ban, Trash2, UserPlus, Reply, Image as ImageIcon, ZoomIn,
-		ZoomOut, Download, Smile, Send, AlertCircle, CheckCircle2, MessageCircle, ShieldCheck
+		ZoomOut, Download, Smile, Send, AlertCircle, CheckCircle2, MessageCircle, ShieldCheck,
+		MoreVertical
 	} from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
@@ -93,6 +94,7 @@
 	let showEmojiPicker = $state(false);
 	let showClearModal = $state(false);
 	let showBlockConfirmModal = $state(false);
+	let showHeaderMenu = $state(false);
 	let blockModalTarget = $state(null);
 	let isClearing = $state(false);
 	let pollInterval;
@@ -1032,6 +1034,7 @@
 		activeFriend = friend;
 		friend.unread_count = 0;
 		showEmojiPicker = false;
+		showHeaderMenu = false;
 		isSelectionMode = false;
 		selectedMessageIds = new Set();
 		replyingTo = null;
@@ -1050,6 +1053,7 @@
 
 	function handleBackToChatList() {
 		stopMyTyping();
+		showHeaderMenu = false;
 		activeFriend = null;
 		messages = [];
 		isSelectionMode = false;
@@ -2792,32 +2796,82 @@
 							</a>
 						</div>
 
-						<!-- Header Actions (Matching AppHeader Squircle Buttons) -->
-						<div class="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
-							<a
-								href="/profile?id={activeFriend.friend_id}"
-								class="w-8 h-8 sm:w-8.5 sm:h-8.5 bg-white hover:bg-pink-50 border border-pink-200/90 text-pink-500 hover:text-[#f43f8e] rounded-xl flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
-								title="View Profile"
-								aria-label="View Profile"
-							>
-								<User class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-pink-500" strokeWidth={2.5} />
-							</a>
+						<!-- Header Action Menu (Three-dot Menu) -->
+						<div class="relative flex-shrink-0">
 							<button
-								onclick={() => promptToggleBlockUser(activeFriend)}
-								class="w-8 h-8 sm:w-8.5 sm:h-8.5 bg-white hover:bg-pink-50 border border-pink-200/90 {isCurrentFriendBlockedByMe ? 'text-emerald-600 hover:text-emerald-700' : 'text-rose-500 hover:text-rose-600'} rounded-xl flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
-								title={isCurrentFriendBlockedByMe ? "Unblock User" : "Block User"}
-								aria-label={isCurrentFriendBlockedByMe ? "Unblock User" : "Block User"}
+								type="button"
+								onclick={() => {
+									playClickSound();
+									showHeaderMenu = !showHeaderMenu;
+								}}
+								class="w-8 h-8 sm:w-8.5 sm:h-8.5 bg-white hover:bg-pink-50 border border-pink-200/90 text-pink-500 hover:text-[#f43f8e] rounded-xl flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer {showHeaderMenu ? 'bg-pink-50 text-[#f43f8e] border-[#f43f8e]/40 ring-2 ring-pink-200/70' : ''}"
+								title="Chat options"
+								aria-label="Chat options"
+								aria-expanded={showHeaderMenu}
 							>
-								<Ban class="w-4 h-4 sm:w-4.5 sm:h-4.5" strokeWidth={2} />
+								<MoreVertical class="w-4 h-4 sm:w-4.5 sm:h-4.5" strokeWidth={2.2} />
 							</button>
-							<button
-								onclick={() => showClearModal = true}
-								class="w-8 h-8 sm:w-8.5 sm:h-8.5 bg-white hover:bg-pink-50 border border-pink-200/90 text-pink-500 hover:text-rose-600 rounded-xl flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer"
-								title="Clear Chat History"
-								aria-label="Clear Chat History"
-							>
-								<Trash2 class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-pink-500 hover:text-rose-600 transition-colors" strokeWidth={2} />
-							</button>
+
+							{#if showHeaderMenu}
+								<!-- Click-outside backdrop -->
+								<div
+									class="fixed inset-0 z-40"
+									onclick={() => showHeaderMenu = false}
+									role="presentation"
+								></div>
+
+								<!-- Dropdown Menu -->
+								<div class="absolute right-0 top-full mt-2 w-48 sm:w-52 bg-white/98 backdrop-blur-md border border-pink-100 rounded-2xl shadow-xl shadow-pink-500/10 z-50 p-1.5 animate-scale-up space-y-0.5">
+									<!-- View Profile -->
+									<a
+										href="/profile?id={activeFriend.friend_id}"
+										onclick={() => {
+											playClickSound();
+											showHeaderMenu = false;
+										}}
+										class="w-full px-3 py-2 rounded-xl flex items-center space-x-2.5 text-xs font-bold text-pink-950 hover:bg-pink-50 transition-colors group cursor-pointer"
+									>
+										<div class="w-7 h-7 rounded-lg bg-pink-50 border border-pink-100 flex items-center justify-center text-pink-500 group-hover:text-[#f43f8e] flex-shrink-0 shadow-3xs">
+											<User class="w-3.5 h-3.5" strokeWidth={2.5} />
+										</div>
+										<span class="truncate">View Profile</span>
+									</a>
+
+									<!-- Block / Unblock User -->
+									<button
+										type="button"
+										onclick={() => {
+											playClickSound();
+											showHeaderMenu = false;
+											promptToggleBlockUser(activeFriend);
+										}}
+										class="w-full px-3 py-2 rounded-xl flex items-center space-x-2.5 text-xs font-bold {isCurrentFriendBlockedByMe ? 'text-emerald-700 hover:bg-emerald-50' : 'text-pink-950 hover:bg-rose-50'} transition-colors group cursor-pointer text-left"
+									>
+										<div class="w-7 h-7 rounded-lg {isCurrentFriendBlockedByMe ? 'bg-emerald-50 border border-emerald-100 text-emerald-600' : 'bg-pink-50 border border-pink-100 text-rose-500 group-hover:text-rose-600'} flex items-center justify-center flex-shrink-0 shadow-3xs">
+											<Ban class="w-3.5 h-3.5" strokeWidth={2} />
+										</div>
+										<span class="truncate">{isCurrentFriendBlockedByMe ? 'Unblock User' : 'Block User'}</span>
+									</button>
+
+									<div class="my-1 border-t border-pink-100/70"></div>
+
+									<!-- Clear Chat History -->
+									<button
+										type="button"
+										onclick={() => {
+											playClickSound();
+											showHeaderMenu = false;
+											showClearModal = true;
+										}}
+										class="w-full px-3 py-2 rounded-xl flex items-center space-x-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors group cursor-pointer text-left"
+									>
+										<div class="w-7 h-7 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 group-hover:text-rose-600 flex-shrink-0 shadow-3xs">
+											<Trash2 class="w-3.5 h-3.5" strokeWidth={2} />
+										</div>
+										<span class="truncate">Clear Chat History</span>
+									</button>
+								</div>
+							{/if}
 						</div>
 					</div>
 				{/if}
