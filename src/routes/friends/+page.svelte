@@ -7,6 +7,7 @@
 	import { broadcastFriendEvent } from '$lib/realtimeBroadcast.js';
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
+	import { toast } from '$lib/toastService.js';
 	import {
 		ArrowLeft, Users, UserPlus, Clock, Search, X, User, UserCircle,
 		MessageSquare, Trash2, Check, Plus, ChevronDown, AlertCircle,
@@ -26,6 +27,7 @@
 		if (!user || !user.id || typeof window === 'undefined') return;
 		const url = `${window.location.origin}/profile?id=${user.id}`;
 		navigator.clipboard.writeText(url);
+		toast.success('Profile link copied to clipboard!');
 		copiedLink = true;
 		setTimeout(() => {
 			copiedLink = false;

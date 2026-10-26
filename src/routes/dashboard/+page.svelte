@@ -17,6 +17,7 @@
 	import DashboardClock from '$lib/DashboardClock.svelte';
 	import DashboardMonthsMemoryCard from '$lib/DashboardMonthsMemoryCard.svelte';
 	import { compressImage } from '$lib/mediaOptimizer.js';
+	import { toast } from '$lib/toastService.js';
 	import { Plus, Bookmark, CheckCircle2, AlertCircle, Check } from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
@@ -33,9 +34,6 @@
 	let pinnedMemoryCardRef;
 	let pinnedDates = $state([]);
 	let sidebarOpen = $state(false);
-	let showToast = $state(false);
-	let toastMessage = $state('');
-	let toastType = $state('success');
 	let showNotificationModalPopup = $state(false);
 	let notificationModalMessage = $state('');
 	let notificationModalType = $state('success');
@@ -61,13 +59,9 @@
 	});
 
 	function showMemoryToast(event) {
-		toastMessage = event.detail?.message || event.detail?.detail?.message || 'Notification';
-		toastType = event.detail?.type || event.detail?.detail?.type || 'success';
-		showToast = true;
-
-		setTimeout(() => {
-			showToast = false;
-		}, 3000);
+		const message = event.detail?.message || event.detail?.detail?.message || 'Notification';
+		const type = event.detail?.type || event.detail?.detail?.type || 'success';
+		toast.show(message, type);
 	}
 
 	let hasNotifications = $state(false);
@@ -1010,21 +1004,6 @@
 			</div>
 		{/if}
 
-		<!-- Toast Notification -->
-		{#if showToast}
-			<div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-bounce-in">
-				<div
-					class="px-6 py-3 rounded-2xl border flex items-center space-x-3 shadow-xl {toastType === 'success' ? 'bg-gradient-to-r from-[#f43f8e] to-pink-500 border-pink-300/40 text-white shadow-pink-500/20' : 'bg-gradient-to-r from-rose-500 to-pink-600 border-rose-400 text-white shadow-pink-500/20'}"
-				>
-					{#if toastType === 'success'}
-						<CheckCircle2 class="w-5 h-5 text-white flex-shrink-0" strokeWidth={2.5} />
-					{:else}
-						<AlertCircle class="w-5 h-5 text-white flex-shrink-0" strokeWidth={2.5} />
-					{/if}
-					<span class="text-sm font-black">{toastMessage}</span>
-				</div>
-			</div>
-		{/if}
 
 		<!-- Custom Success / Alert Notification Modal -->
 		{#if showNotificationModalPopup}
@@ -1070,27 +1049,6 @@
 </div>
 
 <style>
-	@keyframes bounce-in {
-		0% {
-			opacity: 0;
-			transform: translate(-50%, -100px) scale(0.3);
-		}
-		50% {
-			transform: translate(-50%, 0) scale(1.05);
-		}
-		70% {
-			transform: translate(-50%, 0) scale(0.9);
-		}
-		100% {
-			opacity: 1;
-			transform: translate(-50%, 0) scale(1);
-		}
-	}
-
-	.animate-bounce-in {
-		animation: bounce-in 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-	}
-
 	@keyframes fade-in {
 		0% {
 			opacity: 0;

@@ -7,6 +7,7 @@
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
 	import { initPWAInstall, subscribePWAStatus, promptPWAInstall, openInstalledApp } from '$lib/pwaInstall.js';
+	import { toast } from '$lib/toastService.js';
 
 	// Modular Settings Components
 	import SettingsUserProfileCard from '$lib/settings/SettingsUserProfileCard.svelte';
@@ -64,18 +65,8 @@
 	// Confirmation Modals
 	let showLogoutModal = $state(false);
 
-	// Toast Notification State
-	let toastMessage = $state('');
-	let showToast = $state(false);
-	let toastType = $state('success');
-
 	function showNotification(/** @type {string} */ msg, type = 'success') {
-		toastMessage = msg;
-		toastType = type;
-		showToast = true;
-		setTimeout(() => {
-			showToast = false;
-		}, 3500);
+		toast.show(msg, /** @type {any} */ (type));
 	}
 
 	function handleSelectTab(/** @type {string} */ tabId) {
@@ -917,14 +908,6 @@
 		onSubmitSuccess={(msg) => showNotification(msg, 'success')}
 	/>
 
-	<!-- Toast Notification Banner -->
-	{#if showToast}
-		<div class="fixed bottom-24 right-5 z-50 animate-bounce">
-			<div class="px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-2.5 {toastType === 'error' ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white border border-rose-300/40 shadow-pink-500/20' : 'bg-gradient-to-r from-[#f43f8e] to-pink-500 text-white border border-pink-300/40 shadow-pink-500/20'}">
-				<span class="text-xs sm:text-sm font-black">{toastMessage}</span>
-			</div>
-		</div>
-	{/if}
 
 	<!-- Bottom Navigation Bar (Footer) -->
 	<AppFooter />

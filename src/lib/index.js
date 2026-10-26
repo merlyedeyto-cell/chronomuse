@@ -12,3 +12,5 @@ export { default as AppFooter } from './AppFooter.svelte';
 export { default as AddMemoryCard } from './AddMemoryCard.svelte';
 export { default as PinnedMemoryCard } from './PinnedMemoryCard.svelte';
 export { default as ViewMemoryModal } from './ViewMemoryModal.svelte';
+export { default as Toast } from './Toast.svelte';
+export { toast, ToastService } from './toastService.js';

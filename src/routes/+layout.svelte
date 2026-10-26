@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { playIncomingMessageSound, playNotificationSound, playClickSound } from '$lib/soundEffects.js';
+	import Toast from '$lib/Toast.svelte';
 
 	let { children } = $props();
 
@@ -456,6 +457,7 @@
 </svelte:head>
 
 {@render children?.()}
+<Toast />
 
 <style>
 	:global(video::-webkit-media-controls-fullscreen-button),
