@@ -5,9 +5,7 @@
 		Ban,
 		KeyRound,
 		Smartphone,
-		ChevronRight,
-		LogOut,
-		Sparkles
+		ChevronRight
 	} from 'lucide-svelte';
 
 	let {
@@ -16,8 +14,7 @@
 		activeStatusEnabled,
 		soundEffectsEnabled,
 		blockedCount,
-		pwaStatus,
-		onOpenLogoutModal
+		pwaStatus
 	} = $props();
 
 	const navItems = $derived([
@@ -101,14 +98,4 @@
 		{/each}
 	</div>
 
-	<div class="p-2.5 bg-pink-50/30">
-		<button
-			type="button"
-			onclick={onOpenLogoutModal}
-			class="w-full py-2 px-3 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 hover:border-rose-300 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-2xs"
-		>
-			<LogOut class="w-3.5 h-3.5" />
-			<span>Log Out Account</span>
-		</button>
-	</div>
 </div>

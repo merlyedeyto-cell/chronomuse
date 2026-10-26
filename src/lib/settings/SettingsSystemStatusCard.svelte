@@ -1,5 +1,5 @@
 <script>
-	import { ShieldCheck } from 'lucide-svelte';
+	import { ShieldCheck, HelpCircle } from 'lucide-svelte';
 
 	let { onReportFeedback = () => {} } = $props();
 </script>
@@ -28,19 +28,13 @@
 		</div>
 	</div>
 
-	<!-- Cute App Affirmation Quote -->
-	<div class="p-2.5 bg-pink-50/30 rounded-xl border border-pink-100/80 text-center">
-		<p class="text-[11px] text-pink-600 font-bold italic leading-snug">
-			"Capture each day's emotions, cherish each memory."
-		</p>
-	</div>
-
-	<!-- Quick Feedback button without icon -->
+	<!-- Quick Feedback button -->
 	<button
 		type="button"
 		onclick={onReportFeedback}
-		class="w-full py-2 px-3 bg-pink-50/60 hover:bg-pink-100/80 text-pink-700 hover:text-pink-900 border border-pink-200/80 rounded-xl font-bold text-xs transition-all flex items-center justify-center cursor-pointer shadow-3xs active:scale-95"
+		class="w-full py-2 px-3 bg-pink-50/60 hover:bg-pink-100/80 text-pink-700 hover:text-pink-900 border border-pink-200/80 rounded-xl font-bold text-xs transition-all flex items-center justify-center space-x-1.5 cursor-pointer shadow-3xs active:scale-95"
 	>
+		<HelpCircle class="w-3.5 h-3.5 text-[#f43f8e]" />
 		<span>Need Help or Suggestions?</span>
 	</button>
 </div>

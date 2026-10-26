@@ -123,54 +123,58 @@
 	</div>
 
 	<!-- Filter Tabs Bar (Instagram / Modern Pill Style) -->
-	<div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 pt-1 border-t border-pink-100/60">
-		<!-- Pill Tabs Bar -->
-		<div class="inline-flex items-center gap-1 p-1 bg-[#fff0f5] border border-pink-200/60 rounded-full shadow-2xs overflow-x-auto max-w-full">
-			{#each tabs as tab (tab.id)}
-				<button
-					type="button"
-					onclick={() => {
-						activeTab = tab.id;
-						categoryStatusFilter = 'all';
-					}}
-					class="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap {activeTab === tab.id ? 'bg-[#f43f8e] text-white shadow-sm' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
-				>
-					<span>{tab.label}</span>
-					<span class="px-2 py-0.5 rounded-full text-[11px] font-black transition-colors {activeTab === tab.id ? 'bg-white/25 text-white' : 'bg-pink-100/80 text-[#f43f8e]'}">
-						{tab.count}
-					</span>
-				</button>
-			{/each}
+	<div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2.5 pt-1 border-t border-pink-100/60">
+		<!-- Pill Tabs Bar with hidden scrollbar for smooth mobile swiping -->
+		<div class="w-full lg:w-auto overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5">
+			<div class="inline-flex items-center gap-1 sm:gap-1.5 p-1 bg-[#fff0f5] border border-pink-200/70 rounded-full shadow-2xs min-w-max">
+				{#each tabs as tab (tab.id)}
+					<button
+						type="button"
+						onclick={() => {
+							activeTab = tab.id;
+							categoryStatusFilter = 'all';
+						}}
+						class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap active:scale-95 {activeTab === tab.id ? 'bg-[#f43f8e] text-white shadow-sm' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
+					>
+						<span>{tab.label}</span>
+						<span class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black transition-colors {activeTab === tab.id ? 'bg-white/25 text-white' : 'bg-pink-100/80 text-[#f43f8e]'}">
+							{tab.count}
+						</span>
+					</button>
+				{/each}
+			</div>
 		</div>
 
 		<!-- Optional Sub-status filter when inside a category tab -->
 		{#if ['concerns', 'suggestions', 'bugs'].includes(activeTab)}
-			<div class="inline-flex items-center gap-1 p-1 bg-[#fff0f5] border border-pink-200/60 rounded-full text-xs font-bold self-start lg:self-auto">
-				<span class="text-pink-400 pl-2.5 pr-1 text-[11px] font-black flex items-center gap-1">
-					<Filter class="w-3 h-3" />
-					<span>Status:</span>
-				</span>
-				<button
-					type="button"
-					onclick={() => categoryStatusFilter = 'all'}
-					class="px-3 py-1 rounded-full text-[11px] font-black transition-all cursor-pointer {categoryStatusFilter === 'all' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
-				>
-					All
-				</button>
-				<button
-					type="button"
-					onclick={() => categoryStatusFilter = 'new'}
-					class="px-3 py-1 rounded-full text-[11px] font-black transition-all cursor-pointer {categoryStatusFilter === 'new' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
-				>
-					New
-				</button>
-				<button
-					type="button"
-					onclick={() => categoryStatusFilter = 'resolved'}
-					class="px-3 py-1 rounded-full text-[11px] font-black transition-all cursor-pointer {categoryStatusFilter === 'resolved' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
-				>
-					Resolved
-				</button>
+			<div class="w-full lg:w-auto overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5">
+				<div class="inline-flex items-center gap-1 p-1 bg-[#fff0f5] border border-pink-200/60 rounded-full text-xs font-bold min-w-max">
+					<span class="text-pink-400 pl-2.5 pr-1 text-[11px] font-black flex items-center gap-1">
+						<Filter class="w-3 h-3" />
+						<span>Status:</span>
+					</span>
+					<button
+						type="button"
+						onclick={() => categoryStatusFilter = 'all'}
+						class="px-3 py-1 rounded-full text-[11px] font-black transition-all cursor-pointer active:scale-95 {categoryStatusFilter === 'all' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
+					>
+						All
+					</button>
+					<button
+						type="button"
+						onclick={() => categoryStatusFilter = 'new'}
+						class="px-3 py-1 rounded-full text-[11px] font-black transition-all cursor-pointer active:scale-95 {categoryStatusFilter === 'new' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
+					>
+						New
+					</button>
+					<button
+						type="button"
+						onclick={() => categoryStatusFilter = 'resolved'}
+						class="px-3 py-1 rounded-full text-[11px] font-black transition-all cursor-pointer active:scale-95 {categoryStatusFilter === 'resolved' ? 'bg-[#f43f8e] text-white shadow-2xs' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
+					>
+						Resolved
+					</button>
+				</div>
 			</div>
 		{/if}
 	</div>

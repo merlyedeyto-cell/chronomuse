@@ -703,11 +703,11 @@
 					</div>
 				</div>
 
-				<!-- Concerns & Suggestions -->
+				<!-- Concerns & Suggestions (Hidden on mobile to maintain 6-card symmetrical grid, handled by tab switcher) -->
 				<button
 					type="button"
 					onclick={() => activeAdminTab = 'feedbacks'}
-					class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-[0_4px_20px_rgba(244,114,182,0.06)] hover:border-[#f43f8e]/60 hover:scale-[1.02] active:scale-95 text-left transition-all cursor-pointer {activeAdminTab === 'feedbacks' ? 'ring-2 ring-[#f43f8e]/50 bg-pink-50/40' : ''}"
+					class="hidden sm:flex bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl p-3 sm:p-3.5 flex-col justify-between shadow-[0_4px_20px_rgba(244,114,182,0.06)] hover:border-[#f43f8e]/60 hover:scale-[1.02] active:scale-95 text-left transition-all cursor-pointer {activeAdminTab === 'feedbacks' ? 'ring-2 ring-[#f43f8e]/50 bg-pink-50/40' : ''}"
 				>
 					<div class="flex items-center justify-between mb-1.5 sm:mb-2 w-full">
 						<span class="text-[10px] sm:text-[11px] font-black text-[#f43f8e] uppercase tracking-wider">Concerns</span>
@@ -731,15 +731,16 @@
 			</div>
 
 			<!-- Tab Switcher for Admin Directories -->
-			<div class="inline-flex items-center gap-1.5 p-1 bg-[#fff0f5] border border-pink-200/60 rounded-full shadow-2xs w-full sm:w-auto overflow-x-auto">
+			<div class="grid grid-cols-2 sm:inline-flex items-center gap-1 sm:gap-1.5 p-1 bg-[#fff0f5] border border-pink-200/70 rounded-2xl sm:rounded-full shadow-2xs w-full sm:w-auto">
 				<button
 					type="button"
 					onclick={() => activeAdminTab = 'accounts'}
-					class="flex-1 sm:flex-initial px-5 py-2 rounded-full text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer {activeAdminTab === 'accounts' ? 'bg-[#f43f8e] text-white shadow-sm' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
+					class="w-full sm:w-auto px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl sm:rounded-full text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95 {activeAdminTab === 'accounts' ? 'bg-[#f43f8e] text-white shadow-sm' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
 				>
-					<Users class="w-4 h-4" />
-					<span>Accounts Directory</span>
-					<span class="px-2 py-0.5 rounded-full text-[11px] font-black transition-colors {activeAdminTab === 'accounts' ? 'bg-white/25 text-white' : 'bg-pink-100/80 text-[#f43f8e]'}">
+					<Users class="w-4 h-4 shrink-0" />
+					<span class="sm:hidden">Accounts</span>
+					<span class="hidden sm:inline">Accounts Directory</span>
+					<span class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black transition-colors shrink-0 {activeAdminTab === 'accounts' ? 'bg-white/25 text-white' : 'bg-pink-100/80 text-[#f43f8e]'}">
 						{usersList.length}
 					</span>
 				</button>
@@ -747,15 +748,19 @@
 				<button
 					type="button"
 					onclick={() => activeAdminTab = 'feedbacks'}
-					class="flex-1 sm:flex-initial px-5 py-2 rounded-full text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer relative {activeAdminTab === 'feedbacks' ? 'bg-[#f43f8e] text-white shadow-sm' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
+					class="w-full sm:w-auto px-2 sm:px-5 py-2.5 sm:py-2 rounded-xl sm:rounded-full text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer relative active:scale-95 {activeAdminTab === 'feedbacks' ? 'bg-[#f43f8e] text-white shadow-sm' : 'text-[#f43f8e] hover:bg-pink-100/50'}"
 				>
-					<MessageSquare class="w-4 h-4" />
-					<span>User Concerns & Feedback</span>
-					<span class="px-2 py-0.5 rounded-full text-[11px] font-black transition-colors {activeAdminTab === 'feedbacks' ? 'bg-white/25 text-white' : 'bg-pink-100/80 text-[#f43f8e]'}">
+					<MessageSquare class="w-4 h-4 shrink-0" />
+					<span class="sm:hidden">Concerns</span>
+					<span class="hidden sm:inline">User Concerns & Feedback</span>
+					<span class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black transition-colors shrink-0 {activeAdminTab === 'feedbacks' ? 'bg-white/25 text-white' : 'bg-pink-100/80 text-[#f43f8e]'}">
 						{feedbacksList.length}
 					</span>
 					{#if feedbacksList.filter(f => f.status === 'new').length > 0}
-						<span class="w-2 h-2 bg-rose-500 rounded-full animate-pulse shadow-xs"></span>
+						<span class="relative flex h-2 w-2 shrink-0">
+							<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+							<span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500 shadow-xs"></span>
+						</span>
 					{/if}
 				</button>
 			</div>

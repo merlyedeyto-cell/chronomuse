@@ -21,7 +21,7 @@
 	import FeedbackModal from '$lib/settings/FeedbackModal.svelte';
 
 	import {
-		Smartphone, ChevronDown, Lock, Volume2, Ban, KeyRound, LogOut
+		Smartphone, ChevronDown, Lock, Volume2, Ban, KeyRound
 	} from 'lucide-svelte';
 
 	let currentUser = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
@@ -61,9 +61,6 @@
 	let selectedUserToBlock = $state(/** @type {any} */ (null));
 	let showConfirmBlockModal = $state(false);
 	let searchDebounceTimer = /** @type {any} */ (null);
-
-	// Confirmation Modals
-	let showLogoutModal = $state(false);
 
 	function showNotification(/** @type {string} */ msg, type = 'success') {
 		toast.show(msg, /** @type {any} */ (type));
@@ -374,27 +371,6 @@
 		}
 	}
 
-	function handleLogout() {
-		try {
-			supabase.removeAllChannels();
-		} catch (e) {}
-
-		const savedActiveStatus = currentUser?.id ? localStorage.getItem(`chronomuse_active_status_${currentUser.id}`) : null;
-		const savedPrivateStatus = currentUser?.id ? localStorage.getItem(`chronomuse_private_${currentUser.id}`) : null;
-
-		localStorage.clear();
-		sessionStorage.clear();
-
-		if (currentUser?.id) {
-			if (savedActiveStatus !== null) localStorage.setItem(`chronomuse_active_status_${currentUser.id}`, savedActiveStatus);
-			if (savedPrivateStatus !== null) localStorage.setItem(`chronomuse_private_${currentUser.id}`, savedPrivateStatus);
-		}
-
-		if (typeof window !== 'undefined') {
-			window.dispatchEvent(new Event('chronomuse_auth_change'));
-		}
-		goto('/');
-	}
 
 	async function handleInstallAppFromSettings() {
 		playClickSound();
@@ -510,7 +486,6 @@
 					{soundEffectsEnabled}
 					blockedCount={blockedUsers.length}
 					{pwaStatus}
-					onOpenLogoutModal={() => showLogoutModal = true}
 				/>
 
 				<!-- System Connection & App Info Card -->
@@ -807,6 +782,11 @@
 				</div>
 
 			</div>
+
+			<!-- System Connection & App Info Card (Contains "Need Help or Suggestions?") -->
+			<SettingsSystemStatusCard
+				onReportFeedback={handleReportFeedback}
+			/>
 		</div>
 
 	</main>
@@ -860,45 +840,6 @@
 		</div>
 	{/if}
 
-	<!-- Logout Confirmation Modal -->
-	{#if showLogoutModal}
-		<div
-			class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-3.5 sm:p-4 animate-fade-in"
-			onclick={(e) => { if (e.target === e.currentTarget) showLogoutModal = false; }}
-			role="dialog"
-			aria-modal="true"
-			tabindex="-1"
-			onkeydown={(e) => { if (e.key === 'Escape') showLogoutModal = false; }}
-		>
-			<div class="bg-white border border-pink-100/90 rounded-3xl max-w-xs sm:max-w-md w-full p-5 sm:p-7 text-center relative overflow-hidden shadow-2xl animate-scale-up">
-				<div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center mx-auto mb-3 shadow-2xs">
-					<LogOut class="w-6 h-6 sm:w-7 sm:h-7 text-[#f43f8e]" />
-				</div>
-
-				<h3 class="text-sm sm:text-lg font-black text-pink-950 mb-1 sm:mb-1.5">Log Out of ChronoMuse?</h3>
-				<p class="text-xs sm:text-sm text-pink-400 mb-5 sm:mb-6 font-medium">
-					Are you sure you want to log out of your account?
-				</p>
-
-				<div class="flex items-center space-x-2.5 sm:space-x-3">
-					<button
-						type="button"
-						onclick={() => showLogoutModal = false}
-						class="w-1/2 py-2.5 sm:py-3 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm transition-all cursor-pointer active:scale-95 shadow-2xs"
-					>
-						Cancel
-					</button>
-					<button
-						type="button"
-						onclick={handleLogout}
-						class="w-1/2 py-2.5 sm:py-3 bg-[#f43f8e] hover:bg-[#e0337f] text-white rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm transition-all active:scale-95 cursor-pointer shadow-md"
-					>
-						Log Out
-					</button>
-				</div>
-			</div>
-		</div>
-	{/if}
 
 	<!-- Feedback & Help Modal -->
 	<FeedbackModal
