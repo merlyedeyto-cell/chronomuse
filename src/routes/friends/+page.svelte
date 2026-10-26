@@ -1397,18 +1397,18 @@
 											</div>
 										</a>
 
-										<div class="flex items-center space-x-1.5 flex-shrink-0">
+										<div class="flex items-center space-x-1 flex-shrink-0">
 											<button
 												onclick={() => handleRespondRequest(req.id || req.request_id, 'accept')}
 												disabled={isResponding}
-												class="px-2.5 py-1 bg-[#f43f8e] text-white text-[11px] font-bold rounded-lg hover:bg-[#e0337f] active:scale-95 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
+												class="px-2.5 py-1 bg-[#f43f8e] text-white text-xs font-bold rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all cursor-pointer shadow-xs disabled:opacity-50"
 											>
 												Accept
 											</button>
 											<button
 												onclick={() => handleRespondRequest(req.id || req.request_id, 'decline')}
 												disabled={isResponding}
-												class="px-2.5 py-1 bg-white text-rose-600 hover:bg-rose-50 border border-rose-200 hover:border-rose-300 rounded-lg text-[11px] font-bold active:scale-95 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
+												class="px-2.5 py-1 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
 												title="Decline Request"
 											>
 												Decline

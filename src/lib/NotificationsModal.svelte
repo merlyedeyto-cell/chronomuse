@@ -412,7 +412,7 @@
 												{#if item.sender_avatar_url}
 													<img src={item.sender_avatar_url} alt={item.sender_username} class="w-full h-full object-cover" />
 												{:else}
-													🍒
+													{(item.sender_username || 'U').charAt(0).toUpperCase()}
 												{/if}
 											</div>
 											<div>
@@ -459,7 +459,7 @@
 											{#if item.sender_avatar_url}
 												<img src={item.sender_avatar_url} alt={item.sender_username} class="w-full h-full object-cover" />
 											{:else}
-												🍒
+												{(item.sender_username || 'U').charAt(0).toUpperCase()}
 											{/if}
 										</div>
 										<div>
@@ -502,7 +502,7 @@
 												{#if item.recipient_avatar_url}
 													<img src={item.recipient_avatar_url} alt={item.recipient_username} class="w-full h-full object-cover" />
 												{:else}
-													🍒
+													{(item.recipient_username || 'U').charAt(0).toUpperCase()}
 												{/if}
 											</div>
 											<div>

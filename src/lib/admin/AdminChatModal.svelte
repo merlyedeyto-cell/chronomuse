@@ -25,7 +25,7 @@
 	let isLoading = $state(false);
 	let isSending = $state(false);
 	let isUserTyping = $state(false);
-	let showTicketDetails = $state(true);
+	let showTicketDetails = $state(false);
 	let errorMessage = $state('');
 	let successNotice = $state('');
 	let chatContainer = $state(null);
@@ -329,7 +329,7 @@
 			if (data.success && data.data?.message) {
 				// Replace temporary msg with server record
 				messages = messages.map(m => m.id === tempId ? data.data.message : m);
-				successNotice = 'Delivered to user in ChronoMuse Chat! ✨';
+				successNotice = 'Delivered to user in ChronoMuse Chat!';
 				if (data.data.feedback_resolved) {
 					onFeedbackUpdated(feedback.id, 'resolved');
 				}
@@ -399,19 +399,19 @@
 		<!-- Support Console Window Container -->
 		<div class="relative bg-white rounded-3xl border border-pink-200 shadow-[0_25px_70px_rgba(244,114,182,0.25)] max-w-lg w-full flex flex-col max-h-[92vh] sm:max-h-[88vh] overflow-hidden z-10 animate-scale-up">
 			
-			<!-- Top Official Support Header -->
-			<div class="p-3.5 sm:p-4 border-b border-pink-100 flex items-center justify-between bg-gradient-to-r from-pink-50 via-rose-50/70 to-pink-50/50 flex-shrink-0">
+			<!-- Top Support Header (Compact & Streamlined) -->
+			<div class="px-3.5 py-2.5 sm:px-4 sm:py-3 border-b border-pink-100 flex items-center justify-between bg-gradient-to-r from-pink-50 via-rose-50/70 to-pink-50/50 flex-shrink-0">
 				<div class="flex items-center gap-2.5 min-w-0">
-					<!-- Avatar with Active Status Indicator -->
+					<!-- Compact User Avatar -->
 					<div class="relative flex-shrink-0">
-						<div class="w-10 h-10 rounded-2xl bg-pink-100 text-[#f43f8e] font-black flex items-center justify-center overflow-hidden border border-pink-200 shadow-2xs text-sm">
+						<div class="w-8 h-8 rounded-full bg-pink-100 text-[#f43f8e] font-black flex items-center justify-center overflow-hidden border border-pink-200 shadow-2xs text-xs">
 							{#if feedback.avatar_url || targetUser?.avatar_url}
 								<img src={feedback.avatar_url || targetUser?.avatar_url} alt="" class="w-full h-full object-cover" />
 							{:else}
 								{feedback.username?.charAt(0).toUpperCase() || 'U'}
 							{/if}
 						</div>
-						<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full animate-pulse" title="Active"></span>
+						<span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full animate-pulse" title="Active"></span>
 					</div>
 
 					<div class="min-w-0">
@@ -423,50 +423,48 @@
 								</span>
 							</h3>
 							{#if feedback.status === 'new'}
-								<span class="px-2 py-0.2 bg-amber-100/90 text-amber-800 rounded-full text-[9px] font-black border border-amber-200">
-									Ticket Open
+								<span class="px-2 py-0.5 bg-amber-100/90 text-amber-800 rounded-full text-[9px] font-black border border-amber-200">
+									Open
 								</span>
 							{:else}
-								<span class="px-2 py-0.2 bg-emerald-100 text-emerald-800 rounded-full text-[9px] font-black border border-emerald-200">
+								<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[9px] font-black border border-emerald-200">
 									Resolved
 								</span>
 							{/if}
 						</div>
-						<div class="flex items-center gap-2 text-[10px] text-pink-500 font-bold truncate mt-0.5">
-							<span class="truncate">{feedback.email || targetUser?.email || 'Registered User'}</span>
-							{#if feedback.user_id}
-								<span class="text-pink-300">•</span>
-								<span class="font-mono text-[9px] text-pink-400">UID: {feedback.user_id}</span>
-							{/if}
-						</div>
 					</div>
 				</div>
 
-				<!-- Actions: Support Badge, Close -->
-				<div class="flex items-center gap-1 flex-shrink-0">
-					<div class="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/80 border border-pink-200 text-[#f43f8e] text-[10px] font-black mr-1 shadow-3xs">
-						<ShieldCheck class="w-3 h-3" />
-						<span>Official Support</span>
-					</div>
+				<!-- Header Actions: Report Details Toggle & Close -->
+				<div class="flex items-center gap-1.5 flex-shrink-0">
+					<button
+						type="button"
+						onclick={() => showTicketDetails = !showTicketDetails}
+						class="px-2.5 py-1 text-[11px] font-bold rounded-full border border-pink-200 text-pink-600 hover:text-[#f43f8e] hover:bg-white bg-white/80 transition-all flex items-center gap-1 cursor-pointer shadow-3xs"
+						title={showTicketDetails ? 'Hide report info' : 'View report info'}
+					>
+						<span>Report</span>
+						{#if showTicketDetails}
+							<ChevronUp class="w-3 h-3" />
+						{:else}
+							<ChevronDown class="w-3 h-3" />
+						{/if}
+					</button>
 
 					<button
 						type="button"
 						onclick={onClose}
-						class="w-8 h-8 flex items-center justify-center text-pink-400 hover:text-pink-800 hover:bg-pink-100/70 rounded-full transition-colors cursor-pointer"
+						class="w-7 h-7 flex items-center justify-center text-pink-400 hover:text-pink-800 hover:bg-pink-100/70 rounded-full transition-colors cursor-pointer"
 						aria-label="Close modal"
 					>
-						<X class="w-4.5 h-4.5" />
+						<X class="w-4 h-4" />
 					</button>
 				</div>
 			</div>
 
-			<!-- User's Concern Context Card (Collapsible) -->
-			<div class="bg-pink-50/40 border-b border-pink-100/80 text-xs flex-shrink-0">
-				<button
-					type="button"
-					onclick={() => showTicketDetails = !showTicketDetails}
-					class="w-full px-3.5 py-2 flex items-center justify-between text-left hover:bg-pink-50/70 transition-colors cursor-pointer"
-				>
+			<!-- User's Concern Context Drawer (Collapsible) -->
+			{#if showTicketDetails}
+				<div class="bg-pink-50/50 border-b border-pink-100 text-xs flex-shrink-0 px-3.5 py-2 animate-fade-in space-y-1.5">
 					<div class="flex items-center gap-2 font-black text-[11px]">
 						{#if feedback.category === 'bug'}
 							<span class="text-xs font-bold text-rose-500 inline-flex items-center gap-1">
@@ -485,27 +483,13 @@
 							</span>
 						{/if}
 						<span class="text-pink-300 font-bold select-none">•</span>
-						<span class="text-pink-900 font-bold truncate max-w-[200px] sm:max-w-xs">{feedback.title}</span>
+						<span class="text-pink-900 font-bold truncate">{feedback.title}</span>
 					</div>
-
-					<div class="flex items-center gap-1 text-[10px] text-pink-400 font-bold">
-						<span>{showTicketDetails ? 'Hide details' : 'View report'}</span>
-						{#if showTicketDetails}
-							<ChevronUp class="w-3.5 h-3.5" />
-						{:else}
-							<ChevronDown class="w-3.5 h-3.5" />
-						{/if}
-					</div>
-				</button>
-
-				{#if showTicketDetails}
-					<div class="px-3.5 pb-2.5 pt-0.5 animate-fade-in">
-						<p class="text-pink-900 bg-white/95 p-2.5 rounded-xl border border-pink-100 font-medium text-[11px] max-h-24 overflow-y-auto leading-relaxed whitespace-pre-wrap shadow-2xs">
-							{feedback.message}
-						</p>
-					</div>
-				{/if}
-			</div>
+					<p class="text-pink-900 bg-white p-2 rounded-xl border border-pink-100 font-medium text-[11px] max-h-20 overflow-y-auto leading-relaxed whitespace-pre-wrap shadow-2xs">
+						{feedback.message}
+					</p>
+				</div>
+			{/if}
 
 			<!-- Notice Alerts -->
 			{#if successNotice}

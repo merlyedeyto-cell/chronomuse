@@ -2777,7 +2777,7 @@
 											</span>
 										{:else if activeFriend.is_ticket}
 											<span class="font-bold text-pink-700 truncate">
-												{activeFriend.ticket_category === 'bug' ? '🐛 Bug: ' : activeFriend.ticket_category === 'help' ? '💬 Concern: ' : '💡 Idea: '}
+												{activeFriend.ticket_category === 'bug' ? 'Bug: ' : activeFriend.ticket_category === 'help' ? 'Concern: ' : 'Idea: '}
 												{activeFriend.ticket_title}
 											</span>
 										{:else if isRecentActive(activeFriend)}
@@ -2821,7 +2821,7 @@
 								></div>
 
 								<!-- Dropdown Menu -->
-								<div class="absolute right-0 top-full mt-2 w-48 sm:w-52 bg-white/98 backdrop-blur-md border border-pink-100 rounded-2xl shadow-xl shadow-pink-500/10 z-50 p-1.5 animate-scale-up space-y-0.5">
+								<div class="absolute right-0 top-full mt-2 w-48 sm:w-52 bg-white border border-pink-200 rounded-2xl shadow-2xl shadow-pink-500/20 z-50 p-1.5 animate-scale-up space-y-0.5">
 									<!-- View Profile -->
 									<a
 										href="/profile?id={activeFriend.friend_id}"
@@ -3301,7 +3301,7 @@
 				{#if isCurrentFriendBlockedByMe}
 					<div class="p-2.5 sm:p-3 bg-pink-50/80 border-t border-pink-100 flex flex-col sm:flex-row items-center justify-between gap-2.5 sticky bottom-0 z-20">
 						<div class="flex items-center space-x-1.5 text-pink-950 text-xs font-semibold">
-							<span class="text-sm">🚫</span>
+							<Ban class="w-4 h-4 text-rose-500 inline-block flex-shrink-0" strokeWidth={2} />
 							<span>You blocked @{activeFriend.username}. You cannot send or receive messages.</span>
 						</div>
 						<button
@@ -3313,7 +3313,7 @@
 					</div>
 				{:else if activeFriend?.is_blocking_me}
 					<div class="p-2.5 sm:p-3 bg-gray-50 border-t border-pink-100 flex items-center justify-center space-x-1.5 text-pink-900 text-xs font-semibold sticky bottom-0 z-20">
-						<span class="text-sm">🚫</span>
+						<Ban class="w-4 h-4 text-rose-500 inline-block flex-shrink-0" strokeWidth={2} />
 						<span>You cannot message @{activeFriend.username} because you have been blocked.</span>
 					</div>
 				{:else}

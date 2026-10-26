@@ -3,7 +3,7 @@
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import SelectOptionModal from '$lib/SelectOptionModal.svelte';
 	import { compressImage, compressAndTrimVideo } from '$lib/mediaOptimizer.js';
-	import { X, Calendar, Play, Camera, Music, ChevronDown, Share2, Loader2, Bookmark, Scissors } from 'lucide-svelte';
+	import { X, Calendar, Play, Camera, Music, ChevronDown, Share2, Loader2, Bookmark, Scissors, Smile } from 'lucide-svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -779,7 +779,7 @@
 					class="absolute bottom-2.5 right-2.5 text-pink-400 hover:text-[#f43f8e] transition-transform hover:scale-110 cursor-pointer"
 					title="Add emoji"
 				>
-					<span class="text-sm leading-none">😊</span>
+					<Smile class="w-4 h-4" />
 				</button>
 
 				<!-- Emoji Picker Popup -->

@@ -8,7 +8,7 @@
 	import { compressImage, compressAndTrimVideo } from '$lib/mediaOptimizer.js';
 	import {
 		X, Calendar, Pencil, ChevronDown, RefreshCw, Image as ImageIcon,
-		Music, Bookmark, Share2, Trash2, Maximize2, Pause, Play, Plus, Scissors, Check
+		Music, Bookmark, Share2, Trash2, Maximize2, Pause, Play, Plus, Scissors, Check, Smile
 	} from 'lucide-svelte';
 
 	const dispatch = createEventDispatcher();
@@ -1008,7 +1008,7 @@
 								onclick={() => showEmojiPicker = !showEmojiPicker}
 								class="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-white border border-pink-200 flex items-center justify-center text-xs hover:scale-110 transition-transform cursor-pointer"
 							>
-								<span>😊</span>
+								<Smile class="w-3.5 h-3.5 text-pink-500" />
 							</button>
 							{#if showEmojiPicker}
 								<div class="absolute bottom-full right-0 mb-1.5 p-2 bg-white border border-pink-100 rounded-2xl z-10 max-w-[180px] shadow-lg">

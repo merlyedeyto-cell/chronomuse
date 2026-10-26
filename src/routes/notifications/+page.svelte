@@ -590,7 +590,7 @@
 											{#if item.sender_avatar_url}
 												<img src={item.sender_avatar_url} alt={item.sender_username} class="w-full h-full object-cover" />
 											{:else}
-												🍒
+												{(item.sender_username || 'U').charAt(0).toUpperCase()}
 											{/if}
 										</button>
 
@@ -680,7 +680,7 @@
 											{#if item.sender_avatar_url}
 												<img src={item.sender_avatar_url} alt={item.sender_username} class="w-full h-full object-cover" />
 											{:else}
-												🍒
+												{(item.sender_username || 'U').charAt(0).toUpperCase()}
 											{/if}
 										</button>
 
@@ -784,7 +784,7 @@
 											{#if item.recipient_avatar_url}
 												<img src={item.recipient_avatar_url} alt={item.recipient_username} class="w-full h-full object-cover" />
 											{:else}
-												🍒
+												{(item.recipient_username || 'U').charAt(0).toUpperCase()}
 											{/if}
 										</button>
 
@@ -799,7 +799,7 @@
 													</span>
 												{:else}
 													<span class="bg-amber-50 text-amber-600 border border-amber-200 text-[10px] font-black px-2 py-0.5 rounded-full inline-flex items-center space-x-1">
-														<span>⏳ Pending</span>
+														<span>Pending</span>
 													</span>
 												{/if}
 												{#if item.memory.mood_tag}

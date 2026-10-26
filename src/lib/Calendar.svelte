@@ -9,7 +9,8 @@
 		X,
 		Check,
 		Bookmark,
-		Clock
+		Clock,
+		AlertCircle
 	} from 'lucide-svelte';
 
 	const dispatch = createEventDispatcher();
@@ -722,8 +723,9 @@
 				<p class="text-xs text-rose-950 font-medium leading-relaxed">
 					Are you sure you want to permanently delete all memories on the <strong class="text-rose-700 font-black">{selectedDaysForDelete.size} selected date(s)</strong> ({getSelectedMemoriesCount()} total memories)?
 				</p>
-				<p class="text-[11px] text-rose-600 font-bold">
-					⚠️ This will remove all associated media, tags, and pinned dates. This action cannot be undone.
+				<p class="text-[11px] text-rose-600 font-bold flex items-center gap-1">
+					<AlertCircle class="w-3.5 h-3.5 text-rose-600 shrink-0" />
+					<span>This will remove all associated media, tags, and pinned dates. This action cannot be undone.</span>
 				</p>
 			</div>
 

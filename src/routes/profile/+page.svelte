@@ -1289,36 +1289,6 @@
 		}
 	}
 
-	function getMoodEmoji(moodTag) {
-		switch ((moodTag || '').toLowerCase()) {
-			case 'happy': return '😊';
-			case 'excited': return '🤩';
-			case 'grateful': return '🙏';
-			case 'calm': return '🌿';
-			case 'love': return '💖';
-			case 'sad': return '🥺';
-			case 'anxious': return '😰';
-			case 'lonely': return '🌧️';
-			case 'angry': return '🔥';
-			default: return '✨';
-		}
-	}
-
-	function getMoodDynamicEmoji(moodTag) {
-		switch ((moodTag || '').toLowerCase()) {
-			case 'happy': return '😊';
-			case 'sad': return '😢';
-			case 'excited': return '🤩';
-			case 'calm': return '🌿';
-			case 'love': return '💖';
-			case 'angry': return '🔥';
-			case 'grateful': return '🙏';
-			case 'anxious': return '🌊';
-			case 'lonely': return '🌧️';
-			case 'neutral': return '✨';
-			default: return '🌟';
-		}
-	}
 
 	function getMoodBadgeStyle(moodTag) {
 		switch ((moodTag || '').toLowerCase()) {
@@ -1601,7 +1571,7 @@
 												class="w-full h-full object-cover"
 											/>
 										{:else}
-											<span class="text-3xl">🤪</span>
+											<span class="text-2xl font-black text-[#f43f8e]">{(profileData.user.username || 'U').charAt(0).toUpperCase()}</span>
 										{/if}
 									</div>
 
@@ -2146,8 +2116,7 @@
 										{#if dominantMoods && dominantMoods.length > 0}
 											{#each dominantMoods as mood}
 												<div class="px-2.5 py-0.5 border font-black text-[11px] rounded-full flex items-center space-x-1 shadow-2xs {getMoodBadgeStyle(mood)}">
-													<span>{getMoodDynamicEmoji(mood)}</span>
-													<span>{mood} {dominantMoodCount}</span>
+													<span>{mood} ({dominantMoodCount})</span>
 												</div>
 											{/each}
 											<div class="px-2.5 py-0.5 bg-pink-100/70 text-[#f43f8e] border border-pink-200 font-black text-[11px] rounded-full flex items-center space-x-1 shadow-2xs">

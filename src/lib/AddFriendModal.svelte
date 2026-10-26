@@ -847,18 +847,18 @@
 										<p class="text-[10px] text-pink-950/60 truncate font-medium">{request.email}</p>
 									</div>
 								</button>
-								<div class="flex items-center space-x-1.5 flex-shrink-0">
+								<div class="flex items-center space-x-1 flex-shrink-0">
 									<button
 										onclick={() => handleRespond(request.id, 'accept')}
 										disabled={isResponding}
-										class="px-2.5 py-1 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 text-xs font-bold disabled:opacity-50 cursor-pointer active:scale-95 shadow-xs"
+										class="px-2.5 py-1 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] text-xs font-bold disabled:opacity-50 cursor-pointer active:scale-95 shadow-xs"
 									>
 										Accept
 									</button>
 									<button
 										onclick={() => handleRespond(request.id, 'decline')}
 										disabled={isResponding}
-										class="px-2.5 py-1 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold disabled:opacity-50 cursor-pointer active:scale-95"
+										class="px-2.5 py-1 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold disabled:opacity-50 cursor-pointer active:scale-95 shadow-2xs"
 									>
 										Decline
 									</button>
