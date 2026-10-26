@@ -36,8 +36,8 @@
 			a: 'Go to Settings > Install ChronoMuse App and click Install. On iOS Safari, tap Share > Add to Home Screen.'
 		},
 		{
-			q: 'Where are my uploaded photos and audio stored?',
-			a: 'All memory uploads are encrypted and securely stored in your personal account vault on Supabase storage.'
+			q: 'How do Mood Streaks work?',
+			a: 'Your streak increases each day you log an emotion entry. You can choose to show or hide your streak on your profile in Settings > Privacy.'
 		}
 	];
 
