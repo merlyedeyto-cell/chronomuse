@@ -86,9 +86,6 @@
 			<h4 class="text-xs font-black text-pink-950 uppercase tracking-wider">
 				Currently Blocked Accounts ({blockedUsers.length})
 			</h4>
-			{#if blockedUsers.length > 0}
-				<span class="text-[10px] font-bold text-pink-400">Toggle switch to unblock</span>
-			{/if}
 		</div>
 
 		{#if blockedUsers.length === 0}
