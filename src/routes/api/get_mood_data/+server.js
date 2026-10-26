@@ -28,7 +28,10 @@ export async function GET({ url }) {
 
 			const cutoffDate = new Date();
 			cutoffDate.setDate(cutoffDate.getDate() - days);
-			const formattedCutoff = cutoffDate.toISOString().split('T')[0];
+			const year = cutoffDate.getFullYear();
+			const month = String(cutoffDate.getMonth() + 1).padStart(2, '0');
+			const day = String(cutoffDate.getDate()).padStart(2, '0');
+			const formattedCutoff = `${year}-${month}-${day}`;
 
 			query = query.gte('date', formattedCutoff);
 		}

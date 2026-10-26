@@ -631,19 +631,19 @@
 						onclick={() => changePeriod('week')}
 						class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 text-center cursor-pointer {selectedPeriod === 'week' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-[#f43f8e] hover:bg-white/70'}"
 					>
-						This Week
+						Weekly
 					</button>
 					<button
 						onclick={() => changePeriod('month')}
 						class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 text-center cursor-pointer {selectedPeriod === 'month' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-[#f43f8e] hover:bg-white/70'}"
 					>
-						This Month
+						Monthly
 					</button>
 					<button
 						onclick={() => changePeriod('year')}
 						class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 text-center cursor-pointer {selectedPeriod === 'year' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:text-[#f43f8e] hover:bg-white/70'}"
 					>
-						This Year
+						Yearly
 					</button>
 				</div>
 			</div>
@@ -803,8 +803,8 @@
 
 			<!-- RIGHT COLUMN: Recent Memories + Mood Timeline Trend (5 Columns on Desktop) -->
 			<div class="contents lg:block lg:col-span-5 xl:col-span-5 lg:space-y-4">
-				<!-- Recent Memories Card (Displays 3 items, scrollable for more) -->
-				<div class="order-4 w-full bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col animate-fade-in-up" style="animation-delay: 0.2s">
+				<!-- Recent Memories Card (Displays 3 items, scrollable for more - Hidden on mobile view) -->
+				<div class="hidden lg:flex order-4 w-full bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex-col animate-fade-in-up" style="animation-delay: 0.2s">
 					<!-- Stream Header -->
 					<div class="flex items-center justify-between mb-3 pb-2.5 border-b border-pink-50">
 						<div>
