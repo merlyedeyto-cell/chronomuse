@@ -642,13 +642,22 @@
 											Cancel
 										</button>
 									{:else if targetUser.relationship === 'request_received'}
-										<button
-											type="button"
-											onclick={() => handleRespond(targetUser.request_id, 'accept')}
-											class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-xs"
-										>
-											Accept
-										</button>
+										<div class="flex items-center space-x-1 flex-shrink-0">
+											<button
+												type="button"
+												onclick={() => handleRespond(targetUser.request_id, 'accept')}
+												class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-xs"
+											>
+												Accept
+											</button>
+											<button
+												type="button"
+												onclick={() => handleRespond(targetUser.request_id, 'decline')}
+												class="px-2.5 py-1 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-2xs"
+											>
+												Decline
+											</button>
+										</div>
 									{:else}
 										<button
 											type="button"
@@ -759,13 +768,22 @@
 											{/if}
 										</button>
 									{:else if sugUser.relationship === 'request_received'}
-										<button
-											type="button"
-											onclick={() => handleRespond(sugUser.request_id, 'accept')}
-											class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-xs"
-										>
-											Accept
-										</button>
+										<div class="flex items-center space-x-1 flex-shrink-0">
+											<button
+												type="button"
+												onclick={() => handleRespond(sugUser.request_id, 'accept')}
+												class="px-2.5 py-1 bg-[#f43f8e] hover:bg-[#e0337f] text-white text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-xs"
+											>
+												Accept
+											</button>
+											<button
+												type="button"
+												onclick={() => handleRespond(sugUser.request_id, 'decline')}
+												class="px-2.5 py-1 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-2xs"
+											>
+												Decline
+											</button>
+										</div>
 									{:else}
 										<button
 											type="button"

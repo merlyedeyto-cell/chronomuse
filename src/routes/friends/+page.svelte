@@ -1138,13 +1138,22 @@
 												{/if}
 											</button>
 										{:else if targetUser.relationship === 'request_received'}
-											<button
-												type="button"
-												onclick={() => handleRespondRequest(targetUser.request_id, 'accept')}
-												class="px-2.5 py-1 bg-[#f43f8e] text-white text-xs font-bold rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all cursor-pointer shadow-xs"
-											>
-												Accept
-											</button>
+											<div class="flex items-center space-x-1 flex-shrink-0">
+												<button
+													type="button"
+													onclick={() => handleRespondRequest(targetUser.request_id, 'accept')}
+													class="px-2.5 py-1 bg-[#f43f8e] text-white text-xs font-bold rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all cursor-pointer shadow-xs"
+												>
+													Accept
+												</button>
+												<button
+													type="button"
+													onclick={() => handleRespondRequest(targetUser.request_id, 'decline')}
+													class="px-2.5 py-1 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-2xs"
+												>
+													Decline
+												</button>
+											</div>
 										{:else}
 											<button
 												type="button"
@@ -1260,13 +1269,22 @@
 												{/if}
 											</button>
 										{:else if sugUser.relationship === 'request_received'}
-											<button
-												type="button"
-												onclick={() => handleRespondRequest(sugUser.request_id, 'accept')}
-												class="px-2.5 py-1 bg-[#f43f8e] text-white text-xs font-bold rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all cursor-pointer shadow-xs"
-											>
-												Accept
-											</button>
+											<div class="flex items-center space-x-1 flex-shrink-0">
+												<button
+													type="button"
+													onclick={() => handleRespondRequest(sugUser.request_id, 'accept')}
+													class="px-2.5 py-1 bg-[#f43f8e] text-white text-xs font-bold rounded-xl hover:bg-[#e0337f] active:scale-95 transition-all cursor-pointer shadow-xs"
+												>
+													Accept
+												</button>
+												<button
+													type="button"
+													onclick={() => handleRespondRequest(sugUser.request_id, 'decline')}
+													class="px-2.5 py-1 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold rounded-xl active:scale-95 transition-all cursor-pointer shadow-2xs"
+												>
+													Decline
+												</button>
+											</div>
 										{:else}
 											<button
 												type="button"
@@ -1379,21 +1397,21 @@
 											</div>
 										</a>
 
-										<div class="flex items-center space-x-1 flex-shrink-0">
+										<div class="flex items-center space-x-1.5 flex-shrink-0">
 											<button
 												onclick={() => handleRespondRequest(req.id || req.request_id, 'accept')}
 												disabled={isResponding}
-												class="px-2 py-1 bg-[#f43f8e] text-white text-[11px] font-bold rounded-lg hover:bg-[#e0337f] active:scale-95 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
+												class="px-2.5 py-1 bg-[#f43f8e] text-white text-[11px] font-bold rounded-lg hover:bg-[#e0337f] active:scale-95 transition-all cursor-pointer disabled:opacity-50 shadow-xs"
 											>
 												Accept
 											</button>
 											<button
 												onclick={() => handleRespondRequest(req.id || req.request_id, 'decline')}
 												disabled={isResponding}
-												class="p-1 bg-white text-pink-400 hover:text-rose-600 hover:bg-rose-50 border border-pink-100 rounded-lg active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+												class="px-2.5 py-1 bg-white text-rose-600 hover:bg-rose-50 border border-rose-200 hover:border-rose-300 rounded-lg text-[11px] font-bold active:scale-95 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
 												title="Decline Request"
 											>
-												<X class="w-3 h-3" />
+												Decline
 											</button>
 										</div>
 									</div>
