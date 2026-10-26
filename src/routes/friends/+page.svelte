@@ -8,6 +8,7 @@
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
 	import { toast } from '$lib/toastService.js';
+	import { playClickSound } from '$lib/soundEffects.js';
 	import {
 		ArrowLeft, Users, UserPlus, Clock, Search, X, User, UserCircle,
 		MessageSquare, Trash2, Check, Plus, ChevronDown, AlertCircle,
@@ -734,86 +735,67 @@
 	<main class="flex-grow container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-24 sm:pb-28 max-w-6xl">
 		<!-- Header Banner -->
 		<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 mb-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up">
-			<div class="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
-				<div class="flex items-start sm:items-center space-x-3">
-					<button
-						onclick={() => goto('/dashboard')}
-						class="w-8 h-8 rounded-xl bg-pink-50 hover:bg-pink-100 text-[#f43f8e] border border-pink-100 flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-2xs flex-shrink-0 mt-0.5 sm:mt-0"
-						title="Back to Dashboard"
-					>
-						<ArrowLeft class="w-4 h-4" strokeWidth={2.5} />
-					</button>
-					<div>
-						<div class="flex items-center space-x-2">
-							<h1 class="text-base sm:text-lg font-black text-pink-950">Friends & Network</h1>
-							<span class="px-2 py-0.5 rounded-full bg-pink-50 text-[#f43f8e] border border-pink-100 text-[10px] font-black uppercase tracking-wider">
-								Community
-							</span>
-							<button
-								type="button"
-								onclick={copyMyProfileLink}
-								class="p-1 rounded-lg text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-90 transition-all cursor-pointer flex lg:hidden items-center justify-center"
-								title={copiedLink ? "Link Copied to Clipboard!" : "Copy Profile Link"}
-								aria-label="Copy Profile Link"
-							>
-								{#if copiedLink}
-									<Check class="w-4 h-4 text-emerald-600 animate-scale-up" strokeWidth={2.5} />
-								{:else}
-									<Share2 class="w-4 h-4" />
-								{/if}
-							</button>
-						</div>
-						<p class="text-xs text-pink-400 font-semibold mt-0.5">Manage connections, discover friends, and sync moments</p>
+			<div class="flex items-start sm:items-center space-x-3">
+				<button
+					onclick={() => goto('/dashboard')}
+					class="w-8 h-8 rounded-xl bg-pink-50 hover:bg-pink-100 text-[#f43f8e] border border-pink-100 flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-2xs flex-shrink-0 mt-0.5 sm:mt-0"
+					title="Back to Dashboard"
+				>
+					<ArrowLeft class="w-4 h-4" strokeWidth={2.5} />
+				</button>
+				<div>
+					<div class="flex items-center space-x-2">
+						<h1 class="text-base sm:text-lg font-black text-pink-950">Friends & Network</h1>
+						<span class="px-2 py-0.5 rounded-full bg-pink-50 text-[#f43f8e] border border-pink-100 text-[10px] font-black uppercase tracking-wider">
+							Community
+						</span>
+						<button
+							type="button"
+							onclick={copyMyProfileLink}
+							class="p-1 rounded-lg text-pink-500 hover:text-[#f43f8e] hover:bg-pink-50 active:scale-90 transition-all cursor-pointer flex lg:hidden items-center justify-center"
+							title={copiedLink ? "Link Copied to Clipboard!" : "Copy Profile Link"}
+							aria-label="Copy Profile Link"
+						>
+							{#if copiedLink}
+								<Check class="w-4 h-4 text-emerald-600 animate-scale-up" strokeWidth={2.5} />
+							{:else}
+								<Share2 class="w-4 h-4" />
+							{/if}
+						</button>
 					</div>
+					<p class="text-xs text-pink-400 font-semibold mt-0.5">Manage connections, discover friends, and sync moments</p>
 				</div>
-
-				<!-- Header Quick Stats & Action -->
-				{#if pendingRequests.length > 0}
-					<div class="flex items-center flex-wrap gap-2">
-						<div class="flex items-center space-x-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl text-xs font-bold text-rose-600 animate-pulse shadow-2xs">
-							<Clock class="w-3.5 h-3.5" />
-							<span>{pendingRequests.length} New {pendingRequests.length === 1 ? 'Request' : 'Requests'}</span>
-						</div>
-					</div>
-				{/if}
 			</div>
-		</div>
 
-		<!-- Mobile-Only Segmented Tabs (Visible on mobile/tablet < lg) -->
-		<div class="block lg:hidden mb-4 bg-white border border-pink-100/90 p-1.5 rounded-2xl shadow-[0_4px_16px_rgba(244,114,182,0.06)] animate-fade-in">
-			<div class="grid grid-cols-3 gap-1.5">
+			<!-- Mobile-Only Segmented Tabs (Inside White Header Card, Matches Notification Tab) -->
+			<div class="block lg:hidden mt-3.5 bg-[#fff0f5] p-1 rounded-xl grid grid-cols-3 gap-1 border border-pink-100/80 animate-fade-in">
+				<!-- Tab 1: Friends -->
 				<button
 					type="button"
-					onclick={() => mobileTab = 'friends'}
-					class="py-2.5 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer {mobileTab === 'friends' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:bg-pink-50'}"
+					onclick={() => { playClickSound(); mobileTab = 'friends'; }}
+					class="py-1.5 px-1 rounded-lg text-[11px] font-black transition-all flex items-center justify-center text-center cursor-pointer active:scale-95 whitespace-nowrap {mobileTab === 'friends' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-pink-800'}"
 				>
-					<Users class="w-3.5 h-3.5" />
-					<span>Friends</span>
-					<span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold {mobileTab === 'friends' ? 'bg-white/20 text-white' : 'bg-[#fdf2f6] text-[#f43f8e] border border-pink-100'}">
-						{friends.length}
-					</span>
+					<span>Friends ({friends.length})</span>
 				</button>
 
+				<!-- Tab 2: Discover -->
 				<button
 					type="button"
-					onclick={() => mobileTab = 'discover'}
-					class="py-2.5 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer {mobileTab === 'discover' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:bg-pink-50'}"
+					onclick={() => { playClickSound(); mobileTab = 'discover'; }}
+					class="py-1.5 px-1 rounded-lg text-[11px] font-black transition-all flex items-center justify-center text-center cursor-pointer active:scale-95 whitespace-nowrap {mobileTab === 'discover' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-pink-800'}"
 				>
-					<UserPlus class="w-3.5 h-3.5" />
 					<span>Discover</span>
 				</button>
 
+				<!-- Tab 3: Requests -->
 				<button
 					type="button"
-					onclick={() => mobileTab = 'requests'}
-					class="relative py-2.5 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer {mobileTab === 'requests' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-700 hover:bg-pink-50'}"
+					onclick={() => { playClickSound(); mobileTab = 'requests'; }}
+					class="relative py-1.5 px-1 rounded-lg text-[11px] font-black transition-all flex items-center justify-center text-center cursor-pointer active:scale-95 whitespace-nowrap {mobileTab === 'requests' ? 'bg-[#f43f8e] text-white shadow-xs' : 'text-pink-600 hover:text-pink-800'}"
 				>
-					<Clock class="w-3.5 h-3.5" />
-					<span>Requests</span>
+					<span>Requests ({pendingRequests.length})</span>
 					{#if pendingRequests.length > 0}
-						<span class="text-[9px] px-1.5 py-0.2 rounded-full font-black {mobileTab === 'requests' ? 'bg-white text-[#f43f8e]' : 'bg-rose-500 text-white animate-pulse'}">
-							{pendingRequests.length}
-						</span>
+						<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping absolute top-1 right-1.5"></span>
 					{/if}
 				</button>
 			</div>

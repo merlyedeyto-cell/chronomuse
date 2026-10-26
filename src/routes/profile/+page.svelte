@@ -100,7 +100,6 @@
 	let showUnfriendModal = $state(false);
 	let unfriendTarget = $state(/** @type {any} */ (null));
 	let isUnfriending = $state(false);
-	let showLogoutModal = $state(false);
 
 	// Note / Thought Bubble State
 	let showNoteModal = $state(false);

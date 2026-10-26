@@ -418,7 +418,7 @@
 											<div>
 												<p class="text-xs font-black text-[#e8367f] flex items-center gap-1.5">
 													<span>@{item.sender_username}</span>
-													<span class="bg-pink-50 text-[#f43f8e] border border-pink-200 text-[10px] font-black px-2 py-0.5 rounded-full">✓ Saved to Calendar</span>
+													<span class="bg-pink-50 text-[#f43f8e] border border-pink-200 text-[10px] font-black px-2 py-0.5 rounded-full">Saved to Calendar</span>
 												</p>
 												<p class="text-[11px] font-bold text-pink-950/70">
 													{item.memory.memory_tag || item.memory.title || 'Special Memory'}

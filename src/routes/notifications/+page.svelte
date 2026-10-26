@@ -8,7 +8,7 @@
 	import AppHeader from '$lib/AppHeader.svelte';
 	import AppFooter from '$lib/AppFooter.svelte';
 	import {
-		ArrowLeft, CheckCircle2, Eye, Calendar, Clock, Check,
+		ArrowLeft, CheckCircle2, Eye, Calendar, Clock,
 		Send, X, Users, Music, Pause, Play, MessageSquare, Trash2
 	} from 'lucide-svelte';
 
@@ -604,7 +604,7 @@
 													@{item.sender_username}
 												</button>
 												<span class="bg-pink-50 text-[#f43f8e] border border-pink-200 text-[10px] font-black px-2 py-0.5 rounded-full inline-flex items-center space-x-1">
-													<span>✓ Saved to Calendar</span>
+													<span>Saved to Calendar</span>
 												</span>
 												{#if item.memory.mood_tag}
 													<span class="bg-amber-50 text-amber-600 border border-amber-200 text-[10px] font-black px-2 py-0.5 rounded-full">
@@ -721,10 +721,9 @@
 										<button
 											type="button"
 											onclick={(e) => { e.stopPropagation(); playClickSound(); handleRespondSharedMemory(item, 'accept', e); }}
-											class="h-7.5 py-1 px-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] rounded-xl shadow-xs flex items-center space-x-1 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+											class="h-7.5 py-1 px-2.5 bg-[#f43f8e] hover:bg-[#e0337f] text-white font-black text-[11px] rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
 										>
-											<Check class="w-3 h-3" strokeWidth={2.5} />
-											<span>Accept</span>
+											Accept
 										</button>
 
 										<button
@@ -795,7 +794,7 @@
 												</span>
 												{#if item.status === 'accepted'}
 													<span class="bg-pink-50 text-[#f43f8e] border border-pink-200 text-[10px] font-black px-2 py-0.5 rounded-full inline-flex items-center space-x-1">
-														<span>✓ Accepted</span>
+														<span>Accepted</span>
 													</span>
 												{:else}
 													<span class="bg-amber-50 text-amber-600 border border-amber-200 text-[10px] font-black px-2 py-0.5 rounded-full inline-flex items-center space-x-1">
@@ -829,10 +828,9 @@
 									<button
 										type="button"
 										onclick={(e) => { e.stopPropagation(); playClickSound(); promptCancelShare(item, e); }}
-										class="h-7.5 py-1 px-3 bg-white border border-pink-200 hover:border-pink-300 text-[#f43f8e] hover:bg-pink-50 font-black text-[11px] rounded-xl active:scale-95 transition-all cursor-pointer flex items-center space-x-1 whitespace-nowrap"
+										class="h-7.5 py-1 px-3 bg-white border border-pink-200 hover:border-pink-300 text-[#f43f8e] hover:bg-pink-50 font-black text-[11px] rounded-xl active:scale-95 transition-all cursor-pointer whitespace-nowrap"
 									>
-										<X class="w-3 h-3 text-[#f43f8e]" strokeWidth={2.5} />
-										<span>Cancel Share</span>
+										Cancel Share
 									</button>
 								</div>
 							</div>
@@ -1035,10 +1033,9 @@
 					{:else}
 						<button
 							onclick={(e) => { playClickSound(); handleRespondSharedMemory(selectedMemoryToView, 'accept', e); }}
-							class="h-8 py-1.5 px-2.5 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 text-white rounded-xl text-[11px] font-black transition-all duration-200 flex items-center justify-center space-x-1 shadow-xs cursor-pointer whitespace-nowrap"
+							class="h-8 py-1.5 px-3 bg-[#f43f8e] hover:bg-[#e0337f] active:scale-95 text-white rounded-xl text-[11px] font-black transition-all duration-200 shadow-xs cursor-pointer whitespace-nowrap"
 						>
-							<Check class="w-3 h-3 flex-shrink-0" strokeWidth={2.5} />
-							<span>Accept</span>
+							Accept
 						</button>
 
 						<button

@@ -326,10 +326,6 @@
 		onkeydown={(e) => { if (e.key === 'Escape') showLogoutModal = false; }}
 	>
 		<div class="bg-white border border-pink-100/90 rounded-3xl max-w-xs sm:max-w-md w-full p-5 sm:p-7 text-center relative overflow-hidden shadow-2xl animate-scale-up">
-			<div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center mx-auto mb-3 shadow-2xs">
-				<LogOut class="w-6 h-6 sm:w-7 sm:h-7 text-[#f43f8e]" />
-			</div>
-
 			<h3 class="text-sm sm:text-lg font-black text-pink-950 mb-1 sm:mb-1.5">Log Out of ChronoMuse?</h3>
 			<p class="text-xs sm:text-sm text-pink-400 mb-5 sm:mb-6 font-medium">
 				Are you sure you want to log out of your account?

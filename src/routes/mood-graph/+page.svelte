@@ -9,7 +9,7 @@
 	import { playClickSound } from '$lib/soundEffects.js';
 	import { broadcastMemoryEvent } from '$lib/realtimeBroadcast.js';
 	import {
-		ArrowLeft, Trophy, BookOpen, Heart, PieChart, Tag, Clock, X, Calculator, BarChart3
+		ArrowLeft, Heart, PieChart, Tag, Clock, X, Calculator, BarChart3
 	} from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
@@ -649,85 +649,79 @@
 			</div>
 		</div>
 
-		<!-- 2-Column Bento Grid on Desktop -->
-		<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-start">
+		<!-- 2-Column Bento Grid on Desktop, Sequential Flow on Mobile -->
+		<div class="w-full flex flex-col lg:grid lg:grid-cols-12 gap-4 sm:gap-5 lg:items-start">
 			
 			<!-- LEFT COLUMN: Analytics & Metrics Hub (7 Columns on Desktop) -->
-			<div class="lg:col-span-7 xl:col-span-7 space-y-4">
+			<div class="contents lg:block lg:col-span-7 xl:col-span-7 lg:space-y-4">
 				
-				<!-- 3 Top Metric Hero Cards (Comfortable readable size on both mobile & desktop) -->
-				<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 animate-fade-in-up" style="animation-delay: 0.1s">
-					<!-- Dominant Mood Card (Span 2 on mobile for full hero impact, 1 on sm+) -->
+				<!-- 3 Top Metric Hero Cards (One row across all screen sizes) -->
+				<div class="order-1 w-full grid grid-cols-3 gap-2 sm:gap-3 animate-fade-in-up" style="animation-delay: 0.1s">
+					<!-- Dominant Mood Card (Col 1) -->
 					<div
-						class="col-span-2 sm:col-span-1 bg-gradient-to-br from-[#f43f8e] to-[#e0337f] border border-pink-400/40 rounded-2xl p-3.5 sm:p-4 text-white shadow-[0_4px_14px_rgba(244,63,142,0.22)] flex flex-col justify-between relative overflow-hidden group cursor-pointer"
+						class="col-span-1 bg-gradient-to-br from-[#f43f8e] to-[#e0337f] border border-pink-400/40 rounded-2xl p-2.5 sm:p-3.5 md:p-4 text-white shadow-[0_4px_14px_rgba(244,63,142,0.22)] flex flex-col justify-between relative overflow-hidden group cursor-pointer active:scale-[0.99] transition-all"
 						onclick={() => mostFrequentMoods.length > 0 && openMoodListModal(mostFrequentMoods[0])}
 						role="button"
 						tabindex="0"
 						onkeydown={(e) => { if (e.key === 'Enter' && mostFrequentMoods.length > 0) openMoodListModal(mostFrequentMoods[0]); }}
 					>
-						<div class="flex items-center justify-between mb-2 opacity-90">
-							<span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
-								{mostFrequentMoods.length > 1 ? 'Dominant Moods (Tied)' : 'Dominant Mood'}
+						<div class="mb-1.5 sm:mb-2 opacity-90">
+							<span class="text-[9px] sm:text-[10px] md:text-[11px] font-bold uppercase tracking-wider truncate block">
+								{mostFrequentMoods.length > 1 ? 'Dominant (Tied)' : 'Dominant Mood'}
 							</span>
-							<Trophy class="w-4 h-4 opacity-90" strokeWidth={2.2} />
 						</div>
 						<div>
-							<p class="text-base sm:text-lg font-black leading-tight truncate">
+							<p class="text-sm sm:text-base md:text-lg font-black leading-tight truncate">
 								{mostFrequentMoods.length > 0 ? mostFrequentMoods.join(', ') : 'None'}
 							</p>
-							<p class="text-[11px] text-pink-100 font-medium mt-1">
+							<p class="text-[9px] sm:text-[10px] md:text-[11px] text-pink-100 font-medium mt-0.5 sm:mt-1 truncate">
 								{mostFrequentMoodCount} {mostFrequentMoodCount === 1 ? 'memory' : 'memories'} logged
 							</p>
 						</div>
 					</div>
 
-					<!-- Total Memories & Diversity (1 col) -->
-					<div class="col-span-1 bg-white/95 border border-pink-100/90 rounded-2xl p-3.5 sm:p-4 shadow-[0_2px_12px_rgba(244,114,182,0.06)] flex flex-col justify-between">
-						<div class="flex items-center justify-between mb-2 text-pink-500">
-							<span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-pink-400">Total Entries</span>
-							<BookOpen class="w-4 h-4 text-pink-400" strokeWidth={2.2} />
+					<!-- Total Memories & Diversity (Col 2) -->
+					<div class="col-span-1 bg-white/95 border border-pink-100/90 rounded-2xl p-2.5 sm:p-3.5 md:p-4 shadow-[0_2px_12px_rgba(244,114,182,0.06)] flex flex-col justify-between">
+						<div class="mb-1.5 sm:mb-2 text-pink-500">
+							<span class="text-[9px] sm:text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-pink-400 truncate block">Total Entries</span>
 						</div>
 						<div>
-							<p class="text-base sm:text-lg font-black text-pink-950 leading-tight">
+							<p class="text-sm sm:text-base md:text-lg font-black text-pink-950 leading-tight">
 								{totalMemories}
 							</p>
-							<p class="text-[10px] sm:text-[11px] text-pink-500 font-bold mt-1 truncate">
+							<p class="text-[9px] sm:text-[10px] md:text-[11px] text-pink-500 font-bold mt-0.5 sm:mt-1 truncate">
 								{uniqueMoodsCount} distinct {uniqueMoodsCount === 1 ? 'emotion' : 'emotions'}
 							</p>
 						</div>
 					</div>
 
-					<!-- Positive Mood Ratio (1 col - Clickable for details) -->
+					<!-- Positive Mood Ratio (Col 3 - Clickable for details) -->
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<div
 						onclick={() => { playClickSound(); showPositiveRatioModal = true; }}
-						class="col-span-1 bg-white/95 border border-pink-100/90 rounded-2xl p-3.5 sm:p-4 shadow-[0_2px_12px_rgba(244,114,182,0.06)] flex flex-col justify-between cursor-pointer hover:border-pink-300 hover:shadow-md transition-all active:scale-[0.99] group select-none"
+						class="col-span-1 bg-white/95 border border-pink-100/90 rounded-2xl p-2.5 sm:p-3.5 md:p-4 shadow-[0_2px_12px_rgba(244,114,182,0.06)] flex flex-col justify-between cursor-pointer hover:border-pink-300 hover:shadow-md transition-all active:scale-[0.99] group select-none"
 						title="Click to view positive ratio breakdown & formula"
 					>
-						<div class="flex items-center justify-between mb-2 text-pink-500">
-							<div class="flex items-center space-x-1">
-								<span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-pink-400 group-hover:text-[#f43f8e] transition-colors">Positive Ratio</span>
-								<span class="w-3.5 h-3.5 rounded-full bg-pink-50 border border-pink-200 text-[#f43f8e] text-[9px] font-black flex items-center justify-center group-hover:bg-[#f43f8e] group-hover:text-white transition-colors" title="Info">?</span>
-							</div>
-							<Heart class="w-4 h-4 text-[#f43f8e] group-hover:scale-110 transition-transform" strokeWidth={2.2} />
+						<div class="mb-1.5 sm:mb-2 text-pink-500">
+							<span class="text-[9px] sm:text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-pink-400 group-hover:text-[#f43f8e] transition-colors truncate block">Positive Ratio</span>
 						</div>
 						<div>
 							<div class="flex items-baseline space-x-1">
-								<p class="text-base sm:text-lg font-black text-[#f43f8e] leading-tight">
+								<p class="text-sm sm:text-base md:text-lg font-black text-[#f43f8e] leading-tight">
 									{positivePercentage}%
 								</p>
-								<span class="text-[10px] text-pink-400 font-bold">positive</span>
+								<span class="text-[9px] sm:text-[10px] text-pink-400 font-bold hidden xs:inline sm:inline">positive</span>
 							</div>
-							<div class="w-full bg-pink-50 rounded-full h-1.5 mt-2 overflow-hidden">
-								<div class="h-1.5 rounded-full bg-gradient-to-r from-pink-400 to-[#f43f8e] transition-all duration-500" style="width: {positivePercentage}%"></div>
+							<div class="w-full bg-pink-50 rounded-full h-1 sm:h-1.5 mt-1.5 sm:mt-2 overflow-hidden">
+								<div class="h-full rounded-full bg-gradient-to-r from-pink-400 to-[#f43f8e] transition-all duration-500" style="width: {positivePercentage}%"></div>
 							</div>
 						</div>
 					</div>
 				</div>
 
 				<!-- Unified Visual Analytics Card: Donut Chart + Distribution Bars -->
-				<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up" style="animation-delay: 0.15s">
+				<div class="order-2 w-full bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up" style="animation-delay: 0.15s">
 					<div class="flex items-center justify-between mb-4 pb-2.5 border-b border-pink-50">
 						<div class="flex items-center space-x-2">
 							<div class="w-6 h-6 rounded-lg sm:rounded-xl bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
@@ -813,7 +807,7 @@
 
 				<!-- Quick Mood Tag Explorer Pills -->
 				{#if activeMoodsSorted.length > 0}
-					<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up" style="animation-delay: 0.2s">
+					<div class="order-4 w-full bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up" style="animation-delay: 0.2s">
 						<div class="flex items-center justify-between mb-2.5">
 							<h3 class="text-xs sm:text-sm font-black text-pink-950 flex items-center gap-1.5">
 								<Tag class="w-3.5 h-3.5 text-[#f43f8e]" strokeWidth={2} />
@@ -838,9 +832,9 @@
 			</div>
 
 			<!-- RIGHT COLUMN: Recent Memories + Mood Timeline Trend (5 Columns on Desktop) -->
-			<div class="lg:col-span-5 xl:col-span-5 space-y-4 animate-fade-in-up" style="animation-delay: 0.25s">
+			<div class="contents lg:block lg:col-span-5 xl:col-span-5 lg:space-y-4">
 				<!-- Recent Memories Card (Displays 3 items, scrollable for more) -->
-				<div class="bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col">
+				<div class="order-5 w-full bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col animate-fade-in-up" style="animation-delay: 0.25s">
 					<!-- Stream Header -->
 					<div class="flex items-center justify-between mb-3 pb-2.5 border-b border-pink-50">
 						<div class="flex items-center space-x-2">
@@ -900,17 +894,19 @@
 					{/if}
 				</div>
 
-				<!-- Mood Timeline Trend Line Graph in Right Column -->
-				<MoodTrendLineGraph
-					{moodData}
-					{selectedPeriod}
-					onSelectMemory={viewMemory}
-					onSelectDate={(date, memories) => {
-						selectedMemoryDate = date;
-						memoriesForDate = memories;
-						showViewMemoryModal = true;
-					}}
-				/>
+				<!-- Mood Timeline Trend Line Graph in Right Column (Appears directly below Donut Chart on mobile view) -->
+				<div class="order-3 w-full">
+					<MoodTrendLineGraph
+						{moodData}
+						{selectedPeriod}
+						onSelectMemory={viewMemory}
+						onSelectDate={(date, memories) => {
+							selectedMemoryDate = date;
+							memoriesForDate = memories;
+							showViewMemoryModal = true;
+						}}
+					/>
+				</div>
 			</div>
 		</div>
 	</main>
