@@ -1028,22 +1028,6 @@
 						</div>
 					</div>
 
-					<!-- Save/Cancel Buttons -->
-					<div class="flex space-x-2 pt-1">
-						<button
-							onclick={() => handleSaveEdit(editingMemory)}
-							disabled={isSaving}
-							class="flex-1 py-2 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] transition-all text-xs font-bold disabled:opacity-50 active:scale-95 shadow-xs cursor-pointer"
-						>
-							{#if isSaving}Saving...{:else}Save{/if}
-						</button>
-						<button
-							onclick={handleCancelEdit}
-							class="flex-1 py-2 px-3 bg-white border border-pink-200 text-pink-600 rounded-xl hover:bg-pink-50 transition-all text-xs font-bold active:scale-95 cursor-pointer"
-						>
-							Cancel
-						</button>
-					</div>
 				</div>
 
 				<!-- Right Column: Media Uploads (Photo/Video & Music) -->
@@ -1152,6 +1136,25 @@
 							/>
 						</label>
 					</div>
+				</div>
+
+				<!-- Save/Cancel Action Buttons (Nasa baba ng photo/video sa mobile at spanning full-width) -->
+				<div class="col-span-1 md:col-span-2 flex space-x-2 pt-2.5 border-t border-pink-100/90 mt-1">
+					<button
+						type="button"
+						onclick={() => handleSaveEdit(editingMemory)}
+						disabled={isSaving}
+						class="flex-1 py-2.5 px-3 bg-[#f43f8e] text-white rounded-xl hover:bg-[#e0337f] transition-all text-xs font-bold disabled:opacity-50 active:scale-95 shadow-xs cursor-pointer"
+					>
+						{#if isSaving}Saving...{:else}Save{/if}
+					</button>
+					<button
+						type="button"
+						onclick={handleCancelEdit}
+						class="flex-1 py-2.5 px-3 bg-white border border-pink-200 text-pink-600 rounded-xl hover:bg-pink-50 transition-all text-xs font-bold active:scale-95 cursor-pointer"
+					>
+						Cancel
+					</button>
 				</div>
 			</div>
 		</div>
