@@ -9,7 +9,7 @@
 	import { playClickSound } from '$lib/soundEffects.js';
 	import { broadcastMemoryEvent } from '$lib/realtimeBroadcast.js';
 	import {
-		ArrowLeft, Heart, PieChart, Tag, Clock, X, Calculator, BarChart3
+		ArrowLeft, Heart, PieChart, Clock, X, Calculator, BarChart3
 	} from 'lucide-svelte';
 
 	let user = $state(typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('chronomuse_user') || 'null') : null);
@@ -804,37 +804,12 @@
 						</div>
 					{/if}
 				</div>
-
-				<!-- Quick Mood Tag Explorer Pills -->
-				{#if activeMoodsSorted.length > 0}
-					<div class="order-4 w-full bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] animate-fade-in-up" style="animation-delay: 0.2s">
-						<div class="flex items-center justify-between mb-2.5">
-							<h3 class="text-xs sm:text-sm font-black text-pink-950 flex items-center gap-1.5">
-								<Tag class="w-3.5 h-3.5 text-[#f43f8e]" strokeWidth={2} />
-								<span>Mood Explorer</span>
-							</h3>
-							<span class="text-[10px] text-pink-400 font-bold">Quick filter tags</span>
-						</div>
-						<div class="flex flex-wrap gap-2">
-							{#each activeMoodsSorted as item}
-								<button
-									onclick={() => openMoodListModal(item.moodName)}
-									class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-[#fdf2f6] hover:bg-[#fde6ee] border border-pink-100/90 text-pink-900 transition-all duration-200 text-xs font-bold cursor-pointer hover:shadow-2xs active:scale-95 group"
-								>
-									<span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {item.color}"></span>
-									<span class="group-hover:text-[#f43f8e] transition-colors">{item.moodName}</span>
-									<span class="ml-1 px-1.5 py-0.2 rounded-md bg-white text-[#f43f8e] text-[10px] font-black shadow-2xs border border-pink-100">{item.count}</span>
-								</button>
-							{/each}
-						</div>
-					</div>
-				{/if}
 			</div>
 
 			<!-- RIGHT COLUMN: Recent Memories + Mood Timeline Trend (5 Columns on Desktop) -->
 			<div class="contents lg:block lg:col-span-5 xl:col-span-5 lg:space-y-4">
 				<!-- Recent Memories Card (Displays 3 items, scrollable for more) -->
-				<div class="order-5 w-full bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col animate-fade-in-up" style="animation-delay: 0.25s">
+				<div class="order-4 w-full bg-white border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] flex flex-col animate-fade-in-up" style="animation-delay: 0.2s">
 					<!-- Stream Header -->
 					<div class="flex items-center justify-between mb-3 pb-2.5 border-b border-pink-50">
 						<div class="flex items-center space-x-2">
