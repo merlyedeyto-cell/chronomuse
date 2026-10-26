@@ -2,7 +2,7 @@
 	import { onMount, createEventDispatcher, untrack } from 'svelte';
 	import { API_ENDPOINTS } from '$lib/apiConfig.js';
 	import { playClickSound } from '$lib/soundEffects.js';
-	import { Clock, Image as ImageIcon, Play, ArrowRight } from 'lucide-svelte';
+	import { Image as ImageIcon, Play, ArrowRight } from 'lucide-svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -138,10 +138,7 @@
 	<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans transition-all">
 		<!-- Header Skeleton -->
 		<div class="flex items-center justify-between mb-2.5">
-			<div class="flex items-center space-x-1.5">
-				<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-					<Clock class="w-3.5 h-3.5 text-pink-400" />
-				</div>
+			<div>
 				<h4 class="text-xs font-black text-pink-950">Memory Flashback</h4>
 			</div>
 			<!-- Date Badge Skeleton -->
@@ -170,11 +167,7 @@
 {:else if throwbackMemory}
 	<div class="bg-white/95 backdrop-blur-md border border-pink-100/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(244,114,182,0.08)] font-sans transition-all hover:border-pink-200">
 		<div class="flex items-center justify-between mb-2.5">
-			<div class="flex items-center space-x-1.5">
-				<div class="w-6 h-6 rounded-lg bg-pink-50 border border-pink-100 text-[#f43f8e] flex items-center justify-center shadow-2xs">
-					<!-- Simple Flashback Clock Icon -->
-					<Clock class="w-3.5 h-3.5" />
-				</div>
+			<div>
 				<h4 class="text-xs font-black text-pink-950">Memory Flashback</h4>
 			</div>
 			<span class="text-[10px] bg-pink-50 text-[#f43f8e] font-bold px-2 py-0.5 rounded-full border border-pink-200/60 shadow-2xs">

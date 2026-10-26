@@ -139,9 +139,6 @@
 		monthlyStats.filter(m => m.hasMemories)
 	);
 
-	// Count of active months with memories
-	let monthsWithMemoriesCount = $derived(displayedMonths.length);
-
 	function changeYear(delta) {
 		playClickSound();
 		selectedYear += delta;
@@ -157,18 +154,11 @@
 </script>
 
 {#snippet monthsContent()}
-	<!-- Sub-header: Year Switcher & Month Count -->
-	<div class="flex items-center justify-between pb-1.5 border-b border-pink-100/70">
+	<!-- Sub-header: Year Switcher -->
+	<div class="flex items-center justify-end pb-1.5 border-b border-pink-100/70">
 		{#if isLoading && allMemories.length === 0}
-			<div class="h-4.5 w-24 bg-pink-100/80 rounded-full animate-pulse"></div>
 			<div class="h-5 w-16 bg-pink-100/80 rounded-lg animate-pulse"></div>
 		{:else}
-			<div class="flex items-center gap-1.5">
-				<span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-pink-50 text-[#f43f8e] border border-pink-200/80 inline-flex items-center gap-1 shadow-2xs">
-					<span class="w-1.5 h-1.5 rounded-full bg-[#f43f8e] animate-pulse"></span>
-					<span>{monthsWithMemoriesCount} {monthsWithMemoriesCount === 1 ? 'active month' : 'active months'}</span>
-				</span>
-			</div>
 
 			<!-- Year Switcher (Interactive Previous/Next Year) -->
 			<div class="flex items-center space-x-1 bg-pink-50/80 p-0.5 rounded-lg border border-pink-200/80 shadow-2xs">
