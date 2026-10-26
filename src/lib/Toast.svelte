@@ -1,6 +1,6 @@
 <script>
 	import { toast } from '$lib/toastService.js';
-	import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from 'lucide-svelte';
+	import { CheckCircle2, AlertCircle, AlertTriangle, Info } from 'lucide-svelte';
 
 	// Svelte 5 store auto-subscription
 	let toastState = $derived($toast);
@@ -13,14 +13,14 @@
 		aria-live="polite"
 	>
 		<div
-			class="pointer-events-auto px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border backdrop-blur-md flex items-center gap-2.5 shadow-lg select-none transition-all duration-200 transform animate-fade-in
+			class="pointer-events-auto px-4 py-1.5 sm:py-2 rounded-full border flex items-center gap-2.5 shadow-md select-none transition-all duration-200 transform animate-fade-in
 			{toastState.type === 'error'
-				? 'bg-gradient-to-r from-rose-500 via-rose-600 to-red-600 border-white/25 text-white shadow-rose-500/25'
+				? 'bg-[#e11d48] border-rose-400/30 text-white shadow-rose-600/20'
 				: toastState.type === 'warning'
-				? 'bg-gradient-to-r from-amber-500 via-orange-500 to-pink-500 border-white/25 text-white shadow-amber-500/25'
+				? 'bg-[#d97706] border-amber-400/30 text-white shadow-amber-600/20'
 				: toastState.type === 'info'
-				? 'bg-gradient-to-r from-[#ff3e88] to-pink-400 border-white/25 text-white shadow-pink-500/25'
-				: 'bg-gradient-to-r from-[#ff3e88] via-[#f43f8e] to-pink-500 border-white/25 text-white shadow-pink-500/25'}"
+				? 'bg-[#ff4fae] border-pink-300/40 text-white shadow-pink-500/20'
+				: 'bg-[#ff4fae] border-pink-300/40 text-white shadow-pink-500/20'}"
 		>
 			<!-- Icon -->
 			{#if toastState.type === 'error'}
@@ -41,16 +41,6 @@
 			<span class="text-xs sm:text-[13px] font-bold tracking-tight leading-snug line-clamp-2">
 				{toastState.message}
 			</span>
-
-			<!-- Dismiss Button -->
-			<button
-				type="button"
-				onclick={() => toast.dismiss()}
-				aria-label="Dismiss toast"
-				class="p-0.5 -mr-1 rounded-full text-white/80 hover:text-white hover:bg-white/20 active:scale-90 transition-all cursor-pointer flex-shrink-0"
-			>
-				<X class="w-3.5 h-3.5" strokeWidth={2.5} />
-			</button>
 		</div>
 	</div>
 {/if}
